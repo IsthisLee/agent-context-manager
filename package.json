@@ -1,0 +1,29 @@
+{
+  "name": "@isthis/agentic",
+  "version": "0.1.0",
+  "description": "Cross-Agent Development Harness & Verification Kit (Codex, Claude Code, Antigravity, Cursor)",
+  "type": "module",
+  "bin": {
+    "agentic": "./bin/agentic.mjs"
+  },
+  "scripts": {
+    "sync": "node ./bin/agentic.mjs sync",
+    "test": "node --test evals/**/*.test.mjs",
+    "check": "node ./bin/agentic.mjs check"
+  },
+  "keywords": [
+    "agentic",
+    "harness",
+    "ai-agents",
+    "claude-code",
+    "codex",
+    "antigravity",
+    "tdd",
+    "verification"
+  ],
+  "author": "Isthis",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

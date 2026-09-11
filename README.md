@@ -10,8 +10,8 @@
    OpenAI(Codex `AGENTS.md`), Anthropic(Claude Code `CLAUDE.md`), Google(Antigravity `.gemini/rules/`), Cursor 등 에이전트마다 지침 규격이 제각각입니다. `agentic`은 **단일 진실 공급원(SSOT)**에서 모든 에이전트용 지침을 오차 없이 자동 생성합니다.
 2. **환각 방지 및 결정론적 검증 (Deterministic TDD):**  
    에이전트의 "다 만들었습니다"라는 거짓말을 믿지 않고, 실제 테스트 실행 결과(`exitCode 0`, `passCount > 0`)와 기계 판독 가능한 증거 파일(`last-check.json`)로만 완료를 인정합니다.
-3. **자산 및 보안 격리 (IP & Secret Protection):**  
-   내 개인 범용 지식/규칙(Core)과 회사/고객사의 소스 코드(Project)를 엄격히 분리하여, 회사 기밀이 Core로 유출되거나 법적 저작권 시비가 발생하는 것을 원천 방지합니다.
+3. **관심사 분리 및 보안 (Separation of Concerns & Security):**  
+   공통 개발 하네스와 프로젝트 고유 코드를 깔끔하게 분리하고, `.env`나 API 키 같은 민감한 정보가 외부로 노출되지 않도록 안전하게 보호합니다.
 
 ---
 

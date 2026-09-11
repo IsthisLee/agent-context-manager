@@ -8,10 +8,10 @@
 
 | 변수 | 지정 방법 |
 |---|---|
-| `ENV_DOCS_ROOT` | 범용 설계 문서 절대 경로. 이 환경에서는 `/Users/isthis/Documents/task/agentic-dev/docs/agentic` |
+| `ENV_DOCS_ROOT` | 범용 설계 문서 절대 경로. 이 환경에서는 `/Users/isthis/Documents/task/agentic/docs/agentic` |
 | `PROJECT_ROOT` | 적용 대상 또는 합성 예제 프로젝트의 실제 절대 경로. 환경/Core root와 구분 |
 | `PROJECT_DOCS_ROOT` | 프로젝트 기록·적용 문서 경로. 기본 `<PROJECT_ROOT>/docs/agentic`; Adapter에서 지정 |
-| `CORE_ROOT` | 개인/권리자용 별도 환경 root. 이 환경에서는 `/Users/isthis/Documents/task/agentic-dev` |
+| `CORE_ROOT` | 개인/권리자용 별도 환경 root. 이 환경에서는 `/Users/isthis/Documents/task/agentic` |
 | `PROJECT_STATE_ROOT` | 조직 정책에 맞는 프로젝트 전용 비공개 절대 경로 |
 | `PROJECT_INSTALL`, `PROJECT_CHECK`, `PROJECT_START` | 확인한 의존성 설치·검사·실행 명령; 실행 파일+argv로 지정 |
 | `PROJECT_TEST_UI`, `PROJECT_TEST_SERVICE` | 실제 제공 기능에 맞는 검사 명령; 비해당은 근거를 기록 |

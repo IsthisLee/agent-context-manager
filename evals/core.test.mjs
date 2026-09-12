@@ -210,3 +210,22 @@ test('agt is an alias for the agentic CLI', () => {
   assert.match(primary.stdout, /agentic \(agt\) shared project guidance manager/);
   assert.match(primary.stdout, /agentic core create/);
 });
+
+test('core remove deletes only the selected Core and preserves an applied project', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-remove-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'init', '--core', 'company', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'core', 'remove', 'company', '--yes'], { cwd: repoRoot, env });
+
+    assert.equal(fs.existsSync(path.join(home, '.agentic-cores', 'company')), false);
+    assert.equal(fs.existsSync(path.join(project, 'AGENTS.md')), true);
+    assert.equal(fs.existsSync(path.join(project, 'agentic.project.json')), true);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});

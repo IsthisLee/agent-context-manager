@@ -117,6 +117,33 @@ function listCores() {
   }
 }
 
+function removeCore(name) {
+  const core = readCore(name);
+  fs.rmSync(core.coreDir, { recursive: true, force: true });
+  console.log(`Removed Core: ${name}`);
+}
+
+async function removeCoreTui(name = null) {
+  if (!process.stdin.isTTY) throw new Error('core remove requires <name> --yes outside a TUI terminal.');
+  intro('Agentic Core 삭제');
+  const cores = getCores();
+  if (!cores.length) throw new Error('No Cores found.');
+  if (!name) {
+    const selected = await select({
+      message: '삭제할 Core를 선택하세요.',
+      options: cores.map(core => ({ value: core.name, label: `${core.scope} · ${core.name}`, hint: 'Core 원본과 설정만 삭제' }))
+    });
+    if (isCancel(selected)) return cancel('Core 삭제를 취소했습니다.');
+    name = selected;
+  }
+  const core = readCore(name);
+  note(`${core.metadata.scope} · ${name}\n프로젝트에 이미 적용된 파일은 변경되지 않습니다.`, '삭제 대상');
+  const approved = await confirm({ message: '이 Core를 영구 삭제할까요?', initialValue: false });
+  if (isCancel(approved) || !approved) return cancel('Core 삭제를 취소했습니다.');
+  removeCore(name);
+  outro('Core가 삭제되었습니다.');
+}
+
 const guidanceDefaults = { harness: 'recommended', tdd: 'recommended', review: 'recommended', verification: 'recommended', documentation: 'recommended', security: 'recommended' };
 const guidanceLabels = { harness: '하네스 동작', tdd: 'TDD', review: '리뷰', verification: '검증', documentation: '문서화', security: '보안' };
 const guidanceDescriptions = {
@@ -294,13 +321,17 @@ function syncProject(values) {
 function help() {
   const title = invokedAs === 'agt' ? 'agt (agentic)' : 'agentic (agt)';
   const commandName = invokedAs === 'agt' ? 'agt' : 'agentic';
-  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list\n  ${commandName} setup [--core <name>] [--tdd <level>] [--review <level>] ...\n  ${commandName} init --core <name> <project>\n  ${commandName} sync [--core <name>] <project>\n\nUse either agentic or agt. Omit core create or setup options to use interactive TUI prompts.`);
+  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] [--review <level>] ...\n  ${commandName} init --core <name> <project>\n  ${commandName} sync [--core <name>] <project>\n\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
 }
 
 async function main() {
   if (command === 'core' && args[1] === 'create') {
     if (args[2]) createCore(args[2], parseFlag(args.slice(3), 'scope', 'personal'));
     else await createCoreTui();
+  } else if (command === 'core' && args[1] === 'remove') {
+    const name = args[2];
+    if (parseFlag(args.slice(3), 'yes', null) !== null) removeCore(name);
+    else await removeCoreTui(name);
   }
   else if (command === 'core' && args[1] === 'list') listCores();
   else if (command === 'setup') {

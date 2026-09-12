@@ -5,21 +5,21 @@
 ## 1. Core 생성
 
 ```bash
-npm install --global @isthis/agentic
-agentic core create company --scope company
+npm install -g @isthis/agentic
+agt core create
 ```
 
-이름과 `--scope`를 생략하면 Agentic이 TUI로 차례대로 입력을 받는다. 자동화가 필요하면 위와 같이 옵션을 직접 전달할 수 있다.
+TUI에서 Core 이름과 용도를 선택한다. 자동화나 반복 실행이 필요할 때만 `agt core create <name> --scope <scope>`처럼 옵션을 직접 전달한다.
 
 Core는 공통 지침을 보관하는 사용자·조직 소유 저장소다. 생성만으로 대상 프로젝트는 변경되지 않는다.
 
 ## 2. Core 설정
 
 ```bash
-agentic setup --core company
+agt setup
 ```
 
-사용자는 TDD, 리뷰, 검증, 문서화, 보안, 하네스 동작 지침을 선택한다. `--core`를 생략하면 scope와 이름이 함께 표시된 선택 메뉴에서 대상을 고르고, 세부 옵션을 생략하면 각 항목의 설명·현재값을 보여 주는 TUI에서 선택한다. 모든 선택이 끝나면 적용될 설정 요약을 확인하고 저장을 승인한다. 에이전트는 설정 초안을 제안할 수 있지만 Core 정책의 최종 승인자는 사용자다.
+TUI에서 scope와 이름이 함께 표시된 Core 선택 메뉴를 먼저 사용하고, 이어서 TDD·리뷰·검증·문서화·보안·하네스 동작 지침을 선택한다. 각 항목의 설명·현재값을 확인하고, 마지막 설정 요약을 검토한 뒤 저장을 승인한다. 자동화가 필요하면 `agt setup --core <name> --tdd <level>`처럼 옵션을 직접 전달한다. 에이전트는 설정 초안을 제안할 수 있지만 Core 정책의 최종 승인자는 사용자다.
 
 ## 3. 프로젝트에 적용
 
@@ -38,11 +38,19 @@ Agentic은 선택한 Core의 공통 지침을 프로젝트에 적용하고 에�
 ## 5. Core 변경과 프로젝트 동기화
 
 ```bash
-agentic setup --core company
-agentic sync --core company /path/to/project
+agt setup
+agt sync --core <name> /path/to/project
 ```
 
-Core 정책을 바꾼 뒤 사용자가 명시적으로 `sync`를 실행한다. 동기화 후 생성 파일의 diff와 프로젝트 도메인 지침의 보존 여부를 확인한다. Core 업데이트가 프로젝트를 자동으로 변경하지 않는 것이 기본 원칙이다.
+TUI에서 Core를 다시 선택·설정한 뒤, 동기화 대상 프로젝트와 적용할 Core를 명시해 `sync`를 실행한다. 동기화 후 생성 파일의 diff와 프로젝트 도메인 지침의 보존 여부를 확인한다. Core 업데이트가 프로젝트를 자동으로 변경하지 않는 것이 기본 원칙이다.
+
+## 6. Core 삭제
+
+```bash
+agt core remove
+```
+
+TUI에서 삭제할 Core를 선택하고 삭제 대상과 영향을 확인한 뒤 최종 승인한다. 자동화 환경에서는 `agt core remove <name> --yes`를 사용한다. 삭제되는 것은 사용자 Core의 원본과 설정뿐이며, 이미 프로젝트에 적용된 `AGENTS.md`, 포인터 파일, `agentic.project.json`은 변경하지 않는다.
 
 ## 명령의 소유권
 

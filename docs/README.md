@@ -8,8 +8,9 @@
 2. [현재 아키텍처](architecture/) — 현재 구현된 구조와 소유권
 3. [아키텍처 구현 계획](discussion/architecture/) — 단계별 계약과 미구현 기능
 4. [사용자 워크플로](workflow.md) — Core 생성부터 프로젝트 적용까지의 사용 흐름
-5. [외부 참고 문헌](references.md) — 연구·사례·비교 도구
-6. [결정 기록](adr/) — 확정된 장기 결정
+5. [CLI Reference](cli-reference.md) — 모든 명령어·옵션·TUI·자동화 방식
+6. [외부 참고 문헌](references.md) — 연구·사례·비교 도구
+7. [결정 기록](adr/) — 확정된 장기 결정
    - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
 
 문서 변경 시 루트 [`AGENTS.md`](../AGENTS.md)와 [`구현 계약`](discussion/architecture/topics/implementation-contracts.md)의 규칙을 따른다.

@@ -14,6 +14,7 @@
 
 - `agentic core create [<name>]` — 용도별 Core 생성; 이름을 생략하면 TUI 입력
 - `agentic setup [--core <name>]` — scope별 Core 선택 후 하네스 동작·TDD·리뷰·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
+- `agentic core remove [<name>]` — 확인 후 선택한 Core 삭제; 적용된 프로젝트 파일은 유지
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
 
@@ -31,7 +32,7 @@ agentic setup
 옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
 
 ```bash
-npm install --global @isthis/agentic
+npm install -g @isthis/agentic
 agentic core create company --scope company
 agentic setup --core company --tdd recommended --security strict
 agentic init --core company /path/to/project
@@ -45,6 +46,7 @@ Core 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약�
 
 - [제품 방향](docs/product-direction.md)
 - [사용자 워크플로](docs/workflow.md)
+- [CLI Reference](docs/cli-reference.md)
 - [아키텍처 구현 계획](docs/discussion/architecture/)
 - [외부 참고 문헌](docs/references.md)
 

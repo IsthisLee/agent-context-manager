@@ -16,7 +16,7 @@
   └── 프로젝트 코드·테스트
 ```
 
-현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·설정하고, `setup`만 실행한 경우 scope별 목록에서 Core를 선택하게 한 뒤 선택한 Core를 대상 프로젝트에 적용한다. 적용 시 프로젝트 `AGENTS.md`의 도메인 규칙 확장 영역을 보존하며, Agentic이 관리하는 에이전트별 포인터 파일은 `init/sync` 때 재생성한다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다.
+현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·설정·삭제하고, `setup`만 실행한 경우 scope별 목록에서 Core를 선택하게 한 뒤 선택한 Core를 대상 프로젝트에 적용한다. 적용 시 프로젝트 `AGENTS.md`의 도메인 규칙 확장 영역을 보존하며, Agentic이 관리하는 에이전트별 포인터 파일은 `init/sync` 때 재생성한다. Core 삭제는 해당 Core 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다.
 
 ## 저장소 파일 구조
 

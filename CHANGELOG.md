@@ -18,6 +18,7 @@
 - `agentic setup` 단독 실행 시 scope별 Core 선택과 지침별 TUI 설정 제공
 - `agt`를 `agentic` CLI의 짧은 별칭으로 제공
 - TUI에 선택 설명·입력 검증·취소·최종 승인 단계를 추가
+- 확인 절차가 있는 Core 삭제와 적용 프로젝트 보존 제공
 
 ### Removed
 

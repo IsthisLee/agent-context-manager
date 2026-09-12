@@ -15,41 +15,34 @@ const coreHome = path.join(smokeRoot, 'home');
 const projectDir = path.join(smokeRoot, 'project');
 const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
-const npmOptions = { cwd: repoRoot };
 
 function quoteWindowsArg(value) {
   return `"${String(value).replaceAll('"', '\\"')}"`;
 }
 
-function runInstalledCli(cli, args, options = {}) {
-  if (!isWindows) return execFileSync(cli, args, options);
-  const commandLine = [quoteWindowsArg(cli), ...args.map(quoteWindowsArg)].join(' ');
+function runCommand(command, args, options = {}) {
+  if (!isWindows) return execFileSync(command, args, options);
+  const commandLine = [quoteWindowsArg(command), ...args.map(quoteWindowsArg)].join(' ');
   return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], options);
 }
 
 try {
   fs.mkdirSync(packDir);
   fs.mkdirSync(consumerDir);
-  const packOutput = execFileSync(npmCommand, ['pack', '--pack-destination', packDir, '--json'], {
-    ...npmOptions,
-    encoding: 'utf8'
-  });
+  const packOutput = runCommand(npmCommand, ['pack', '--pack-destination', packDir, '--json'], { encoding: 'utf8' });
   const [{ filename }] = JSON.parse(packOutput);
   const tarball = path.join(packDir, filename);
-  execFileSync(npmCommand, ['install', '--prefix', consumerDir, tarball], {
-    ...npmOptions,
-    stdio: 'ignore'
-  });
+  runCommand(npmCommand, ['install', '--prefix', consumerDir, tarball], { stdio: 'ignore' });
   const agt = path.join(consumerDir, 'node_modules', '.bin', isWindows ? 'agt.cmd' : 'agt');
   const env = { ...process.env, AGENTIC_HOME: coreHome };
-  const help = runInstalledCli(agt, ['help'], { encoding: 'utf8', env });
+  const help = runCommand(agt, ['help'], { encoding: 'utf8', env });
   assert.match(help, /agt \(agentic\) shared project guidance manager/);
   assert.match(help, /core list \[--scope <scope>\]/);
   fs.mkdirSync(projectDir);
-  runInstalledCli(agt, ['core', 'create', 'smoke-core', '--scope', 'workspace'], { env, stdio: 'ignore' });
-  runInstalledCli(agt, ['setup', '--core', 'smoke-core', '--tdd', 'strict'], { env, stdio: 'ignore' });
-  runInstalledCli(agt, ['init', '--core', 'smoke-core', projectDir], { env, stdio: 'ignore' });
-  runInstalledCli(agt, ['sync', projectDir], { env, stdio: 'ignore' });
+  runCommand(agt, ['core', 'create', 'smoke-core', '--scope', 'workspace'], { env, stdio: 'ignore' });
+  runCommand(agt, ['setup', '--core', 'smoke-core', '--tdd', 'strict'], { env, stdio: 'ignore' });
+  runCommand(agt, ['init', '--core', 'smoke-core', projectDir], { env, stdio: 'ignore' });
+  runCommand(agt, ['sync', projectDir], { env, stdio: 'ignore' });
   assert(fs.existsSync(path.join(coreHome, '.agentic-cores', 'smoke-core', 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));

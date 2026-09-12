@@ -1,58 +1,85 @@
 # Architecture Overview
 
-`agentic`은 **5대 크로스 에이전트(Codex, Claude Code, Antigravity, Cursor, GitHub Copilot)를 위한 개발 하네스이자 결정론적 검증 툴킷**이다.
+`agentic`은 **5대 크로스 에이전트(Codex, Claude Code, Antigravity, Cursor, GitHub Copilot)를 위한 린(Lean) 개발 하네스이자 결정론적 검증 툴킷**이다.
 
 ---
 
-## 1. 3계층 아키텍처
+## 1. 시스템 핵심 구성 요소 (Core Components)
+
+`agentic`은 복잡한 프레임워크나 무거운 런타임이 아닌, 간결하고 결정론적인 3가지 핵심 요소로 구성된다:
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. Core Specification & Generator Layer (agentic 저장소)    │
-│    - specifications/ : 단일 진실 공급원(SSOT) 규칙           │
-│    - templates/      : 5대 에이전트 지침 및 검사 템플릿       │
-│    - bin/agentic.mjs : 프로젝트 초기화/동기화 CLI           │
+│ 1. Specification SSOT (규칙 단일 진실 공급원)               │
+│    - specifications/core-principles.md (결정론적 TDD 원칙)  │
+│    - specifications/security-boundaries.md (보안 경계)      │
+│    - specifications/agent-contracts.md (5대 에이전트 계약)  │
 └──────────────────────────────┬──────────────────────────────┘
-                               │  agentic init / sync
+                               │ 단일 규칙 제공
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. Project Directive & Tool Layer (대상 프로젝트)           │
-│    - AGENTS.md, CLAUDE.md, .gemini/, .cursor/, .github/     │
-│    - tools/agentic/doctor.mjs, check.mjs                    │
-│    - package.json ("npm test", "npm run check")             │
+│ 2. Multi-Agent Adapter & CLI Engine (지침 변환 및 배포 엔진)│
+│    - bin/agentic.mjs : init, sync, doctor, check CLI       │
+│    - templates/ : 5대 에이전트 네이티브 지침 파일 템플릿    │
+│      (AGENTS.md, CLAUDE.md, .gemini/, .cursor/, .github/)   │
 └──────────────────────────────┬──────────────────────────────┘
-                               │
+                               │ 로컬 검증 도구 주입
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. Execution & Verification Layer (AI 에이전트 런타임)       │
-│    - Codex, Claude, Antigravity, Cursor, Copilot            │
-│    - 변경본 수정 ──▶ tools/agentic/check.mjs 자가 검증       │
-│    - .agentic/last-check.json 기계 증거 생성 및 확인        │
+│ 3. Deterministic Verification Kit (결정론적 검증 툴킷)      │
+│    - templates/tools/doctor.mjs : 환경 및 지침 정합성 진단  │
+│    - templates/tools/check.mjs  : TDD 테스트 실행 및 증거화 │
+│    - .agentic/last-check.json   : 기계 검증 증거 파일       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. 핵심 메커니즘
+## 2. 배포 모델 및 경계 분리 (Deployment Topology)
 
-### 1) 단일 정본 동기화 (Single Source of Truth)
-* 개발 원칙(TDD, 최소 변경, 비밀값 보호)을 `specifications/`에서 한 번만 수정하면, 동기화 스크립트가 모든 프로젝트의 지침 파일에 동일한 내용으로 반영한다.
-* 에이전트 간 규칙 불일치(Drift)가 원천 차단된다.
+`agentic`은 **도구(Core)와 대상 프로젝트(App)를 엄격히 분리**한다. 프로젝트 코드베이스 내부에 불필요한 코어 프레임워크나 런타임을 두지 않는다.
 
-### 2) 결정론적 검증 계약 (Deterministic Verification Contract)
-* 에이전트는 기계가 검증한 사실(Fact)만 신뢰할 수 있다.
-* `node tools/agentic/check.mjs`는 실제 프로젝트의 테스트 명령을 실행하고, 다음 형식의 JSON 증거를 생성한다:
-  ```json
-  {
-    "timestamp": "2026-09-12T08:00:00.000Z",
-    "command": "npm test",
-    "exitCode": 0,
-    "durationMs": 312,
-    "success": true
-  }
-  ```
-* exitCode가 0이 아니거나 테스트가 실패하면 에이전트는 작업을 완료할 수 없으며 자가 수정 루프를 돌아야 한다.
+```text
+┌────────────────────────────────────────────────────────┐
+│ [Upstream / Core] agentic 저장소 (오픈소스 도구)        │
+│  - SSOT 규칙, 5대 에이전트 템플릿, CLI, 검증 도구 원본 │
+│  - npm 패키지: @isthis/agentic                         │
+└──────────────────────────┬─────────────────────────────┘
+                           │  npx agentic init
+                           ▼ 주입 (Scaffolding)
+┌────────────────────────────────────────────────────────┐
+│ [Downstream] 대상 프로젝트 (사용자의 실제 앱)           │
+│                                                        │
+│  [순수 제품 코드]                                      │
+│  - src/, tests/, package.json, DB 스키마 등            │
+│                                                        │
+│  [주입된 에이전트 지침 및 검증 도구]                   │
+│  - AGENTS.md, CLAUDE.md (프로젝트 규칙 및 TDD 지침)    │
+│  - .gemini/rules/agentic.md, .cursor/rules/agentic.mdc │
+│  - tools/agentic/doctor.mjs, check.mjs                 │
+│  - .agentic/last-check.json (검증 증거, git-ignored)   │
+│                                                        │
+│  [AI 런타임] Codex, Claude Code, Antigravity 등        │
+│  - 지침을 읽고 Red-Green TDD 실행                      │
+│  - check.mjs로 기계 검증 증거 확인 후 완료 보고        │
+└────────────────────────────────────────────────────────┘
+```
 
-### 3) 자산 및 보안 격리 (Asset & IP Boundary)
-* `agentic` Core 저장소는 누구나 쓸 수 있는 순수 범용 도구 및 템플릿만 보관한다.
-* 프로젝트 코드, DB, 대화 로그, 브라우저 세션은 해당 프로젝트 경계 내부에 머물며 외부로 반출되지 않는다.
+---
+
+## 3. 핵심 설계 원칙
+
+### 1) 프로젝트의 독립성 (No Core in Project)
+* 대상 프로젝트에는 무거운 `agentic-core` 패키지가 런타임 의존성으로 설치되지 않는다.
+* 프로젝트는 오직 에이전트가 읽을 **지침 파일**과 독립 실행 가능한 **경량 검증 스크립트(`tools/`)**만 전달받는다.
+* 따라서 `agentic`이 없어도 프로젝트 본연의 빌드와 테스트(`npm test`)는 100% 정상 작동한다.
+
+### 2) 규칙 커스텀과 Upstream 동기화
+* **프로젝트 레벨 커스텀:** 주입된 지침 파일(`AGENTS.md` 등)은 해당 프로젝트의 소유물이므로, 프로젝트 고유의 아키텍처나 도메인 규칙을 자유롭게 덧붙여서 사용한다.
+* **코어 레벨 커스텀 (내 코어 관리):**
+  * 사용자가 `agentic` 자체를 Fork하여 "나만의 코어 템플릿"을 유지할 수 있다.
+  * 다른 사람의 PR이 원본에 머지되어 Upstream이 업데이트되었을 때는, **Git의 표준 기능(`git merge upstream/main`)**을 통해 내 커스텀을 보존하며 최신 개선사항을 안전하게 병합한다.
+
+### 3) 결정론적 기계 검증 (Deterministic Verification)
+* AI 에이전트의 구두 완료 보고는 신뢰하지 않는다.
+* 반드시 실제 테스트 명령을 수행하여 생성된 `.agentic/last-check.json`의 `exitCode: 0`과 `passCount > 0`을 통해서만 완료를 확정한다.

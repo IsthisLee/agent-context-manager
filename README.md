@@ -51,18 +51,17 @@
 
 ## 🚀 빠른 시작 (Quickstart)
 
-### 1. 전역 설치 후 사용 (권장 - 가장 간결함)
+### 1. 대상 프로젝트에 주입 (초기화)
+
+작업할 프로젝트 디렉터리에서 명령어 한 줄로 즉시 초기화합니다:
 
 ```bash
-# 전역 설치 (최초 1회)
-npm install -g @isthis/agentic
+# 무설치 원격 실행 (GitHub 직접 주입):
+npx github:IsthisLee/agentic init
 
-# 대상 프로젝트 폴더로 이동 후 초기화
-agentic init
+# 또는 로컬 agentic 도구로 직접 실행:
+node /path/to/agentic/bin/agentic.mjs init
 ```
-
-> **무설치 1회성 실행을 원할 때 (`npx`):**  
-> 전역 설치 없이 즉시 실행하려면: `npx @isthis/agentic init` (또는 `npx github:IsthisLee/agentic init`)
 
 👉 **초기화 완료 시 자동 구성되는 항목:**
 * 프로젝트 기술 스택(Next.js, TS, DB 등)이 자동 요약된 `AGENTS.md` (SSOT) 생성

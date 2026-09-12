@@ -1,24 +1,26 @@
-# Practical Workflow Guide (npm 실전 워크플로 가이드)
+# Practical Workflow Guide (실전 워크플로 가이드)
 
-`agentic`은 별도의 복잡한 설치나 Git clone 없이, 현대적인 개발 표준인 **`npm`과 `npx` 명령어**를 통해 모든 기능을 제로 설치(Zero-Install)로 제공합니다.
+`agentic`은 별도의 복잡한 설치나 프레임워크 런타임 없이, **`npx github:IsthisLee/agentic` 원격 실행** 또는 **로컬 CLI 스크립트**를 통해 대상 프로젝트에 지침과 도구를 즉시 주입합니다.
+
+> 📌 **참고:** 현재 코어는 npm 정식 퍼블리시 전 단계이므로 `npx github:IsthisLee/agentic` 또는 로컬 경로 스크립트로 동작합니다. (향후 npm 릴리즈 시 `npx @isthis/agentic` 지원 예정)
 
 ---
 
-## 1. 실전 4대 npm 워크플로
+## 1. 실전 4대 워크플로
 
 ```text
 ┌──────────────────────────────────────────────────────────────┐
-│ 1. 초기화 (npx @isthis/agentic init)                         │
-│    5대 에이전트 지침 및 검증 도구 10초 만에 주입             │
+│ 1. 초기화 (npx github:IsthisLee/agentic init)                 │
+│    5대 에이전트 지침 및 검증 도구 10초 만에 주입                       │
 ├──────────────────────────────────────────────────────────────┤
-│ 2. 개발 및 TDD 기계 검증 (npm run check)                     │
-│    에이전트가 코드 수정 후 스스로 테스트 실행 & 증거 생성    │
+│ 2. 개발 및 TDD 기계 검증 (npm run check)                         │
+│    에이전트가 코드 수정 후 스스로 테스트 실행 & 증거 생성                 │
 ├──────────────────────────────────────────────────────────────┤
-│ 3. 환경 진단 (npx @isthis/agentic doctor)                    │
-│    지침 파일 및 검증 환경 정합성 검사                        │
+│ 3. 환경 진단 (node tools/agentic/doctor.mjs)                 │
+│    지침 파일 및 검증 환경 정합성 검사                                │
 ├──────────────────────────────────────────────────────────────┤
-│ 4. 최신 코어 동기화 (npx @isthis/agentic sync)               │
-│    사용자 커스텀 규칙은 보존하고 도구/지침만 최신으로 업그레이드│
+│ 4. 최신 코어 동기화 (npx github:IsthisLee/agentic sync)          │
+│    사용자 커스텀 규칙은 보존하고 도구/지침만 최신으로 업그레이드            │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -29,15 +31,14 @@
 새로운 프로젝트나 기존 업무 프로젝트에서 5대 에이전트(Codex, Claude Code, Antigravity, Cursor, Copilot) 지침과 TDD 검증 도구를 즉시 세팅합니다:
 
 ```bash
-# 전역 설치한 경우 (가장 간결함):
-agentic init
+# GitHub 원격 무설치 실행 (어디서나 실행 가능):
+npx github:IsthisLee/agentic init
 
-# 또는 무설치 npx 1회성 실행:
-npx @isthis/agentic init
+# 또는 로컬 agentic 저장소의 CLI 직접 실행:
+node /path/to/agentic/bin/agentic.mjs init
 
-# 특정 프로젝트 경로 지정 시:
-agentic init /Users/isthis/Documents/task/EJE
-# (또는: npx @isthis/agentic init /Users/isthis/Documents/task/EJE)
+# 특정 대상 프로젝트 경로를 지정할 때:
+node /path/to/agentic/bin/agentic.mjs init /Users/isthis/Documents/task/EJE
 ```
 
 * **생성되는 산출물:**
@@ -54,14 +55,11 @@ agentic init /Users/isthis/Documents/task/EJE
 프로젝트에서 AI 에이전트와 함께 코딩할 때, 에이전트와 개발자가 실제 테스트를 실행하여 기계 증거를 만듭니다:
 
 ```bash
-# 전역 설치한 경우:
-agentic check
-
-# 프로젝트 package.json 스크립트로 실행:
+# 대상 프로젝트 package.json 스크립트로 실행 (가장 일반적):
 npm run check
 
-# 무설치 npx 직접 실행:
-npx @isthis/agentic check
+# 또는 로컬 검증 스크립트 직접 실행:
+node tools/agentic/check.mjs
 ```
 
 * **동작 원리:**
@@ -76,11 +74,11 @@ npx @isthis/agentic check
 프로젝트의 에이전트 지침 파일들이 누락되지 않았는지, TDD 검증 환경이 올바르게 설정되어 있는지 진단합니다:
 
 ```bash
-# 전역 설치한 경우:
-agentic doctor
+# 대상 프로젝트 내부에서 직접 실행:
+node tools/agentic/doctor.mjs
 
-# 무설치 npx 실행:
-npx @isthis/agentic doctor
+# 또는 원격 CLI로 실행:
+npx github:IsthisLee/agentic doctor
 ```
 
 * **진단 항목:**
@@ -92,20 +90,20 @@ npx @isthis/agentic doctor
 
 ### 4) 최신 코어 동기화 (`sync`)
 
-오픈소스 코어에 새로운 기여자의 PR이 머지되어 npm에 새 버전(예: 신규 에이전트 지원, 프롬프트 개선, 도구 버그 수정)이 배포되었을 때:
+오픈소스 코어 저장소에 새 버전(프롬프트 개선, 도구 버그 수정, 템플릿 개선 등)이 반영되었을 때:
 
 ```bash
-# 전역 설치한 경우:
-agentic sync
+# GitHub 최신 코어로 동기화:
+npx github:IsthisLee/agentic sync
 
-# 무설치 npx 실행:
-npx @isthis/agentic sync
+# 또는 로컬 CLI로 동기화:
+node /path/to/agentic/bin/agentic.mjs sync .
 ```
 
 * **스마트 동기화 계약 (Smart Sync):**
-  * **사용자 커스텀 규칙 보존:** 사용자가 `AGENTS.md`나 `CLAUDE.md`에 추가해 둔 프로젝트 고유의 도메인/아키텍처 규칙은 안전하게 보존됩니다.
-  * **도구 및 공통 지침 갱신:** `tools/agentic/*` 검증 도구와 공통 지침 템플릿만 최신 릴리즈 버전으로 깔끔하게 업그레이드됩니다.
-  * 사용자는 Git 충돌이나 브랜치 머지를 신경 쓸 필요 없이, `npx` 명령 한 줄로 최신 개선사항을 흡수할 수 있습니다.
+  * **사용자 커스텀 규칙 보존:** 사용자가 `AGENTS.md`의 `## 4. 프로젝트 규칙 확장` 아래에 추가해 둔 프로젝트 고유의 도메인/아키텍처 규칙은 안전하게 보존됩니다.
+  * **도구 및 공통 지침 갱신:** `tools/agentic/*` 검증 도구와 공통 지침 템플릿만 최신 버전으로 깔끔하게 업그레이드됩니다.
+  * 사용자는 Git 충돌이나 브랜치 머지를 신경 쓸 필요 없이, 명령어 한 줄로 최신 개선사항을 안전하게 흡수할 수 있습니다.
 
 ---
 
@@ -176,7 +174,7 @@ git push --follow-tags
 
 ### 3) 자동 진단 지원 (`agentic doctor`)
 
-`npx @isthis/agentic doctor` (또는 `node tools/agentic/doctor.mjs`)를 실행하면 `AGENTS.md`의 줄 수를 자동으로 진단합니다:
+`node tools/agentic/doctor.mjs` (또는 `npx github:IsthisLee/agentic doctor`)를 실행하면 `AGENTS.md`의 줄 수를 자동으로 진단합니다:
 - **150줄 이하:** `✓ [PASS] AGENTS.md Size: 45 lines (optimal)`
 - **150줄 초과:** `⚠ [WARN] AGENTS.md Size: 182 lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)`
 경고 발생 시 상세 도메인 규칙을 `docs/`로 이동하면 에이전트의 집중도와 속도를 최상으로 유지할 수 있습니다.

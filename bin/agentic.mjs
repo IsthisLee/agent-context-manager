@@ -32,7 +32,7 @@ Agentic CLI - Cross-Agent Harness & Verification Kit
   agentic help             도움말 출력
 
 예시:
-  npx agentic init /Users/isthis/Documents/task/EJE
+  npx github:IsthisLee/agentic init /path/to/project
   node ./bin/agentic.mjs sync .
 `);
 }

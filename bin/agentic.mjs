@@ -10,7 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
-import { detectProjectConstraints } from './analyzer.mjs';
+import { detectProjectConstraints, mergeAgentsMd, ensureTestSetup } from './analyzer.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -116,13 +116,22 @@ function syncProject(targetPath = '.') {
     process.exit(1);
   }
 
+  // Ensure test framework & scripts setup (Cold Start protection)
+  ensureTestSetup(targetDir);
+  ensurePackageScripts(targetDir);
+
   const meta = getProjectMeta(targetDir);
   console.log(`\n🚀 [Agentic] Syncing harness to: ${targetDir} (${meta.name})\n`);
 
   // 1. AGENTS.md
   const agentsTmpl = path.join(CORE_ROOT, 'templates', 'AGENTS.md');
   const agentsOut = path.join(targetDir, 'AGENTS.md');
-  fs.writeFileSync(agentsOut, renderTemplate(agentsTmpl, meta));
+  let agentsContent = renderTemplate(agentsTmpl, meta);
+  if (fs.existsSync(agentsOut)) {
+    const existingContent = fs.readFileSync(agentsOut, 'utf-8');
+    agentsContent = mergeAgentsMd(agentsContent, existingContent);
+  }
+  fs.writeFileSync(agentsOut, agentsContent);
   console.log(`  ✓ Generated AGENTS.md (for Codex / Copilot)`);
 
   // 2. CLAUDE.md

@@ -69,3 +69,90 @@ export function detectProjectConstraints(targetDir) {
 
   return constraints.join('\n');
 }
+
+/**
+ * mergeAgentsMd
+ * 새 템플릿 내용과 기존 AGENTS.md 내용을 스마트 병합하여,
+ * 사용자가 "## 4. 프로젝트 규칙 확장 (SSOT)" 아래에 작성해 둔 커스텀 규칙을 안전하게 보존한다.
+ */
+export function mergeAgentsMd(newTemplateContent, existingContent) {
+  if (!existingContent || typeof existingContent !== 'string') {
+    return newTemplateContent;
+  }
+
+  // 기존 파일에서 프로젝트 규칙 확장 헤더 검색
+  const headerRegex = /## \d+\.\s*프로젝트 규칙 확장[^\n]*\n+/i;
+  const match = existingContent.match(headerRegex);
+  if (!match) {
+    return newTemplateContent;
+  }
+
+  const contentAfterHeader = existingContent.slice(match.index + match[0].length).trim();
+  if (!contentAfterHeader) {
+    return newTemplateContent;
+  }
+
+  // 기본 설명 문구
+  const defaultBoilerplate = '이 프로젝트에만 적용되는 도메인 규칙이나 아키텍처 제약은 오직 이 파일(`AGENTS.md`)의 하단이나 `docs/`에 추가하여 단일 정본으로 관리한다. 모든 에이전트는 이 규칙을 공통으로 따른다.';
+
+  let customRules = '';
+  if (contentAfterHeader.includes(defaultBoilerplate)) {
+    const idx = contentAfterHeader.indexOf(defaultBoilerplate);
+    customRules = contentAfterHeader.slice(idx + defaultBoilerplate.length).trim();
+  } else {
+    customRules = contentAfterHeader;
+  }
+
+  if (!customRules) {
+    return newTemplateContent;
+  }
+
+  const cleanNew = newTemplateContent.trimEnd();
+  return cleanNew + '\n\n' + customRules + '\n';
+}
+
+/**
+ * ensureTestSetup
+ * 테스트 프레임워크가 없는 프로젝트(Cold Start)를 감지하여
+ * Node 내장 테스트 러너(node --test)를 등록하고 기본 스모크 테스트 파일을 생성한다.
+ */
+export function ensureTestSetup(targetDir) {
+  const pkgPath = path.join(targetDir, 'package.json');
+  if (!fs.existsSync(pkgPath)) return;
+
+  try {
+    const raw = fs.readFileSync(pkgPath, 'utf-8');
+    const pkg = JSON.parse(raw);
+    if (!pkg.scripts) pkg.scripts = {};
+
+    const testCmd = pkg.scripts.test || '';
+    const needsTestSetup = !testCmd || testCmd.includes('no test specified') || testCmd.includes('exit 1');
+
+    if (needsTestSetup) {
+      pkg.scripts.test = 'node --test tests/**/*.test.mjs';
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      console.log(`  ✓ Configured "test": "node --test tests/**/*.test.mjs" in package.json`);
+
+      // 기본 스모크 테스트 파일 생성
+      const testsDir = path.join(targetDir, 'tests');
+      if (!fs.existsSync(testsDir)) {
+        fs.mkdirSync(testsDir, { recursive: true });
+      }
+
+      const smokeFile = path.join(testsDir, 'smoke.test.mjs');
+      if (!fs.existsSync(smokeFile)) {
+        const smokeContent = `import test from 'node:test';
+import assert from 'node:assert/strict';
+
+test('harness verification smoke test', () => {
+  assert.equal(true, true);
+});
+`;
+        fs.writeFileSync(smokeFile, smokeContent);
+        console.log(`  ✓ Created initial smoke test: tests/smoke.test.mjs`);
+      }
+    }
+  } catch (err) {
+    console.warn(`  ! Could not configure test setup: ${err.message}`);
+  }
+}

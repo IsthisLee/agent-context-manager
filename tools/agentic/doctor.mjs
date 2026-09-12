@@ -37,6 +37,15 @@ const hasCursorRules = fs.existsSync(path.join(cwd, '.cursor', 'rules'));
 const hasCopilotInstructions = fs.existsSync(path.join(cwd, '.github', 'copilot-instructions.md'));
 
 addCheck('AGENTS.md (Codex)', hasAgentsMd, hasAgentsMd ? 'Present' : 'Missing');
+if (hasAgentsMd) {
+  const agentsContent = fs.readFileSync(path.join(cwd, 'AGENTS.md'), 'utf-8');
+  const lineCount = agentsContent.split(/\r\n|\r|\n/).length;
+  if (lineCount > 150) {
+    addCheck('AGENTS.md Size', false, `${lineCount} lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)`);
+  } else {
+    addCheck('AGENTS.md Size', true, `${lineCount} lines (optimal)`);
+  }
+}
 addCheck('CLAUDE.md (Claude Code)', hasClaudeMd, hasClaudeMd ? 'Present' : 'Missing');
 addCheck('.gemini/rules (Antigravity)', hasGeminiRules, hasGeminiRules ? 'Present' : 'Missing');
 addCheck('.cursor/rules (Cursor)', hasCursorRules, hasCursorRules ? 'Present' : 'Missing');

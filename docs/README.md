@@ -19,14 +19,14 @@
 3. **[논의 (Discussion)](discussion/)**
    * 아직 채택되지 않았거나 구현·검증 중인 주제별 설계와 계약
    * **[아키텍처 논의](discussion/architecture/)**: 프로젝트 분석, 역할 선택, 선택적 평가, 검증 증거의 개편 방향
-   * 제안 문서 상단에서 대상 계층·중요도·선행/후속 작업·권장 다음 작업을 확인
+   * 제안 문서의 요약 형식과 구현 기록 기준은 [논의 구현 문서화 계약](discussion/architecture/topics/implementation-contracts.md)에서 관리
 4. **[실전 워크플로 가이드 (Workflow)](workflow.md)**
    * 신규/기존 프로젝트 초기화 및 검증 루프
    * AGENTS.md 중심의 단일 정본 관리 워크플로
    * 4대 사용자 워크플로와 점진적 지침 공개(AGENTS.md → docs/) 가이드
 5. **아키텍처 결정 기록 (ADRs)**
    * **[ADR 0001: 린 크로스 에이전트 하네스로의 피벗](adr/0001-lean-cross-agent-pivot.md)**: 자체 러너 폐기 및 린 하네스 피벗
-   * **[ADR 0002: AGENTS.md 중심 SSOT 및 포인터 참조 패턴](adr/0002-agents-md-ssot-and-pointer-pattern.md)**: 5대 에이전트 규칙 중복 제거 및 단일 진실 공급원 확립
+   * **[ADR 0002: AGENTS.md 중심 SSOT 및 포인터 참조 패턴](adr/0002-agents-md-ssot-and-pointer-pattern.md)**: 여러 에이전트의 규칙 중복 제거 및 단일 진실 공급원 확립
    * **[ADR 0003: 스마트 동기화 머지 및 콜드 스타트 스캐폴딩](adr/0003-smart-sync-merge-and-cold-start.md)**: 커스텀 규칙 보존, 신규 프로젝트 테스트 자동화, 지침 비대화 진단
    * **[ADR 0004: 무의존성 순수 ESM 및 JSDoc 타입 검증](adr/0004-zero-dependency-esm-and-jsdoc.md)**: 무빌드 제로 디펜던시 유지 및 컴파일 괴리 방지
    * **[ADR 0005: ADR 기록 및 관리 의무화](adr/0005-adr-management.md)**: 중요 설계 결정의 기록 기준과 변경 이력 관리

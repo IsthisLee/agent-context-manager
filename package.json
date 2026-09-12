@@ -8,7 +8,6 @@
   },
   "files": [
     "bin",
-    "docs",
     "templates",
     "README.md",
     "LICENSE"
@@ -27,7 +26,11 @@
     "codex",
     "antigravity",
     "tdd",
-    "verification"
+    "verification",
+    "gemini",
+    "cursor",
+    "copilot",
+    "github"
   ],
   "author": "Isthis",
   "license": "Apache-2.0",

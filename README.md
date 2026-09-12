@@ -7,7 +7,7 @@
 > **개발자는 `AGENTS.md` 한 곳에서 프로젝트 공통 지침을 관리합니다.**
 > Agentic은 AI 에이전트가 계획·구현·검증 루프를 안전하고 일관되게 수행하도록 돕는 에이전틱 개발 기반 패키지이자, Codex·Claude Code·Antigravity·Cursor·GitHub Copilot용 크로스 에이전트 개발 하네스 & 검증 툴킷입니다.
 
-Agentic은 에이전트를 실행·통제하는 런타임이 아닙니다. `AGENTS.md`를 공통 규칙의 SSOT로 관리하고, 각 도구용 지침을 동기화하며, 프로젝트의 네이티브 검증 명령으로 실제 결과를 확인하는 프로젝트 환경을 만듭니다. 패키지의 장기 방향과 구현 상태는 [제품 방향 문서](docs/product-direction.md)에서 관리합니다.
+Agentic은 에이전트를 실행·통제하는 런타임이 아닙니다. `AGENTS.md`를 공통 규칙의 SSOT로 관리하고, 각 도구용 지침을 동기화하며, 프로젝트의 네이티브 검증 명령으로 실제 결과를 확인하는 프로젝트 환경을 만듭니다. 패키지의 장기 방향과 구현 상태는 [제품 방향 문서](https://github.com/IsthisLee/agentic/blob/main/docs/product-direction.md)에서 관리합니다.
 
 ## ✅ 핵심 원칙과 기능
 
@@ -40,7 +40,7 @@ Codex, Claude Code, Antigravity, Cursor, Copilot은 서로 다른 지침 위치�
 
 모든 작업에 가상 팀을 붙이면 handoff·비용·지연이 늘어납니다. `agentic plan`은 일반 작업에는 Solo, 불명확한 작업에는 Planner, 고위험 변경에는 Reviewer·Verifier, 독립 병렬 작업에만 가상 팀을 선택하는 방향으로 설계·검증 중입니다. Anthropic의 장기 실행 하네스 사례도 Planner·Generator·Evaluator 역할을 사용하되, 각 구성 요소가 실제로 필요한지 지속해서 단순화·검증해야 한다고 설명합니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
 
-## 🤖 5대 에이전트 단일 정본 (SSOT) 구조
+## 🤖 에이전트 단일 정본 (SSOT) 구조
 
 ```text
 내 프로젝트/
@@ -70,9 +70,9 @@ npx agentic init .
 
 ## 🧭 사용자 워크플로
 
-[![Agentic 사용자 워크플로](docs/assets/agentic-user-workflow.visual-check.1440x900.light.png)](docs/assets/agentic-user-workflow.html)
+[![Agentic 사용자 워크플로](https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-user-workflow.visual-check.1440x900.light.png)](https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-user-workflow.html)
 
-사용자는 설치·초기화·규칙 작성·결과 검토를 맡고, 에이전트는 TDD 개발과 `npm run check`를 맡습니다. 실패·경고가 있으면 에이전트가 수정 후 다시 검증하며, 업데이트는 사용자가 `sync` 뒤 `git diff`와 `doctor`로 확인합니다. [상호작용 다이어그램과 상세 워크플로 보기](docs/workflow.md)
+사용자는 설치·초기화·규칙 작성·결과 검토를 맡고, 에이전트는 TDD 개발과 `npm run check`를 맡습니다. 실패·경고가 있으면 에이전트가 수정 후 다시 검증하며, 업데이트는 사용자가 `sync` 뒤 `git diff`와 `doctor`로 확인합니다. [상호작용 다이어그램과 상세 워크플로 보기](https://github.com/IsthisLee/agentic/blob/main/docs/workflow.md)
 
 ### 검증은 무엇을 확인하나요?
 
@@ -88,7 +88,7 @@ npx agentic init .
 - 도메인·아키텍처 규칙은 `## 4. 프로젝트 규칙 확장 (SSOT)` 아래에 작성합니다.
 - 긴 결제·DB·배포 정책은 `docs/`로 분리하고 `AGENTS.md`에서 링크합니다. 루트 지침은 짧은 지도 역할을 유지해야 합니다.
 
-## 📂 저장소 구조
+## 📂 소스 저장소 구조
 
 ```text
 agentic/
@@ -108,11 +108,11 @@ agentic/
 
 ## 📚 더 알아보기
 
-- [제품 방향과 구현 상태](docs/product-direction.md)
-- [현재 아키텍처](docs/architecture/)
-- [논의 문서](docs/discussion/) · [아키텍처 논의](docs/discussion/architecture/)
-- [실전 워크플로](docs/workflow.md)
-- [전체 문서 색인](docs/README.md)
+- [제품 방향과 구현 상태](https://github.com/IsthisLee/agentic/blob/main/docs/product-direction.md)
+- [현재 아키텍처](https://github.com/IsthisLee/agentic/tree/main/docs/architecture)
+- [논의 문서](https://github.com/IsthisLee/agentic/tree/main/docs/discussion) · [아키텍처 논의](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture)
+- [실전 워크플로](https://github.com/IsthisLee/agentic/blob/main/docs/workflow.md)
+- [전체 문서 색인](https://github.com/IsthisLee/agentic/blob/main/docs/README.md)
 
 ## 📄 라이선스
 

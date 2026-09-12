@@ -57,6 +57,7 @@ function checkDiscussionStatuses() {
   const discussionDir = path.join(root, 'docs', 'discussion', 'architecture');
   const topicsDir = path.join(discussionDir, 'topics');
   const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
+  const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
   const index = fs.readFileSync(path.join(discussionDir, 'README.md'), 'utf8');
 
   if (!fs.existsSync(topicsDir)) {
@@ -76,10 +77,38 @@ function checkDiscussionStatuses() {
       continue;
     }
 
+    if (['Proposed', 'Implementing'].includes(match[1].trim())) {
+      for (const field of proposalSummaryFields) {
+        if (!content.includes(`| ${field} |`)) {
+          errors.push(`docs/discussion/architecture/topics/${name}: missing proposal summary field (${field})`);
+        }
+      }
+    }
+
     const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
     const indexStatus = indexRow?.split('|').map(cell => cell.trim()).at(-2);
     if (indexStatus !== match[1].trim()) {
       errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);
+    }
+  }
+}
+
+function checkDocumentationGovernance() {
+  const proposalFormat = path.join(root, 'docs', 'discussion', 'architecture', 'topics', 'implementation-contracts.md');
+  const requiredReferences = [
+    path.join(root, 'AGENTS.md'),
+    path.join(root, 'docs', 'product-direction.md'),
+    path.join(root, 'docs', 'README.md')
+  ];
+
+  const formatContent = fs.readFileSync(proposalFormat, 'utf8');
+  if (!formatContent.includes('## 제안 문서 상단 형식')) {
+    errors.push('docs/discussion/architecture/topics/implementation-contracts.md: must define the proposal summary format');
+  }
+
+  for (const file of requiredReferences) {
+    if (!fs.readFileSync(file, 'utf8').includes('implementation-contracts.md')) {
+      errors.push(`${path.relative(root, file)}: must link to the canonical proposal format`);
     }
   }
 }
@@ -94,6 +123,7 @@ function checkChangelog() {
 for (const markdownFile of walkMarkdown(root)) checkInternalLinks(markdownFile);
 checkAdrs();
 checkDiscussionStatuses();
+checkDocumentationGovernance();
 checkChangelog();
 
 if (errors.length > 0) {

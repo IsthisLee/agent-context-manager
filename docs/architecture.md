@@ -93,6 +93,7 @@
   - 루트의 `AGENTS.md`는 불변의 핵심 규약과 지식 목차(Index)만 담는 "지도"로서 150줄 이내로 간결하게 유지한다.
   - 결제, DB 마이그레이션, 배포 파이프라인 등 방대한 도메인 지식은 `docs/` 디렉터리의 "서랍" 파일들로 분리한다.
 - **엔지니어링 근거:**
+  - **Anthropic & OpenAI 공식 권장 일치:** OpenAI의 *Custom instructions with AGENTS.md*와 Anthropic의 *Effective context engineering for AI agents* 양대 연구 모두, 루트 지침을 모듈식 인덱스로 간결하게 유지하고 상세 도메인 문서를 분리하여 온디맨드로 로딩하는 패턴을 공식 모범 사례로 규정한다.
   - **주의력 희석(Attention Dilution) 방지:** 수천 줄의 지침이 프롬프트에 통째로 들어가면 모델이 핵심 규약(TDD, 보안)을 망각하는 'Lost in the Middle' 현상이 발생한다.
   - **토큰 비용 및 응답 속도 최적화:** 무관한 도메인 지침이 매 턴(Turn)마다 주입되는 낭비를 차단하고, 에이전트가 해당 도메인 작업을 할 때만 파일 읽기 도구로 온디맨드 로딩하게 유도한다.
   - `doctor.mjs`의 `AGENTS.md Size` 진단을 통해 150줄 초과 시 경고를 출력하여 시스템 차원에서 점진적 분리를 자동 유도한다.

@@ -30,8 +30,10 @@
 
 ### 2) OpenAI Platform & Documentation
 * **[Custom instructions with AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)**
-  * **핵심:** OpenAI Codex 및 Copilot 생태계의 프로젝트 레벨 진입 지침 표준.
-  * **적용:** 단일 정본(SSOT)에서 `AGENTS.md` 자동 컴파일 지원.
+  * **핵심:** OpenAI Codex 및 ChatGPT/Copilot 생태계의 프로젝트 레벨 진입 지침 표준.
+    - **비대화 방지 및 모듈화 권장:** *"AGENTS.md는 간결하고 핵심적인 행동 강령에 집중해야 하며, 전체 API 명세나 DB 스키마 같은 방대한 문서를 루트 파일 하나에 쏟아붓지 마라."*
+    - **서브 문서 참조(Index/Pointer) 패턴:** 복잡한 도메인 지식은 저장소 내 `docs/` 디렉터리 등의 전문 문서로 분리하고, `AGENTS.md`에는 해당 문서들의 목차(색인)와 포인터를 제공하여 에이전트가 필요할 때만 동적으로 읽도록 권장.
+  * **적용:** `AGENTS.md`를 단일 정본(SSOT)이자 '지도'로 유지하고, 150줄 초과 시 `docs/` 서랍으로 분리하는 아키텍처 및 `doctor.mjs` 진단 규칙의 공식 근거로 채택.
 * **[Build skills — OpenAI](https://learn.chatgpt.com/docs/build-skills)**
   * **핵심:** 지침, 도구, 자원을 단위 모듈로 캡슐화하는 스킬 아키텍처.
 * **[Agent approvals & security — OpenAI](https://learn.chatgpt.com/docs/agent-approvals-security)**

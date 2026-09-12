@@ -34,3 +34,29 @@ test('ensureTestSetup creates smoke test and registers test script for empty pro
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test('ensureTestSetup preserves a project that has test files but no test script', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-existing-test-'));
+
+  try {
+    const packageJson = {
+      name: 'existing-test-app',
+      scripts: {
+        test: 'echo "Error: no test specified" && exit 1'
+      }
+    };
+    fs.writeFileSync(path.join(tempDir, 'package.json'), JSON.stringify(packageJson, null, 2));
+
+    const existingTestDir = path.join(tempDir, 'src');
+    fs.mkdirSync(existingTestDir);
+    fs.writeFileSync(path.join(existingTestDir, 'widget.test.mjs'), "import test from 'node:test';\n");
+
+    ensureTestSetup(tempDir);
+
+    const updatedPkg = JSON.parse(fs.readFileSync(path.join(tempDir, 'package.json'), 'utf-8'));
+    assert.equal(updatedPkg.scripts.test, packageJson.scripts.test);
+    assert.equal(fs.existsSync(path.join(tempDir, 'tests', 'smoke.test.mjs')), false);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

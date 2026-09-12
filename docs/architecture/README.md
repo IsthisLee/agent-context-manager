@@ -38,6 +38,7 @@
 * 대상 프로젝트의 `AGENTS.md`가 유일한 규칙 SSOT이며, 다른 에이전트 파일은 이를 참조한다.
 * `sync`는 공통 템플릿을 갱신하되 `AGENTS.md`의 프로젝트 규칙 확장 영역을 보존한다.
 * 완료 판정은 실제 검증 명령이 생성한 `.agentic/last-check.json`의 성공 종료 코드로 확인한다. [근거: [Anthropic Evals 연구](../references.md#anthropic-demystifying-evals)]
+* `init`은 테스트 스크립트와 알려진 테스트 파일이 모두 없는 Node 프로젝트에만 내장 테스트 러너와 스모크 테스트를 부트스트랩한다. 기존 테스트가 감지되면 테스트 구성을 변경하지 않는다.
 * `AGENTS.md`는 간결한 지도 역할을 하고, 상세 문서는 `docs/`에 분리한다. [근거: [OpenAI AGENTS.md 가이드](../references.md#openai-agents-md)]
 
 향후 도입을 검토 중인 adaptive harness 설계는 [`../architecture-discussion/`](../architecture-discussion/)에서 관리한다.

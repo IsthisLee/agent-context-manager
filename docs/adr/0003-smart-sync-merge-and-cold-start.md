@@ -3,6 +3,7 @@
 * **상태:** 채택됨 (Accepted)
 * **일자:** 2026-09-12
 * **결정자:** Isthis & Antigravity
+* **후속 결정:** 테스트 흔적이 있는 프로젝트의 보존 정책은 [ADR 0007](0007-safe-cold-start-test-bootstrap.md)을 따른다.
 
 ---
 

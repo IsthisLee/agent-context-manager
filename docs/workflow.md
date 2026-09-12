@@ -45,6 +45,9 @@ node /path/to/agentic/bin/agentic.mjs init /Users/isthis/Documents/task/EJE
   * **에이전트 지침 파일:** `AGENTS.md`, `CLAUDE.md`, `.gemini/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`
   * **로컬 검증 스크립트:** `tools/agentic/doctor.mjs`, `tools/agentic/check.mjs`
   * **`.gitignore` 자동 보완:** `.agentic/runs/`, `.agentic/last-check.json`
+  * **빈 Node 프로젝트의 테스트 부트스트랩:** `test` 스크립트와 알려진 테스트 파일이 모두 없을 때만 `node --test tests/**/*.test.mjs` 및 `tests/smoke.test.mjs`
+
+> `tests/smoke.test.mjs`는 검증 러너의 최소 동작만 확인하는 부트스트랩 파일입니다. 제품 테스트가 존재하는 프로젝트의 테스트 러너·스크립트는 추측하지 않으며, Agentic이 변경하지 않습니다.
 
 > **Note:** 대상 프로젝트에는 무거운 코어 프레임워크나 외부 런타임 의존성이 설치되지 않으므로, 프로젝트 본연의 빌드/테스트 파이프라인은 100% 독립적으로 유지됩니다.
 

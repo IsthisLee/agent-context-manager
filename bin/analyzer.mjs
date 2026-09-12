@@ -115,7 +115,43 @@ export function mergeAgentsMd(newTemplateContent, existingContent) {
 }
 
 /**
- * 테스트 프레임워크가 없는 프로젝트(Cold Start)를 감지하여
+ * 알려진 테스트 파일 또는 테스트 디렉터리가 있는지 확인한다.
+ * 기존 테스트의 러너·확장자·실행 방법을 추측하지 않기 위해, 흔적이 있으면 true를 반환한다.
+ * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
+ * @returns {boolean}
+ */
+function hasKnownTestFiles(targetDir) {
+  const ignoredDirs = new Set(['.git', 'node_modules', '.next', 'build', 'coverage', 'dist']);
+  const testDirs = new Set(['test', 'tests', '__tests__']);
+  const testFilePattern = /(?:^test(?:[-_].+)?|(?:^|[._-])(?:test|spec))\.(?:[cm]?[jt]sx?)$/i;
+
+  /** @param {string} dir @param {boolean} insideTestDir */
+  function visit(dir, insideTestDir = false) {
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return false;
+    }
+
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (!ignoredDirs.has(entry.name) && visit(path.join(dir, entry.name), insideTestDir || testDirs.has(entry.name))) {
+          return true;
+        }
+      } else if (entry.isFile() && (insideTestDir || testFilePattern.test(entry.name))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  return visit(targetDir);
+}
+
+/**
+ * 테스트 스크립트와 테스트 파일이 모두 없는 프로젝트(Cold Start)에만
  * Node 내장 테스트 러너(node --test)를 등록하고 기본 스모크 테스트 파일을 생성한다.
  * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
  * @returns {void}
@@ -132,7 +168,7 @@ export function ensureTestSetup(targetDir) {
     const testCmd = pkg.scripts.test || '';
     const needsTestSetup = !testCmd || testCmd.includes('no test specified') || testCmd.includes('exit 1');
 
-    if (needsTestSetup) {
+    if (needsTestSetup && !hasKnownTestFiles(targetDir)) {
       pkg.scripts.test = 'node --test tests/**/*.test.mjs';
       fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
       console.log(`  ✓ Configured "test": "node --test tests/**/*.test.mjs" in package.json`);
@@ -155,6 +191,8 @@ test('harness verification smoke test', () => {
         fs.writeFileSync(smokeFile, smokeContent);
         console.log(`  ✓ Created initial smoke test: tests/smoke.test.mjs`);
       }
+    } else if (needsTestSetup) {
+      console.warn('  ! Existing test files found without a working test script; preserved project files. Configure the test command manually.');
     }
   } catch (err) {
     console.warn(`  ! Could not configure test setup: ${err.message}`);

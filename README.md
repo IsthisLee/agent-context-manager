@@ -28,7 +28,7 @@ Agentic은 여러 AI 코딩 도구가 각 프로젝트를 안전하고 일관되
 ### 1. 자체 러너 재발명과 과도한 오케스트레이션 방지 (Lean Runtime Boundary)
 
 - **문제:** Claude Code, Codex, Antigravity 같은 에이전트 런타임을 자체 래퍼로 감싸면, 벤더별 CLI·인증·세션·출력 형식 변화까지 직접 유지보수해야 합니다. 동시에 Analyst, Builder, Reviewer, QA를 상시 연결하면 handoff, 오케스트레이션, 토큰 비용, 실행 시간이 함께 늘어납니다. Anthropic의 장기 코딩 하네스 실험에서도 멀티 에이전트 하네스는 더 풍부한 결과를 만들 수 있었지만, Solo 실행보다 훨씬 높은 비용과 실행 시간을 필요로 했습니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
-- **해결:** `agentic run` 같은 자체 에이전트 런타임을 만들지 않습니다. 공식 CLI와 IDE가 모델 호출·인증·세션을 소유하고, Agentic은 **"단일 에이전트 + 결정론적 TDD 루프(Red-Green-Refactor)"**를 기본값으로 제공합니다. 작업이 복잡하거나 위험할 때만 Planner·Reviewer·Evaluator를 선택적으로 추가합니다.
+- **해결:** `agentic run` 같은 자체 에이전트 런타임을 만들지 않습니다. 공식 CLI와 IDE가 모델 호출·인증·세션을 소유하고, Agentic은 **"단일 에이전트 + 결정론적 TDD 루프(Red-Green-Refactor)"**를 기본값으로 제공합니다. 작업이 복잡하거나 위험할 때만 Planner·Reviewer·Verifier를 선택적으로 추가합니다.
 
 ### 2. 템플릿 부패와 에이전트 설정 파편화 해결 (Cross-Agent SSOT)
 
@@ -38,7 +38,7 @@ Agentic은 여러 AI 코딩 도구가 각 프로젝트를 안전하고 일관되
 ### 3. 에이전트의 환각과 거짓 완료 보고 원천 차단 (Deterministic Evals)
 
 - **문제:** 에이전트가 코드를 짠 뒤 "테스트를 다 통과했습니다"라고 거짓말(환각)을 하거나 회귀 버그를 내도 사람이 터미널을 열기 전까지 알 수 없었습니다.
-- **해결:** 프로젝트에 자가 검증 러너(`tools/agentic/check.mjs`)를 심어주고, 실제 테스트(`npm test`)를 통과하여 `exitCode: 0` 기계 판독 증거(`.agentic/last-check.json`)가 생성되지 않으면 **작업 완료를 인정하지 않는 결정론적 가드레일**을 강제합니다. (테스트 0개는 실패 처리)
+- **해결:** 프로젝트에 자가 검증 러너(`tools/agentic/check.mjs`)를 심어주고, 실제 테스트(`npm test`)를 통과하여 `exitCode: 0` 기계 판독 증거(`.agentic/last-check.json`)가 생성되지 않으면 **작업 완료를 인정하지 않는 결정론적 가드레일**을 제공합니다. 테스트 수를 신뢰성 있게 판별하는 계약은 별도로 확장합니다.
 
 ### 4. 프로젝트 기술 스택 및 제약사항 자동 감지 (Zero-Configuration)
 
@@ -119,6 +119,9 @@ node /path/to/agentic/bin/agentic.mjs init
 - 5대 에이전트 연동 지침 파일 자동 생성
 - 로컬 검증 도구 (`tools/agentic/check.mjs`, `doctor.mjs`) 설치
 - `package.json`에 `"check": "node tools/agentic/check.mjs"` 자동 등록
+- `test` 스크립트와 알려진 테스트 파일이 모두 없는 Node 프로젝트에는 `node --test`와 `tests/smoke.test.mjs`를 부트스트랩으로 추가
+
+> 스모크 테스트는 검증 명령이 실행되는지만 확인하며, 제품 동작을 검증하지는 않습니다. 기존 테스트 파일이 감지되면 Agentic은 테스트 스크립트나 파일을 변경하지 않고 수동 설정을 안내합니다.
 
 ---
 
@@ -166,30 +169,49 @@ agentic sync
 
 ```text
 agentic/
+├── AGENTS.md                    # 이 저장소의 공통 규칙 SSOT
+├── CLAUDE.md                     # Claude Code용 AGENTS.md 포인터
+├── .github/
+│   └── copilot-instructions.md   # GitHub Copilot용 지침
+├── .cursor/rules/
+│   └── agentic.mdc               # Cursor용 지침
+├── .gemini/rules/
+│   └── agentic.md                # Antigravity용 지침
 ├── bin/
 │   ├── agentic.mjs              # init, sync, doctor, check CLI
 │   └── analyzer.mjs             # Next.js, TS, DB 등 프로젝트 제약 자동 감지 엔진
-├── templates/                   # 프로젝트에 주입되는 템플릿
-│   ├── AGENTS.md                # 단일 정본 템플릿 (SSOT)
-│   ├── CLAUDE.md                # Claude Code 인클루드 템플릿 (@AGENTS.md)
-│   ├── gemini-rules/            # Antigravity 템플릿
-│   ├── cursor-rules/            # Cursor 템플릿 (.mdc)
-│   ├── copilot-instructions.md  # GitHub Copilot 템플릿
-│   └── tools/                   # doctor.mjs, check.mjs 템플릿
-├── evals/                       # 자체 검증용 테스트 스위트
-│   ├── analyzer.test.mjs        # 프로젝트 분석기 단위 테스트
-│   └── synthetic/               # 합성 예제 및 TDD 검증
-├── docs/                        # 상세 기술 문서 및 ADR
-│   ├── architecture/            # 확정된 현재 아키텍처
-│   ├── architecture-discussion/ # 논의·구현 중인 아키텍처 계약
-│   ├── workflow.md              # 실전 워크플로 가이드
-│   ├── references.md            # 2026 공식 참고 문헌 및 비교 분석
-│   └── adr/                     # 아키텍처 결정 기록
-└── package.json
+├── docs/                         # 문서 색인, 설계, 운영 가이드
+│   ├── README.md                 # 문서 탐색 시작점
+│   ├── adr/                      # 아키텍처 결정 기록
+│   ├── architecture/             # 확정된 현재 아키텍처
+│   ├── architecture-discussion/  # 논의·구현 중인 아키텍처 계약
+│   ├── references.md             # 공식 참고 문헌 및 비교 분석
+│   └── workflow.md               # 실전 워크플로 가이드
+├── evals/                        # CLI·분석기·동기화 자체 검증
+│   ├── analyzer.test.mjs
+│   ├── cold-start.test.mjs
+│   ├── doctor.test.mjs
+│   ├── sync-cli.test.mjs
+│   ├── sync-merge.test.mjs
+│   └── synthetic/                # 초기화 대상 합성 프로젝트
+├── templates/                    # 대상 프로젝트에 동기화하는 템플릿
+│   ├── AGENTS.md                 # 단일 정본 템플릿 (SSOT)
+│   ├── CLAUDE.md                 # Claude Code 포인터 템플릿
+│   ├── copilot-instructions.md   # GitHub Copilot 템플릿
+│   ├── cursor-rules/             # Cursor 템플릿
+│   ├── gemini-rules/             # Antigravity 템플릿
+│   └── tools/                    # doctor.mjs, check.mjs 템플릿
+├── tools/agentic/                # 이 저장소의 검증·진단 스크립트
+│   ├── check.mjs
+│   └── doctor.mjs
+├── jsconfig.json
+├── package.json
+├── README.md
+└── LICENSE
 ```
 
 ---
 
 ## 📄 라이선스 (License)
 
-이 프로젝트는 [Apache License 2.0](LICENSE)을 따릅니다. 누구나 자유롭게 수정, 배포, 상업적 이용이 가능합니다.
+이 프로젝트는 [Apache License 2.0](LICENSE)을 따릅니다.

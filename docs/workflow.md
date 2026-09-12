@@ -82,9 +82,11 @@ npx github:IsthisLee/agentic doctor
 ```
 
 * **진단 항목:**
-  * 5대 에이전트 지침 파일 존재 및 필수 섹션(기계 검증 우선, TDD 준수) 포함 여부
-  * `package.json`의 `check` 및 `test` 스크립트 등록 상태
-  * `tools/agentic/` 스크립트의 실행 가능 상태
+  * Git 저장소 여부와 현재 브랜치
+  * 5대 에이전트 지침 파일 존재 여부와 `AGENTS.md`의 줄 수
+  * `package.json`이 있을 때 `node_modules` 존재 여부
+
+> `doctor`는 현재 지침 파일의 내용, `package.json` 스크립트, 또는 `tools/agentic/`의 실행 가능 여부를 검사하지 않습니다. 이 항목들은 향후 진단 강화 대상입니다. [`아키텍처 논의`](architecture-discussion/operations-and-release.md)
 
 ---
 
@@ -102,14 +104,14 @@ node /path/to/agentic/bin/agentic.mjs sync .
 
 * **스마트 동기화 계약 (Smart Sync):**
   * **사용자 커스텀 규칙 보존:** 사용자가 `AGENTS.md`의 `## 4. 프로젝트 규칙 확장` 아래에 추가해 둔 프로젝트 고유의 도메인/아키텍처 규칙은 안전하게 보존됩니다.
-  * **도구 및 공통 지침 갱신:** `tools/agentic/*` 검증 도구와 공통 지침 템플릿만 최신 버전으로 깔끔하게 업그레이드됩니다.
-  * 사용자는 Git 충돌이나 브랜치 머지를 신경 쓸 필요 없이, 명령어 한 줄로 최신 개선사항을 안전하게 흡수할 수 있습니다.
+  * **도구 및 공통 지침 갱신:** 포인터 지침 파일과 `tools/agentic/*` 검증 도구는 최신 템플릿으로 덮어씁니다.
+  * 동기화 전에 포인터 파일이나 도구를 직접 수정했다면 해당 수정은 사라질 수 있으므로, 실행 후 `git diff`로 변경 사항을 검토해야 합니다.
 
 ---
 
 ## 2. 메인테이너 릴리즈 워크플로 (npm 배포)
 
-코어 저장소([`agentic`](file:///Users/isthis/Documents/task/agentic))에서 새로운 기능을 개발하고 npm에 정식 릴리즈할 때의 절차입니다:
+코어 저장소(`agentic`)에서 새로운 기능을 개발하고 npm에 정식 릴리즈할 때의 절차입니다:
 
 ```bash
 # 1. 템플릿 및 도구 수정 후 자체 검증
@@ -178,4 +180,3 @@ git push --follow-tags
 - **150줄 이하:** `✓ [PASS] AGENTS.md Size: 45 lines (optimal)`
 - **150줄 초과:** `⚠ [WARN] AGENTS.md Size: 182 lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)`
 경고 발생 시 상세 도메인 규칙을 `docs/`로 이동하면 에이전트의 집중도와 속도를 최상으로 유지할 수 있습니다.
-

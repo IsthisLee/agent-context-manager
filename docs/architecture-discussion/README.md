@@ -13,6 +13,7 @@
 | [sync-and-artifacts.md](sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | Proposed expansion |
 | [runtime-boundary.md](runtime-boundary.md) | 런타임 래퍼 금지와 책임 경계 | Accepted principle |
 | [external-tools.md](external-tools.md) | revfactory/harness와의 관계 | Discussion |
+| [operations-and-release.md](operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | Proposed expansion |
 | [implementation-contracts.md](implementation-contracts.md) | 상태 관리와 구현 기록 규약 | Active process |
 
 ## 현재 공백과 목표

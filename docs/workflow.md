@@ -150,11 +150,11 @@ git push --follow-tags
 
 ### 1) 왜 150줄 기준인가? (공식 엔지니어링 근거)
 
-1. **주의력 희석 방지 (Attention Dilution & Lost in the Middle):**
+1. **주의력 희석 방지 (Attention Dilution & Lost in the Middle):** [`[근거: Stanford 연구]`](references.md#stanford-lost-in-the-middle)
    - Stanford 연구(Liu et al.) 및 최신 LLM 주의력 연구에 따르면, 단일 파일이 과도하게 길어질수록 중간에 위치한 중요한 핵심 제약(예: "기계 검증 통과 전 완료 보고 금지", "비밀값 노출 금지")을 모델이 무시하거나 망각할 확률이 비선형적으로 증가합니다.
-2. **OpenAI 공식 AGENTS.md 모듈화 권장 (OpenAI Platform):**
+2. **OpenAI 공식 AGENTS.md 모듈화 권장:** [`[근거: OpenAI 가이드라인]`](references.md#openai-agents-md)
    - OpenAI는 공식 문서(*Custom instructions with AGENTS.md*)에서 *"AGENTS.md는 간결하고 핵심적인 행동 강령에 집중해야 하며, 대규모 API 명세나 세부 문서를 루트 파일 하나에 과도하게 채우지 말라"*고 명시합니다. 대신 프로젝트 내 `docs/` 디렉터리에 전문 문서를 분리하고 `AGENTS.md`에는 목차(Index)와 참조 링크를 제공하여 에이전트가 필요할 때만 동적으로 읽도록 권장합니다.
-3. **Anthropic 온디맨드 점진적 로딩 (Anthropic Engineering, 2025-09-29):**
+3. **Anthropic 온디맨드 점진적 로딩:** [`[근거: Anthropic 연구]`](references.md#anthropic-context-engineering)
    - Anthropic 공식 리포트(*Effective context engineering for AI agents*) 역시 *"루트 프롬프트는 최소한의 목차(Index)로 유지하고, 에이전트가 특정 도메인 작업을 시작할 때 해당 문서를 파일 읽기 도구로 온디맨드 로딩하게 만드는 것"*이 작업 성공률을 극대화함을 실증했습니다.
 4. **토큰 비용 및 응답 속도(Latency) 최적화:**
    - 단순한 버그 수정이나 UI 작업 1개를 수행할 때도 무관한 1,000줄의 결제/DB/배포 지침이 매 턴(Turn)마다 컨텍스트에 주입되면 비용이 낭비되고 에이전트의 추론 레이턴시가 지연됩니다.

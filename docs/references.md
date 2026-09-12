@@ -8,19 +8,19 @@
 ## 1. 주요 공식 엔지니어링 리포트 및 연구
 
 ### 1) Anthropic Research & Engineering
-* **[Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps) (2026-03-24)**
+* <a id="anthropic-harness-design"></a>**[Harness design for long-running application development](https://www.anthropic.com/engineering/harness-design-long-running-apps) (2026-03-24)**
   * **핵심:** 가상 에이전트 팀 분업의 복잡성을 재검토. 수많은 서브에이전트 오케스트레이션보다 **결정론적 평가(Deterministic Evals)와 단일 TDD 루프의 단순화**가 성공률을 극대화함을 실증.
   * **적용:** 무거운 자체 상태 머신과 상시 멀티에이전트 팀 구성을 배제하고, 단일 에이전트 + 테스트 피드백 계약을 기본안으로 채택.
-* **[Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) (2026-01-09)**
+* <a id="anthropic-demystifying-evals"></a>**[Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents) (2026-01-09)**
   * **핵심:** 제품 테스트와 에이전트 하네스 평가(Eval)의 분리. 환각을 방지하기 위한 기계 판독 가능 증거 체인 수립.
   * **적용:** `tools/agentic/check.mjs` 및 `.agentic/last-check.json` 기계 증거 메커니즘 도입.
 * **[Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) (2025-11-26)**
   * **핵심:** 장기 작업 시 컨텍스트 유실 방지를 위한 구조화된 인수인계 및 체크포인트 설계.
   * **적용:** 세션 간 중단-재개 시 읽어야 할 최소 컨텍스트 경로 규정.
-* **[Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (2025-09-29)**
+* <a id="anthropic-context-engineering"></a>**[Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (2025-09-29)**
   * **핵심:** 전체 대화 이력 및 도메인 지식의 상시 주입 금지. 필요한 파일만 온디맨드로 점진적 로딩(Progressive Disclosure).
   * **적용:** 루트 지침(`AGENTS.md`) 150줄 이내 제한(지도 역할) 및 상세 도메인 지식의 `docs/` 서랍화. `doctor` 진단을 통해 150줄 초과 경고 자동화.
-* **[Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) (Liu et al., Stanford & UC Berkeley)**
+* <a id="stanford-lost-in-the-middle"></a>**[Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) (Liu et al., Stanford & UC Berkeley)**
   * **핵심:** 입력 컨텍스트가 길어질수록 프롬프트의 중간(Middle) 부분에 위치한 핵심 제약 조건에 대한 모델의 회상률(Recall) 및 주의력(Attention)이 급격히 저하됨.
   * **적용:** 지침을 단일 파일에 비대하게 누적하지 않고, 루트 파일에는 최상단 행동 강령과 목차만 콤팩트하게 유지하여 주의력 희석(Attention Dilution) 방지.
 * **[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) (2024-12-19)**
@@ -29,7 +29,7 @@
   * **핵심:** 에이전트가 직접 실행하고 피드백을 받을 수 있는 로컬 테스트 환경 우선.
 
 ### 2) OpenAI Platform & Documentation
-* **[Custom instructions with AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)**
+* <a id="openai-agents-md"></a>**[Custom instructions with AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)**
   * **핵심:** OpenAI Codex 및 ChatGPT/Copilot 생태계의 프로젝트 레벨 진입 지침 표준.
     - **비대화 방지 및 모듈화 권장:** *"AGENTS.md는 간결하고 핵심적인 행동 강령에 집중해야 하며, 전체 API 명세나 DB 스키마 같은 방대한 문서를 루트 파일 하나에 쏟아붓지 마라."*
     - **서브 문서 참조(Index/Pointer) 패턴:** 복잡한 도메인 지식은 저장소 내 `docs/` 디렉터리 등의 전문 문서로 분리하고, `AGENTS.md`에는 해당 문서들의 목차(색인)와 포인터를 제공하여 에이전트가 필요할 때만 동적으로 읽도록 권장.

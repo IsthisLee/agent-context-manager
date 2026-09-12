@@ -39,7 +39,7 @@ OpenAI Codex, Anthropic Claude Code, Google Antigravity, Cursor, GitHub Copilot 
    - `.cursor/rules/agentic.mdc` ➔ `AGENTS.md` 정본 참조 지시문 (Always apply)
    - `.github/copilot-instructions.md` ➔ `AGENTS.md` 정본 참조 지시문
 3. **점진적 공개 (Progressive Disclosure):**
-   - 단일 파일이 150줄 이상으로 커지면 LLM 컨텍스트 낭비를 막기 위해 상세 지식을 `docs/` 서랍으로 분리하고 `AGENTS.md`에는 목차(Index)만 남기는 구조를 공식 가이드라인으로 채택.
+   - 단일 파일이 150줄 이상으로 커지면 LLM 컨텍스트 낭비를 막기 위해 상세 지식을 `docs/` 서랍으로 분리하고 `AGENTS.md`에는 목차(Index)만 남기는 구조를 공식 가이드라인으로 채택. [`[근거: references.md]`](../references.md#openai-agents-md)
 
 ---
 

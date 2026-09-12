@@ -34,7 +34,7 @@
 3. **지침 크기 진단 및 점진적 분리 가이드 (`doctor.mjs`):**
    - `tools/agentic/doctor.mjs`에 `AGENTS.md` 라인 수 검사 로직 추가.
    - 150줄 이하: `[PASS] AGENTS.md Size: X lines (optimal)`
-   - 150줄 초과: `[WARN] AGENTS.md Size: X lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)`
+   - 150줄 초과: `[WARN] AGENTS.md Size: X lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)` [`[근거: references.md]`](../references.md#anthropic-context-engineering)
 
 ---
 

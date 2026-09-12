@@ -20,7 +20,7 @@
 
 ## 목표 계약
 
-`agentic setup --core <name>`은 Core의 설정만 변경한다. 프로젝트 파일이나 프로젝트의 도메인 `AGENTS.md`는 변경하지 않는다.
+`agentic setup --core <name>`은 Core의 설정만 변경한다. 프로젝트 파일이나 프로젝트의 도메인 `AGENTS.md`는 변경하지 않는다. 세부 옵션을 생략하면 현재 설정을 기본값으로 보여 주는 TUI에서 항목별 수준을 입력한다.
 
 권장 옵션은 `recommended`, `strict`, `off`처럼 의미가 명확한 값으로 제공한다. 외부 연구는 선택 근거로 사용하되, 연구 결과를 보편적 성공 보장처럼 표현하지 않는다.
 
@@ -40,7 +40,7 @@ setup은 기존 선택을 보여 주고 사용자의 승인 없이 정책을 제
 #### 구현 기록: Core setup
 
 * **결정:** 지침 항목별 `off`, `recommended`, `strict`를 사용하며 기본값은 `recommended`다.
-* **구현:** `agentic setup --core <name>`이 Core metadata와 `AGENTS.md`를 갱신한다. `off` 항목은 Core 지침에서 제외한다.
-* **평가:** `evals/core.test.mjs`에서 선택·제외·Core 경계 보존을 확인.
-* **제약:** 현재는 비대화형 flags를 사용하며, 대화형 wizard는 후속 개선이다.
-* **다음 단계:** preset 파일 분리와 사용자 승인 diff.
+* **구현:** `agentic setup [--core <name>]`이 Core metadata와 `AGENTS.md`를 갱신한다. Core를 생략하면 scope·이름을 함께 표시하는 선택 메뉴를 사용하고, 세부 플래그를 생략하면 설명·현재값·적용 수준을 보여 주는 지침별 TUI를 사용한다. 전체 설정 요약을 승인한 뒤 저장하며, `off` 항목은 Core 지침에서 제외한다.
+* **평가:** `evals/core.test.mjs`에서 선택·제외·scope 분류·TUI·Core 경계 보존을 확인.
+* **제약:** TUI는 터미널 환경에서만 활성화되며, CI·스크립트에서는 비대화형 flags 또는 stdin 입력을 사용한다.
+* **다음 단계:** preset 파일 분리와 사용자 승인 diff의 세분화.

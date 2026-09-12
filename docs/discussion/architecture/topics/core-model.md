@@ -35,7 +35,7 @@ Core 생성은 프로젝트를 변경하지 않는다. Core를 선택해 프로�
 #### 구현 기록: Core 생성·목록
 
 * **결정:** 사용자 홈의 `.agentic-cores/<name>`에 Core를 저장하고 `personal`, `company`, `team`, `workspace` scope를 metadata로 기록한다.
-* **구현:** `agentic core create`, `agentic core list`, `agentic-core.json`, Core `AGENTS.md` 생성.
+* **구현:** `agentic core create`, scope별 `agentic core list`, TUI Core 선택, `agentic-core.json`, Core `AGENTS.md` 생성.
 * **평가:** `evals/core.test.mjs`에서 생성·목록·이름·scope·metadata를 확인.
 * **제약:** 조직 원격 Git 등록·동기화는 아직 지원하지 않는다.
 * **다음 단계:** Core 업데이트와 조직 공유 계약.

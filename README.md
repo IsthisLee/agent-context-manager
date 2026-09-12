@@ -12,12 +12,23 @@
 
 ## 핵심 기능
 
-- `agentic core create <name>` — 용도별 Core 생성
-- `agentic setup --core <name>` — 하네스 동작·TDD·리뷰·검증·문서화·보안 지침 선택
+- `agentic core create [<name>]` — 용도별 Core 생성; 이름을 생략하면 TUI 입력
+- `agentic setup [--core <name>]` — scope별 Core 선택 후 하네스 동작·TDD·리뷰·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
 
 ## 빠른 시작
+
+Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설정할 수 있습니다. `agentic setup`만 실행하면 scope별 Core 목록에서 대상을 고른 뒤 모든 지침 설정을 입력합니다.
+
+짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.
+
+```bash
+agentic core create
+agentic setup
+```
+
+옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
 
 ```bash
 npm install --global @isthis/agentic

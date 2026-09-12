@@ -16,7 +16,37 @@
   └── 프로젝트 코드·테스트
 ```
 
-현재 CLI는 Core를 생성·목록화·설정하고, 선택한 Core를 대상 프로젝트에 적용한다. 적용 시 프로젝트 `AGENTS.md`의 도메인 규칙 확장 영역을 보존하며, Agentic이 관리하는 에이전트별 포인터 파일은 `init/sync` 때 재생성한다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다.
+현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·설정하고, `setup`만 실행한 경우 scope별 목록에서 Core를 선택하게 한 뒤 선택한 Core를 대상 프로젝트에 적용한다. 적용 시 프로젝트 `AGENTS.md`의 도메인 규칙 확장 영역을 보존하며, Agentic이 관리하는 에이전트별 포인터 파일은 `init/sync` 때 재생성한다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다.
+
+## 저장소 파일 구조
+
+```text
+agentic/
+├── bin/
+│   ├── agentic.mjs              # 메인 CLI와 Core·프로젝트 적용 로직
+│   ├── agt.mjs                  # agentic CLI 별칭
+│   └── analyzer.mjs             # 프로젝트 AGENTS.md 도메인 규칙 병합
+├── templates/
+│   ├── core/AGENTS.md           # 새 Core의 초기 지침 템플릿
+│   └── ...                      # 에이전트별 지침 포인터 템플릿
+├── evals/                       # CLI·문서·패키지 산출물 평가
+├── tools/
+│   └── check-docs.mjs           # Markdown·ADR·discussion 계약 검사
+├── docs/
+│   ├── README.md                # 문서 탐색 시작점
+│   ├── product-direction.md     # 제품 방향 정본
+│   ├── architecture/            # 현재 채택된 구조
+│   ├── discussion/              # 구현 계획·논의·계약
+│   ├── adr/                     # 장기 설계 결정 기록
+│   ├── workflow.md              # 사용자 워크플로
+│   └── references.md            # 외부 근거와 비교 자료
+├── AGENTS.md                    # 이 저장소 개발 규칙 정본
+├── README.md                    # npm 패키지 소개
+├── package.json                 # npm 패키지·CLI·스크립트 정의
+└── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
+```
+
+배포 패키지에는 `bin/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성만 포함된다. `docs/`, `evals/`, `tools/`와 저장소 개발 문서는 npm 사용자의 설치 대상에서 제외된다.
 
 ## 소유권
 

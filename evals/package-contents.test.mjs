@@ -11,8 +11,7 @@ test('npm package contains only runtime assets and the package README', () => {
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const result = spawnSync(npmCommand, ['pack', '--dry-run', '--json'], {
     cwd: repoRoot,
-    encoding: 'utf8',
-    shell: process.platform === 'win32'
+    encoding: 'utf8'
   });
 
   assert.equal(result.status, 0, result.stderr || result.stdout);

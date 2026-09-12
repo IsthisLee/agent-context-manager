@@ -17,12 +17,13 @@ const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
 
 function quoteWindowsArg(value) {
-  return `"${String(value).replaceAll('"', '\\"')}"`;
+  return `"${String(value).replaceAll('"', '""')}"`;
 }
 
 function runCommand(command, args, options = {}) {
   if (!isWindows) return execFileSync(command, args, options);
-  const commandLine = [quoteWindowsArg(command), ...args.map(quoteWindowsArg)].join(' ');
+  const commandToken = command.includes(' ') ? quoteWindowsArg(command) : command;
+  const commandLine = [commandToken, ...args.map(quoteWindowsArg)].join(' ');
   return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], options);
 }
 

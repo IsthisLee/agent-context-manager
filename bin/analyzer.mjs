@@ -14,7 +14,9 @@ export function mergeAgentsMd(coreContent, existingContent) {
 
   const headerRegex = /## \d+\.\s*프로젝트 규칙 확장[^\n]*\n+/i;
   const match = existingContent.match(headerRegex);
-  if (!match) return coreContent;
+  if (!match) {
+    return `${coreContent.trimEnd()}\n\n## Existing project guidance\n\n${existingContent.trim()}\n`;
+  }
 
   const contentAfterHeader = existingContent.slice(match.index + match[0].length).trim();
   if (!contentAfterHeader) return coreContent;

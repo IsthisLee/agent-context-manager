@@ -19,6 +19,20 @@ agt help
 - CI·스크립트에서는 플래그를 직접 전달하거나 stdin 입력을 사용한다.
 - `off`, `recommended`, `strict`는 지침 수준이며 대소문자를 구분한다.
 
+## 메인 TUI
+
+```bash
+agt
+```
+
+인자 없이 실행하면 메인 TUI가 열리고, Core 관리 메뉴를 통해 Core 선택 후 설정·프로젝트 적용·동기화·상세 보기·삭제를 실행할 수 있다. 새 Core 생성, Core 지침 설정, 도움말도 첫 화면에서 바로 선택할 수 있다. `agentic`도 동일하게 동작한다.
+
+```bash
+agt --tui
+```
+
+`--tui`는 메인 TUI를 명시적으로 여는 선택적 플래그다. 자동화 환경에서는 TUI 대신 아래 CLI 명령과 옵션을 사용한다.
+
 ## 명령어
 
 ### `core create`
@@ -39,13 +53,42 @@ agt core create [<name>] [--scope <scope>]
 
 ### `core list`
 
-등록된 Core를 scope별로 표시한다.
+등록된 Core를 scope별로 표시한다. 터미널에서는 Core를 선택한 뒤 관리 작업까지 이어서 실행할 수 있다.
 
 ```bash
-agt core list
+agt core list [--scope <scope>]
 ```
 
-터미널에서는 scope별 패널과 전체 개수를 표시하고, 파이프·스크립트 환경에서는 읽기 쉬운 텍스트 목록을 출력한다.
+터미널에서는 먼저 전체 또는 `personal`, `company`, `team`, `workspace` scope를 선택한다. 선택한 범위의 Core 목록과 전체 개수를 표시한 뒤 다음 작업을 선택한다. `--scope`를 전달하면 해당 범위 선택을 건너뛴다.
+
+- 새 Core 생성
+- 지침 설정
+- 프로젝트에 적용
+- 프로젝트 동기화
+- 상세 보기
+- Core 삭제
+
+파이프·스크립트 환경에서는 읽기 쉬운 scope별 텍스트 목록만 출력한다.
+
+자동화 환경에서는 scope를 직접 필터링할 수 있다.
+
+```bash
+agt core list --scope company
+```
+
+scope는 Core의 용도 분류이며 허용값은 `personal`, `company`, `team`, `workspace`다. scope가 없는 Core를 임의로 선택하지 않으며, 해당 scope에 Core가 없으면 생성 예시를 안내한다.
+
+프로젝트 적용·동기화 메뉴에서는 현재 작업 폴더를 기준으로 디렉터리 탐색형 경로 선택기를 사용한다. 파일은 선택할 수 없으며, 존재하는 프로젝트 폴더만 제출할 수 있다.
+
+### `core view`
+
+Core의 scope와 현재 `AGENTS.md` 내용을 출력한다.
+
+```bash
+agt core view <name>
+```
+
+`core list`의 관리 메뉴에서는 `상세 보기`를 선택해 같은 내용을 TUI에서 확인할 수 있다.
 
 ### `core remove`
 

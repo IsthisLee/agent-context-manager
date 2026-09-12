@@ -10,9 +10,18 @@
 
 개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. Core의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
+가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
+
+```bash
+agt
+```
+
+메인 TUI에서 Core 관리·생성·설정과 도움말을 선택할 수 있습니다.
+
 ## 핵심 기능
 
-- `agentic core create [<name>]` — 용도별 Core 생성; 이름을 생략하면 TUI 입력
+- `agentic core create [<name>] [--scope <scope>]` — `personal`, `company`, `team`, `workspace` 용도별 Core 생성; 이름을 생략하면 TUI 입력
+- `agentic core list [--scope <scope>]` — scope별 Core 목록·선택·관리; TUI에서는 scope를 먼저 선택
 - `agentic setup [--core <name>]` — scope별 Core 선택 후 하네스 동작·TDD·리뷰·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
 - `agentic core remove [<name>]` — 확인 후 선택한 Core 삭제; 적용된 프로젝트 파일은 유지
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용

@@ -2,6 +2,8 @@
 
 이 문서는 배포된 `@isthis/agentic`을 사용해 공통 개발 지침을 만들고 프로젝트에 적용하는 최종 사용자 흐름을 설명한다.
 
+가장 간단한 시작점은 `agt` 또는 `agentic`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 Core 관리·생성·설정과 도움말에 접근할 수 있다.
+
 ## 1. Core 생성
 
 ```bash
@@ -10,6 +12,8 @@ agt core create
 ```
 
 TUI에서 Core 이름과 용도를 선택한다. 자동화나 반복 실행이 필요할 때만 `agt core create <name> --scope <scope>`처럼 옵션을 직접 전달한다.
+
+scope는 `personal`, `company`, `team`, `workspace` 중 Core의 사용 범위를 나타낸다. 기존 Core를 찾을 때는 `agt core list`에서 scope를 먼저 선택하거나 `agt core list --scope company`처럼 직접 필터링한다.
 
 Core는 공통 지침을 보관하는 사용자·조직 소유 저장소다. 생성만으로 대상 프로젝트는 변경되지 않는다.
 
@@ -51,6 +55,14 @@ agt core remove
 ```
 
 TUI에서 삭제할 Core를 선택하고 삭제 대상과 영향을 확인한 뒤 최종 승인한다. 자동화 환경에서는 `agt core remove <name> --yes`를 사용한다. 삭제되는 것은 사용자 Core의 원본과 설정뿐이며, 이미 프로젝트에 적용된 `AGENTS.md`, 포인터 파일, `agentic.project.json`은 변경하지 않는다.
+
+## 7. Core 관리 메뉴
+
+```bash
+agt core list
+```
+
+TUI에서 scope별 Core 목록을 확인한 뒤 하나를 선택하면 지침 설정, 프로젝트 적용, 프로젝트 동기화, 상세 보기, 삭제 중 원하는 작업을 이어서 실행할 수 있다. 프로젝트 적용·동기화 시에는 현재 작업 폴더를 기준으로 디렉터리를 탐색해 선택하며, 파일은 선택할 수 없다. 자동화 환경에서는 각 명령어를 직접 사용한다.
 
 ## 명령의 소유권
 

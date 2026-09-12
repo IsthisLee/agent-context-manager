@@ -5,11 +5,13 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { cancel, confirm, intro, isCancel, note, outro, select, text } from '@clack/prompts';
+import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { fileURLToPath } from 'node:url';
 import { mergeAgentsMd } from './analyzer.mjs';
+import { CORE_OPERATION_CONTRACT } from './contracts.mjs';
 
 const CORE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SCOPES = ['personal', 'company', 'team', 'workspace'];
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
 const invokedAs = path.basename(process.argv[1] || 'agentic').replace(/\.mjs$/, '');
@@ -40,7 +42,7 @@ function readCore(name) {
 
 function createCore(name, scope = 'personal') {
   validateCoreName(name);
-  if (!['personal', 'company', 'team', 'workspace'].includes(scope)) throw new Error('Core scope must be personal, company, team, or workspace.');
+  if (!SCOPES.includes(scope)) throw new Error(`Core scope must be one of: ${SCOPES.join(', ')}.`);
   const coreDir = path.join(getCoreHome(), name);
   if (fs.existsSync(coreDir)) throw new Error(`Core already exists: ${name}`);
   fs.mkdirSync(coreDir, { recursive: true });
@@ -94,10 +96,14 @@ function getCores() {
   return cores.sort((a, b) => `${a.scope}:${a.name}`.localeCompare(`${b.scope}:${b.name}`));
 }
 
-function listCores() {
-  const cores = getCores();
+async function listCores(scopeFilter = null) {
+  if (scopeFilter !== null && !SCOPES.includes(scopeFilter)) throw new Error(`Core scope must be one of: ${SCOPES.join(', ')}.`);
+  let cores = getCores();
+  if (scopeFilter) cores = cores.filter(core => core.scope === scopeFilter);
   if (!cores.length) {
-    console.log('No Cores found. Run `agentic core create` to create one.');
+    console.log(scopeFilter
+      ? `No Cores found in scope '${scopeFilter}'. Run \`agentic core create <name> --scope ${scopeFilter}\` to create one.`
+      : 'No Cores found. Run `agentic core create` to create one.');
     return;
   }
   const grouped = new Map();
@@ -107,8 +113,35 @@ function listCores() {
   }
   if (process.stdout.isTTY) {
     intro('Agentic Cores');
+    if (!scopeFilter) {
+      const selectedScope = await select({
+        message: '확인할 Core 범위를 선택하세요.',
+        options: [
+          { value: '__all__', label: '전체 scope', hint: `${cores.length}개 Core` },
+          ...scopeOptions.filter(option => cores.some(core => core.scope === option.value)).map(option => ({
+            ...option,
+            hint: `${cores.filter(core => core.scope === option.value).length}개 Core · ${option.hint}`
+          }))
+        ]
+      });
+      if (isCancel(selectedScope)) return cancel('Core 관리를 취소했습니다.');
+      if (selectedScope !== '__all__') return listCores(selectedScope);
+    }
     for (const [scope, names] of grouped) note(names.join('\n'), scope);
-    outro(`${cores.length}개의 Core`);
+    const selected = await select({
+      message: '관리할 Core를 선택하세요.',
+      options: [
+        { value: '__create__', label: '새 Core 생성', hint: CORE_OPERATION_CONTRACT.find(operation => operation.id === 'create').tui },
+        ...cores.map(core => ({
+          value: core.name,
+          label: `${core.scope} · ${core.name}`,
+          hint: '선택 후 작업 메뉴 열기'
+        }))
+      ]
+    });
+    if (isCancel(selected)) return cancel('Core 관리를 취소했습니다.');
+    if (selected === '__create__') return createCoreTui();
+    await coreActions(selected);
     return;
   }
   for (const [scope, names] of grouped) {
@@ -117,10 +150,81 @@ function listCores() {
   }
 }
 
+async function projectPathTui(message) {
+  const target = await pathPrompt({
+    message,
+    root: process.cwd(),
+    directory: true,
+    initialValue: process.cwd(),
+    validate(value) {
+      const targetPath = path.resolve(value.trim() || '.');
+      if (!fs.existsSync(targetPath) || !fs.statSync(targetPath).isDirectory()) return '존재하는 프로젝트 폴더를 선택하세요.';
+    }
+  });
+  if (isCancel(target)) return null;
+  return target.trim() || process.cwd();
+}
+
+async function coreActions(name) {
+  const action = await select({
+    message: `${name}에서 수행할 작업을 선택하세요.`,
+    options: [
+      { value: 'setup', label: '지침 설정', hint: 'TDD·리뷰·검증·문서화·보안 수준 변경' },
+      { value: 'apply', label: '프로젝트에 적용', hint: '선택한 Core를 프로젝트에 처음 적용' },
+      { value: 'sync', label: '프로젝트 동기화', hint: '변경된 Core 지침을 프로젝트에 재적용' },
+      { value: 'view', label: '상세 보기', hint: 'scope와 현재 Core 지침 확인' },
+      { value: 'remove', label: 'Core 삭제', hint: '확인 후 Core 원본과 설정 삭제' }
+    ]
+  });
+  if (isCancel(action)) return cancel('Core 관리를 취소했습니다.');
+
+  if (action === 'setup') return setupCoreTui(name);
+  if (action === 'remove') return removeCoreTui(name);
+  if (action === 'view') {
+    const core = readCore(name);
+    note(`${core.metadata.scope}\n\n${fs.readFileSync(core.instructionsPath, 'utf8').trim()}`, name);
+    return outro('Core 상세 보기 완료');
+  }
+
+  const target = await projectPathTui(action === 'apply' ? '적용할 프로젝트 경로를 입력하세요.' : '동기화할 프로젝트 경로를 입력하세요.');
+  if (!target) return cancel('프로젝트 작업을 취소했습니다.');
+  if (action === 'apply') applyCore(['--core', name, target]);
+  else syncProject(['--core', name, target]);
+  outro(action === 'apply' ? 'Core 적용 완료' : 'Core 동기화 완료');
+}
+
+async function mainTui() {
+  intro('Agentic');
+  while (true) {
+    const action = await select({
+      message: '무엇을 할까요?',
+      options: [
+        { value: 'manage', label: 'Core 관리', hint: 'Core 선택 후 설정·적용·동기화·조회·삭제' },
+        { value: 'create', label: '새 Core 생성', hint: '이름과 scope를 입력해 Core 생성' },
+        { value: 'setup', label: 'Core 지침 설정', hint: 'Core를 선택하고 지침 수준 설정' },
+        { value: 'help', label: '도움말', hint: 'CLI 명령과 자동화 방식 확인' },
+        { value: 'exit', label: '종료' }
+      ]
+    });
+    if (isCancel(action) || action === 'exit') break;
+    if (action === 'manage') await listCores();
+    else if (action === 'create') await createCoreTui();
+    else if (action === 'setup') await setupCoreTui();
+    else if (action === 'help') help();
+  }
+  outro('Agentic을 종료했습니다.');
+}
+
 function removeCore(name) {
   const core = readCore(name);
   fs.rmSync(core.coreDir, { recursive: true, force: true });
   console.log(`Removed Core: ${name}`);
+}
+
+function viewCore(name) {
+  const core = readCore(name);
+  console.log(`${core.metadata.name}\t${core.metadata.scope}`);
+  console.log(fs.readFileSync(core.instructionsPath, 'utf8').trim());
 }
 
 async function removeCoreTui(name = null) {
@@ -321,19 +425,24 @@ function syncProject(values) {
 function help() {
   const title = invokedAs === 'agt' ? 'agt (agentic)' : 'agentic (agt)';
   const commandName = invokedAs === 'agt' ? 'agt' : 'agentic';
-  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] [--review <level>] ...\n  ${commandName} init --core <name> <project>\n  ${commandName} sync [--core <name>] <project>\n\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
+  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list [--scope <scope>]\n  ${commandName} core view <name>\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] [--review <level>] ...\n  ${commandName} init --core <name> <project>\n  ${commandName} sync [--core <name>] <project>\n\nScopes: ${SCOPES.join(', ')}\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
 }
 
 async function main() {
-  if (command === 'core' && args[1] === 'create') {
+  if ((!args.length || command === '--tui') && process.stdin.isTTY) {
+    await mainTui();
+  } else if (command === 'core' && args[1] === 'create') {
     if (args[2]) createCore(args[2], parseFlag(args.slice(3), 'scope', 'personal'));
     else await createCoreTui();
   } else if (command === 'core' && args[1] === 'remove') {
     const name = args[2];
     if (parseFlag(args.slice(3), 'yes', null) !== null) removeCore(name);
     else await removeCoreTui(name);
+  } else if (command === 'core' && args[1] === 'view') {
+    if (!args[2]) throw new Error('core view requires <name>.');
+    viewCore(args[2]);
   }
-  else if (command === 'core' && args[1] === 'list') listCores();
+  else if (command === 'core' && args[1] === 'list') await listCores(parseFlag(args.slice(2), 'scope'));
   else if (command === 'setup') {
     const name = parseFlag(args.slice(1), 'core');
     const optionCount = args.slice(1).filter(value => value.startsWith('--')).length;

@@ -53,6 +53,25 @@ test('core list reports registered Cores without exposing paths as the identity'
   }
 });
 
+test('core list can filter registered Cores by scope', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-scope-list-test-'));
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'personal-main', '--scope', 'personal'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'core', 'create', 'company-main', '--scope', 'company'], { cwd: repoRoot, env });
+    const output = execFileSync(process.execPath, [cli, 'core', 'list', '--scope', 'company'], {
+      cwd: repoRoot,
+      env,
+      encoding: 'utf8'
+    });
+    assert.match(output, /\[company\]\s+company-main/);
+    assert.doesNotMatch(output, /personal-main/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('setup applies selected guidance to the Core and preserves its project-independent boundary', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-setup-test-'));
 
@@ -135,6 +154,25 @@ test('init rejects an unknown Core before changing the target project', () => {
   assert.equal(fs.readFileSync(path.join(project, 'package.json'), 'utf8'), packageJson);
   assert.deepEqual(fs.readdirSync(project), ['package.json']);
   fs.rmSync(home, { recursive: true, force: true });
+});
+
+test('init preserves an existing AGENTS.md that has no Agentic extension section', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-existing-agents-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+  fs.writeFileSync(path.join(project, 'AGENTS.md'), '# Existing project guidance\n\n- Keep the API backwards compatible.\n');
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'team-core', '--scope', 'team'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'init', '--core', 'team-core', project], { cwd: repoRoot, env });
+    const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
+    assert.match(agents, /Agentic Core: team-core/);
+    assert.match(agents, /Existing project guidance/);
+    assert.match(agents, /Keep the API backwards compatible/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
 });
 
 test('core create and setup support interactive TUI input when options are omitted', () => {
@@ -220,6 +258,8 @@ test('core remove deletes only the selected Core and preserves an applied projec
     const env = { ...process.env, AGENTIC_HOME: home };
     execFileSync(process.execPath, [cli, 'core', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'init', '--core', 'company', project], { cwd: repoRoot, env });
+    const view = execFileSync(process.execPath, [cli, 'core', 'view', 'company'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.match(view, /company\s+company/);
     execFileSync(process.execPath, [cli, 'core', 'remove', 'company', '--yes'], { cwd: repoRoot, env });
 
     assert.equal(fs.existsSync(path.join(home, '.agentic-cores', 'company')), false);

@@ -8,7 +8,7 @@
 
 ## 1. 배경 및 초기 설계 (Context)
 
-초기 설계(`legacy/260912/docs/agentic/`)는 에이전틱 개발 환경을 구축하기 위해 다음과 같은 거대한 프레임워크 개발을 구상했다:
+초기 설계 문서는 에이전틱 개발 환경을 구축하기 위해 다음과 같은 거대한 프레임워크 개발을 구상했다:
 * 독자적인 TypeScript CLI (`agentic run`, `agentic doctor`) 개발
 * `packages/contracts`, `packages/runner`를 통한 독자적 에이전트 상태 머신 프로그래밍
 * 0단계부터 10단계까지 이어지는 엄격한 순차적 워터폴 구축 프로세스

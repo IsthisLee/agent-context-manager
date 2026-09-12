@@ -10,15 +10,14 @@
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. Specification SSOT (규칙 단일 진실 공급원)               │
-│    - specifications/core-principles.md (결정론적 TDD 원칙)  │
-│    - specifications/security-boundaries.md (보안 경계)      │
-│    - specifications/agent-contracts.md (5대 에이전트 계약)  │
+│ 1. AGENTS.md Template & Pointer Adapters                    │
+│    - templates/AGENTS.md (대상 프로젝트 SSOT 생성 템플릿)   │
+│    - CLAUDE.md, .gemini/, .cursor/, .github/ 포인터 템플릿  │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ 단일 규칙 제공
+                               │ 대상 프로젝트 지침 생성
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. Multi-Agent Adapter & CLI Engine (지침 변환 및 배포 엔진)│
+│ 2. CLI Sync Engine (지침 변환 및 배포 엔진)                 │
 │    - bin/agentic.mjs : init, sync, doctor, check CLI       │
 │    - templates/ : 5대 에이전트 네이티브 지침 파일 템플릿    │
 │      (AGENTS.md, CLAUDE.md, .gemini/, .cursor/, .github/)   │
@@ -42,7 +41,7 @@
 ```text
 ┌────────────────────────────────────────────────────────┐
 │ [Upstream / Core] agentic 저장소 (오픈소스 도구)        │
-│  - SSOT 규칙, 5대 에이전트 템플릿, CLI, 검증 도구 원본 │
+│  - AGENTS.md 템플릿, 5대 에이전트 포인터, CLI, 검증 도구 원본 │
 │  - npm 패키지: @isthis/agentic                         │
 └──────────────────────────┬─────────────────────────────┘
                            │  agentic init
@@ -85,7 +84,7 @@
 ### 3) 결정론적 기계 검증 (Deterministic Verification)
 
 - AI 에이전트의 구두 완료 보고는 신뢰하지 않는다.
-- 반드시 실제 테스트 명령을 수행하여 생성된 `.agentic/last-check.json`의 `exitCode: 0`과 `passCount > 0`을 통해서만 완료를 확정한다. [`[근거: Anthropic Evals 연구]`](references.md#anthropic-demystifying-evals)
+- 반드시 실제 테스트 명령을 수행하여 생성된 `.agentic/last-check.json`의 `exitCode: 0`을 통해서만 완료를 확정한다. [`[근거: Anthropic Evals 연구]`](references.md#anthropic-demystifying-evals)
 
 ### 4) 점진적 공개 기반 컨텍스트 엔지니어링 (Progressive Disclosure)
 
@@ -97,5 +96,4 @@
   - **주의력 희석(Attention Dilution) 방지:** 수천 줄의 지침이 프롬프트에 통째로 들어가면 모델이 핵심 규약(TDD, 보안)을 망각하는 'Lost in the Middle' 현상이 발생한다. [`[근거: Stanford 연구]`](references.md#stanford-lost-in-the-middle)
   - **토큰 비용 및 응답 속도 최적화:** 무관한 도메인 지침이 매 턴(Turn)마다 주입되는 낭비를 차단하고, 에이전트가 해당 도메인 작업을 할 때만 파일 읽기 도구로 온디맨드 로딩하게 유도한다.
   - `doctor.mjs`의 `AGENTS.md Size` 진단을 통해 150줄 초과 시 경고를 출력하여 시스템 차원에서 점진적 분리를 자동 유도한다.
-
 

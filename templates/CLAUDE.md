@@ -1,11 +1,11 @@
 # Claude Code Instructions for {{PROJECT_NAME}}
 
-이 프로젝트의 모든 행동 규약, TDD 원칙 및 검증 명령은 루트의 `AGENTS.md`를 **단일 진실 공급원(SSOT)**으로 따른다.
+All behavioral guidelines, deterministic TDD principles, and verification commands in this repository adhere strictly to `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
 
 @AGENTS.md
 
 ---
 
-## Claude Code 실행 지침
-* 대화형 터미널에서 코드 수정 후 반드시 `{{VERIFY_COMMAND}}`를 스스로 실행하여 통과를 직접 확인하라.
-* 프로젝트 고유 규칙의 추가 및 수정은 `AGENTS.md`에 단일 정본으로 작성하여 관리하라.
+## Claude Code Execution Guidelines
+* After modifying code, always execute `{{VERIFY_COMMAND}}` in the interactive terminal to verify passing status.
+* Manage all project-specific domain rules and architecture policies exclusively in `AGENTS.md`.

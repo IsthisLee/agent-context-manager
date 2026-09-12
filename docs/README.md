@@ -6,10 +6,10 @@
 
 ## 📚 문서 목록
 
-1. **[아키텍처 개요 (Architecture)](architecture.md)**
+1. **[아키텍처 개요 (Architecture)](architecture/)**
    * 코어 분리형 토폴로지 (Upstream Core ➔ Downstream Project 주입)
    * 3대 핵심 구성 요소 및 결정론적 검증 원칙
-2. **[아키텍처 논의 (Architecture Discussion)](architecture-discussion.md)**
+2. **[아키텍처 논의 (Architecture Discussion)](architecture-discussion/)**
    * 프로젝트 분석, 역할 선택, 선택적 평가, 검증 증거의 현재 부족한 점과 개편 방향
 3. **[실전 워크플로 가이드 (Workflow)](workflow.md)**
    * 신규/기존 프로젝트 10초 초기화 및 검증 루프

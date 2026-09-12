@@ -9,23 +9,31 @@
 
 ---
 
-## 🎯 Agentic이 해결하는 4대 핵심 문제
+## 🎯 Agentic이 해결하는 5대 핵심 문제
 
-### 1. 서브에이전트 과잉 오케스트레이션과 높은 실패율 종식 (Simplification)
-* **문제:** 수많은 가상 에이전트(Analyst, Builder, Reviewer, QA)를 상시 연결하면 컨텍스트 전달, 오케스트레이션, 토큰 비용, 실행 시간이 함께 늘어납니다. Anthropic의 장기 코딩 하네스 실험에서도 멀티 에이전트 하네스가 더 풍부한 결과를 만들 수 있었지만, Solo 실행보다 훨씬 높은 비용과 실행 시간을 필요로 했습니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
-* **해결:** 모든 작업에 복잡한 팀 구성을 강제하지 않고, **"단일 에이전트 + 결정론적 TDD 루프(Red-Green-Refactor)"**를 기본값으로 둡니다. 작업이 복잡하거나 위험할 때만 별도 리뷰어·평가자를 선택적으로 추가합니다.
+### 1. 자체 러너 재발명과 과도한 오케스트레이션 방지 (Lean Runtime Boundary)
+* **문제:** Claude Code, Codex, Antigravity 같은 에이전트 런타임을 자체 래퍼로 감싸면, 벤더별 CLI·인증·세션·출력 형식 변화까지 직접 유지보수해야 합니다. 동시에 Analyst, Builder, Reviewer, QA를 상시 연결하면 handoff, 오케스트레이션, 토큰 비용, 실행 시간이 함께 늘어납니다. Anthropic의 장기 코딩 하네스 실험에서도 멀티 에이전트 하네스는 더 풍부한 결과를 만들 수 있었지만, Solo 실행보다 훨씬 높은 비용과 실행 시간을 필요로 했습니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
+* **해결:** `agentic run` 같은 자체 에이전트 런타임을 만들지 않습니다. 공식 CLI와 IDE가 모델 호출·인증·세션을 소유하고, Agentic은 **"단일 에이전트 + 결정론적 TDD 루프(Red-Green-Refactor)"**를 기본값으로 제공합니다. 작업이 복잡하거나 위험할 때만 Planner·Reviewer·Evaluator를 선택적으로 추가합니다.
 
-### 2. 5대 AI 에이전트의 극심한 설정 파편화 해결 (Cross-Agent SSOT)
-* **문제:** OpenAI(`AGENTS.md`), Anthropic(`CLAUDE.md`), Google(`gemini/rules`), Cursor(`.cursor/rules`), Copilot(`.github/`) 등 에이전트마다 규격이 제각각이라, 도구를 바꿀 때마다 규칙이 따로 놀고 유지보수가 불가능했습니다.
-* **해결:** `agentic init` 단 한 번으로 5대 에이전트 지침을 동시 구성합니다. **`AGENTS.md`를 프로젝트 내 유일한 단일 진실 공급원(SSOT)**으로 삼고 나머지 파일들이 이를 참조하게 만들어, **개발자는 `AGENTS.md` 딱 하나만 관리**하면 됩니다.
+### 2. 템플릿 부패와 에이전트 설정 파편화 해결 (Cross-Agent SSOT)
+* **문제:** 프로젝트마다 지침과 검증 도구를 복사해 두면 프롬프트 개선과 도구 버그 수정이 누락되어 Template Rot이 발생합니다. 또한 Codex(`AGENTS.md`), Claude Code(`CLAUDE.md`), Antigravity(`.gemini/rules/`), Cursor(`.cursor/rules/`), Copilot(`.github/`)은 서로 다른 지침 위치를 요구하므로 규칙이 쉽게 갈라집니다.
+* **해결:** `agentic init`과 `sync`가 5대 에이전트 지침과 검증 도구를 동기화합니다. **`AGENTS.md`를 프로젝트 내 유일한 단일 진실 공급원(SSOT)**으로 삼고 나머지 파일은 이를 참조하게 만들어, 개발자는 한 곳에서만 규칙을 관리합니다.
 
 ### 3. 에이전트의 환각과 거짓 완료 보고 원천 차단 (Deterministic Evals)
 * **문제:** 에이전트가 코드를 짠 뒤 "테스트를 다 통과했습니다"라고 거짓말(환각)을 하거나 회귀 버그를 내도 사람이 터미널을 열기 전까지 알 수 없었습니다.
 * **해결:** 프로젝트에 자가 검증 러너(`tools/agentic/check.mjs`)를 심어주고, 실제 테스트(`npm test`)를 통과하여 `exitCode: 0` 기계 판독 증거(`.agentic/last-check.json`)가 생성되지 않으면 **작업 완료를 인정하지 않는 결정론적 가드레일**을 강제합니다. (테스트 0개는 실패 처리)
 
 ### 4. 프로젝트 기술 스택 및 제약사항 자동 감지 (Zero-Configuration)
-* **문제:** 프레임워크(Next.js App Router 등)의 특수한 규칙이나 DB 마이그레이션 정책을 에이전트에게 일일이 수동으로 알려주기 번거로웠습니다.
-* **해결:** `init` 실행 시 프로젝트를 자동 분석하여 **Next.js App Router(RSC / 'use client' 규칙)**, **TypeScript**, **Prisma/Drizzle**, **패키지 매니저(pnpm/yarn/npm)**를 즉시 감지하고 `AGENTS.md`에 최적화된 제약 지침을 자동으로 요약 주입합니다.
+* **문제:** 프레임워크, 테스트 구성, 데이터 경계 같은 프로젝트 제약을 에이전트에게 매번 수동으로 설명하면 누락과 작업 방식의 불일치가 발생합니다.
+* **해결:** `agentic analyze`가 프로젝트 프로필(ProjectProfile)을 만들고, Next.js App Router, TypeScript, Prisma/Drizzle, 패키지 매니저, 테스트 명령 등 작업에 필요한 제약을 감지해 `AGENTS.md`에 요약합니다.
+
+### 5. 작업별 적응형 역할 선택 (Adaptive Harness)
+* **문제:** 모든 작업에 멀티 에이전트를 붙이면 비용과 handoff가 늘고, 반대로 복잡하거나 고위험인 변경까지 단일 에이전트에만 맡기면 계획과 검토가 부족할 수 있습니다.
+* **해결:** `agentic plan`이 작업 복잡도, 위험도, 병렬 가능성에 맞춰 실행 방식을 선택합니다.
+  * **일반적이고 명확한 작업:** 한 에이전트가 계획 → 구현 → 테스트 → 디버깅을 수행합니다.
+  * **고위험 변경:** 독립 Reviewer 또는 Verifier를 추가해 변경 근거와 검증 결과를 분리합니다.
+  * **크고 병렬 분해 가능한 작업:** Planner, Builder, Reviewer, QA 역할을 가진 가상 팀을 구성할 수 있습니다.
+  * **가상 팀 사용 조건:** 작업 단위가 독립적이고, 역할 간 전달 artifact와 완료 기준이 명확할 때만 사용합니다. 그렇지 않으면 handoff 비용을 피하기 위해 단일 에이전트 루프를 유지합니다.
 
 ### 왜 상시 가상 팀 분업을 기본값으로 두지 않나요?
 
@@ -150,8 +158,8 @@ agentic/
 │   ├── analyzer.test.mjs        # 프로젝트 분석기 단위 테스트
 │   └── synthetic/               # 합성 예제 및 TDD 검증
 ├── docs/                        # 상세 기술 문서 및 ADR
-│   ├── architecture.md          # 아키텍처 개요
-│   ├── architecture-discussion.md # 향후 아키텍처 개편 논의
+│   ├── architecture/            # 확정된 현재 아키텍처
+│   ├── architecture-discussion/ # 논의·구현 중인 아키텍처 계약
 │   ├── workflow.md              # 실전 워크플로 가이드
 │   ├── references.md            # 2026 공식 참고 문헌 및 비교 분석
 │   └── adr/                     # 아키텍처 결정 기록

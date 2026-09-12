@@ -22,6 +22,7 @@
 4. **[실전 워크플로 가이드 (Workflow)](workflow.md)**
    * 신규/기존 프로젝트 초기화 및 검증 루프
    * AGENTS.md 중심의 단일 정본 관리 워크플로
+   * 4대 사용자 워크플로와 점진적 지침 공개(AGENTS.md → docs/) 가이드
 5. **아키텍처 결정 기록 (ADRs)**
    * **[ADR 0001: 린 크로스 에이전트 하네스로의 피벗](adr/0001-lean-cross-agent-pivot.md)**: 자체 러너 폐기 및 린 하네스 피벗
    * **[ADR 0002: AGENTS.md 중심 SSOT 및 포인터 참조 패턴](adr/0002-agents-md-ssot-and-pointer-pattern.md)**: 5대 에이전트 규칙 중복 제거 및 단일 진실 공급원 확립

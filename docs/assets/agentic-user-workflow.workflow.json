@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Agentic 사용자·에이전트 워크플로",
+    "quality_profile": "showcase"
+  },
+  "lanes": [
+    { "id": "user", "label": "사용자" },
+    { "id": "agent", "label": "선택한 AI 에이전트" },
+    { "id": "project", "label": "대상 프로젝트 (로컬 Agentic CLI)" }
+  ],
+  "phases": [
+    { "id": "setup", "label": "도입", "fromCol": 0, "toCol": 1 },
+    { "id": "build", "label": "정책·작업 의뢰", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "prove", "label": "개발·검증·검토", "fromCol": 4, "toCol": 5, "variant": "security" }
+  ],
+  "mainPath": ["install", "init", "request", "work", "check", "report", "review"],
+  "nodes": [
+    { "id": "install", "lane": "user", "col": 0, "width": 128, "type": "external", "label": "개발 의존성 설치", "sublabel": "npm install -D @isthis/agentic" },
+    { "id": "init", "lane": "project", "col": 1, "width": 120, "type": "backend", "label": "Agentic CLI: init", "sublabel": "AGENTS·포인터·도구 생성" },
+    { "id": "request", "lane": "user", "col": 2, "type": "external", "label": "정책·작업 의뢰", "sublabel": "요구사항·완료 기준" },
+    { "id": "work", "lane": "agent", "col": 3, "width": 128, "type": "backend", "label": "규칙 초안·TDD 개발", "sublabel": "초안 제안 → 테스트 → 구현" },
+    { "id": "check", "lane": "agent", "col": 4, "type": "security", "label": "프로젝트 검증", "sublabel": "npm run check", "tag": "에이전트 실행" },
+    { "id": "report", "lane": "agent", "col": 5, "type": "database", "label": "결과 보고", "sublabel": "명령·범위·결과·한계" },
+    { "id": "review", "lane": "user", "col": 5, "width": 96, "type": "external", "label": "승인·결과 검토", "sublabel": "규칙·diff·검증 결과" },
+    { "id": "update", "lane": "user", "col": 3, "type": "messagebus", "label": "버전 업데이트", "sublabel": "검토한 버전 설치" },
+    { "id": "sync", "lane": "project", "col": 4, "width": 120, "type": "messagebus", "label": "Agentic CLI: sync", "sublabel": "생성 파일 갱신 후 diff·doctor" }
+  ],
+  "edges": [
+    { "from": "install", "to": "init", "label": "npx agentic init .", "role": "main" },
+    { "from": "init", "to": "request", "label": "생성 파일 검토", "role": "main" },
+    { "from": "request", "to": "work", "label": "초안 제안·승인 뒤", "role": "main" },
+    { "from": "work", "to": "check", "role": "main" },
+    { "from": "check", "to": "report", "label": "통과", "role": "main" },
+    { "from": "report", "to": "review", "role": "main" },
+    { "from": "check", "to": "work", "label": "실패·경고: 수정 후 재검증", "variant": "security", "role": "error" },
+    { "from": "update", "to": "sync", "label": "업데이트 시", "variant": "dashed", "role": "branch" }
+  ]
+}

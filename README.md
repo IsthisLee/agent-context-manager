@@ -56,25 +56,23 @@ Codex, Claude Code, Antigravity, Cursor, Copilot은 서로 다른 지침 위치�
 
 ## 🚀 빠른 시작
 
-**전제 조건:** Node.js 20 이상, npm, Git. 현재는 공개 전 저장소 실행 방식이므로, 신뢰하는 저장소 리비전을 사용합니다.
+**전제 조건:** Node.js 20 이상과 npm. Git은 `sync` 전후 변경을 검토하는 데 권장됩니다. 팀·CI 환경에서는 `latest` 대신 검토한 정확한 패키지 버전을 사용하세요.
 
 ```bash
-# 대상 프로젝트에서 초기화
-npx github:IsthisLee/agentic init
-
-# 코드 변경 후 검증
-npm run check
-
-# 지침 및 환경 진단
-node tools/agentic/doctor.mjs
-
-# 최신 Core 규칙 동기화
-npx github:IsthisLee/agentic sync
+# 대상 프로젝트에서 한 번만 설치·초기화
+npm install --save-dev @isthis/agentic@<검토한-버전>
+npx agentic init .
 ```
 
-초기화 시 에이전트 지침과 `tools/agentic/`가 생성됩니다. 기존 `check` 스크립트가 없을 때만 `npm run check`를 생성된 검증 실행기로 등록합니다. 기존 `check` 스크립트는 덮어쓰지 않으므로, 자동 증거 기록이 필요하면 해당 스크립트가 `tools/agentic/check.mjs`를 호출하도록 프로젝트에서 연결해야 합니다.
+초기화 후 사용자는 정책·요구사항을 제공하고, 평소 사용하는 에이전트에게 `AGENTS.md` 규칙 초안과 작업을 의뢰합니다. 에이전트가 코드 변경과 `npm run check` 실행을 맡고, 사용자는 규칙·변경·결과를 검토합니다. 기존 `check` 스크립트가 없을 때만 `npm run check`를 생성된 검증 실행기로 등록합니다.
 
 `test` 스크립트와 알려진 테스트 파일이 모두 없는 Node 프로젝트에만 `node --test`와 `tests/smoke.test.mjs`를 추가합니다. 스모크 테스트는 검증 파이프라인의 시작점일 뿐 제품 테스트를 대체하지 않습니다.
+
+## 🧭 사용자 워크플로
+
+[![Agentic 사용자 워크플로](docs/assets/agentic-user-workflow.visual-check.1440x900.light.png)](docs/assets/agentic-user-workflow.html)
+
+사용자는 설치·초기화·규칙 작성·결과 검토를 맡고, 에이전트는 TDD 개발과 `npm run check`를 맡습니다. 실패·경고가 있으면 에이전트가 수정 후 다시 검증하며, 업데이트는 사용자가 `sync` 뒤 `git diff`와 `doctor`로 확인합니다. [상호작용 다이어그램과 상세 워크플로 보기](docs/workflow.md)
 
 ### 검증은 무엇을 확인하나요?
 

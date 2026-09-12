@@ -17,7 +17,7 @@
 - 문서 정본·제품 범위·Core 소유권을 명확히 정리
 - 저장소 개발·CI 패키지 관리자를 고정된 pnpm 환경으로 전환하고 npm 배포·사용 호환성은 유지
 - 지원 런타임을 Node.js 24 LTS 이상으로 상향하고 CI·배포 workflow·기여 문서를 동일하게 정렬
-- Windows 경로 구분자와 `npm.cmd` 차이를 평가에서 처리하고, GitHub Actions를 Node 24 호환 버전으로 갱신
+- Windows 경로 구분자·`npm.cmd`·설치된 `.cmd` shim 차이를 평가에서 처리하고, GitHub Actions를 Node 24 호환 버전으로 갱신
 - Core 생성·지침 설정에서 옵션 생략 시 사용할 수 있는 TUI 제공
 - `agentic setup` 단독 실행 시 scope별 Core 선택과 지침별 TUI 설정 제공
 - `agt`를 `agentic` CLI의 짧은 별칭으로 제공

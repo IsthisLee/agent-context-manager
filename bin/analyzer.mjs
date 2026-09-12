@@ -2,8 +2,9 @@ import fs from 'fs';
 import path from 'path';
 
 /**
- * detectProjectConstraints
  * 프로젝트 디렉터리를 분석하여 프레임워크, 언어, DB/ORM, 패키지 매니저 등의 핵심 제약을 마크다운 목록으로 추출한다.
+ * @param {string} targetDir - 분석할 대상 프로젝트 디렉터리 경로
+ * @returns {string} 마크다운 형태의 제약 목록
  */
 export function detectProjectConstraints(targetDir) {
   const constraints = [];
@@ -71,9 +72,11 @@ export function detectProjectConstraints(targetDir) {
 }
 
 /**
- * mergeAgentsMd
  * 새 템플릿 내용과 기존 AGENTS.md 내용을 스마트 병합하여,
  * 사용자가 "## 4. 프로젝트 규칙 확장 (SSOT)" 아래에 작성해 둔 커스텀 규칙을 안전하게 보존한다.
+ * @param {string} newTemplateContent - 렌더링된 새 AGENTS.md 템플릿 내용
+ * @param {string} [existingContent] - 기존 프로젝트에 존재하던 AGENTS.md 내용
+ * @returns {string} 병합된 최종 AGENTS.md 내용
  */
 export function mergeAgentsMd(newTemplateContent, existingContent) {
   if (!existingContent || typeof existingContent !== 'string') {
@@ -112,9 +115,10 @@ export function mergeAgentsMd(newTemplateContent, existingContent) {
 }
 
 /**
- * ensureTestSetup
  * 테스트 프레임워크가 없는 프로젝트(Cold Start)를 감지하여
  * Node 내장 테스트 러너(node --test)를 등록하고 기본 스모크 테스트 파일을 생성한다.
+ * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
+ * @returns {void}
  */
 export function ensureTestSetup(targetDir) {
   const pkgPath = path.join(targetDir, 'package.json');

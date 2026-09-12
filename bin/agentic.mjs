@@ -37,6 +37,19 @@ Agentic CLI - Cross-Agent Harness & Verification Kit
 `);
 }
 
+/**
+ * @typedef {Object} ProjectMeta
+ * @property {string} name - 프로젝트 이름
+ * @property {string} verifyCmd - 프로젝트 자가 검증 명령 (예: npm run check 또는 npm test)
+ * @property {string} startCmd - 개발 서버 시작 명령 (예: npm run dev 또는 npm start)
+ * @property {string} constraints - 자동 감지된 제약사항 마크다운 문자열
+ */
+
+/**
+ * 대상 프로젝트의 메타데이터와 명령어를 수집한다.
+ * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
+ * @returns {ProjectMeta}
+ */
 function getProjectMeta(targetDir) {
   const pkgPath = path.join(targetDir, 'package.json');
   let name = path.basename(targetDir);
@@ -60,6 +73,12 @@ function getProjectMeta(targetDir) {
   return { name, verifyCmd, startCmd, constraints };
 }
 
+/**
+ * 템플릿 파일의 변수({{...}})를 데이터로 치환한다.
+ * @param {string} templatePath - 템플릿 파일 절대 경로
+ * @param {ProjectMeta} data - 치환할 데이터 객체
+ * @returns {string} 렌더링된 문자열
+ */
 function renderTemplate(templatePath, data) {
   let content = fs.readFileSync(templatePath, 'utf-8');
   content = content.replaceAll('{{PROJECT_NAME}}', data.name);
@@ -69,6 +88,12 @@ function renderTemplate(templatePath, data) {
   return content;
 }
 
+/**
+ * 대상 디렉터리가 없으면 생성 후 파일을 복사/갱신한다.
+ * @param {string} src - 원본 파일 경로
+ * @param {string} dest - 대상 파일 경로
+ * @returns {void}
+ */
 function copyOrUpdateFile(src, dest) {
   const dir = path.dirname(dest);
   if (!fs.existsSync(dir)) {
@@ -77,6 +102,11 @@ function copyOrUpdateFile(src, dest) {
   fs.copyFileSync(src, dest);
 }
 
+/**
+ * Agentic 실행 결과물들이 Git에 올라가지 않도록 .gitignore를 보장한다.
+ * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
+ * @returns {void}
+ */
 function ensureGitignore(targetDir) {
   const gitignorePath = path.join(targetDir, '.gitignore');
   const entriesToEnsure = ['.agentic/runs/', '.agentic/last-check.json', '.DS_Store'];
@@ -93,6 +123,11 @@ function ensureGitignore(targetDir) {
   }
 }
 
+/**
+ * package.json에 "check": "node tools/agentic/check.mjs" 스크립트를 등록한다.
+ * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
+ * @returns {void}
+ */
 function ensurePackageScripts(targetDir) {
   const pkgPath = path.join(targetDir, 'package.json');
   if (!fs.existsSync(pkgPath)) return;
@@ -108,7 +143,11 @@ function ensurePackageScripts(targetDir) {
   } catch {}
 }
 
-
+/**
+ * 대상 프로젝트에 에이전트 하네스 및 검증 도구를 동기화/주입한다.
+ * @param {string} [targetPath='.'] - 대상 프로젝트 상대 또는 절대 경로
+ * @returns {void}
+ */
 function syncProject(targetPath = '.') {
   const targetDir = path.resolve(process.cwd(), targetPath);
   if (!fs.existsSync(targetDir)) {
@@ -179,6 +218,11 @@ function syncProject(targetPath = '.') {
   console.log(`\n✨ Successfully initialized multi-agent harness in ${meta.name}!\n`);
 }
 
+/**
+ * 대상 프로젝트의 doctor 진단 스크립트를 실행한다.
+ * @param {string} [targetPath='.'] - 대상 프로젝트 경로
+ * @returns {void}
+ */
 function runDoctor(targetPath = '.') {
   const targetDir = path.resolve(process.cwd(), targetPath);
   const doctorScript = path.join(targetDir, 'tools', 'agentic', 'doctor.mjs');
@@ -189,6 +233,11 @@ function runDoctor(targetPath = '.') {
   spawnSync('node', [doctorScript, ...args.slice(1)], { cwd: targetDir, stdio: 'inherit' });
 }
 
+/**
+ * 대상 프로젝트의 검증(check) 스크립트를 실행한다.
+ * @param {string} [targetPath='.'] - 대상 프로젝트 경로
+ * @returns {void}
+ */
 function runCheck(targetPath = '.') {
   const targetDir = path.resolve(process.cwd(), targetPath);
   const checkScript = path.join(targetDir, 'tools', 'agentic', 'check.mjs');

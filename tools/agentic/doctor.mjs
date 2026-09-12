@@ -17,6 +17,13 @@ const report = {
   checks: []
 };
 
+/**
+ * 진단 항목 결과를 리포트에 추가한다.
+ * @param {string} name - 검사항목 이름
+ * @param {boolean} pass - 통과 여부 (true: PASS, false: WARN)
+ * @param {string} detail - 상세 내용
+ * @returns {void}
+ */
 function addCheck(name, pass, detail) {
   report.checks.push({ name, status: pass ? 'PASS' : 'WARN', detail });
 }

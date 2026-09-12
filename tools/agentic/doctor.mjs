@@ -7,7 +7,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 const cwd = process.cwd();
 const report = {
@@ -30,7 +30,11 @@ function addCheck(name, pass, detail) {
 
 // 1. Git 확인
 try {
-  const branch = execSync('git rev-parse --abbrev-ref HEAD', { cwd, encoding: 'utf-8' }).trim();
+  const branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    cwd,
+    encoding: 'utf-8',
+    stdio: ['ignore', 'pipe', 'ignore']
+  }).trim();
   addCheck('Git Repository', true, `On branch: ${branch}`);
 } catch {
   addCheck('Git Repository', false, 'Not a git repository or git not found');

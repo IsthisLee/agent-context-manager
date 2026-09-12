@@ -15,7 +15,8 @@
   "scripts": {
     "sync": "node ./bin/agentic.mjs sync",
     "test": "node --test evals/**/*.test.mjs",
-    "check": "node ./bin/agentic.mjs check"
+    "check:docs": "node tools/check-docs.mjs",
+    "check": "npm run check:docs && node ./bin/agentic.mjs check"
   },
   "keywords": [
     "agentic",

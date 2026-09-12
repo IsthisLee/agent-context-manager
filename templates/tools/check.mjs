@@ -26,10 +26,15 @@ if (cmdIdx !== -1 && process.argv[cmdIdx + 1]) {
 
 console.log(`[Agentic Check] Running verification: ${cmd} ${args.join(' ')}`);
 
+// node --test 내부에서 실행돼도 대상 프로젝트의 테스트는 독립 프로세스로 실행한다.
+// Node의 내부 테스트 컨텍스트를 전달하면 중첩 테스트 실행으로 오인할 수 있다.
+const childEnv = { ...process.env };
+delete childEnv.NODE_TEST_CONTEXT;
+
 const result = spawnSync(cmd, args, {
   cwd,
   stdio: 'inherit',
-  env: process.env
+  env: childEnv
 });
 
 const durationMs = Date.now() - startTime;

@@ -1,0 +1,94 @@
+#!/usr/bin/env node
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const errors = [];
+
+function walkMarkdown(dir, files = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === '.git' || entry.name === 'node_modules') continue;
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkMarkdown(entryPath, files);
+    else if (entry.isFile() && entry.name.endsWith('.md')) files.push(entryPath);
+  }
+  return files;
+}
+
+function contentWithoutCodeBlocks(content) {
+  return content.replace(/```[\s\S]*?```/g, '');
+}
+
+function checkInternalLinks(markdownFile) {
+  const content = contentWithoutCodeBlocks(fs.readFileSync(markdownFile, 'utf8'));
+  const linkPattern = /!?\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)/g;
+  for (const match of content.matchAll(linkPattern)) {
+    const rawTarget = match[1].replace(/^<|>$/g, '');
+    if (rawTarget.startsWith('#') || /^(https?:|mailto:|tel:)/i.test(rawTarget)) continue;
+    const target = rawTarget.split('#')[0];
+    if (target && !fs.existsSync(path.resolve(path.dirname(markdownFile), target))) {
+      errors.push(`${path.relative(root, markdownFile)}: missing internal link target ${rawTarget}`);
+    }
+  }
+}
+
+function checkAdrs() {
+  const adrDir = path.join(root, 'docs', 'adr');
+  const adrFiles = fs.readdirSync(adrDir).filter(name => /^\d{4}-[a-z0-9-]+\.md$/.test(name)).sort();
+  for (const adrFile of adrFiles) {
+    const content = fs.readFileSync(path.join(adrDir, adrFile), 'utf8');
+    for (const section of ['배경|Context', '대안|Options', '결정|Decision', '결과|Consequences']) {
+      if (!new RegExp(`^## .*(${section})`, 'mi').test(content)) {
+        errors.push(`docs/adr/${adrFile}: missing required ADR section (${section})`);
+      }
+    }
+  }
+
+  const index = fs.readFileSync(path.join(root, 'docs', 'README.md'), 'utf8');
+  const indexed = [...index.matchAll(/\]\(adr\/(\d{4}-[a-z0-9-]+\.md)\)/g)].map(match => match[1]);
+  if (indexed.join('|') !== adrFiles.join('|')) {
+    errors.push('docs/README.md: ADR index must contain every ADR exactly once in filename order');
+  }
+}
+
+function checkDiscussionStatuses() {
+  const discussionDir = path.join(root, 'docs', 'discussion', 'architecture');
+  const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
+  const index = fs.readFileSync(path.join(discussionDir, 'README.md'), 'utf8');
+  for (const name of fs.readdirSync(discussionDir).filter(name => name.endsWith('.md') && name !== 'README.md')) {
+    const content = fs.readFileSync(path.join(discussionDir, name), 'utf8');
+    const match = content.match(/^\*\*상태:\*\* (.+)$/m);
+    if (!match || !allowed.has(match[1].trim())) {
+      errors.push(`docs/discussion/architecture/${name}: use an allowed **상태:** value`);
+      continue;
+    }
+
+    const indexRow = index.split('\n').find(line => line.includes(`](${name})`));
+    const indexStatus = indexRow?.split('|').map(cell => cell.trim()).at(-2);
+    if (indexStatus !== match[1].trim()) {
+      errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);
+    }
+  }
+}
+
+function checkChangelog() {
+  const changelog = path.join(root, 'CHANGELOG.md');
+  if (!fs.existsSync(changelog) || !/^## \[Unreleased\]/m.test(fs.readFileSync(changelog, 'utf8'))) {
+    errors.push('CHANGELOG.md: must contain a ## [Unreleased] section');
+  }
+}
+
+for (const markdownFile of walkMarkdown(root)) checkInternalLinks(markdownFile);
+checkAdrs();
+checkDiscussionStatuses();
+checkChangelog();
+
+if (errors.length > 0) {
+  console.error('Documentation check failed:');
+  for (const error of errors) console.error(`- ${error}`);
+  process.exit(1);
+}
+
+console.log('Documentation check passed.');

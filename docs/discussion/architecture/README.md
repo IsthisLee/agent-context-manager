@@ -2,18 +2,18 @@
 
 최종 확인일: **2026-09-12**
 
-이 디렉터리는 아직 채택되지 않았거나 구현 중인 아키텍처 논의를 관리한다. 확정된 결정은 ADR로 기록한 뒤 [`../architecture/`](../architecture/)에 반영한다.
+이 디렉터리는 아직 채택되지 않았거나 구현 중인 아키텍처 논의를 관리한다. 확정된 결정은 ADR로 기록한 뒤 [`../../architecture/`](../../architecture/)에 반영한다.
 
 ## 논의 지도
 
 | 문서 | 다루는 내용 | 상태 |
 |---|---|---|
 | [adaptive-harness.md](adaptive-harness.md) | ProjectProfile, 역할 계약, Solo·가상 팀 선택 | Proposed |
-| [verification.md](verification.md) | 검증 명령, 증거 형식, 테스트 수 정책 | Proposed expansion |
-| [sync-and-artifacts.md](sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | Proposed expansion |
-| [runtime-boundary.md](runtime-boundary.md) | 런타임 래퍼 금지와 책임 경계 | Accepted principle |
-| [external-tools.md](external-tools.md) | revfactory/harness와의 관계 | Discussion |
-| [operations-and-release.md](operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | Proposed expansion |
+| [verification.md](verification.md) | 검증 명령, 증거 형식, 테스트 수 정책 | Proposed |
+| [sync-and-artifacts.md](sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | Proposed |
+| [external-tools.md](external-tools.md) | revfactory/harness와의 관계 | Active reference |
+| [operations-and-release.md](operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | Proposed |
+| [ecosystem-follow-ups.md](ecosystem-follow-ups.md) | 생태계 비교에서 도출한 구현 우선 과제 | Proposed |
 | [implementation-contracts.md](implementation-contracts.md) | 상태 관리와 구현 기록 규약 | Active process |
 
 ## 현재 공백과 목표

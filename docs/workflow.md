@@ -89,7 +89,7 @@ npx github:IsthisLee/agentic doctor
   * 5대 에이전트 지침 파일 존재 여부와 `AGENTS.md`의 줄 수
   * `package.json`이 있을 때 `node_modules` 존재 여부
 
-> `doctor`는 현재 지침 파일의 내용, `package.json` 스크립트, 또는 `tools/agentic/`의 실행 가능 여부를 검사하지 않습니다. 이 항목들은 향후 진단 강화 대상입니다. [`아키텍처 논의`](architecture-discussion/operations-and-release.md)
+> `doctor`는 현재 지침 파일의 내용, `package.json` 스크립트, 또는 `tools/agentic/`의 실행 가능 여부를 검사하지 않습니다. 이 항목들은 향후 진단 강화 대상입니다. [`아키텍처 논의`](discussion/architecture/operations-and-release.md)
 
 ---
 
@@ -120,7 +120,8 @@ node /path/to/agentic/bin/agentic.mjs sync .
 # 1. 템플릿 및 도구 수정 후 자체 검증
 npm run check
 
-# 2. 버전 태깅 및 npm 배포
+# 2. 사용자 영향 변경을 CHANGELOG에 기록한 뒤 버전 태깅 및 npm 배포
+npm run check:docs
 npm version patch  # 0.1.0 -> 0.1.1
 npm publish --access public
 

@@ -1,5 +1,7 @@
 # External Tools
 
+**상태:** Active reference
+
 [`revfactory/harness`](https://github.com/revfactory/harness)는 Claude Code 환경에서 도메인별 에이전트 팀과 전문 스킬을 설계하는 meta-skill이다. Agent Teams와 Subagents 실행 모드를 제공한다.
 
 | 구분 | `revfactory/harness` | `agentic` |

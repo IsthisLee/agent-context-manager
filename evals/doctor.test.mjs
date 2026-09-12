@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -34,6 +34,27 @@ test('doctor checks AGENTS.md size and warns when exceeding 150 lines', () => {
     assert.equal(bloatedCheck.status, 'WARN');
     assert.ok(bloatedCheck.detail.includes('160 lines'));
     assert.ok(bloatedCheck.detail.includes('docs/'));
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('doctor reports a non-Git directory without leaking Git errors to stderr', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-doctor-no-git-test-'));
+
+  try {
+    fs.writeFileSync(path.join(tempDir, 'AGENTS.md'), 'rule line');
+    const result = spawnSync(process.execPath, [doctorScript, '--json'], {
+      cwd: tempDir,
+      encoding: 'utf-8'
+    });
+
+    assert.equal(result.status, 0);
+    assert.equal(result.stderr, '');
+    const report = JSON.parse(result.stdout);
+    const gitCheck = report.checks.find(check => check.name === 'Git Repository');
+    assert.equal(gitCheck.status, 'WARN');
+    assert.equal(gitCheck.detail, 'Not a git repository or git not found');
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

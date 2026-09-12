@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,8 +50,10 @@ test('agentic sync handles cold start and preserves user custom rules', () => {
     assert.ok(resyncedAgents.includes('토스페이먼츠 샌드박스 키를 사용할 것.'), 'Custom rule body must be preserved');
 
     // 3. Verify check works deterministically
-    const checkResult = execSync('npm run check', { cwd: tempDir, encoding: 'utf-8' });
-    assert.ok(checkResult.includes('Verification PASSED'));
+    const checkResult = spawnSync('npm', ['run', 'check'], { cwd: tempDir, encoding: 'utf-8' });
+    assert.equal(checkResult.status, 0);
+    assert.ok(checkResult.stdout.includes('Verification PASSED'));
+    assert.doesNotMatch(checkResult.stderr, /node:test run\(\) is being called recursively/);
   } finally {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }

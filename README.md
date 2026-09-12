@@ -4,214 +4,118 @@
 ![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-brightgreen.svg)
 ![Supported Agents](https://img.shields.io/badge/AI_Agents-Codex%20%7C%20Claude%20%7C%20AGY%20%7C%20Cursor%20%7C%20Copilot-orange.svg)
 
-> **"개발자는 오직 `AGENTS.md` 딱 하나에만 프로젝트의 모든 지침을 작성하고 관리하시면 됩니다!"**  
-> 특정 벤더에 종속되지 않고, 5대 AI 에이전트(Codex, Claude Code, Antigravity, Cursor, GitHub Copilot)가 내 프로젝트에서 환각 없이 **결정론적 TDD**로 일하게 만드는 크로스 에이전트 개발 하네스 &amp; 검증 툴킷.
+> **개발자는 `AGENTS.md` 한 곳에서 프로젝트 공통 지침을 관리합니다.**
+> Agentic은 AI 에이전트가 계획·구현·검증 루프를 안전하고 일관되게 수행하도록 돕는 에이전틱 개발 기반 패키지이자, Codex·Claude Code·Antigravity·Cursor·GitHub Copilot용 크로스 에이전트 개발 하네스 & 검증 툴킷입니다.
 
-Agentic은 여러 AI 코딩 도구가 각 프로젝트를 안전하고 일관되게 개발하도록, 공통 규칙·검증·프로젝트 이해·작업 전략을 제공하는 제어 계층입니다. **에이전트를 실행·통제하는 런타임이 아니라, 모든 에이전트가 동일하고 안전하게 일하는 프로젝트 환경을 만드는 것이 목표입니다.**
-
----
+Agentic은 에이전트를 실행·통제하는 런타임이 아닙니다. `AGENTS.md`를 공통 규칙의 SSOT로 관리하고, 각 도구용 지침을 동기화하며, 프로젝트의 네이티브 검증 명령으로 실제 결과를 확인하는 프로젝트 환경을 만듭니다. 패키지의 장기 방향과 구현 상태는 [제품 방향 문서](docs/product-direction.md)에서 관리합니다.
 
 ## ✅ 핵심 원칙과 기능
 
-- `AGENTS.md`를 공통 규칙의 SSOT로 관리하고, 도구별 지침은 동기화합니다.
-- `npm run check` 같은 프로젝트 네이티브 명령으로 결과를 결정론적으로 검증합니다.
-- 프로젝트 스택·제약·검증 방법을 `ProjectProfile`로 분석합니다.
-- 일반 작업은 단일 에이전트가 계획 → 구현 → 테스트 → 디버깅 루프로 수행합니다.
-- 복잡하거나 고위험·병렬 가능한 작업에만 리뷰 또는 가상 팀 분업을 선택합니다.
+- `AGENTS.md`를 공통 규칙의 SSOT로 관리하고, 도구별 지침을 동기화합니다.
+- 생성된 검증 실행기로 프로젝트 테스트를 돌려 **회귀와 프로젝트 계약 위반을 확인**하고, 실행 명령·종료 코드·소요 시간·성공 여부를 기계 판독 증거로 남깁니다.
+- 테스트 구성이 전혀 없는 Node 프로젝트에만 안전한 스모크 테스트를 부트스트랩합니다.
+- 일반 작업은 단일 에이전트의 계획 → 구현 → 테스트 → 디버깅 루프를 기본으로 합니다.
 - Claude Code·Codex 등의 CLI를 감싸는 자체 런타임은 만들지 않습니다.
-- Agentic은 범용 규칙·정책·검증 계약을, 대상 프로젝트는 비즈니스 코드·실제 테스트를 보유합니다.
-
----
+- `ProjectProfile` 분석과 작업별 역할 선택은 현재 설계·검증 중인 다음 단계입니다.
 
 ## 🎯 Agentic이 해결하는 5대 핵심 문제
 
-### 1. 자체 러너 재발명과 과도한 오케스트레이션 방지 (Lean Runtime Boundary)
+### 1. 자체 러너 재발명과 과도한 오케스트레이션 방지
 
-- **문제:** Claude Code, Codex, Antigravity 같은 에이전트 런타임을 자체 래퍼로 감싸면, 벤더별 CLI·인증·세션·출력 형식 변화까지 직접 유지보수해야 합니다. 동시에 Analyst, Builder, Reviewer, QA를 상시 연결하면 handoff, 오케스트레이션, 토큰 비용, 실행 시간이 함께 늘어납니다. Anthropic의 장기 코딩 하네스 실험에서도 멀티 에이전트 하네스는 더 풍부한 결과를 만들 수 있었지만, Solo 실행보다 훨씬 높은 비용과 실행 시간을 필요로 했습니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
-- **해결:** `agentic run` 같은 자체 에이전트 런타임을 만들지 않습니다. 공식 CLI와 IDE가 모델 호출·인증·세션을 소유하고, Agentic은 **"단일 에이전트 + 결정론적 TDD 루프(Red-Green-Refactor)"**를 기본값으로 제공합니다. 작업이 복잡하거나 위험할 때만 Planner·Reviewer·Verifier를 선택적으로 추가합니다.
+에이전트 CLI를 자체 래퍼로 감싸면 벤더별 인증·세션·출력 형식 변화까지 유지보수해야 합니다. Agentic은 `agentic run` 같은 자체 런타임을 만들지 않고, 공식 CLI와 IDE가 모델 호출·인증·세션을 소유하게 둡니다. 기본은 **단일 에이전트 + 결정론적 TDD 루프**이며, 복잡하거나 고위험인 작업에서만 추가 역할을 선택합니다. Anthropic도 하네스의 각 구성 요소가 모델 능력에 관한 가정을 담으므로, 가장 단순한 해법에서 시작해 필요할 때만 복잡도를 늘려야 한다고 설명합니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
 
-### 2. 템플릿 부패와 에이전트 설정 파편화 해결 (Cross-Agent SSOT)
+### 2. 템플릿 부패와 에이전트 설정 파편화 해결
 
-- **문제:** 프로젝트마다 지침과 검증 도구를 복사해 두면 프롬프트 개선과 도구 버그 수정이 누락되어 Template Rot이 발생합니다. 또한 Codex(`AGENTS.md`), Claude Code(`CLAUDE.md`), Antigravity(`.gemini/rules/`), Cursor(`.cursor/rules/`), Copilot(`.github/`)은 서로 다른 지침 위치를 요구하므로 규칙이 쉽게 갈라집니다.
-- **해결:** `agentic init`과 `sync`가 5대 에이전트 지침과 검증 도구를 동기화합니다. **`AGENTS.md`를 프로젝트 내 유일한 단일 진실 공급원(SSOT)**으로 삼고 나머지 파일은 이를 참조하게 만들어, 개발자는 한 곳에서만 규칙을 관리합니다.
+Codex, Claude Code, Antigravity, Cursor, Copilot은 서로 다른 지침 위치를 사용합니다. `init`과 `sync`는 `AGENTS.md`를 대상 프로젝트의 유일한 SSOT로 두고, 나머지 지침 파일과 검증 도구를 동기화해 규칙 드리프트를 줄입니다. OpenAI도 저장소의 `AGENTS.md`가 코드 스타일·구조·도메인 맥락 같은 지속 지침을 제공하는 수단이라고 안내합니다. ([OpenAI, *Introducing Codex*](https://openai.com/index/introducing-codex/))
 
-### 3. 에이전트의 환각과 거짓 완료 보고 원천 차단 (Deterministic Evals)
+### 3. 환각과 거짓 완료 보고에 대한 결정론적 검증
 
-- **문제:** 에이전트가 코드를 짠 뒤 "테스트를 다 통과했습니다"라고 거짓말(환각)을 하거나 회귀 버그를 내도 사람이 터미널을 열기 전까지 알 수 없었습니다.
-- **해결:** 프로젝트에 자가 검증 러너(`tools/agentic/check.mjs`)를 심어주고, 실제 테스트(`npm test`)를 통과하여 `exitCode: 0` 기계 판독 증거(`.agentic/last-check.json`)가 생성되지 않으면 **작업 완료를 인정하지 않는 결정론적 가드레일**을 제공합니다. 테스트 수를 신뢰성 있게 판별하는 계약은 별도로 확장합니다.
+`tools/agentic/check.mjs`는 프로젝트 테스트를 실행하고 종료 코드·실행 시간·성공 여부를 `.agentic/last-check.json`에 기록합니다. 완료 선언보다 실제 검증 증거를 우선합니다. 코딩 에이전트 평가는 안정적인 테스트 환경과 생성 코드에 대한 철저한 테스트에 의존해야 한다는 Anthropic의 평가 원칙을 따릅니다. ([Anthropic, *Demystifying evals for AI agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents))
 
-### 4. 프로젝트 기술 스택 및 제약사항 자동 감지 (Zero-Configuration)
+### 4. 프로젝트 맥락 누락 방지 — 다음 단계
 
-- **문제:** 프레임워크, 테스트 구성, 데이터 경계 같은 프로젝트 제약을 에이전트에게 매번 수동으로 설명하면 누락과 작업 방식의 불일치가 발생합니다.
-- **해결:** `agentic analyze`가 프로젝트 프로필(ProjectProfile)을 만들고, Next.js App Router, TypeScript, Prisma/Drizzle, 패키지 매니저, 테스트 명령 등 작업에 필요한 제약을 감지해 `AGENTS.md`에 요약합니다.
+현재는 기술 제약을 Markdown으로 감지합니다. 다음 단계인 `ProjectProfile`과 `agentic analyze`는 스택·제약·검증 명령·위험 신호를 구조화해, 프로젝트 맥락을 매번 수동으로 설명하는 부담을 줄입니다. 필요한 맥락을 작업에 맞게 구성하는 일이 에이전트 성능의 핵심이라는 컨텍스트 엔지니어링 원칙을 적용합니다. ([Anthropic, *Effective context engineering for AI agents*](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents))
 
-### 5. 작업별 적응형 역할 선택 (Adaptive Harness)
+### 5. 작업별 적응형 역할 선택 — 다음 단계
 
-- **문제:** 모든 작업에 멀티 에이전트를 붙이면 비용과 handoff가 늘고, 반대로 복잡하거나 고위험인 변경까지 단일 에이전트에만 맡기면 계획과 검토가 부족할 수 있습니다.
-- **해결:** `agentic plan`이 작업 복잡도, 위험도, 병렬 가능성에 맞춰 실행 방식을 선택합니다.
-  - **일반적이고 명확한 작업:** 한 에이전트가 계획 → 구현 → 테스트 → 디버깅을 수행합니다.
-  - **고위험 변경:** 독립 Reviewer 또는 Verifier를 추가해 변경 근거와 검증 결과를 분리합니다.
-  - **크고 병렬 분해 가능한 작업:** Planner, Builder, Reviewer, QA 역할을 가진 가상 팀을 구성할 수 있습니다.
-  - **가상 팀 사용 조건:** 작업 단위가 독립적이고, 역할 간 전달 artifact와 완료 기준이 명확할 때만 사용합니다. 그렇지 않으면 handoff 비용을 피하기 위해 단일 에이전트 루프를 유지합니다.
-
-### 왜 상시 가상 팀 분업을 기본값으로 두지 않나요?
-
-Agentic은 멀티 에이전트를 부정하지 않습니다. 다만 일상적인 실무 개발에서는 기획자·설계자·코더·QA 에이전트를 항상 별도로 실행하는 방식이 작업에 비해 과할 수 있으므로, 다음과 같은 이유로 단일 에이전트 루프를 기본값으로 삼습니다.
-
-- **작업 단위가 작을수록 분업 비용이 커집니다:** 여러 에이전트 사이의 handoff가 늘어나면 요구사항과 구현 맥락을 전달·동기화하는 추가 작업이 발생합니다. Anthropic도 장기 작업에서 컨텍스트 리셋과 구조화된 handoff가 오케스트레이션 복잡도, 토큰 오버헤드, 지연 시간을 추가한다고 설명합니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
-- **비용과 품질은 하나의 축이 아닙니다:** Anthropic의 비교 실험에서는 Solo 실행이 약 20분·$9, 전체 하네스 실행이 약 6시간·$200이었고, 전체 하네스가 더 풍부한 결과를 냈습니다. 따라서 “항상 단일 에이전트가 더 정확하다”가 아니라, 작업의 난이도와 품질 요구에 따라 추가 평가 비용을 선택해야 합니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
-- **검증은 에이전트 수보다 증거가 중요합니다:** Agentic은 에이전트 간 구두 승인을 늘리는 대신 `npm run check`로 실제 테스트를 실행하고 기계 판독 가능한 검증 증거를 남깁니다. ([Anthropic, *Demystifying evals for AI agents*](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents))
-- **복잡한 작업에는 선택적 분업을 허용합니다:** 모델이 안정적으로 처리하기 어려운 작업이나 고위험 변경에는 리뷰어·평가자·전문 서브에이전트를 추가할 수 있습니다. 핵심은 팀 구성을 기본값으로 고정하지 않고 작업에 맞게 선택하는 것입니다.
-
-### `revfactory/harness`와 Agentic의 위치
-
-`revfactory/harness`는 Claude Code 환경에서 도메인별 에이전트 팀을 설계하고, 전문 에이전트가 사용할 스킬을 생성하는 **meta-skill**입니다. Agent Teams와 Subagents 같은 실행 모드와 여러 팀 구성 패턴을 제공합니다. ([`revfactory/harness` GitHub 저장소](https://github.com/revfactory/harness))
-
-Agentic은 이 도구와 다른 계층을 다룹니다. 특정 Claude Code 팀을 생성하는 대신, Codex·Claude Code·Antigravity·Cursor·Copilot이 공유하는 규칙을 `AGENTS.md`에 모으고, 코드 변경 후 테스트가 실제로 통과했는지 검증하는 공통 계약을 제공합니다.
-
-
-| 구분        | `revfactory/harness`            | `agentic`                       |
-| --------- | ------------------------------- | ------------------------------- |
-| **주요 역할** | Claude Code 내부의 도메인별 팀·스킬 구성    | 여러 에이전트가 공유하는 규칙·검증 계약          |
-| **핵심 문제** | 어떤 전문 에이전트와 팀 패턴을 사용할지          | 규칙 파편화와 검증되지 않은 완료 보고           |
-| **기본 접근** | 필요에 따라 Agent Teams/Subagents 구성 | 단일 에이전트 + `npm run check` 기본 루프 |
-
-
----
+모든 작업에 가상 팀을 붙이면 handoff·비용·지연이 늘어납니다. `agentic plan`은 일반 작업에는 Solo, 불명확한 작업에는 Planner, 고위험 변경에는 Reviewer·Verifier, 독립 병렬 작업에만 가상 팀을 선택하는 방향으로 설계·검증 중입니다. Anthropic의 장기 실행 하네스 사례도 Planner·Generator·Evaluator 역할을 사용하되, 각 구성 요소가 실제로 필요한지 지속해서 단순화·검증해야 한다고 설명합니다. ([Anthropic, *Harness design for long-running application development*](https://www.anthropic.com/engineering/harness-design-long-running-apps))
 
 ## 🤖 5대 에이전트 단일 정본 (SSOT) 구조
 
-명령어 한 번으로 프로젝트에 주입되며, 모든 에이전트가 `AGENTS.md` 단일 정본을 바라봅니다:
-
 ```text
 내 프로젝트/
-├── AGENTS.md                     ◀── [단일 정본 SSOT] 개발자는 이 파일 하나만 작성/관리!
-│                                     (TDD 규약, Next.js/DB 자동 감지 제약, 비즈니스 룰)
-│
-├── CLAUDE.md                     ◀── Claude Code (@AGENTS.md 자동 인클루드)
-├── .gemini/rules/agentic.md      ◀── Google Antigravity (AGENTS.md 참조)
-├── .cursor/rules/agentic.mdc     ◀── Cursor (AGENTS.md 참조)
-├── .github/copilot-instructions  ◀── GitHub Copilot (AGENTS.md 참조)
+├── AGENTS.md                     # 단일 정본: 공통 규약·프로젝트 규칙
+├── CLAUDE.md                     # Claude Code용 포인터
+├── .gemini/rules/agentic.md      # Antigravity용 포인터
+├── .cursor/rules/agentic.mdc     # Cursor용 포인터
+├── .github/copilot-instructions.md # GitHub Copilot용 포인터
 └── tools/agentic/
-    ├── check.mjs                 ◀── TDD 자가 검증 러너 (npm run check)
-    └── doctor.mjs                ◀── 에이전트 환경 및 지침 진단 도구
+    ├── check.mjs                 # npm run check와 검증 증거 생성
+    └── doctor.mjs                # 지침·환경 진단
 ```
 
----
+## 🚀 빠른 시작
 
-## 🚀 빠른 시작 (Quickstart)
-
-### 1. 대상 프로젝트에 주입 (초기화)
-
-작업할 프로젝트 디렉터리에서 명령어 한 줄로 즉시 초기화합니다:
+**전제 조건:** Node.js 20 이상, npm, Git. 현재는 공개 전 저장소 실행 방식이므로, 신뢰하는 저장소 리비전을 사용합니다.
 
 ```bash
-# 무설치 원격 실행 (GitHub 직접 주입):
+# 대상 프로젝트에서 초기화
 npx github:IsthisLee/agentic init
 
-# 또는 로컬 agentic 도구로 직접 실행:
-node /path/to/agentic/bin/agentic.mjs init
-```
-
-👉 **초기화 완료 시 자동 구성되는 항목:**
-
-- 프로젝트 기술 스택(Next.js, TS, DB 등)이 자동 요약된 `AGENTS.md` (SSOT) 생성
-- 5대 에이전트 연동 지침 파일 자동 생성
-- 로컬 검증 도구 (`tools/agentic/check.mjs`, `doctor.mjs`) 설치
-- `package.json`에 `"check": "node tools/agentic/check.mjs"` 자동 등록
-- `test` 스크립트와 알려진 테스트 파일이 모두 없는 Node 프로젝트에는 `node --test`와 `tests/smoke.test.mjs`를 부트스트랩으로 추가
-
-> 스모크 테스트는 검증 명령이 실행되는지만 확인하며, 제품 동작을 검증하지는 않습니다. 기존 테스트 파일이 감지되면 Agentic은 테스트 스크립트나 파일을 변경하지 않고 수동 설정을 안내합니다.
-
----
-
-### 2. 평소 쓰던 에이전트 그대로 개발
-
-- **OpenAI Codex:** 터미널에서 `codex` 실행
-- **Claude Code:** 터미널에서 `claude` 실행
-- **Antigravity:** IDE에서 세션 실행
-- **Cursor / Copilot:** IDE 에디터에서 에이전트 실행
-
-👉 어떤 에이전트를 열든 `AGENTS.md`의 규칙에 따라 **Red-Green TDD**로 작업하며, 코드 수정 후 스스로 `npm run check`를 실행하여 통과 여부를 검증합니다.
-
----
-
-### 3. 일상 명령어
-
-```bash
-# 에이전트 자가 검증 (테스트 실행 및 기계 증거 생성)
+# 코드 변경 후 검증
 npm run check
-# 또는: agentic check
 
-# 에이전트 환경 및 지침 정합성 진단
-agentic doctor
-# 또는: node tools/agentic/doctor.mjs
+# 지침 및 환경 진단
+node tools/agentic/doctor.mjs
 
-# 최신 코어 규칙 동기화
-agentic sync
+# 최신 Core 규칙 동기화
+npx github:IsthisLee/agentic sync
 ```
 
----
+초기화 시 에이전트 지침과 `tools/agentic/`가 생성됩니다. 기존 `check` 스크립트가 없을 때만 `npm run check`를 생성된 검증 실행기로 등록합니다. 기존 `check` 스크립트는 덮어쓰지 않으므로, 자동 증거 기록이 필요하면 해당 스크립트가 `tools/agentic/check.mjs`를 호출하도록 프로젝트에서 연결해야 합니다.
 
-## 💡 프로젝트 규칙 작성 가이드 (개발자 팁)
+`test` 스크립트와 알려진 테스트 파일이 모두 없는 Node 프로젝트에만 `node --test`와 `tests/smoke.test.mjs`를 추가합니다. 스모크 테스트는 검증 파이프라인의 시작점일 뿐 제품 테스트를 대체하지 않습니다.
 
-> **"개발자는 오직 `AGENTS.md` 딱 하나에만 프로젝트의 모든 지침을 작성하고 관리하시면 됩니다!"**
+### 검증은 무엇을 확인하나요?
 
-- **공통 규약 및 핵심 제약:** `AGENTS.md` 상단에 자동으로 배치됩니다.
-- **프로젝트 맞춤 규칙:** `AGENTS.md`의 `## 4. 프로젝트 규칙 확장 (SSOT)` 아래에 자유롭게 작성하세요.
-- **프로젝트가 커질 때 (점진적 로딩 권장):**
-  - `AGENTS.md`는 1~2쪽 이내의 **지도(Map / 색인)**로 유지하고,
-  - 결제 규약, 방대한 DB 정책 등 긴 문서는 `docs/payments.md`, `docs/database.md`로 분리하여 링크하세요. 에이전트가 필요한 순간에만 온디맨드로 읽어 토큰을 아끼고 환각을 방지합니다.
+검증의 목적은 에이전트가 “완료했다”고 말한 사실이 아니라, 프로젝트가 정의한 테스트가 실제로 회귀·계약 위반을 잡지 않았는지 확인하는 것입니다. 생성된 `tools/agentic/check.mjs`는 기본적으로 `npm test`를 실행하고, 실행 명령·종료 코드·소요 시간·성공 여부를 `.agentic/last-check.json`에 기록합니다. 이 파일은 완료 판단을 재현 가능하게 만드는 증거이며, 테스트 결과 전체나 제품 품질을 보증하는 증명은 아닙니다.
 
----
+### 동기화 전 알아둘 점
+
+`sync`는 Agentic이 생성·관리하는 도구별 포인터와 `tools/agentic/`를 최신 템플릿으로 갱신합니다. 대상 프로젝트의 `AGENTS.md`에서는 `## 4. 프로젝트 규칙 확장 (SSOT)` 아래의 사용자 규칙을 보존합니다. 다른 생성 파일에 직접 추가한 내용은 동기화로 덮어써질 수 있으므로, 프로젝트 고유 규칙은 해당 확장 섹션 또는 `docs/`에 둡니다.
+
+## 💡 프로젝트 규칙 작성 가이드
+
+- 공통 TDD·보안·검증 규약은 `AGENTS.md` 상단의 Agentic 영역에 둡니다.
+- 도메인·아키텍처 규칙은 `## 4. 프로젝트 규칙 확장 (SSOT)` 아래에 작성합니다.
+- 긴 결제·DB·배포 정책은 `docs/`로 분리하고 `AGENTS.md`에서 링크합니다. 루트 지침은 짧은 지도 역할을 유지해야 합니다.
 
 ## 📂 저장소 구조
 
 ```text
 agentic/
-├── AGENTS.md                    # 이 저장소의 공통 규칙 SSOT
-├── CLAUDE.md                     # Claude Code용 AGENTS.md 포인터
-├── .github/
-│   └── copilot-instructions.md   # GitHub Copilot용 지침
-├── .cursor/rules/
-│   └── agentic.mdc               # Cursor용 지침
-├── .gemini/rules/
-│   └── agentic.md                # Antigravity용 지침
-├── bin/
-│   ├── agentic.mjs              # init, sync, doctor, check CLI
-│   └── analyzer.mjs             # Next.js, TS, DB 등 프로젝트 제약 자동 감지 엔진
-├── docs/                         # 문서 색인, 설계, 운영 가이드
-│   ├── README.md                 # 문서 탐색 시작점
-│   ├── adr/                      # 아키텍처 결정 기록
-│   ├── architecture/             # 확정된 현재 아키텍처
-│   ├── architecture-discussion/  # 논의·구현 중인 아키텍처 계약
-│   ├── references.md             # 공식 참고 문헌 및 비교 분석
-│   └── workflow.md               # 실전 워크플로 가이드
-├── evals/                        # CLI·분석기·동기화 자체 검증
-│   ├── analyzer.test.mjs
-│   ├── cold-start.test.mjs
-│   ├── doctor.test.mjs
-│   ├── sync-cli.test.mjs
-│   ├── sync-merge.test.mjs
-│   └── synthetic/                # 초기화 대상 합성 프로젝트
-├── templates/                    # 대상 프로젝트에 동기화하는 템플릿
-│   ├── AGENTS.md                 # 단일 정본 템플릿 (SSOT)
-│   ├── CLAUDE.md                 # Claude Code 포인터 템플릿
-│   ├── copilot-instructions.md   # GitHub Copilot 템플릿
-│   ├── cursor-rules/             # Cursor 템플릿
-│   ├── gemini-rules/             # Antigravity 템플릿
-│   └── tools/                    # doctor.mjs, check.mjs 템플릿
-├── tools/agentic/                # 이 저장소의 검증·진단 스크립트
-│   ├── check.mjs
-│   └── doctor.mjs
-├── jsconfig.json
-├── package.json
-├── README.md
-└── LICENSE
+├── AGENTS.md                     # 이 저장소의 개발·문서화 규칙
+├── bin/                          # init, sync, doctor, check CLI와 제약 감지기
+├── templates/                    # 대상 프로젝트에 동기화하는 지침·도구 템플릿
+├── tools/                        # 코어 검증·문서 검사 도구
+├── evals/                        # CLI·동기화·문서 계약 평가
+├── docs/
+│   ├── product-direction.md      # 패키지 방향의 정본
+│   ├── architecture/             # 현재 채택되어 동작하는 아키텍처
+│   ├── discussion/               # 주제별 논의·구현 중인 계약
+│   └── adr/                      # 아키텍처 결정 기록
+├── CHANGELOG.md                  # 사용자 영향 변경과 릴리스 이력
+└── package.json
 ```
 
----
+## 📚 더 알아보기
 
-## 📄 라이선스 (License)
+- [제품 방향과 구현 상태](docs/product-direction.md)
+- [현재 아키텍처](docs/architecture/)
+- [논의 문서](docs/discussion/) · [아키텍처 논의](docs/discussion/architecture/)
+- [실전 워크플로](docs/workflow.md)
+- [전체 문서 색인](docs/README.md)
 
-이 프로젝트는 [Apache License 2.0](LICENSE)을 따릅니다.
+## 📄 라이선스
+
+[Apache License 2.0](LICENSE)

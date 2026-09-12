@@ -1,6 +1,6 @@
 # Operations and Release Contracts
 
-**상태:** Proposed expansion
+**상태:** Proposed
 
 이 문서는 현재 CLI 운영 계약의 공백과 개선 방향을 기록한다. 현재 동작과 목표 동작을 구분하며, 구현·eval·ADR 채택 전에는 목표 동작을 확정 아키텍처로 취급하지 않는다.
 

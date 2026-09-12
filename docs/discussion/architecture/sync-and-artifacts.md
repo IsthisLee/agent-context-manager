@@ -1,6 +1,6 @@
 # Sync and Artifact Contracts
 
-**상태:** Proposed expansion
+**상태:** Proposed
 
 ## Artifact
 

@@ -6,6 +6,13 @@
   "bin": {
     "agentic": "./bin/agentic.mjs"
   },
+  "files": [
+    "bin",
+    "templates",
+    "specifications",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "sync": "node ./bin/agentic.mjs sync",
     "test": "node --test evals/**/*.test.mjs",

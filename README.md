@@ -39,15 +39,20 @@
 
 ### 1. 프로젝트에 하네스 설치 (10초)
 
-작업하려는 프로젝트 폴더에서 다음 명령어를 실행합니다:
+작업하려는 프로젝트 디렉터리에서 **설치 없이 `npx`로 즉시 실행**합니다:
 
 ```bash
-# 로컬 저장소 기준 실행:
-node /path/to/agentic/bin/agentic.mjs init .
+# GitHub 원격 저장소에서 바로 실행 (오픈소스 기본):
+npx github:IsthisLee/agentic init
 
-# 또는 오픈소스 npx 직접 실행:
-npx github:IsthisLee/agentic init .
+# 또는 npm 패키지로 실행:
+npx @isthis/agentic init
 ```
+
+> **선택 사항 (다양한 설치 방식 지원):**
+> * **전역 CLI로 설치:** `npm install -g @isthis/agentic` 실행 후 `agentic init`
+> * **프로젝트 개발 의존성으로 추가:** `npm install -D @isthis/agentic` 후 `npx agentic sync`
+> * **로컬 저장소에서 직접 실행:** `node /path/to/agentic/bin/agentic.mjs init`
 
 👉 **프로젝트에 자동 구성되는 항목:**
 * 5대 에이전트 지침 파일 (`AGENTS.md`, `CLAUDE.md`, `.gemini/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`)

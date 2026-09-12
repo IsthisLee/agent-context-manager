@@ -4,10 +4,13 @@
 
 ## 1. 신규/기존 프로젝트에 적용하기 (10초)
 
-새로운 프로젝트나 기존 업무 프로젝트에 `agentic` 하네스를 적용할 때:
+새로운 프로젝트나 기존 업무 프로젝트에 `agentic` 하네스를 적용할 때 (설치 불필요):
 
 ```bash
-# 대상 프로젝트 디렉터리에서 실행
+# npx로 즉시 실행
+npx github:IsthisLee/agentic init
+
+# 또는 로컬 저장소 기준:
 node /path/to/agentic/bin/agentic.mjs init .
 ```
 

@@ -1,11 +1,9 @@
 # Agentic
 
-![CI](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml/badge.svg)
+[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 > 여러 AI 에이전트가 동일한 프로젝트 개발 지침을 사용하도록, 지침을 생성·설정·동기화·적용하는 패키지입니다.
-
-> 배포 상태: 현재 공개 npm 배포 전입니다. 공개 배포 후에는 아래의 global 설치 명령을 사용할 수 있으며, 지금은 저장소에서 로컬 실행할 수 있습니다.
 
 ## 핵심 목표
 
@@ -15,7 +13,7 @@
 
 개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. Core의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
-공개 npm 배포 후 가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
+가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
 
 ```bash
 npm install --global @isthis/agentic
@@ -80,7 +78,7 @@ Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설
 ### 전제 조건
 
 - 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: 공개 배포 후 `npm install --global @isthis/agentic`
+- 일반 사용자: `npm install --global @isthis/agentic`
 - 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
 
 짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.

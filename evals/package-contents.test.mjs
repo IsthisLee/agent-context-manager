@@ -25,6 +25,8 @@ test('npm package contains only runtime assets and the package README', () => {
   assert(!paths.some(file => file.startsWith('evals/')));
 
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
+  assert.doesNotMatch(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
+  assert.match(readme, /img\.shields\.io\/badge\/Node\.js-24/);
   assert.doesNotMatch(readme, /\]\((?:docs\/|CONTRIBUTING\.md|SECURITY\.md|CODE_OF_CONDUCT\.md)/);
   assert.match(readme, /https:\/\/github\.com\/IsthisLee\/agentic\/blob\/main\/docs\//);
 });

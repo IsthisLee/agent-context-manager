@@ -111,7 +111,7 @@ function syncProject(targetPath = '.') {
   fs.writeFileSync(claudeOut, renderTemplate(claudeTmpl, meta));
   console.log(`  ✓ Generated CLAUDE.md (for Claude Code)`);
 
-  // 3. .gemini/rules/agentic.md
+  // 3. .gemini/rules/agentic.md (Antigravity)
   const geminiTmpl = path.join(CORE_ROOT, 'templates', 'gemini-rules', 'agentic.md');
   const geminiOut = path.join(targetDir, '.gemini', 'rules', 'agentic.md');
   const geminiDir = path.dirname(geminiOut);
@@ -119,13 +119,29 @@ function syncProject(targetPath = '.') {
   fs.writeFileSync(geminiOut, renderTemplate(geminiTmpl, meta));
   console.log(`  ✓ Generated .gemini/rules/agentic.md (for Antigravity)`);
 
-  // 4. tools/agentic/doctor.mjs & check.mjs
+  // 4. .cursor/rules/agentic.mdc (Cursor)
+  const cursorTmpl = path.join(CORE_ROOT, 'templates', 'cursor-rules', 'agentic.mdc');
+  const cursorOut = path.join(targetDir, '.cursor', 'rules', 'agentic.mdc');
+  const cursorDir = path.dirname(cursorOut);
+  if (!fs.existsSync(cursorDir)) fs.mkdirSync(cursorDir, { recursive: true });
+  fs.writeFileSync(cursorOut, renderTemplate(cursorTmpl, meta));
+  console.log(`  ✓ Generated .cursor/rules/agentic.mdc (for Cursor)`);
+
+  // 5. .github/copilot-instructions.md (GitHub Copilot)
+  const copilotTmpl = path.join(CORE_ROOT, 'templates', 'copilot-instructions.md');
+  const copilotOut = path.join(targetDir, '.github', 'copilot-instructions.md');
+  const copilotDir = path.dirname(copilotOut);
+  if (!fs.existsSync(copilotDir)) fs.mkdirSync(copilotDir, { recursive: true });
+  fs.writeFileSync(copilotOut, renderTemplate(copilotTmpl, meta));
+  console.log(`  ✓ Generated .github/copilot-instructions.md (for GitHub Copilot)`);
+
+  // 6. tools/agentic/doctor.mjs & check.mjs
   const toolsDir = path.join(targetDir, 'tools', 'agentic');
   copyOrUpdateFile(path.join(CORE_ROOT, 'templates', 'tools', 'doctor.mjs'), path.join(toolsDir, 'doctor.mjs'));
   copyOrUpdateFile(path.join(CORE_ROOT, 'templates', 'tools', 'check.mjs'), path.join(toolsDir, 'check.mjs'));
   console.log(`  ✓ Installed tools/agentic/doctor.mjs & check.mjs`);
 
-  // 5. Update .gitignore
+  // 7. Update .gitignore
   ensureGitignore(targetDir);
 
   console.log(`\n✨ Successfully initialized multi-agent harness in ${meta.name}!\n`);

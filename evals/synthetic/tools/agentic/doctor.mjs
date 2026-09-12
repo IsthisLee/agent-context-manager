@@ -33,10 +33,14 @@ try {
 const hasAgentsMd = fs.existsSync(path.join(cwd, 'AGENTS.md'));
 const hasClaudeMd = fs.existsSync(path.join(cwd, 'CLAUDE.md'));
 const hasGeminiRules = fs.existsSync(path.join(cwd, '.gemini', 'rules'));
+const hasCursorRules = fs.existsSync(path.join(cwd, '.cursor', 'rules'));
+const hasCopilotInstructions = fs.existsSync(path.join(cwd, '.github', 'copilot-instructions.md'));
 
 addCheck('AGENTS.md (Codex)', hasAgentsMd, hasAgentsMd ? 'Present' : 'Missing');
 addCheck('CLAUDE.md (Claude Code)', hasClaudeMd, hasClaudeMd ? 'Present' : 'Missing');
 addCheck('.gemini/rules (Antigravity)', hasGeminiRules, hasGeminiRules ? 'Present' : 'Missing');
+addCheck('.cursor/rules (Cursor)', hasCursorRules, hasCursorRules ? 'Present' : 'Missing');
+addCheck('.github/copilot-instructions.md (Copilot)', hasCopilotInstructions, hasCopilotInstructions ? 'Present' : 'Missing');
 
 // 3. 의존성 확인 (package.json 있는 경우)
 const pkgPath = path.join(cwd, 'package.json');

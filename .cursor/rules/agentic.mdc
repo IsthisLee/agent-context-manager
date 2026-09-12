@@ -1,0 +1,22 @@
+---
+description: Deterministic TDD and agentic workflow guidelines for Cursor
+globs: *
+alwaysApply: true
+---
+# Cursor Rules for @isthis/agentic
+
+이 프로젝트는 **결정론적 TDD 원칙**에 따라 개발됩니다.
+
+## 1. 핵심 행동 규약
+1. **결정론적 검증 우선:** 코드 수정 후에는 터미널에서 반드시 `npm run check`를 실행하여 통과를 직접 확인하세요. 테스트 0개는 실패입니다.
+2. **최소 변경 원칙 (Minimal Diff):** 요청받은 작업 범위와 무관한 파일의 리팩터링이나 전역 포맷팅 수정을 금지합니다.
+3. **비밀값 보호:** `.env`, API 키, 개인정보 등 민감 정보를 읽어 출력하거나 커밋하지 마세요.
+4. **파괴적 명령 금지:** `git reset --hard`, `git push --force` 등 파괴적 명령은 명시적 요청 없이 실행하지 마세요.
+
+## 2. 주요 실행 명령
+* 환경 진단: `node tools/agentic/doctor.mjs`
+* 자가 검증 (TDD 검사): `npm run check`
+* 실행: `npm start`
+
+## 3. 규칙 개선 및 승격 가이드 (Rule Promotion)
+작업 중 발견한 유용한 범용 패턴은 `agentic` Core 저장소의 규칙에 반영할 수 있으나, 본 프로젝트의 고유 비즈니스 로직이나 민감한 정보는 제외하고 순수 기술 패턴으로만 추상화해야 합니다.

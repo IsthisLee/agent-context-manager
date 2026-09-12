@@ -8,10 +8,11 @@
 
 | 에이전트 | 자동 인식 파일 | 역할 및 특성 |
 |---|---|---|
-| **OpenAI Codex / Copilot** | `AGENTS.md` | 빠른 터미널 패치, CLI 인터랙션 |
+| **OpenAI Codex** | `AGENTS.md` | 빠른 터미널 패치, CLI 인터랙션 |
 | **Claude Code** | `CLAUDE.md` | 심층 파일 리팩터링, 대화형 diff 리뷰 |
 | **Google Antigravity (AGY)** | `.gemini/rules/agentic.md` | 고차원 계획 수립, 병렬 서브에이전트 조사, 아티팩트 보고 |
-| **Cursor** | `.cursor/rules/agentic.mdc` | IDE 인라인 코드 작성, 핫키 편집 |
+| **Cursor** | `.cursor/rules/agentic.mdc` | IDE 인라인 코드 작성, 규칙 자동 적용 |
+| **GitHub Copilot** | `.github/copilot-instructions.md` | PR 코드 리뷰, IDE 및 Copilot 에이전트 연동 |
 
 ---
 

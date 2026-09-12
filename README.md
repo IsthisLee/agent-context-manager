@@ -26,9 +26,11 @@ node /path/to/agentic/bin/agentic.mjs init .
 ```
 
 👉 **자동 생성되는 파일:**
-* `AGENTS.md` (OpenAI Codex / Copilot용)
+* `AGENTS.md` (OpenAI Codex용)
 * `CLAUDE.md` (Anthropic Claude Code용)
 * `.gemini/rules/agentic.md` (Google Antigravity용)
+* `.cursor/rules/agentic.mdc` (Cursor용)
+* `.github/copilot-instructions.md` (GitHub Copilot용)
 * `tools/agentic/doctor.mjs` (환경 및 지침 상태 진단 스크립트)
 * `tools/agentic/check.mjs` (결정론적 TDD 자가 검증 스크립트)
 * `.gitignore` 자동 보완
@@ -37,7 +39,8 @@ node /path/to/agentic/bin/agentic.mjs init .
 * **Claude Code:** 터미널에서 `claude` 실행
 * **Codex:** 터미널에서 `codex` 실행
 * **Antigravity:** IDE에서 바로 세션 실행
-* 👉 에이전트들이 생성된 지침을 읽고, 코드 수정 후 스스로 `npm run check`를 실행해 검증하며 작업합니다.
+* **Cursor / VS Code Copilot:** IDE 에디터에서 인라인 및 에이전트 프롬프트 실행
+* 👉 어떤 에이전트를 열든 동일한 프로젝트 규칙을 읽고, 코드 수정 후 스스로 `npm run check`를 실행해 검증하며 작업합니다.
 
 ### 3. 진단 및 검증
 ```bash

@@ -10,6 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawnSync } from 'child_process';
+import { detectProjectConstraints } from './analyzer.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,7 +55,9 @@ function getProjectMeta(targetDir) {
     } catch {}
   }
 
-  return { name, verifyCmd, startCmd };
+  const constraints = detectProjectConstraints(targetDir);
+
+  return { name, verifyCmd, startCmd, constraints };
 }
 
 function renderTemplate(templatePath, data) {
@@ -62,6 +65,7 @@ function renderTemplate(templatePath, data) {
   content = content.replaceAll('{{PROJECT_NAME}}', data.name);
   content = content.replaceAll('{{VERIFY_COMMAND}}', data.verifyCmd);
   content = content.replaceAll('{{START_COMMAND}}', data.startCmd);
+  content = content.replaceAll('{{PROJECT_CONSTRAINTS}}', data.constraints || '* 특별한 제약이 감지되지 않았습니다.');
   return content;
 }
 

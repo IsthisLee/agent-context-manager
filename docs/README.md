@@ -17,6 +17,7 @@
    * **[ADR 0002: AGENTS.md 중심 SSOT 및 포인터 참조 패턴](adr/0002-agents-md-ssot-and-pointer-pattern.md)**: 5대 에이전트 규칙 중복 제거 및 단일 진실 공급원 확립
    * **[ADR 0003: 스마트 동기화 머지 및 콜드 스타트 스캐폴딩](adr/0003-smart-sync-merge-and-cold-start.md)**: 커스텀 규칙 보존, 신규 프로젝트 테스트 자동화, 지침 비대화 진단
    * **[ADR 0004: 무의존성 순수 ESM 및 JSDoc 타입 검증](adr/0004-zero-dependency-esm-and-jsdoc.md)**: 무빌드 제로 디펜던시 유지 및 컴파일 괴리 방지
+   * **[ADR 0005: ADR 기록 및 관리 의무화](adr/0005-adr-management.md)**: 중요 설계 결정의 기록 기준과 변경 이력 관리
 4. **[참고 문헌 및 비교 분석 (References)](references.md)**
    * 2026년 공식 연구 리포트 및 생태계 도구(`revfactory/harness`, `Archon` 등)와의 심층 비교
 5. **[이전 구 설계서 보존 (Legacy)](../legacy/260912/docs/agentic/README.md)**

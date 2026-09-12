@@ -17,7 +17,8 @@ const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
 
 function quoteWindowsArg(value) {
-  return `"${String(value).replaceAll('"', '""')}"`;
+  const text = String(value);
+  return /[\s"&|<>^]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
 function runCommand(command, args, options = {}) {

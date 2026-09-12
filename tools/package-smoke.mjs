@@ -13,18 +13,20 @@ const packDir = path.join(smokeRoot, 'pack');
 const consumerDir = path.join(smokeRoot, 'consumer');
 const coreHome = path.join(smokeRoot, 'home');
 const projectDir = path.join(smokeRoot, 'project');
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmOptions = { cwd: repoRoot, shell: process.platform === 'win32' };
 
 try {
   fs.mkdirSync(packDir);
   fs.mkdirSync(consumerDir);
-  const packOutput = execFileSync('npm', ['pack', '--pack-destination', packDir, '--json'], {
-    cwd: repoRoot,
+  const packOutput = execFileSync(npmCommand, ['pack', '--pack-destination', packDir, '--json'], {
+    ...npmOptions,
     encoding: 'utf8'
   });
   const [{ filename }] = JSON.parse(packOutput);
   const tarball = path.join(packDir, filename);
-  execFileSync('npm', ['install', '--prefix', consumerDir, tarball], {
-    cwd: repoRoot,
+  execFileSync(npmCommand, ['install', '--prefix', consumerDir, tarball], {
+    ...npmOptions,
     stdio: 'ignore'
   });
   const agt = path.join(consumerDir, 'node_modules', '.bin', process.platform === 'win32' ? 'agt.cmd' : 'agt');

@@ -7,15 +7,16 @@
 ## 📚 문서 목록
 
 1. **[아키텍처 개요 (Architecture)](architecture.md)**
-   * 3계층 아키텍처 (Core SSOT, 프로젝트 지침/도구, 에이전트 런타임)
-   * 핵심 메커니즘 (단일 정본, 결정론적 검증 계약, 자산 격리)
+   * 코어 분리형 토폴로지 (Upstream Core ➔ Downstream Project 주입)
+   * 3대 핵심 구성 요소 및 결정론적 검증 원칙
 2. **[실전 워크플로 가이드 (Workflow)](workflow.md)**
-   * 신규/기존 프로젝트 10초 초기화
-   * 에이전트별 일상 개발 루프
-   * 서브에이전트 기반 규칙 승격(Promote) 및 전역 재동기화
-3. **[아키텍처 결정 기록 (ADR 0001)](adr/0001-lean-cross-agent-pivot.md)**
-   * 왜 무거운 자체 러너 개발을 폐기하고 린 하네스로 피벗했는가?
-   * 2026년 AI 생태계 분석 및 의사결정 근거
+   * 신규/기존 프로젝트 10초 초기화 및 검증 루프
+   * AGENTS.md 중심의 단일 정본 관리 워크플로
+3. **아키텍처 결정 기록 (ADRs)**
+   * **[ADR 0001: 린 크로스 에이전트 하네스로의 피벗](adr/0001-lean-cross-agent-pivot.md)**: 자체 러너 폐기 및 린 하네스 피벗
+   * **[ADR 0002: AGENTS.md 중심 SSOT 및 포인터 참조 패턴](adr/0002-agents-md-ssot-and-pointer-pattern.md)**: 5대 에이전트 규칙 중복 제거 및 단일 진실 공급원 확립
+   * **[ADR 0003: 스마트 동기화 머지 및 콜드 스타트 스캐폴딩](adr/0003-smart-sync-merge-and-cold-start.md)**: 커스텀 규칙 보존, 신규 프로젝트 테스트 자동화, 지침 비대화 진단
+   * **[ADR 0004: 무의존성 순수 ESM 및 JSDoc 타입 검증](adr/0004-zero-dependency-esm-and-jsdoc.md)**: 무빌드 제로 디펜던시 유지 및 컴파일 괴리 방지
 4. **[참고 문헌 및 비교 분석 (References)](references.md)**
    * 2026년 공식 연구 리포트 및 생태계 도구(`revfactory/harness`, `Archon` 등)와의 심층 비교
 5. **[이전 구 설계서 보존 (Legacy)](../legacy/260912/docs/agentic/README.md)**

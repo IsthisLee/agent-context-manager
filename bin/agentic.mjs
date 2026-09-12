@@ -1,269 +1,169 @@
 #!/usr/bin/env node
 
-/**
- * agentic CLI - Cross-Agent Development Harness & Synchronizer
- * Generates and synchronizes multi-agent directives (Codex, Claude, Antigravity)
- * and deterministic verification tools for any target project.
- */
+/** Agentic Core and project guidance manager. */
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { spawnSync } from 'child_process';
-import { detectProjectConstraints, mergeAgentsMd, ensureTestSetup } from './analyzer.mjs';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { mergeAgentsMd } from './analyzer.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const CORE_ROOT = path.resolve(__dirname, '..');
-
+const CORE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const command = args[0] || 'help';
 
-function printHelp() {
-  console.log(`
-Agentic CLI - Cross-Agent Harness & Verification Kit
-===================================================
-
-사용법:
-  agentic init [경로]      대상 프로젝트에 에이전트 지침(AGENTS, CLAUDE, Gemini) 및 검증 도구 설치
-  agentic sync [경로]      Core 최신 SSOT 규칙을 대상 프로젝트에 동기화
-  agentic doctor [경로]    대상 프로젝트의 에이전트 지침 및 환경 진단
-  agentic check [경로]     프로젝트 검증 명령 실행 (TDD 테스트 & 증거 생성)
-  agentic help             도움말 출력
-
-예시:
-  npx github:IsthisLee/agentic init /path/to/project
-  node ./bin/agentic.mjs sync .
-`);
+function getCoreHome() {
+  return path.join(process.env.AGENTIC_HOME || os.homedir(), '.agentic-cores');
 }
 
-/**
- * @typedef {Object} ProjectMeta
- * @property {string} name - 프로젝트 이름
- * @property {string} verifyCmd - 프로젝트 자가 검증 명령 (예: npm run check 또는 npm test)
- * @property {string} startCmd - 개발 서버 시작 명령 (예: npm run dev 또는 npm start)
- * @property {string} constraints - 자동 감지된 제약사항 마크다운 문자열
- */
+function validateCoreName(name) {
+  if (!name || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name)) {
+    throw new Error('Core name must use 1-64 lowercase letters, numbers, or hyphens.');
+  }
+}
 
-/**
- * 대상 프로젝트의 메타데이터와 명령어를 수집한다.
- * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
- * @returns {ProjectMeta}
- */
-function getProjectMeta(targetDir) {
-  const pkgPath = path.join(targetDir, 'package.json');
-  let name = path.basename(targetDir);
-  let verifyCmd = 'npm test';
-  let startCmd = 'npm start';
+function parseFlag(values, flag, fallback = null) {
+  const index = values.indexOf(`--${flag}`);
+  return index === -1 ? fallback : values[index + 1];
+}
 
-  if (fs.existsSync(pkgPath)) {
+function readCore(name) {
+  validateCoreName(name);
+  const coreDir = path.join(getCoreHome(), name);
+  const metadataPath = path.join(coreDir, 'agentic-core.json');
+  const instructionsPath = path.join(coreDir, 'AGENTS.md');
+  if (!fs.existsSync(metadataPath) || !fs.existsSync(instructionsPath)) throw new Error(`Core not found: ${name}`);
+  return { coreDir, metadataPath, instructionsPath, metadata: JSON.parse(fs.readFileSync(metadataPath, 'utf8')) };
+}
+
+function createCore(name, scope = 'personal') {
+  validateCoreName(name);
+  if (!['personal', 'company', 'team', 'workspace'].includes(scope)) throw new Error('Core scope must be personal, company, team, or workspace.');
+  const coreDir = path.join(getCoreHome(), name);
+  if (fs.existsSync(coreDir)) throw new Error(`Core already exists: ${name}`);
+  fs.mkdirSync(coreDir, { recursive: true });
+  fs.writeFileSync(path.join(coreDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
+  const coreTemplate = fs.readFileSync(path.join(CORE_ROOT, 'templates/core/AGENTS.md'), 'utf8');
+  fs.writeFileSync(path.join(coreDir, 'AGENTS.md'), coreTemplate.replaceAll('{{CORE_NAME}}', name));
+  console.log(`Created Core: ${name} (${scope})`);
+}
+
+function listCores() {
+  const home = getCoreHome();
+  if (!fs.existsSync(home)) return;
+  for (const name of fs.readdirSync(home).sort()) {
+    const metadataPath = path.join(home, name, 'agentic-core.json');
+    if (!fs.existsSync(metadataPath)) continue;
     try {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-      if (pkg.name) name = pkg.name;
-      if (pkg.scripts) {
-        if (pkg.scripts.check) verifyCmd = 'npm run check';
-        else if (pkg.scripts.test) verifyCmd = 'npm test';
-        if (pkg.scripts.dev) startCmd = 'npm run dev';
-      }
+      const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+      console.log(`${metadata.name}\t${metadata.scope}`);
     } catch {}
   }
-
-  const constraints = detectProjectConstraints(targetDir);
-
-  return { name, verifyCmd, startCmd, constraints };
 }
 
-/**
- * 템플릿 파일의 변수({{...}})를 데이터로 치환한다.
- * @param {string} templatePath - 템플릿 파일 절대 경로
- * @param {ProjectMeta} data - 치환할 데이터 객체
- * @returns {string} 렌더링된 문자열
- */
-function renderTemplate(templatePath, data) {
-  let content = fs.readFileSync(templatePath, 'utf-8');
-  content = content.replaceAll('{{PROJECT_NAME}}', data.name);
-  content = content.replaceAll('{{VERIFY_COMMAND}}', data.verifyCmd);
-  content = content.replaceAll('{{START_COMMAND}}', data.startCmd);
-  content = content.replaceAll('{{PROJECT_CONSTRAINTS}}', data.constraints || '* 특별한 제약이 감지되지 않았습니다.');
-  return content;
-}
+const guidanceDefaults = { harness: 'recommended', tdd: 'recommended', review: 'recommended', verification: 'recommended', documentation: 'recommended', security: 'recommended' };
+const guidanceSections = {
+  harness: ['하네스 동작', '작업을 작은 단위로 계획하고, 변경 후 프로젝트의 검증 명령을 실행해 실제 결과를 보고한다.'],
+  tdd: ['TDD', 'strict이면 Red-Green-Refactor를 따르고, recommended이면 가능한 경우 실패 테스트부터 작성한다.'],
+  review: ['리뷰', '변경 범위와 위험을 검토하고, 설정된 경우 독립적인 리뷰 결과를 남긴다.'],
+  verification: ['검증', '프로젝트가 선택한 검증 명령을 실행한다. 실행 결과는 실행 사실이며 품질 전체의 증명이 아님을 명시한다.'],
+  documentation: ['문서화', '사용자에게 영향을 주는 계약·정책·구조 변경은 관련 정본 문서와 함께 갱신한다.'],
+  security: ['보안', '비밀값을 출력·커밋하지 않고, 외부 변경과 권한이 필요한 작업은 사용자 승인을 받는다.']
+};
 
-/**
- * 대상 디렉터리가 없으면 생성 후 파일을 복사/갱신한다.
- * @param {string} src - 원본 파일 경로
- * @param {string} dest - 대상 파일 경로
- * @returns {void}
- */
-function copyOrUpdateFile(src, dest) {
-  const dir = path.dirname(dest);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+function setupCore(name, values) {
+  const core = readCore(name);
+  const settings = {};
+  for (const key of Object.keys(guidanceDefaults)) {
+    const value = parseFlag(values, key, core.metadata.settings?.[key] || guidanceDefaults[key]);
+    if (!['off', 'recommended', 'strict'].includes(value)) throw new Error(`--${key} must be off, recommended, or strict.`);
+    settings[key] = value;
   }
-  fs.copyFileSync(src, dest);
+  const blocks = Object.entries(settings).filter(([, value]) => value !== 'off').map(([key, value]) => {
+    const [title, text] = guidanceSections[key];
+    return `## ${title}\n\n- 적용 수준: ${value}\n- ${text}`;
+  });
+  const start = '<!-- agentic:guidance:start -->';
+  const end = '<!-- agentic:guidance:end -->';
+  const block = `${start}\n\n${blocks.join('\n\n')}\n\n${end}`;
+  const current = fs.readFileSync(core.instructionsPath, 'utf8');
+  const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
+  fs.writeFileSync(core.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
+  fs.writeFileSync(core.metadataPath, JSON.stringify({ ...core.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
+  console.log(`Configured Core: ${name}`);
 }
 
-/**
- * Agentic 실행 결과물들이 Git에 올라가지 않도록 .gitignore를 보장한다.
- * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
- * @returns {void}
- */
-function ensureGitignore(targetDir) {
-  const gitignorePath = path.join(targetDir, '.gitignore');
-  const entriesToEnsure = ['.agentic/runs/', '.agentic/last-check.json', '.DS_Store'];
-  let current = '';
-  if (fs.existsSync(gitignorePath)) {
-    current = fs.readFileSync(gitignorePath, 'utf-8');
+function renderCoreAgents(core, projectName) {
+  const content = fs.readFileSync(core.instructionsPath, 'utf8').trimEnd();
+  return `${content}\n\n> Applied from Agentic Core: ${core.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n이 프로젝트에만 적용되는 도메인 규칙은 이 섹션 아래에 추가한다. Core에는 역으로 동기화하지 않는다.\n`;
+}
+
+function getProjectName(targetDir) {
+  const packagePath = path.join(targetDir, 'package.json');
+  if (fs.existsSync(packagePath)) {
+    try {
+      const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+      if (packageJson.name) return packageJson.name;
+    } catch {}
   }
-
-  const missing = entriesToEnsure.filter(e => !current.includes(e));
-  if (missing.length > 0) {
-    const toAppend = '\n# Agentic artifacts\n' + missing.join('\n') + '\n';
-    fs.appendFileSync(gitignorePath, toAppend);
-    console.log(`  ✓ Updated .gitignore in ${targetDir}`);
-  }
+  return path.basename(targetDir);
 }
 
-/**
- * package.json에 "check": "node tools/agentic/check.mjs" 스크립트를 등록한다.
- * @param {string} targetDir - 대상 프로젝트 디렉터리 경로
- * @returns {void}
- */
-function ensurePackageScripts(targetDir) {
-  const pkgPath = path.join(targetDir, 'package.json');
-  if (!fs.existsSync(pkgPath)) return;
-  try {
-    const raw = fs.readFileSync(pkgPath, 'utf-8');
-    const pkg = JSON.parse(raw);
-    if (!pkg.scripts) pkg.scripts = {};
-    if (!pkg.scripts.check) {
-      pkg.scripts.check = 'node tools/agentic/check.mjs';
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-      console.log(`  ✓ Registered "check": "node tools/agentic/check.mjs" in package.json`);
-    }
-  } catch {}
+function copyAdapter(template, target, projectName) {
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, fs.readFileSync(template, 'utf8').replaceAll('{{PROJECT_NAME}}', projectName));
 }
 
-/**
- * 대상 프로젝트에 에이전트 하네스 및 검증 도구를 동기화/주입한다.
- * @param {string} [targetPath='.'] - 대상 프로젝트 상대 또는 절대 경로
- * @returns {void}
- */
-function syncProject(targetPath = '.') {
+function projectArgs(values) {
+  const core = parseFlag(values, 'core');
+  const positional = values.filter((value, index) => !value.startsWith('--') && (values.indexOf('--core') === -1 || index !== values.indexOf('--core') + 1));
+  return { coreName: core, targetPath: positional[0] || '.' };
+}
+
+function applyCore(values) {
+  const { coreName, targetPath } = projectArgs(values);
+  if (!coreName) throw new Error('init requires --core <name>.');
   const targetDir = path.resolve(process.cwd(), targetPath);
-  if (!fs.existsSync(targetDir)) {
-    console.error(`Error: Directory not found: ${targetDir}`);
-    process.exit(1);
-  }
-
-  // Ensure test framework & scripts setup (Cold Start protection)
-  ensureTestSetup(targetDir);
-  ensurePackageScripts(targetDir);
-
-  const meta = getProjectMeta(targetDir);
-  console.log(`\n🚀 [Agentic] Syncing harness to: ${targetDir} (${meta.name})\n`);
-
-  // 1. AGENTS.md
-  const agentsTmpl = path.join(CORE_ROOT, 'templates', 'AGENTS.md');
-  const agentsOut = path.join(targetDir, 'AGENTS.md');
-  let agentsContent = renderTemplate(agentsTmpl, meta);
-  if (fs.existsSync(agentsOut)) {
-    const existingContent = fs.readFileSync(agentsOut, 'utf-8');
-    agentsContent = mergeAgentsMd(agentsContent, existingContent);
-  }
-  fs.writeFileSync(agentsOut, agentsContent);
-  console.log(`  ✓ Generated AGENTS.md (for Codex / Copilot)`);
-
-  // 2. CLAUDE.md
-  const claudeTmpl = path.join(CORE_ROOT, 'templates', 'CLAUDE.md');
-  const claudeOut = path.join(targetDir, 'CLAUDE.md');
-  fs.writeFileSync(claudeOut, renderTemplate(claudeTmpl, meta));
-  console.log(`  ✓ Generated CLAUDE.md (for Claude Code)`);
-
-  // 3. .gemini/rules/agentic.md (Antigravity)
-  const geminiTmpl = path.join(CORE_ROOT, 'templates', 'gemini-rules', 'agentic.md');
-  const geminiOut = path.join(targetDir, '.gemini', 'rules', 'agentic.md');
-  const geminiDir = path.dirname(geminiOut);
-  if (!fs.existsSync(geminiDir)) fs.mkdirSync(geminiDir, { recursive: true });
-  fs.writeFileSync(geminiOut, renderTemplate(geminiTmpl, meta));
-  console.log(`  ✓ Generated .gemini/rules/agentic.md (for Antigravity)`);
-
-  // 4. .cursor/rules/agentic.mdc (Cursor)
-  const cursorTmpl = path.join(CORE_ROOT, 'templates', 'cursor-rules', 'agentic.mdc');
-  const cursorOut = path.join(targetDir, '.cursor', 'rules', 'agentic.mdc');
-  const cursorDir = path.dirname(cursorOut);
-  if (!fs.existsSync(cursorDir)) fs.mkdirSync(cursorDir, { recursive: true });
-  fs.writeFileSync(cursorOut, renderTemplate(cursorTmpl, meta));
-  console.log(`  ✓ Generated .cursor/rules/agentic.mdc (for Cursor)`);
-
-  // 5. .github/copilot-instructions.md (GitHub Copilot)
-  const copilotTmpl = path.join(CORE_ROOT, 'templates', 'copilot-instructions.md');
-  const copilotOut = path.join(targetDir, '.github', 'copilot-instructions.md');
-  const copilotDir = path.dirname(copilotOut);
-  if (!fs.existsSync(copilotDir)) fs.mkdirSync(copilotDir, { recursive: true });
-  fs.writeFileSync(copilotOut, renderTemplate(copilotTmpl, meta));
-  console.log(`  ✓ Generated .github/copilot-instructions.md (for GitHub Copilot)`);
-
-  // 6. tools/agentic/doctor.mjs & check.mjs
-  const toolsDir = path.join(targetDir, 'tools', 'agentic');
-  copyOrUpdateFile(path.join(CORE_ROOT, 'templates', 'tools', 'doctor.mjs'), path.join(toolsDir, 'doctor.mjs'));
-  copyOrUpdateFile(path.join(CORE_ROOT, 'templates', 'tools', 'check.mjs'), path.join(toolsDir, 'check.mjs'));
-  console.log(`  ✓ Installed tools/agentic/doctor.mjs & check.mjs`);
-
-  // 7. Update .gitignore
-  ensureGitignore(targetDir);
-
-  // 8. Register "check" script in package.json if present
-  ensurePackageScripts(targetDir);
-
-  console.log(`\n✨ Successfully initialized multi-agent harness in ${meta.name}!\n`);
+  if (!fs.existsSync(targetDir)) throw new Error(`Directory not found: ${targetDir}`);
+  const core = readCore(coreName);
+  const projectName = getProjectName(targetDir);
+  const agentsPath = path.join(targetDir, 'AGENTS.md');
+  const agents = mergeAgentsMd(renderCoreAgents(core, projectName), fs.existsSync(agentsPath) ? fs.readFileSync(agentsPath, 'utf8') : null);
+  fs.writeFileSync(agentsPath, agents);
+  for (const [source, target] of [
+    ['templates/CLAUDE.md', 'CLAUDE.md'],
+    ['templates/gemini-rules/agentic.md', '.gemini/rules/agentic.md'],
+    ['templates/cursor-rules/agentic.mdc', '.cursor/rules/agentic.mdc'],
+    ['templates/copilot-instructions.md', '.github/copilot-instructions.md']
+  ]) copyAdapter(path.join(CORE_ROOT, source), path.join(targetDir, target), projectName);
+  fs.writeFileSync(path.join(targetDir, 'agentic.project.json'), JSON.stringify({ schemaVersion: 1, core: coreName }, null, 2) + '\n');
+  console.log(`Applied Core ${coreName} to ${targetDir}`);
 }
 
-/**
- * 대상 프로젝트의 doctor 진단 스크립트를 실행한다.
- * @param {string} [targetPath='.'] - 대상 프로젝트 경로
- * @returns {void}
- */
-function runDoctor(targetPath = '.') {
+function syncProject(values) {
+  const { coreName, targetPath } = projectArgs(values);
   const targetDir = path.resolve(process.cwd(), targetPath);
-  const doctorScript = path.join(targetDir, 'tools', 'agentic', 'doctor.mjs');
-  if (!fs.existsSync(doctorScript)) {
-    console.error(`Error: tools/agentic/doctor.mjs not found. Run 'agentic init' first.`);
-    process.exit(1);
-  }
-  spawnSync('node', [doctorScript, ...args.slice(1)], { cwd: targetDir, stdio: 'inherit' });
+  const selectionPath = path.join(targetDir, 'agentic.project.json');
+  const selected = coreName || (fs.existsSync(selectionPath) ? JSON.parse(fs.readFileSync(selectionPath, 'utf8')).core : null);
+  if (!selected) throw new Error('sync requires --core <name> or an existing agentic.project.json.');
+  applyCore(['--core', selected, targetPath]);
 }
 
-/**
- * 대상 프로젝트의 검증(check) 스크립트를 실행한다.
- * @param {string} [targetPath='.'] - 대상 프로젝트 경로
- * @returns {void}
- */
-function runCheck(targetPath = '.') {
-  const targetDir = path.resolve(process.cwd(), targetPath);
-  const checkScript = path.join(targetDir, 'tools', 'agentic', 'check.mjs');
-  if (!fs.existsSync(checkScript)) {
-    console.error(`Error: tools/agentic/check.mjs not found. Run 'agentic init' first.`);
-    process.exit(1);
-  }
-  const res = spawnSync('node', [checkScript, ...args.slice(1)], { cwd: targetDir, stdio: 'inherit' });
-  process.exit(res.status ?? 0);
+function help() {
+  console.log(`Agentic shared project guidance manager\n\n  agentic core create <name> [--scope <scope>]\n  agentic core list\n  agentic setup --core <name> [--tdd <level>] [--review <level>] ...\n  agentic init --core <name> <project>\n  agentic sync [--core <name>] <project>`);
 }
 
-switch (command) {
-  case 'init':
-  case 'sync':
-    syncProject(args[1]);
-    break;
-  case 'doctor':
-    runDoctor(args[1]);
-    break;
-  case 'check':
-    runCheck(args[1]);
-    break;
-  case 'help':
-  case '--help':
-  case '-h':
-  default:
-    printHelp();
-    break;
+try {
+  if (command === 'core' && args[1] === 'create') createCore(args[2], parseFlag(args.slice(3), 'scope', 'personal'));
+  else if (command === 'core' && args[1] === 'list') listCores();
+  else if (command === 'setup') {
+    const name = parseFlag(args.slice(1), 'core');
+    if (!name) throw new Error('setup requires --core <name>.');
+    setupCore(name, args.slice(1));
+  } else if (command === 'init') applyCore(args.slice(1));
+  else if (command === 'sync') syncProject(args.slice(1));
+  else help();
+} catch (error) {
+  console.error(`Error: ${error.message}`);
+  process.exit(1);
 }

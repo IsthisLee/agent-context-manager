@@ -1,11 +1,11 @@
 # Claude Code Instructions for @isthis/agentic
 
-All behavioral guidelines, deterministic TDD principles, and verification commands in this repository adhere strictly to `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
+All behavioral guidelines, TDD principles, and verification commands in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.
 
 @AGENTS.md
 
 ---
 
 ## Claude Code Execution Guidelines
-* After modifying code, always execute `npm run check` in the interactive terminal to verify passing status.
-* Manage all project-specific domain rules and architecture policies exclusively in `AGENTS.md`.
+* Follow the development and verification rules in `AGENTS.md`.
+* Manage project-specific domain rules there.

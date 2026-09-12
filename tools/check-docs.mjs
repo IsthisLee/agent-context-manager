@@ -21,6 +21,38 @@ function contentWithoutCodeBlocks(content) {
   return content.replace(/```[\s\S]*?```/g, '');
 }
 
+function markdownHeadingSlug(heading) {
+  return heading
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, '')
+    .replace(/\s+/g, '-');
+}
+
+function checkInternalAnchors(markdownFile) {
+  const content = contentWithoutCodeBlocks(fs.readFileSync(markdownFile, 'utf8'));
+  const linkPattern = /!?\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)/g;
+
+  for (const match of content.matchAll(linkPattern)) {
+    const rawTarget = match[1].replace(/^<|>$/g, '');
+    if (/^(https?:|mailto:|tel:)/i.test(rawTarget) || !rawTarget.includes('#')) continue;
+
+    const [target, rawFragment] = rawTarget.split('#', 2);
+    if (!rawFragment) continue;
+    const targetFile = target
+      ? path.resolve(path.dirname(markdownFile), target)
+      : markdownFile;
+    if (!fs.existsSync(targetFile) || path.extname(targetFile) !== '.md') continue;
+
+    const headings = [...fs.readFileSync(targetFile, 'utf8').matchAll(/^#{1,6}\s+(.+)$/gm)]
+      .map(match => markdownHeadingSlug(match[1]));
+    const fragment = markdownHeadingSlug(decodeURIComponent(rawFragment));
+    if (!headings.includes(fragment)) {
+      errors.push(`${path.relative(root, markdownFile)}: missing Markdown heading anchor ${rawTarget}`);
+    }
+  }
+}
+
 function checkInternalLinks(markdownFile) {
   const content = contentWithoutCodeBlocks(fs.readFileSync(markdownFile, 'utf8'));
   const linkPattern = /!?\[[^\]]*\]\(([^)\s]+)(?:\s+[^)]*)?\)/g;
@@ -36,6 +68,10 @@ function checkInternalLinks(markdownFile) {
 
 function checkAdrs() {
   const adrDir = path.join(root, 'docs', 'adr');
+  if (!fs.existsSync(adrDir)) {
+    errors.push('docs/adr: directory must exist');
+    return;
+  }
   const adrFiles = fs.readdirSync(adrDir).filter(name => /^\d{4}-[a-z0-9-]+\.md$/.test(name)).sort();
   for (const adrFile of adrFiles) {
     const content = fs.readFileSync(path.join(adrDir, adrFile), 'utf8');
@@ -86,7 +122,7 @@ function checkDiscussionStatuses() {
     }
 
     const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
-    const indexStatus = indexRow?.split('|').map(cell => cell.trim()).at(-2);
+    const indexStatus = indexRow?.split('|').map(cell => cell.trim()).filter(Boolean).at(-1);
     if (indexStatus !== match[1].trim()) {
       errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);
     }
@@ -102,8 +138,8 @@ function checkDocumentationGovernance() {
   ];
 
   const formatContent = fs.readFileSync(proposalFormat, 'utf8');
-  if (!formatContent.includes('## 제안 문서 상단 형식')) {
-    errors.push('docs/discussion/architecture/topics/implementation-contracts.md: must define the proposal summary format');
+  if (!formatContent.includes('## 구현 단계 계약')) {
+    errors.push('docs/discussion/architecture/topics/implementation-contracts.md: must define the implementation contract');
   }
 
   for (const file of requiredReferences) {
@@ -120,7 +156,10 @@ function checkChangelog() {
   }
 }
 
-for (const markdownFile of walkMarkdown(root)) checkInternalLinks(markdownFile);
+for (const markdownFile of walkMarkdown(root)) {
+  checkInternalLinks(markdownFile);
+  checkInternalAnchors(markdownFile);
+}
 checkAdrs();
 checkDiscussionStatuses();
 checkDocumentationGovernance();

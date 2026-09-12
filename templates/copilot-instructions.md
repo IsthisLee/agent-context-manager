@@ -1,8 +1,8 @@
 # GitHub Copilot Instructions for {{PROJECT_NAME}}
 
-All development guidelines, safety rules, and verification workflows in this repository are governed strictly by `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
+All development guidelines, safety rules, and verification workflows in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.
 
 ## Guidelines
-1. Always refer to `AGENTS.md` for core rules, TDD cycles, and verification commands.
-2. Verify all modifications with `{{VERIFY_COMMAND}}`.
-3. All project-specific domain rules and architecture policies are maintained exclusively in `AGENTS.md`.
+1. Always refer to `AGENTS.md` for the selected development and verification rules.
+2. Follow the verification process described in `AGENTS.md`.
+3. Maintain project-specific domain rules and architecture policies in `AGENTS.md`.

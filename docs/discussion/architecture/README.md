@@ -1,48 +1,29 @@
-# Architecture Discussion
+# Agentic 아키텍처 구현 계획
 
-최종 확인일: **2026-09-12**
+이 문서는 제품 방향을 실제 구현 단계로 분해한 작업 지도다. 각 단계는 선행 계약·코드·평가·문서 갱신을 완료한 뒤 다음 단계로 넘어간다.
 
-이 디렉터리는 아직 채택되지 않았거나 구현 중인 아키텍처 논의의 진입점이다. 주제별 문서는 [`topics/`](topics/)에 두며, 확정된 결정은 ADR로 기록한 뒤 [`../../architecture/`](../../architecture/)에 반영한다.
+## 단계
 
-## 논의 지도
+| 단계 | 주제 | 핵심 결과 | 상태 |
+| --- | --- | --- | --- |
+| 1 | [Core 모델과 저장소](topics/core-model.md) | named Core, scope, 경로, 소유권 계약 | Implemented |
+| 2 | [setup과 지침 옵션](topics/setup-and-guidance.md) | 선택 가능한 규칙 preset과 Core `AGENTS.md` | Implemented |
+| 3 | [프로젝트 적용](topics/project-application.md) | 선택 Core를 프로젝트에 적용, 도메인 지침 분리 | Implemented |
+| 4 | [에이전트 산출물 동기화](topics/agent-sync.md) | 도구별 포인터 생성·갱신·프로젝트 규칙 보존 | Implemented |
+| — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 
-| 문서 | 다루는 내용 | 대상 계층 | 중요도 | 권장 순서 | 상태 |
-|---|---|---|---|---|---|
-| [verification.md](topics/verification.md) | 검증 명령, 증거 형식, 테스트 수 정책 | 패키지·프로젝트·에이전트 | Critical | 1 | Proposed |
-| [sync-and-artifacts.md](topics/sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | 패키지·프로젝트 | High | 2 | Proposed |
-| [operations-and-release.md](topics/operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | 패키지·프로젝트·사용자 | High | 3 | Proposed |
-| [core-management-and-application.md](topics/core-management-and-application.md) | 개인·조직 Core 생성·등록·적용·재현 | 사용자·패키지·프로젝트 | Critical | 결정 1 / 구현 4 | Proposed |
-| [adaptive-harness.md](topics/adaptive-harness.md) | ProjectProfile, 역할 계약, Solo·가상 팀 선택 | 패키지·프로젝트·에이전트 | High | 5 | Proposed |
-| [ecosystem-follow-ups.md](topics/ecosystem-follow-ups.md) | 생태계 비교에서 도출한 구현 우선 과제 | 설계 우선순위 | Medium | 참조 | Proposed |
-| [external-tools.md](topics/external-tools.md) | revfactory/harness와의 관계 | 외부 근거 | — | 참조 | Active reference |
-| [implementation-contracts.md](topics/implementation-contracts.md) | 상태 관리와 구현 기록 규약 | 문서·운영 | — | 상시 | Active process |
+## 공통 구현 규칙
 
-## 현재 공백과 목표
+- Core의 공통 지침과 프로젝트의 도메인 지침은 서로 다른 저장 영역에 둔다.
+- `AGENTS.md`는 공통 지침의 정본이다. 도구별 파일은 포인터 또는 생성 산출물이다.
+- `setup`은 Core만 변경하고 프로젝트 파일을 변경하지 않는다.
+- `apply`·`sync`는 사용자가 명시한 프로젝트에만 작동한다. `AGENTS.md`의 도메인 확장은 보존하고 관리 대상 포인터는 재생성한다.
+- 외부 에이전트 런타임을 실행·파싱·래핑하지 않는다.
 
-| 요구사항 | 현재 상태 | 개편 방향 |
-|---|---|---|
-| 프로젝트 분석 | 기술 제약을 Markdown으로 감지 | 구조화된 `ProjectProfile` 생성 |
-| 역할 정의 | 공통 TDD 지침만 존재 | Planner, Builder, Reviewer, Verifier 계약 |
-| 역할 선택 | 공통 루프만 존재 | 복잡도·위험도·병렬성 기반 선택 |
-| 결정론적 평가 | 종료 코드와 성공 여부 기록 | 명령·증거·테스트 수 계약 강화 |
-| handoff | 전달 artifact 없음 | 필요한 경우에만 파일 기반 artifact |
+## 진행 순서
 
-```text
-agentic analyze → ProjectProfile → Role Policy
-  ├─ 일반 작업 → Solo Agent
-  ├─ 넓거나 불명확한 작업 → Planner 추가
-  ├─ 고위험 변경 → Reviewer + Verifier
-  └─ 독립 병렬 작업 → Virtual Team
-                         │
-                         └→ npm run check
-```
-
-Agentic은 에이전트 팀을 항상 실행하는 오케스트레이터가 아니라, 프로젝트를 분석해 필요한 역할만 선택하고 기본적으로는 한 에이전트의 작업을 결정론적으로 검증하는 adaptive harness를 목표로 한다.
-
-## 권장 구현 순서
-
-1. `ProjectProfile`과 `agentic analyze`를 eval로 고정한다.
-2. 역할 계약과 `role-policy.mjs`를 추가한다.
-3. `agentic plan`과 필요한 artifact를 추가한다.
-4. 검증 증거와 동기화 manifest를 강화한다.
-5. 각 계약을 구현·검증한 뒤 상태를 갱신하고, 장기적 결정은 ADR로 채택한다.
+1. Core의 파일 형식과 경로를 확정하고 생성·목록·선택 평가를 작성한다.
+2. `setup`의 비대화형 옵션과 기본값을 확정하고 규칙 preset 평가를 작성한다.
+3. 프로젝트 적용과 도메인 지침 보존을 구현한다.
+4. 에이전트별 산출물과 동기화·drift 검사를 구현한다.
+5. 매 단계마다 `docs/product-direction.md`, README, workflow, CHANGELOG를 정합화한다.

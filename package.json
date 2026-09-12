@@ -1,7 +1,7 @@
 {
   "name": "@isthis/agentic",
   "version": "0.1.0",
-  "description": "Cross-Agent Development Harness & Verification Kit (Codex, Claude Code, Antigravity, Cursor)",
+  "description": "Shared AI-agent project guidance generation, configuration, synchronization, and application",
   "type": "module",
   "bin": {
     "agentic": "./bin/agentic.mjs"
@@ -13,20 +13,19 @@
     "LICENSE"
   ],
   "scripts": {
-    "sync": "node ./bin/agentic.mjs sync",
     "test": "node --test evals/**/*.test.mjs",
     "check:docs": "node tools/check-docs.mjs",
-    "check": "npm run check:docs && node ./bin/agentic.mjs check"
+    "check": "npm run check:docs && npm test"
   },
   "keywords": [
     "agentic",
-    "harness",
+    "agent-guidance",
     "ai-agents",
     "claude-code",
     "codex",
     "antigravity",
     "tdd",
-    "verification",
+    "agent-config",
     "gemini",
     "cursor",
     "copilot",

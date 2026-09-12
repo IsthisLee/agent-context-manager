@@ -1,14 +1,14 @@
 ---
-description: Project coding guidelines and TDD verification rules
+description: Project coding and verification guidance
 globs: *
 alwaysApply: true
 ---
 
 # Cursor Rules for {{PROJECT_NAME}}
 
-All development practices, TDD rules, and verification commands in this repository adhere strictly to `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
+All development and verification rules in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.
 
 ## Guidelines
-1. Refer to `AGENTS.md` for all core behavioral contracts and verification commands.
-2. Always execute `{{VERIFY_COMMAND}}` after modifications to confirm test passing.
-3. Manage any project-specific domain extensions exclusively in `AGENTS.md`.
+1. Refer to `AGENTS.md` for all selected development and verification rules.
+2. Follow the verification process described in `AGENTS.md` after modifications.
+3. Manage project-specific domain extensions in `AGENTS.md`.

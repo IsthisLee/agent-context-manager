@@ -5,7 +5,7 @@ import { mergeAgentsMd } from '../bin/analyzer.mjs';
 test('mergeAgentsMd preserves user custom rules under section 4', () => {
   const existingContent = `# Agent Guidelines for my-app
 
-이 저장소는 결정론적 TDD 원칙에 따라 개발된다.
+이 저장소는 프로젝트가 정한 개발 지침에 따라 개발된다.
 
 ---
 
@@ -13,7 +13,7 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
 1. 기계 검증 우선
 
 ## 2. 프로젝트 실행 명령
-* 진단: node tools/agentic/doctor.mjs
+* 검증: npm test
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약
 * 프레임워크: Next.js
@@ -29,7 +29,7 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
 
   const newTemplateContent = `# Agent Guidelines for my-app (Updated Core)
 
-이 저장소는 결정론적 TDD 원칙에 따라 개발된다.
+이 저장소는 프로젝트가 정한 개발 지침에 따라 개발된다.
 
 ---
 
@@ -37,7 +37,7 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
 1. 말보다 기계의 검증 증거가 우선이다.
 
 ## 2. 프로젝트 실행 및 검사 명령
-* 환경 및 지침 진단: node tools/agentic/doctor.mjs
+* 검증: npm test
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약 (자동 감지)
 * 프레임워크: Next.js (App Router)

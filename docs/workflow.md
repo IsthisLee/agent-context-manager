@@ -29,11 +29,15 @@
 새로운 프로젝트나 기존 업무 프로젝트에서 5대 에이전트(Codex, Claude Code, Antigravity, Cursor, Copilot) 지침과 TDD 검증 도구를 즉시 세팅합니다:
 
 ```bash
-# 현재 프로젝트 디렉토리에서 실행 (권장)
+# 전역 설치한 경우 (가장 간결함):
+agentic init
+
+# 또는 무설치 npx 1회성 실행:
 npx @isthis/agentic init
 
-# 또는 특정 프로젝트 경로 지정:
-npx @isthis/agentic init /Users/isthis/Documents/task/EJE
+# 특정 프로젝트 경로 지정 시:
+agentic init /Users/isthis/Documents/task/EJE
+# (또는: npx @isthis/agentic init /Users/isthis/Documents/task/EJE)
 ```
 
 * **생성되는 산출물:**
@@ -50,10 +54,13 @@ npx @isthis/agentic init /Users/isthis/Documents/task/EJE
 프로젝트에서 AI 에이전트와 함께 코딩할 때, 에이전트와 개발자가 실제 테스트를 실행하여 기계 증거를 만듭니다:
 
 ```bash
-# 프로젝트 package.json 스크립트로 실행
+# 전역 설치한 경우:
+agentic check
+
+# 프로젝트 package.json 스크립트로 실행:
 npm run check
 
-# 또는 npx 직접 실행
+# 무설치 npx 직접 실행:
 npx @isthis/agentic check
 ```
 
@@ -69,6 +76,10 @@ npx @isthis/agentic check
 프로젝트의 에이전트 지침 파일들이 누락되지 않았는지, TDD 검증 환경이 올바르게 설정되어 있는지 진단합니다:
 
 ```bash
+# 전역 설치한 경우:
+agentic doctor
+
+# 무설치 npx 실행:
 npx @isthis/agentic doctor
 ```
 
@@ -84,6 +95,10 @@ npx @isthis/agentic doctor
 오픈소스 코어에 새로운 기여자의 PR이 머지되어 npm에 새 버전(예: 신규 에이전트 지원, 프롬프트 개선, 도구 버그 수정)이 배포되었을 때:
 
 ```bash
+# 전역 설치한 경우:
+agentic sync
+
+# 무설치 npx 실행:
 npx @isthis/agentic sync
 ```
 

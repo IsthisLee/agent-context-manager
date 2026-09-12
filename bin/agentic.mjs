@@ -89,6 +89,22 @@ function ensureGitignore(targetDir) {
   }
 }
 
+function ensurePackageScripts(targetDir) {
+  const pkgPath = path.join(targetDir, 'package.json');
+  if (!fs.existsSync(pkgPath)) return;
+  try {
+    const raw = fs.readFileSync(pkgPath, 'utf-8');
+    const pkg = JSON.parse(raw);
+    if (!pkg.scripts) pkg.scripts = {};
+    if (!pkg.scripts.check) {
+      pkg.scripts.check = 'node tools/agentic/check.mjs';
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+      console.log(`  ✓ Registered "check": "node tools/agentic/check.mjs" in package.json`);
+    }
+  } catch {}
+}
+
+
 function syncProject(targetPath = '.') {
   const targetDir = path.resolve(process.cwd(), targetPath);
   if (!fs.existsSync(targetDir)) {
@@ -143,6 +159,9 @@ function syncProject(targetPath = '.') {
 
   // 7. Update .gitignore
   ensureGitignore(targetDir);
+
+  // 8. Register "check" script in package.json if present
+  ensurePackageScripts(targetDir);
 
   console.log(`\n✨ Successfully initialized multi-agent harness in ${meta.name}!\n`);
 }

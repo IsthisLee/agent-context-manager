@@ -1,23 +1,14 @@
 ---
-description: Deterministic TDD and agentic workflow guidelines for Cursor
+description: Project coding guidelines and TDD verification rules
 globs: *
 alwaysApply: true
 ---
+
 # Cursor Rules for @isthis/agentic
 
-이 프로젝트는 **결정론적 TDD 원칙**에 따라 개발됩니다.
+All development practices, TDD rules, and verification commands in this repository adhere strictly to `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
 
-## 1. 핵심 행동 규약
-1. **결정론적 검증 우선:** 코드 수정 후에는 터미널에서 반드시 `npm run check`를 실행하여 통과를 직접 확인하세요. 테스트 0개는 실패입니다.
-2. **Red-Green-Refactor TDD 사이클:** 구현에 앞서 실패하는 테스트(Red)를 먼저 작성하고, 최소한의 코드로 통과(Green)시킨 뒤 코드를 정리(Refactor)하세요.
-3. **최소 변경 원칙 (Minimal Diff):** 요청받은 작업 범위와 무관한 파일의 리팩터링이나 전역 포맷팅 수정을 금지합니다.
-4. **비밀값 보호:** `.env`, API 키, 개인정보 등 민감 정보를 읽어 출력하거나 커밋하지 마세요.
-5. **파괴적 명령 금지:** `git reset --hard`, `git push --force` 등 파괴적 명령은 명시적 요청 없이 실행하지 마세요.
-
-## 2. 주요 실행 명령
-* 환경 진단: `node tools/agentic/doctor.mjs`
-* 자가 검증 (TDD 검사): `npm run check`
-* 실행: `npm start`
-
-## 3. 프로젝트 규칙 확장
-이 프로젝트에 특화된 프레임워크 규칙이나 스타일 가이드는 이 파일의 하단에 추가하여 적용하세요.
+## Guidelines
+1. Refer to `AGENTS.md` for all core behavioral contracts and verification commands.
+2. Always execute `npm run check` after modifications to confirm test passing.
+3. Manage any project-specific domain extensions exclusively in `AGENTS.md`.

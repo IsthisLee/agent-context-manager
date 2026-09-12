@@ -1,6 +1,7 @@
 # Agent Guidelines for {{PROJECT_NAME}}
 
-이 저장소는 **결정론적 TDD 원칙**에 따라 AI 에이전트(Codex, Claude Code, Antigravity)와 협업하여 개발된다.
+이 저장소는 **결정론적 TDD 원칙**에 따라 AI 에이전트(Codex, Claude Code, Antigravity, Cursor, Copilot)와 협업하여 개발된다.
+이 파일(`AGENTS.md`)은 모든 AI 에이전트가 공유하는 **프로젝트 단일 진실 공급원(SSOT)**이다.
 
 ---
 
@@ -29,6 +30,8 @@
 * **자가 검증 (정적분석 + 테스트):** `{{VERIFY_COMMAND}}`
 * **개발 서버 시작:** `{{START_COMMAND}}`
 
-## 3. 프로젝트 규칙 확장
+---
 
-이 프로젝트에만 적용되는 도메인 규칙이나 아키텍처 제약은 이 파일(`AGENTS.md`)의 하단이나 `docs/`에 자유롭게 추가하여 관리한다.
+## 3. 프로젝트 규칙 확장 (SSOT)
+
+이 프로젝트에만 적용되는 도메인 규칙이나 아키텍처 제약은 오직 이 파일(`AGENTS.md`)의 하단이나 `docs/`에 추가하여 단일 정본으로 관리한다. 모든 에이전트는 이 규칙을 공통으로 따른다.

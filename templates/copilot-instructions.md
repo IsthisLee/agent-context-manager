@@ -1,34 +1,8 @@
 # GitHub Copilot Instructions for {{PROJECT_NAME}}
 
-이 프로젝트는 **결정론적 TDD 원칙**에 따라 개발됩니다.
+All development guidelines, safety rules, and verification workflows in this repository are governed strictly by `AGENTS.md` in the project root as the Single Source of Truth (SSOT).
 
----
-
-## 1. 핵심 행동 규약
-
-1. **결정론적 검증 우선:**
-   - 코드를 수정한 뒤에는 반드시 검증 명령을 실행하여 통과 여부를 직접 확인하세요.
-   - 검증 명령: `{{VERIFY_COMMAND}}`
-   - 테스트 실행 증거 없이 완료를 주장하지 마세요. 테스트 0개는 실패입니다.
-2. **Red-Green-Refactor TDD 사이클 준수:**
-   - **Red:** 구현 전에 반드시 실패하는 테스트 케이스를 먼저 작성하여 요구사항을 증명하세요.
-   - **Green:** 해당 테스트를 통과시키는 최소한의 코드만 작성하세요.
-   - **Refactor:** 테스트 통과를 유지하면서 중복을 제거하고 코드를 정리하세요.
-3. **최소 변경 원칙 (Minimal Diff):**
-   - 요청받은 작업과 무관한 파일 수정이나 전역 코드 포맷팅 변경을 하지 마세요.
-4. **비밀값 및 개인정보 보호:**
-   - `.env`, 비밀 키, API 토큰을 읽어 출력하거나 커밋하지 마세요.
-5. **Git 워크플로:**
-   - 사용자 승인 없는 `git push --force` 및 파괴적 명령을 금지합니다.
-
----
-
-## 2. 프로젝트 주요 명령
-
-* **환경 진단:** `node tools/agentic/doctor.mjs`
-* **자가 검증 (TDD 검사):** `{{VERIFY_COMMAND}}`
-* **개발 서버 시작:** `{{START_COMMAND}}`
-
-## 3. 프로젝트 규칙 확장
-
-이 프로젝트에만 적용되는 도메인 규칙이나 코딩 컨벤션은 이 파일의 하단에 추가하여 관리하세요.
+## Guidelines
+1. Always refer to `AGENTS.md` for core rules, TDD cycles, and verification commands.
+2. Verify all modifications with `{{VERIFY_COMMAND}}`.
+3. All project-specific domain rules and architecture policies are maintained exclusively in `AGENTS.md`.

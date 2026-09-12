@@ -1,6 +1,7 @@
 {
   "name": "@isthis/agentic",
   "version": "0.1.0",
+  "packageManager": "pnpm@10.15.0",
   "description": "Shared AI-agent project guidance generation, configuration, synchronization, and application",
   "type": "module",
   "bin": {

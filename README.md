@@ -72,12 +72,15 @@ npx @isthis/agentic init
 ### 3. 진단 및 자가 검증
 
 ```bash
-# 에이전트 지침 및 환경 진단
-node tools/agentic/doctor.mjs
+# 에이전트 자가 검증 (테스트 실행 및 기계 증거 생성)
+npm run check
+# 또는: node tools/agentic/check.mjs
 
-# 에이전트 자가 검증 (테스트 실행 및 JSON 증거 생성)
-node tools/agentic/check.mjs
+# 에이전트 지침 및 환경 진단
+npx @isthis/agentic doctor
+# 또는: node tools/agentic/doctor.mjs
 ```
+
 
 ---
 

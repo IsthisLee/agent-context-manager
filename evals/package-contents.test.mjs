@@ -8,7 +8,8 @@ import { fileURLToPath } from 'node:url';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 test('npm package contains only runtime assets and the package README', () => {
-  const result = spawnSync('npm', ['pack', '--dry-run', '--json'], {
+  const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+  const result = spawnSync(npmCommand, ['pack', '--dry-run', '--json'], {
     cwd: repoRoot,
     encoding: 'utf8'
   });

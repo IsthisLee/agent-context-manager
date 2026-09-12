@@ -144,7 +144,7 @@ test('init applies the selected Core to a project without changing the Core', ()
     const selection = JSON.parse(fs.readFileSync(path.join(project, 'agentic.project.json'), 'utf8'));
     assert.equal(selection.schemaVersion, 1);
     assert.equal(selection.core, 'company');
-    assert.deepEqual(Object.keys(selection.managedHashes).sort(), [
+    assert.deepEqual(Object.keys(selection.managedHashes).map(file => file.replaceAll(path.sep, '/')).sort(), [
       '.cursor/rules/agentic.mdc',
       '.gemini/rules/agentic.md',
       '.github/copilot-instructions.md',

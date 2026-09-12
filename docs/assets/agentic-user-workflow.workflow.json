@@ -2,39 +2,48 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "Agentic 사용자·에이전트 워크플로",
+    "title": "Agentic의 실제 사용 경계와 워크플로",
     "quality_profile": "showcase"
   },
   "lanes": [
     { "id": "user", "label": "사용자" },
-    { "id": "agent", "label": "선택한 AI 에이전트" },
-    { "id": "project", "label": "대상 프로젝트 (로컬 Agentic CLI)" }
+    { "id": "package", "label": "설치된 @isthis/agentic 패키지" },
+    { "id": "project", "label": "대상 프로젝트" },
+    { "id": "agent", "label": "사용자가 선택한 AI 에이전트" }
   ],
-  "phases": [
-    { "id": "setup", "label": "도입", "fromCol": 0, "toCol": 1 },
-    { "id": "build", "label": "정책·작업 의뢰", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
-    { "id": "prove", "label": "개발·검증·검토", "fromCol": 4, "toCol": 5, "variant": "security" }
-  ],
-  "mainPath": ["install", "init", "request", "work", "check", "report", "review"],
+  "mainPath": ["install", "dependency", "cli", "project_rules", "develop", "verify", "report"],
+  "semanticChecks": {
+    "allowedRoots": ["install", "request", "update"],
+    "allowedTerminals": ["review"],
+    "requiredPaths": [
+      { "from": "install", "to": "review" },
+      { "from": "cli", "to": "project_rules" },
+      { "from": "develop", "to": "verify" }
+    ]
+  },
   "nodes": [
-    { "id": "install", "lane": "user", "col": 0, "width": 128, "type": "external", "label": "개발 의존성 설치", "sublabel": "npm install -D @isthis/agentic" },
-    { "id": "init", "lane": "project", "col": 1, "width": 120, "type": "backend", "label": "Agentic CLI: init", "sublabel": "AGENTS·포인터·도구 생성" },
-    { "id": "request", "lane": "user", "col": 2, "type": "external", "label": "정책·작업 의뢰", "sublabel": "요구사항·완료 기준" },
-    { "id": "work", "lane": "agent", "col": 3, "width": 128, "type": "backend", "label": "규칙 초안·TDD 개발", "sublabel": "초안 제안 → 테스트 → 구현" },
-    { "id": "check", "lane": "agent", "col": 4, "type": "security", "label": "프로젝트 검증", "sublabel": "npm run check", "tag": "에이전트 실행" },
-    { "id": "report", "lane": "agent", "col": 5, "type": "database", "label": "결과 보고", "sublabel": "명령·범위·결과·한계" },
-    { "id": "review", "lane": "user", "col": 5, "width": 96, "type": "external", "label": "승인·결과 검토", "sublabel": "규칙·diff·검증 결과" },
-    { "id": "update", "lane": "user", "col": 3, "type": "messagebus", "label": "버전 업데이트", "sublabel": "검토한 버전 설치" },
-    { "id": "sync", "lane": "project", "col": 4, "width": 120, "type": "messagebus", "label": "Agentic CLI: sync", "sublabel": "생성 파일 갱신 후 diff·doctor" }
+    { "id": "install", "lane": "user", "col": 0, "type": "external", "label": "개발 의존성 설치", "sublabel": "npm install -D @isthis/agentic", "width": 138 },
+    { "id": "dependency", "lane": "package", "col": 1, "type": "backend", "label": "설치된 패키지", "sublabel": "node_modules + lockfile", "width": 130 },
+    { "id": "cli", "lane": "package", "col": 2, "type": "messagebus", "label": "Agentic CLI", "sublabel": "npx agentic init . / sync .", "width": 142 },
+    { "id": "project_rules", "lane": "project", "col": 3, "type": "database", "label": "프로젝트 지침·생성 도구", "sublabel": "AGENTS 규칙 · 포인터·tools/agentic", "width": 154 },
+    { "id": "request", "lane": "user", "col": 3, "type": "external", "label": "정책·작업 의뢰", "sublabel": "요구사항·제약·완료 기준", "width": 138 },
+    { "id": "develop", "lane": "agent", "col": 4, "type": "backend", "label": "규칙을 읽고 TDD 개발", "sublabel": "필요 시 규칙 초안 → 테스트 → 구현", "width": 150 },
+    { "id": "verify", "lane": "project", "col": 5, "type": "security", "label": "프로젝트 네이티브 검증", "sublabel": "에이전트가 npm run check 실행", "width": 150 },
+    { "id": "report", "lane": "agent", "col": 5, "type": "backend", "label": "결과 보고", "sublabel": "변경·검증 증거·한계", "width": 130 },
+    { "id": "review", "lane": "user", "col": 4, "type": "external", "label": "사용자 검토·수용", "sublabel": "diff·규칙·결과 확인", "width": 130 },
+    { "id": "update", "lane": "user", "col": 1, "type": "messagebus", "label": "검토한 버전 설치", "sublabel": "업데이트가 필요할 때만", "width": 130 }
   ],
   "edges": [
-    { "from": "install", "to": "init", "label": "npx agentic init .", "role": "main" },
-    { "from": "init", "to": "request", "label": "생성 파일 검토", "role": "main" },
-    { "from": "request", "to": "work", "label": "초안 제안·승인 뒤", "role": "main" },
-    { "from": "work", "to": "check", "role": "main" },
-    { "from": "check", "to": "report", "label": "통과", "role": "main" },
+    { "from": "install", "to": "dependency", "role": "main" },
+    { "from": "dependency", "to": "cli", "label": "사용자가 init 실행", "role": "main" },
+    { "from": "cli", "to": "project_rules", "label": "기본 지침·도구 생성·갱신", "role": "main" },
+    { "from": "project_rules", "to": "develop", "label": "승인된 규칙·도구를 읽음", "role": "main" },
+    { "from": "request", "to": "project_rules", "label": "정책·완료 기준 반영", "role": "branch" },
+    { "from": "develop", "to": "project_rules", "label": "필요 시 프로젝트 규칙 초안", "variant": "dashed", "role": "branch" },
+    { "from": "develop", "to": "verify", "label": "변경 후 실행", "role": "main" },
+    { "from": "verify", "to": "report", "label": "통과", "role": "main" },
     { "from": "report", "to": "review", "role": "main" },
-    { "from": "check", "to": "work", "label": "실패·경고: 수정 후 재검증", "variant": "security", "role": "error" },
-    { "from": "update", "to": "sync", "label": "업데이트 시", "variant": "dashed", "role": "branch" }
+    { "from": "verify", "to": "develop", "label": "실패·경고: 수정 후 재검증", "variant": "security", "role": "branch" },
+    { "from": "update", "to": "cli", "label": "npx agentic sync .", "variant": "dashed", "role": "branch" }
   ]
 }

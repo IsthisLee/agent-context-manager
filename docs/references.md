@@ -97,7 +97,7 @@ Agentic은 에이전트를 호출하거나 여러 에이전트를 상시 조율�
 3. 프로젝트가 원래 제공하는 테스트 명령과 검증 증거를 완료 판단의 기반으로 둔다.
 4. 일반 작업은 Solo 루프를 기본으로 하고, 역할 분업은 위험도·복잡도·병렬성이 정당화할 때만 추가하는 방향을 취한다.
 
-비교에서 도출한 구현 우선 과제와 채택 여부는 [생태계 비교 후속 과제](discussion/architecture/ecosystem-follow-ups.md)에서 논의한다.
+비교에서 도출한 구현 우선 과제와 채택 여부는 [생태계 비교 후속 과제](discussion/architecture/topics/ecosystem-follow-ups.md)에서 논의한다.
 
 ---
 

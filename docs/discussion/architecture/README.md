@@ -2,19 +2,20 @@
 
 최종 확인일: **2026-09-12**
 
-이 디렉터리는 아직 채택되지 않았거나 구현 중인 아키텍처 논의를 관리한다. 확정된 결정은 ADR로 기록한 뒤 [`../../architecture/`](../../architecture/)에 반영한다.
+이 디렉터리는 아직 채택되지 않았거나 구현 중인 아키텍처 논의의 진입점이다. 주제별 문서는 [`topics/`](topics/)에 두며, 확정된 결정은 ADR로 기록한 뒤 [`../../architecture/`](../../architecture/)에 반영한다.
 
 ## 논의 지도
 
-| 문서 | 다루는 내용 | 상태 |
-|---|---|---|
-| [adaptive-harness.md](adaptive-harness.md) | ProjectProfile, 역할 계약, Solo·가상 팀 선택 | Proposed |
-| [verification.md](verification.md) | 검증 명령, 증거 형식, 테스트 수 정책 | Proposed |
-| [sync-and-artifacts.md](sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | Proposed |
-| [external-tools.md](external-tools.md) | revfactory/harness와의 관계 | Active reference |
-| [operations-and-release.md](operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | Proposed |
-| [ecosystem-follow-ups.md](ecosystem-follow-ups.md) | 생태계 비교에서 도출한 구현 우선 과제 | Proposed |
-| [implementation-contracts.md](implementation-contracts.md) | 상태 관리와 구현 기록 규약 | Active process |
+| 문서 | 다루는 내용 | 대상 계층 | 중요도 | 권장 순서 | 상태 |
+|---|---|---|---|---|---|
+| [verification.md](topics/verification.md) | 검증 명령, 증거 형식, 테스트 수 정책 | 패키지·프로젝트·에이전트 | Critical | 1 | Proposed |
+| [sync-and-artifacts.md](topics/sync-and-artifacts.md) | artifact, sync, manifest, 롤백 | 패키지·프로젝트 | High | 2 | Proposed |
+| [operations-and-release.md](topics/operations-and-release.md) | doctor, sync, workflow, 릴리즈 개선 | 패키지·프로젝트·사용자 | High | 3 | Proposed |
+| [core-management-and-application.md](topics/core-management-and-application.md) | 개인·조직 Core 생성·등록·적용·재현 | 사용자·패키지·프로젝트 | Critical | 결정 1 / 구현 4 | Proposed |
+| [adaptive-harness.md](topics/adaptive-harness.md) | ProjectProfile, 역할 계약, Solo·가상 팀 선택 | 패키지·프로젝트·에이전트 | High | 5 | Proposed |
+| [ecosystem-follow-ups.md](topics/ecosystem-follow-ups.md) | 생태계 비교에서 도출한 구현 우선 과제 | 설계 우선순위 | Medium | 참조 | Proposed |
+| [external-tools.md](topics/external-tools.md) | revfactory/harness와의 관계 | 외부 근거 | — | 참조 | Active reference |
+| [implementation-contracts.md](topics/implementation-contracts.md) | 상태 관리와 구현 기록 규약 | 문서·운영 | — | 상시 | Active process |
 
 ## 현재 공백과 목표
 

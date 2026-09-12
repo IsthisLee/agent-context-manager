@@ -2,6 +2,42 @@
 
 **상태:** Proposed
 
+## 제안 요약
+
+### 핵심 정보
+
+| 항목 | 내용 |
+| --- | --- |
+| 대상 계층 | Agentic 패키지 CLI, 대상 프로젝트의 생성 도구·manifest, 사용자 운영·릴리즈 절차 |
+| 제안 목표 | 생성·동기화·릴리즈 결과를 읽기 전용 진단과 재현 가능한 검토 절차로 안전하게 운영한다. |
+| 제안 이유 | 현재 `doctor`·`sync`·릴리즈 문서는 생성 상태·검증 증거·drift를 충분히 설명하거나 확인하지 못한다. |
+| 결정할 것 | `doctor` 진단 범위·경고와 실패 기준·CI drift 검사 계약·릴리즈 전 검증·버전 관리 정책 |
+| 중요도 | High — 생성·동기화 결과를 안전하게 진단·검토하는 운영 기반 |
+
+### 제안 관계
+
+| 항목 | 내용 |
+| --- | --- |
+| 선행 작업 | 검증 증거 계약과 sync manifest·dry-run 계약의 최소 schema |
+| 선행 제안 | [Verification Contract](verification.md), [Sync and Artifact Contracts](sync-and-artifacts.md) |
+| 후속 제안 | 없음 — 채택 뒤 운영·릴리즈 구현과 ADR로 승격 |
+| 연관 제안 | [Core Management and Application](core-management-and-application.md), [Ecosystem Comparison Follow-ups](ecosystem-follow-ups.md) |
+
+### 추진 계획
+
+| 항목 | 내용 |
+| --- | --- |
+| 후속 작업 | `doctor` 읽기 전용 진단 강화, CI drift 검사, 릴리즈 체크리스트 구현 |
+| 권장 다음 작업 | `doctor`가 실행하지 않는 읽기 전용 입력과 경고/실패 기준을 eval로 확정 |
+
+## 목차
+
+1. 현재 동작과 공백
+2. Doctor 강화
+3. Sync 안전성
+4. Workflow와 릴리즈 문서
+5. 구현 순서와 검증
+
 이 문서는 현재 CLI 운영 계약의 공백과 개선 방향을 기록한다. 현재 동작과 목표 동작을 구분하며, 구현·eval·ADR 채택 전에는 목표 동작을 확정 아키텍처로 취급하지 않는다.
 
 ## 현재 동작과 공백
@@ -48,3 +84,10 @@
 3. 변경 내역과 ADR·사용자 문서 갱신 확인
 4. `npm version`으로 태그 생성 후 `npm publish --access public`
 5. 태그와 커밋을 원격 저장소에 푸시
+
+## 구현 순서와 검증
+
+1. [검증 계약](verification.md)과 [sync 계약](sync-and-artifacts.md)의 최소 schema를 먼저 확정한다.
+2. `doctor`의 읽기 전용 진단과 경고·실패 구분을 eval로 고정한다.
+3. manifest를 이용한 `sync --dry-run`·`sync --check`를 구현·검증한다.
+4. 릴리즈 자동화는 사용자 승인·태그·배포 권한 경계를 별도로 ADR로 결정한 뒤 추가한다.

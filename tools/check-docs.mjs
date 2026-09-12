@@ -55,17 +55,28 @@ function checkAdrs() {
 
 function checkDiscussionStatuses() {
   const discussionDir = path.join(root, 'docs', 'discussion', 'architecture');
+  const topicsDir = path.join(discussionDir, 'topics');
   const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
   const index = fs.readFileSync(path.join(discussionDir, 'README.md'), 'utf8');
+
+  if (!fs.existsSync(topicsDir)) {
+    errors.push('docs/discussion/architecture/topics: must exist');
+    return;
+  }
+
   for (const name of fs.readdirSync(discussionDir).filter(name => name.endsWith('.md') && name !== 'README.md')) {
-    const content = fs.readFileSync(path.join(discussionDir, name), 'utf8');
+    errors.push(`docs/discussion/architecture/${name}: move topic documents into topics/`);
+  }
+
+  for (const name of fs.readdirSync(topicsDir).filter(name => name.endsWith('.md'))) {
+    const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
     const match = content.match(/^\*\*상태:\*\* (.+)$/m);
     if (!match || !allowed.has(match[1].trim())) {
-      errors.push(`docs/discussion/architecture/${name}: use an allowed **상태:** value`);
+      errors.push(`docs/discussion/architecture/topics/${name}: use an allowed **상태:** value`);
       continue;
     }
 
-    const indexRow = index.split('\n').find(line => line.includes(`](${name})`));
+    const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
     const indexStatus = indexRow?.split('|').map(cell => cell.trim()).at(-2);
     if (indexStatus !== match[1].trim()) {
       errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);

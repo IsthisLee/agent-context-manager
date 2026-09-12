@@ -12,9 +12,11 @@ node /path/to/agentic/bin/agentic.mjs init .
 ```
 
 * **자동 생성 산출물:**
-  * `AGENTS.md` (OpenAI Codex / Copilot)
+  * `AGENTS.md` (OpenAI Codex)
   * `CLAUDE.md` (Anthropic Claude Code)
   * `.gemini/rules/agentic.md` (Google Antigravity)
+  * `.cursor/rules/agentic.mdc` (Cursor)
+  * `.github/copilot-instructions.md` (GitHub Copilot)
   * `tools/agentic/doctor.mjs` (환경 및 지침 진단기)
   * `tools/agentic/check.mjs` (결정론적 TDD 자가 검증기)
   * `.gitignore` 자동 보완
@@ -26,7 +28,7 @@ node /path/to/agentic/bin/agentic.mjs init .
 에이전트는 선호하는 도구를 자유롭게 선택하여 실행합니다:
 
 * **터미널 위주 작업:** `claude` 또는 `codex` 실행
-* **IDE / 복합 작업:** Antigravity 또는 Cursor 실행
+* **IDE / 복합 작업:** Antigravity, Cursor, 또는 VS Code Copilot 실행
 
 ### 에이전트의 내부 행동 루프:
 1. 에이전트가 생성된 `AGENTS.md` 또는 `CLAUDE.md`를 읽고 프로젝트의 코딩/테스트 규칙을 숙지합니다.

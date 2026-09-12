@@ -1,53 +1,76 @@
-# Agentic (Cross-Agent Harness & Verification Kit)
+# Agentic
 
-> **"특정 AI 에이전트에 갇히지 않고, 모든 에이전트(Codex, Claude Code, Antigravity, Cursor)가 내 프로젝트에서 거짓말하지 않고 TDD로 일하게 만드는 크로스 플랫폼 개발 하네스 & 검증 툴킷"**
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20.0.0-brightgreen.svg)](https://nodejs.org/)
+[![Supported Agents](https://img.shields.io/badge/AI_Agents-Codex%20%7C%20Claude%20%7C%20AGY%20%7C%20Cursor%20%7C%20Copilot-orange.svg)](#-지원하는-5대-ai-에이전트)
+
+> **"특정 벤더에 종속되지 않고, 5대 AI 에이전트(Codex, Claude Code, Antigravity, Cursor, GitHub Copilot)가 내 프로젝트에서 환각 없이 결정론적 TDD로 일하게 만드는 크로스 에이전트 개발 하네스 & 검증 툴킷"**
 
 ---
 
-## 💡 왜 필요한가? (Why Agentic?)
+## 💡 왜 Agentic인가? (Why Agentic?)
 
-1. **에이전트 파편화(Vendor Lock-in) 극복:**  
-   OpenAI(Codex `AGENTS.md`), Anthropic(Claude Code `CLAUDE.md`), Google(Antigravity `.gemini/rules/`), Cursor 등 에이전트마다 지침 규격이 제각각입니다. `agentic`은 **단일 진실 공급원(SSOT)**에서 모든 에이전트용 지침을 오차 없이 자동 생성합니다.
-2. **환각 방지 및 결정론적 검증 (Deterministic TDD):**  
-   에이전트의 "다 만들었습니다"라는 거짓말을 믿지 않고, 실제 테스트 실행 결과(`exitCode 0`, `passCount > 0`)와 기계 판독 가능한 증거 파일(`last-check.json`)로만 완료를 인정합니다.
+1. **에이전트 파편화(Vendor Lock-in) 종식:**  
+   OpenAI(`AGENTS.md`), Anthropic(`CLAUDE.md`), Google Antigravity(`.gemini/rules/`), Cursor(`.cursor/rules/`), GitHub Copilot(`.github/copilot-instructions.md`) 등 에이전트마다 설정 규격이 제각각입니다. `agentic`은 **단일 진실 공급원(SSOT)**에서 모든 에이전트용 지침을 오차 없이 일괄 자동 생성합니다.
+2. **환각 방지 및 결정론적 TDD (Deterministic Verification):**  
+   에이전트의 "코드 다 짰습니다"라는 구두 선언을 믿지 않습니다. 실제 테스트 실행 결과(`exitCode 0`, `passCount > 0`)와 기계 판독 가능한 증거 파일(`.agentic/last-check.json`)로만 완료를 검증합니다.
 3. **관심사 분리 및 보안 (Separation of Concerns & Security):**  
-   공통 개발 하네스와 프로젝트 고유 코드를 깔끔하게 분리하고, `.env`나 API 키 같은 민감한 정보가 외부로 노출되지 않도록 안전하게 보호합니다.
+   범용 개발 하네스 설정과 프로젝트 고유 비즈니스 로직을 깔끔하게 분리합니다. `.env`나 API 키 같은 민감한 정보가 프롬프트나 커밋에 노출되지 않도록 가드레일을 제공합니다.
+4. **가벼움과 제로 런타임 의존성 (Zero Dependencies):**  
+   복잡한 파이썬 환경이나 무거운 래퍼 없이, Node.js 20+ 순수 내장 기능만으로 어디서나 1초 만에 실행됩니다.
 
 ---
 
-## 🚀 사용법 (3초 퀵스타트)
+## 🤖 지원하는 5대 AI 에이전트
 
-### 1. 새 프로젝트에 에이전트 하네스 설치
-작업하려는 프로젝트 디렉터리에서 다음 명령어를 실행합니다:
+동기화 명령 한 번으로 다음 5개 파일이 프로젝트에 자동 주입되어 모든 에이전트가 동일한 규칙을 공유합니다:
+
+| 에이전트 | 자동 생성 파일 | 주요 역할 및 특징 |
+|---|---|---|
+| **OpenAI Codex** | [`AGENTS.md`](templates/AGENTS.md) | 터미널 CLI 기반 자율 코딩 |
+| **Claude Code** | [`CLAUDE.md`](templates/CLAUDE.md) | 터미널 대화형 diff 리뷰 및 심층 리팩터링 |
+| **Google Antigravity (AGY)** | [`.gemini/rules/agentic.md`](templates/gemini-rules/agentic.md) | 고차원 플래닝, 서브에이전트, 아티팩트 보고 |
+| **Cursor** | [`.cursor/rules/agentic.mdc`](templates/cursor-rules/agentic.mdc) | IDE 인라인 코드 작성 및 룰셋 자동 적용 |
+| **GitHub Copilot** | [`.github/copilot-instructions.md`](templates/copilot-instructions.md) | VS Code / JetBrains IDE 에이전트 및 PR 리뷰 |
+
+---
+
+## 🚀 사용법 (Quickstart)
+
+### 1. 프로젝트에 하네스 설치 (10초)
+
+작업하려는 프로젝트 폴더에서 다음 명령어를 실행합니다:
 
 ```bash
-# agentic 저장소의 CLI를 이용해 대상 프로젝트 초기화
+# 로컬 저장소 기준 실행:
 node /path/to/agentic/bin/agentic.mjs init .
+
+# 또는 오픈소스 npx 직접 실행:
+npx github:IsthisLee/agentic init .
 ```
 
-👉 **자동 생성되는 파일:**
-* `AGENTS.md` (OpenAI Codex용)
-* `CLAUDE.md` (Anthropic Claude Code용)
-* `.gemini/rules/agentic.md` (Google Antigravity용)
-* `.cursor/rules/agentic.mdc` (Cursor용)
-* `.github/copilot-instructions.md` (GitHub Copilot용)
-* `tools/agentic/doctor.mjs` (환경 및 지침 상태 진단 스크립트)
-* `tools/agentic/check.mjs` (결정론적 TDD 자가 검증 스크립트)
-* `.gitignore` 자동 보완
+👉 **프로젝트에 자동 구성되는 항목:**
+* 5대 에이전트 지침 파일 (`AGENTS.md`, `CLAUDE.md`, `.gemini/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`)
+* 결정론적 진단 도구 (`tools/agentic/doctor.mjs`)
+* 결정론적 TDD 자가 검증 도구 (`tools/agentic/check.mjs`)
+* `.gitignore` 자동 보완 (`.agentic/last-check.json`, `.DS_Store` 등)
 
-### 2. 평소 쓰던 에이전트 그대로 개발
+### 2. 평소 쓰던 에이전트 그대로 실행
+
 * **Claude Code:** 터미널에서 `claude` 실행
 * **Codex:** 터미널에서 `codex` 실행
 * **Antigravity:** IDE에서 바로 세션 실행
-* **Cursor / VS Code Copilot:** IDE 에디터에서 인라인 및 에이전트 프롬프트 실행
-* 👉 어떤 에이전트를 열든 동일한 프로젝트 규칙을 읽고, 코드 수정 후 스스로 `npm run check`를 실행해 검증하며 작업합니다.
+* **Cursor / Copilot:** IDE 에디터에서 에이전트 실행
 
-### 3. 진단 및 검증
+👉 어떤 에이전트를 열든 동일한 프로젝트 지침을 읽고, 코드 수정 후 스스로 `npm run check`를 실행해 검증하며 작업합니다.
+
+### 3. 진단 및 자가 검증
+
 ```bash
-# 에이전트 지침 및 의존성 진단
+# 에이전트 지침 및 환경 진단
 node tools/agentic/doctor.mjs
 
-# 에이전트 자가 검증 (테스트 실행 및 증거 생성)
+# 에이전트 자가 검증 (테스트 실행 및 JSON 증거 생성)
 node tools/agentic/check.mjs
 ```
 
@@ -59,26 +82,40 @@ node tools/agentic/check.mjs
 agentic/
 ├── bin/
 │   └── agentic.mjs              # 동기화 및 진단 CLI
-├── specifications/              # [SSOT] 모든 프로젝트에 적용될 핵심 원칙 정본
+├── specifications/              # [SSOT] 모든 프로젝트에 적용될 단일 정본 규칙
 │   ├── core-principles.md       # TDD 원칙, 환각 방지, 증거 우선
-│   ├── security-boundaries.md   # 자산 분리, 비밀값 보호, Git 안전 수칙
-│   └── agent-contracts.md       # 에이전트별 라이프사이클 계약
+│   ├── security-boundaries.md   # 관심사 분리, 비밀값 보호, 안전 수칙
+│   └── agent-contracts.md       # 5대 에이전트별 라이프사이클 계약
 ├── templates/                   # 프로젝트에 주입되는 템플릿 파일
 │   ├── AGENTS.md                # Codex 템플릿
 │   ├── CLAUDE.md                # Claude Code 템플릿
 │   ├── gemini-rules/            # Antigravity 템플릿
+│   ├── cursor-rules/            # Cursor 템플릿 (.mdc)
+│   ├── copilot-instructions.md  # GitHub Copilot 템플릿
 │   └── tools/                   # doctor.mjs, check.mjs 템플릿
 ├── evals/                       # 자체 검증용 합성 프로젝트
-│   └── synthetic/               # calculator 합성 예제 및 테스트
-├── legacy/                      # 이전 설계서 보존 (260912 백업)
+│   └── synthetic/               # 합성 예제 및 자동화 테스트
+├── docs/                        # 상세 기술 문서 및 ADR
+│   ├── README.md                # 문서 목차
+│   ├── architecture.md          # 3계층 아키텍처 개요
+│   ├── workflow.md              # 실전 워크플로 가이드
+│   ├── adr/                     # 아키텍처 결정 기록
+│   └── references.md            # 공식 참고 문헌 및 비교 분석
 └── package.json
 ```
 
 ---
 
-## 🔄 규칙 개선 및 승격 워크플로 (Promote)
+## 🔄 규칙 개선 및 승격 워크플로 (Rule Promotion)
 
-프로젝트 작업 중 유용한 범용 패턴을 발견했을 때:
+프로젝트 개발 중 다른 프로젝트에도 유용할 좋은 기술 패턴을 발견했을 때:
 1. **서브에이전트 위임:** 프로젝트 세션에서 서브에이전트를 호출하여 순수 기술 패턴만 `agentic/specifications/`에 추가하도록 위임합니다.
-2. **직접 반영:** 회사 고유 명칭, 내부 비즈니스 로직을 철저히 배제하고 순수 추상화된 기술 규칙으로 `specifications/`에 커밋합니다.
-3. **재동기화:** `agentic sync <project>` 명령으로 모든 프로젝트의 지침을 최신 상태로 갱신합니다.
+2. **직접 반영:** 프로젝트 고유의 비즈니스 로직이나 민감한 정보는 제외하고, 순수한 기술 패턴으로 추상화하여 `specifications/`에 반영합니다.
+3. **일괄 재동기화:** `agentic sync <project>` 명령으로 모든 프로젝트의 지침을 최신 상태로 일괄 업데이트합니다.
+
+---
+
+## 📄 라이선스 (License)
+
+이 프로젝트는 [Apache License 2.0](LICENSE)을 따릅니다.
+누구나 자유롭게 수정, 배포, 상업적 이용이 가능합니다.

@@ -1,6 +1,6 @@
 # Architecture Overview
 
-`agentic`은 **크로스 에이전트(Codex, Claude Code, Antigravity, Cursor)를 위한 개발 하네스이자 결정론적 검증 툴킷**이다.
+`agentic`은 **5대 크로스 에이전트(Codex, Claude Code, Antigravity, Cursor, GitHub Copilot)를 위한 개발 하네스이자 결정론적 검증 툴킷**이다.
 
 ---
 
@@ -10,14 +10,14 @@
 ┌─────────────────────────────────────────────────────────────┐
 │ 1. Core Specification & Generator Layer (agentic 저장소)    │
 │    - specifications/ : 단일 진실 공급원(SSOT) 규칙           │
-│    - templates/      : 에이전트별 지침 및 진단/검사 템플릿     │
+│    - templates/      : 5대 에이전트 지침 및 검사 템플릿       │
 │    - bin/agentic.mjs : 프로젝트 초기화/동기화 CLI           │
 └──────────────────────────────┬──────────────────────────────┘
                                │  agentic init / sync
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 2. Project Directive & Tool Layer (대상 프로젝트)           │
-│    - AGENTS.md, CLAUDE.md, .gemini/rules/                   │
+│    - AGENTS.md, CLAUDE.md, .gemini/, .cursor/, .github/     │
 │    - tools/agentic/doctor.mjs, check.mjs                    │
 │    - package.json ("npm test", "npm run check")             │
 └──────────────────────────────┬──────────────────────────────┘
@@ -25,7 +25,7 @@
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 3. Execution & Verification Layer (AI 에이전트 런타임)       │
-│    - Codex, Claude Code, Antigravity CLI 및 IDE             │
+│    - Codex, Claude, Antigravity, Cursor, Copilot            │
 │    - 변경본 수정 ──▶ tools/agentic/check.mjs 자가 검증       │
 │    - .agentic/last-check.json 기계 증거 생성 및 확인        │
 └─────────────────────────────────────────────────────────────┘

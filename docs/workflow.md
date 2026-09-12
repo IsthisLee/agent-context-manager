@@ -124,3 +124,58 @@ npm publish --access public
 # 3. GitHub 푸시
 git push --follow-tags
 ```
+
+---
+
+## 3. 점진적 지침 공개 가이드 (Progressive Disclosure: AGENTS.md ➔ docs/)
+
+프로젝트가 성장하면서 비즈니스 로직, API 규격, DB 정책 등 수많은 지침이 추가됩니다. 이때 모든 내용을 `AGENTS.md`에 계속 누적하면 LLM의 주의력 결핍과 토큰 낭비가 발생합니다.
+
+`agentic`은 2026년 공식 엔지니어링 모범 사례에 기반하여 **"지도와 서랍 (Map & Drawer)" 패턴**을 권장합니다.
+
+```text
+내 프로젝트/
+├── AGENTS.md                 ◀── [루트 지도 (150줄 이내 유지)]
+│                                 - 불변의 핵심 규약 (TDD, 기계 검증, 최소 변경)
+│                                 - 상세 지식 목차 (Index):
+│                                   * 결제 연동 작업 시: `docs/payments.md` 참고
+│                                   * DB 스키마/마이그레이션: `docs/database.md` 참고
+│                                   * 배포/CI 규칙: `docs/deployment.md` 참고
+│
+└── docs/                     ◀── [상세 지식 서랍 (프로젝트와 함께 무한 확장)]
+    ├── payments.md           - 토스/PG사 멱등키 및 샌드박스 API 규칙
+    ├── database.md           - Prisma 트랜잭션 및 인덱싱 정책
+    └── deployment.md         - Docker 빌드 및 환경변수 주입 규칙
+```
+
+### 1) 왜 150줄 기준인가? (공식 엔지니어링 근거)
+
+1. **주의력 희석 방지 (Attention Dilution & Lost in the Middle):**
+   - Stanford 연구(Liu et al.) 및 Anthropic의 컨텍스트 엔지니어링 연구에 따르면, 프롬프트가 과도하게 길어질수록 중간에 위치한 중요한 핵심 제약(예: "기계 검증 통과 전 완료 보고 금지", "비밀값 노출 금지")을 모델이 무시하거나 망각할 확률이 비선형적으로 증가합니다.
+2. **토큰 비용 및 응답 속도(Latency) 최적화:**
+   - 단순한 버그 수정이나 UI 작업 1개를 수행할 때도 무관한 1,000줄의 결제/DB/배포 지침이 매 턴(Turn)마다 컨텍스트에 주입되면 비용이 낭비되고 에이전트의 추론 레이턴시가 지연됩니다.
+3. **온디맨드 점진적 로딩 (Anthropic Engineering, 2025-09-29):**
+   - Anthropic 공식 리포트(*Effective context engineering for AI agents*)는 *"루트 프롬프트는 최소한의 목차(Index)로 유지하고, 에이전트가 특정 도메인 작업을 시작할 때 해당 문서를 파일 읽기 도구로 온디맨드 로딩하게 만드는 것"*이 작업 성공률을 극대화함을 증명했습니다.
+
+### 2) 실전 분리 방법
+
+`AGENTS.md`의 `## 4. 프로젝트 규칙 확장` 섹션을 아래와 같이 목차(Index) 형태로 작성합니다:
+
+```markdown
+## 4. 프로젝트 규칙 확장 (SSOT)
+
+이 프로젝트에만 적용되는 도메인 규칙이나 아키텍처 제약은 오직 이 파일(`AGENTS.md`)의 하단이나 `docs/`에 추가하여 단일 정본으로 관리한다. 모든 에이전트는 이 규칙을 공통으로 따른다.
+
+### 도메인별 상세 지침 목차
+* **결제/정산 작업 시:** [`docs/payments.md`](docs/payments.md) 규약을 필독하라.
+* **DB 모델링 및 쿼리 작성 시:** [`docs/database.md`](docs/database.md) 규칙을 준수하라.
+* **배포 및 CI 파이프라인 수정 시:** [`docs/deployment.md`](docs/deployment.md)를 참고하라.
+```
+
+### 3) 자동 진단 지원 (`agentic doctor`)
+
+`npx @isthis/agentic doctor` (또는 `node tools/agentic/doctor.mjs`)를 실행하면 `AGENTS.md`의 줄 수를 자동으로 진단합니다:
+- **150줄 이하:** `✓ [PASS] AGENTS.md Size: 45 lines (optimal)`
+- **150줄 초과:** `⚠ [WARN] AGENTS.md Size: 182 lines (>150 lines: consider splitting detailed domain rules into docs/ to save LLM tokens)`
+경고 발생 시 상세 도메인 규칙을 `docs/`로 이동하면 에이전트의 집중도와 속도를 최상으로 유지할 수 있습니다.
+

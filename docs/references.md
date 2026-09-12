@@ -18,8 +18,11 @@
   * **핵심:** 장기 작업 시 컨텍스트 유실 방지를 위한 구조화된 인수인계 및 체크포인트 설계.
   * **적용:** 세션 간 중단-재개 시 읽어야 할 최소 컨텍스트 경로 규정.
 * **[Effective context engineering for AI agents](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (2025-09-29)**
-  * **핵심:** 전체 대화 이력의 상시 주입 금지. 필요한 파일만 온디맨드로 점진적 로딩(Progressive Disclosure).
-  * **적용:** 루트 지침 1~2쪽 제한 및 상세 지식의 온디맨드 문서화.
+  * **핵심:** 전체 대화 이력 및 도메인 지식의 상시 주입 금지. 필요한 파일만 온디맨드로 점진적 로딩(Progressive Disclosure).
+  * **적용:** 루트 지침(`AGENTS.md`) 150줄 이내 제한(지도 역할) 및 상세 도메인 지식의 `docs/` 서랍화. `doctor` 진단을 통해 150줄 초과 경고 자동화.
+* **[Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172) (Liu et al., Stanford & UC Berkeley)**
+  * **핵심:** 입력 컨텍스트가 길어질수록 프롬프트의 중간(Middle) 부분에 위치한 핵심 제약 조건에 대한 모델의 회상률(Recall) 및 주의력(Attention)이 급격히 저하됨.
+  * **적용:** 지침을 단일 파일에 비대하게 누적하지 않고, 루트 파일에는 최상단 행동 강령과 목차만 콤팩트하게 유지하여 주의력 희석(Attention Dilution) 방지.
 * **[Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) (2024-12-19)**
   * **핵심:** 복잡한 프레임워크보다 가장 단순한 프롬프트/도구 조합부터 시작하는 원칙.
 * **[Claude Code Best Practices](https://code.claude.com/docs/en/best-practices)**

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeAgentsMd } from '../bin/analyzer.mjs';
+import { extractAgentsManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../bin/analyzer.mjs';
 
 test('mergeAgentsMd preserves user custom rules under section 4', () => {
   const existingContent = `# Agent Guidelines for my-app
@@ -57,4 +57,34 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
   assert.ok(merged.includes('### 결제 모듈 규칙 (사용자가 추가한 커스텀 규칙)'));
   assert.ok(merged.includes('토스페이먼츠 샌드박스 키를 사용할 것.'));
   assert.ok(merged.includes('결제 승인 API 호출 시 멱등키(Idempotency Key)를 전송할 것.'));
+});
+
+test('AGENTS managed hash excludes the project extension and detects Core-area edits', () => {
+  const document = `# Core guidance\n\n- Run checks.\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Keep the domain rule.`;
+  const managed = extractAgentsManagedDocument(document);
+  assert.equal(managed, '# Core guidance\n\n- Run checks.');
+  assert.equal(hashAgentsManagedDocument(document), hashAgentsManagedDocument(`${managed}\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Changed domain rule.`));
+  assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument('# Changed Core guidance'));
+});
+
+test('mergeManagedDocument updates only the Agentic block and preserves user edits', () => {
+  const first = mergeManagedDocument('Generated v1', null);
+  const existing = `${first}\n\n## User additions\n\nKeep this rule.\n`;
+  const updated = mergeManagedDocument('Generated v2', existing);
+
+  assert.match(updated, /Generated v2/);
+  assert.doesNotMatch(updated, /Generated v1/);
+  assert.match(updated, /## User additions/);
+  assert.match(updated, /Keep this rule/);
+  assert.equal((updated.match(/agentic:managed:start/g) || []).length, 1);
+  assert.equal((updated.match(/agentic:managed:end/g) || []).length, 1);
+});
+
+test('mergeManagedDocument preserves an unmarked legacy file instead of replacing it', () => {
+  const legacy = '# Existing instructions\n\n- Keep this content.\n';
+  const merged = mergeManagedDocument('Generated guidance', legacy);
+
+  assert.match(merged, /Existing instructions/);
+  assert.match(merged, /Keep this content/);
+  assert.match(merged, /Generated guidance/);
 });

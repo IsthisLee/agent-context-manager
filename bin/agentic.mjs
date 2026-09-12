@@ -7,8 +7,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { fileURLToPath } from 'node:url';
-import { mergeAgentsMd } from './analyzer.mjs';
+import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, hashManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
 import { CORE_OPERATION_CONTRACT } from './contracts.mjs';
+import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
 
 const CORE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCOPES = ['personal', 'company', 'team', 'workspace'];
@@ -26,9 +27,22 @@ function validateCoreName(name) {
   }
 }
 
+function isValidCoreMetadata(metadata, expectedName = null) {
+  return metadata && typeof metadata === 'object'
+    && metadata.schemaVersion === 1
+    && typeof metadata.name === 'string'
+    && (!expectedName || metadata.name === expectedName)
+    && /^[a-z0-9][a-z0-9-]{0,63}$/.test(metadata.name)
+    && SCOPES.includes(metadata.scope);
+}
+
 function parseFlag(values, flag, fallback = null) {
   const index = values.indexOf(`--${flag}`);
   return index === -1 ? fallback : values[index + 1];
+}
+
+function hasFlag(values, flag) {
+  return values.includes(`--${flag}`);
 }
 
 function readCore(name) {
@@ -37,7 +51,14 @@ function readCore(name) {
   const metadataPath = path.join(coreDir, 'agentic-core.json');
   const instructionsPath = path.join(coreDir, 'AGENTS.md');
   if (!fs.existsSync(metadataPath) || !fs.existsSync(instructionsPath)) throw new Error(`Core not found: ${name}`);
-  return { coreDir, metadataPath, instructionsPath, metadata: JSON.parse(fs.readFileSync(metadataPath, 'utf8')) };
+  let metadata;
+  try {
+    metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
+  } catch {
+    throw new Error(`Invalid Core metadata: ${name}`);
+  }
+  if (!isValidCoreMetadata(metadata, name)) throw new Error(`Invalid Core metadata: ${name}`);
+  return { coreDir, metadataPath, instructionsPath, metadata };
 }
 
 function createCore(name, scope = 'personal') {
@@ -46,9 +67,9 @@ function createCore(name, scope = 'personal') {
   const coreDir = path.join(getCoreHome(), name);
   if (fs.existsSync(coreDir)) throw new Error(`Core already exists: ${name}`);
   fs.mkdirSync(coreDir, { recursive: true });
-  fs.writeFileSync(path.join(coreDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
+  writeTextAtomic(path.join(coreDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
   const coreTemplate = fs.readFileSync(path.join(CORE_ROOT, 'templates/core/AGENTS.md'), 'utf8');
-  fs.writeFileSync(path.join(coreDir, 'AGENTS.md'), coreTemplate.replaceAll('{{CORE_NAME}}', name));
+  writeTextAtomic(path.join(coreDir, 'AGENTS.md'), coreTemplate.replaceAll('{{CORE_NAME}}', name));
   console.log(`Created Core: ${name} (${scope})`);
 }
 
@@ -90,7 +111,7 @@ function getCores() {
     if (!fs.existsSync(metadataPath)) continue;
     try {
       const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-      cores.push(metadata);
+      if (isValidCoreMetadata(metadata, name)) cores.push(metadata);
     } catch {}
   }
   return cores.sort((a, b) => `${a.scope}:${a.name}`.localeCompare(`${b.scope}:${b.name}`));
@@ -188,9 +209,12 @@ async function coreActions(name) {
 
   const target = await projectPathTui(action === 'apply' ? '적용할 프로젝트 경로를 입력하세요.' : '동기화할 프로젝트 경로를 입력하세요.');
   if (!target) return cancel('프로젝트 작업을 취소했습니다.');
-  if (action === 'apply') applyCore(['--core', name, target]);
-  else syncProject(['--core', name, target]);
-  outro(action === 'apply' ? 'Core 적용 완료' : 'Core 동기화 완료');
+  const preview = await confirm({ message: '실제 변경 전에 계획만 확인할까요?', initialValue: false });
+  if (isCancel(preview)) return cancel('프로젝트 작업을 취소했습니다.');
+  const operationArgs = ['--core', name, ...(preview ? ['--dry-run'] : []), target];
+  if (action === 'apply') applyCore(operationArgs);
+  else syncProject(operationArgs);
+  outro(preview ? '변경 계획 확인 완료' : (action === 'apply' ? 'Core 적용 완료' : 'Core 동기화 완료'));
 }
 
 async function mainTui() {
@@ -295,8 +319,8 @@ function setupCore(name, values) {
   const block = `${start}\n\n${blocks.join('\n\n')}\n\n${end}`;
   const current = fs.readFileSync(core.instructionsPath, 'utf8');
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
-  fs.writeFileSync(core.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
-  fs.writeFileSync(core.metadataPath, JSON.stringify({ ...core.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
+  writeTextAtomic(core.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
+  writeTextAtomic(core.metadataPath, JSON.stringify({ ...core.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
   console.log(`Configured Core: ${name}`);
 }
 
@@ -382,9 +406,31 @@ function getProjectName(targetDir) {
   return path.basename(targetDir);
 }
 
-function copyAdapter(template, target, projectName) {
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, fs.readFileSync(template, 'utf8').replaceAll('{{PROJECT_NAME}}', projectName));
+function assertProjectDirectory(targetDir) {
+  if (!fs.existsSync(targetDir)) throw new Error(`Directory not found: ${targetDir}`);
+  try {
+    if (!fs.statSync(targetDir).isDirectory()) throw new Error(`Project path is not a directory: ${targetDir}`);
+  } catch (error) {
+    if (error.message.startsWith('Project path is not a directory:')) throw error;
+    throw new Error(`Project path is not a directory: ${targetDir}`);
+  }
+}
+
+function readProjectConfig(configPath) {
+  if (!fs.existsSync(configPath)) return {};
+  try {
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('not an object');
+    return config;
+  } catch {
+    throw new Error(`Invalid project metadata: ${configPath}`);
+  }
+}
+
+function renderAdapter(template, target, projectName) {
+  const generated = fs.readFileSync(template, 'utf8').replaceAll('{{PROJECT_NAME}}', projectName);
+  const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
+  return mergeManagedDocument(generated, existing);
 }
 
 function projectArgs(values) {
@@ -397,35 +443,75 @@ function applyCore(values) {
   const { coreName, targetPath } = projectArgs(values);
   if (!coreName) throw new Error('init requires --core <name>.');
   const targetDir = path.resolve(process.cwd(), targetPath);
-  if (!fs.existsSync(targetDir)) throw new Error(`Directory not found: ${targetDir}`);
+  assertProjectDirectory(targetDir);
   const core = readCore(coreName);
   const projectName = getProjectName(targetDir);
   const agentsPath = path.join(targetDir, 'AGENTS.md');
-  const agents = mergeAgentsMd(renderCoreAgents(core, projectName), fs.existsSync(agentsPath) ? fs.readFileSync(agentsPath, 'utf8') : null);
-  fs.writeFileSync(agentsPath, agents);
+  const projectConfigPath = path.join(targetDir, 'agentic.project.json');
+  let projectConfig = {};
+  projectConfig = readProjectConfig(projectConfigPath);
+  const changes = [];
+  const planFile = (target, content) => {
+    const relativePath = path.relative(targetDir, target) || path.basename(target);
+    const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
+    changes.push({ target, relativePath, content, status: existing === null ? 'create' : existing === content ? 'unchanged' : 'update' });
+  };
+  const existingAgents = fs.existsSync(agentsPath) ? fs.readFileSync(agentsPath, 'utf8') : null;
+  const previousAgentsHash = projectConfig.managedHashes?.['AGENTS.md'];
+  if (previousAgentsHash && hashAgentsManagedDocument(existingAgents) !== previousAgentsHash) {
+    throw new Error('Managed file changed outside Agentic: AGENTS.md');
+  }
+  const agents = mergeAgentsMd(renderCoreAgents(core, projectName), existingAgents);
+  planFile(agentsPath, agents);
   for (const [source, target] of [
     ['templates/CLAUDE.md', 'CLAUDE.md'],
     ['templates/gemini-rules/agentic.md', '.gemini/rules/agentic.md'],
     ['templates/cursor-rules/agentic.mdc', '.cursor/rules/agentic.mdc'],
     ['templates/copilot-instructions.md', '.github/copilot-instructions.md']
-  ]) copyAdapter(path.join(CORE_ROOT, source), path.join(targetDir, target), projectName);
-  fs.writeFileSync(path.join(targetDir, 'agentic.project.json'), JSON.stringify({ schemaVersion: 1, core: coreName }, null, 2) + '\n');
+  ]) {
+    const targetPath = path.join(targetDir, target);
+    const existing = fs.existsSync(targetPath) ? fs.readFileSync(targetPath, 'utf8') : null;
+    const previousHash = projectConfig.managedHashes?.[target];
+    if (previousHash && hashManagedDocument(existing) !== previousHash) {
+      throw new Error(`Managed file changed outside Agentic: ${target}`);
+    }
+    planFile(targetPath, renderAdapter(path.join(CORE_ROOT, source), targetPath, projectName));
+  }
+  const managedHashes = {};
+  if (extractAgentsManagedDocument(agents)) managedHashes['AGENTS.md'] = hashAgentsManagedDocument(agents);
+  for (const change of changes.filter(change => change.relativePath !== 'AGENTS.md' && change.relativePath !== 'agentic.project.json')) {
+    const managed = extractManagedDocument(change.content);
+    if (managed) managedHashes[change.relativePath] = hashManagedDocument(change.content);
+  }
+  planFile(projectConfigPath, JSON.stringify({ ...projectConfig, schemaVersion: 1, core: coreName, managedHashes }, null, 2) + '\n');
+  const changed = changes.filter(change => change.status !== 'unchanged');
+  console.log(`${hasFlag(values, 'dry-run') ? 'Dry-run' : 'Plan'}: ${changed.length} file(s) to ${hasFlag(values, 'dry-run') ? 'change' : 'change'}.`);
+  for (const change of changes) console.log(`  ${change.status.padEnd(9)} ${change.relativePath}`);
+  if (hasFlag(values, 'dry-run')) {
+    console.log('Dry-run: no files were changed.');
+    return;
+  }
+  for (const change of changed) assertSafeTextTarget(change.target, targetDir);
+  for (const change of changed) {
+    writeTextAtomic(change.target, change.content);
+  }
   console.log(`Applied Core ${coreName} to ${targetDir}`);
 }
 
 function syncProject(values) {
   const { coreName, targetPath } = projectArgs(values);
   const targetDir = path.resolve(process.cwd(), targetPath);
+  assertProjectDirectory(targetDir);
   const selectionPath = path.join(targetDir, 'agentic.project.json');
-  const selected = coreName || (fs.existsSync(selectionPath) ? JSON.parse(fs.readFileSync(selectionPath, 'utf8')).core : null);
+  const selected = coreName || readProjectConfig(selectionPath).core;
   if (!selected) throw new Error('sync requires --core <name> or an existing agentic.project.json.');
-  applyCore(['--core', selected, targetPath]);
+  applyCore(['--core', selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetPath]);
 }
 
 function help() {
   const title = invokedAs === 'agt' ? 'agt (agentic)' : 'agentic (agt)';
   const commandName = invokedAs === 'agt' ? 'agt' : 'agentic';
-  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list [--scope <scope>]\n  ${commandName} core view <name>\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] [--review <level>] ...\n  ${commandName} init --core <name> <project>\n  ${commandName} sync [--core <name>] <project>\n\nScopes: ${SCOPES.join(', ')}\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
+  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list [--scope <scope>]\n  ${commandName} core view <name>\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] ...\n  ${commandName} init --core <name> [--dry-run] <project>\n  ${commandName} sync [--core <name>] [--dry-run] <project>\n\nScopes: ${SCOPES.join(', ')}\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
 }
 
 async function main() {
@@ -435,8 +521,12 @@ async function main() {
     if (args[2]) createCore(args[2], parseFlag(args.slice(3), 'scope', 'personal'));
     else await createCoreTui();
   } else if (command === 'core' && args[1] === 'remove') {
-    const name = args[2];
-    if (parseFlag(args.slice(3), 'yes', null) !== null) removeCore(name);
+    const removeArgs = args.slice(2);
+    const name = removeArgs.find(value => !value.startsWith('--')) || null;
+    if (hasFlag(removeArgs, 'yes')) {
+      if (!name) throw new Error('core remove --yes requires <name>.');
+      removeCore(name);
+    }
     else await removeCoreTui(name);
   } else if (command === 'core' && args[1] === 'view') {
     if (!args[2]) throw new Error('core view requires <name>.');

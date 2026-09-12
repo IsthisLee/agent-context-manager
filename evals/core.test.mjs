@@ -72,6 +72,25 @@ test('core list can filter registered Cores by scope', () => {
   }
 });
 
+test('core list ignores malformed Core metadata instead of presenting an invalid Core', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-invalid-metadata-test-'));
+
+  try {
+    const coreDir = path.join(home, '.agentic-cores', 'broken');
+    fs.mkdirSync(coreDir, { recursive: true });
+    fs.writeFileSync(path.join(coreDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name: 'broken', scope: 'unknown' }));
+    const output = execFileSync(process.execPath, [cli, 'core', 'list'], {
+      cwd: repoRoot,
+      env: { ...process.env, AGENTIC_HOME: home },
+      encoding: 'utf8'
+    });
+    assert.match(output, /No Cores found/);
+    assert.doesNotMatch(output, /broken/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('setup applies selected guidance to the Core and preserves its project-independent boundary', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-setup-test-'));
 
@@ -123,9 +142,19 @@ test('init applies the selected Core to a project without changing the Core', ()
     assert.match(projectAgents, /## TDD/);
     assert.match(projectAgents, /sample-project/);
     const selection = JSON.parse(fs.readFileSync(path.join(project, 'agentic.project.json'), 'utf8'));
-    assert.deepEqual(selection, { schemaVersion: 1, core: 'company' });
+    assert.equal(selection.schemaVersion, 1);
+    assert.equal(selection.core, 'company');
+    assert.deepEqual(Object.keys(selection.managedHashes).sort(), [
+      '.cursor/rules/agentic.mdc',
+      '.gemini/rules/agentic.md',
+      '.github/copilot-instructions.md',
+      'AGENTS.md',
+      'CLAUDE.md'
+    ]);
+    fs.appendFileSync(path.join(project, 'CLAUDE.md'), '\n## Local Claude guidance\n\nKeep this local workflow.\n');
     execFileSync(process.execPath, [cli, 'sync', project], { cwd: repoRoot, env });
     assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from Agentic Core: company/);
+    assert.match(fs.readFileSync(path.join(project, 'CLAUDE.md'), 'utf8'), /Keep this local workflow/);
     assert.equal(fs.readFileSync(path.join(home, '.agentic-cores', 'company', 'AGENTS.md'), 'utf8'), coreAgentsBefore);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -156,6 +185,41 @@ test('init rejects an unknown Core before changing the target project', () => {
   fs.rmSync(home, { recursive: true, force: true });
 });
 
+test('init rejects a file path instead of treating it as a project directory', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-file-target-test-'));
+  const target = path.join(home, 'not-a-project-directory');
+  fs.writeFileSync(target, 'keep this file\n');
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'directory-check'], { cwd: repoRoot, env });
+    const result = spawnSync(process.execPath, [cli, 'init', '--core', 'directory-check', target], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Project path is not a directory/);
+    assert.equal(fs.readFileSync(target, 'utf8'), 'keep this file\n');
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('sync reports invalid project metadata without changing the project', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-invalid-project-metadata-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'metadata-check'], { cwd: repoRoot, env });
+    fs.writeFileSync(path.join(project, 'agentic.project.json'), '{ invalid json\n');
+    const result = spawnSync(process.execPath, [cli, 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Invalid project metadata/);
+    assert.deepEqual(fs.readdirSync(project), ['agentic.project.json']);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('init preserves an existing AGENTS.md that has no Agentic extension section', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-existing-agents-test-'));
   const project = path.join(home, 'project');
@@ -170,6 +234,113 @@ test('init preserves an existing AGENTS.md that has no Agentic extension section
     assert.match(agents, /Agentic Core: team-core/);
     assert.match(agents, /Existing project guidance/);
     assert.match(agents, /Keep the API backwards compatible/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('init dry-run reports planned files without changing the project', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-dry-run-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'dry-run-core', '--scope', 'workspace'], { cwd: repoRoot, env });
+    const output = execFileSync(process.execPath, [cli, 'init', '--core', 'dry-run-core', '--dry-run', project], {
+      cwd: repoRoot,
+      env,
+      encoding: 'utf8'
+    });
+    assert.match(output, /Dry-run: no files were changed/);
+    assert.match(output, /AGENTS\.md/);
+    assert.deepEqual(fs.readdirSync(project), []);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('init preflights all targets and leaves the project unchanged when an adapter is a symbolic link', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-symlink-test-'));
+  const project = path.join(home, 'project');
+  const outside = path.join(home, 'outside.md');
+  fs.mkdirSync(path.join(project, '.gemini', 'rules'), { recursive: true });
+  fs.writeFileSync(outside, 'outside content\n');
+
+  try {
+    try {
+      fs.symlinkSync(outside, path.join(project, '.gemini', 'rules', 'agentic.md'));
+    } catch (error) {
+      if (error.code === 'EPERM' || error.code === 'EACCES') return;
+      throw error;
+    }
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'preflight-core'], { cwd: repoRoot, env });
+    const result = spawnSync(process.execPath, [cli, 'init', '--core', 'preflight-core', project], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /symbolic link/);
+    assert.deepEqual(fs.readdirSync(project), ['.gemini']);
+    assert.equal(fs.readFileSync(outside, 'utf8'), 'outside content\n');
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('init preflights adapter parent paths and leaves the project unchanged when a parent is a file', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-parent-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+  fs.writeFileSync(path.join(project, '.gemini'), 'not a directory\n');
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'parent-check'], { cwd: repoRoot, env });
+    const result = spawnSync(process.execPath, [cli, 'init', '--core', 'parent-check', project], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Parent path is not a directory/);
+    assert.deepEqual(fs.readdirSync(project), ['.gemini']);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('sync stops when an Agentic-managed block was manually changed', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-core-conflict-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'conflict-core'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'init', '--core', 'conflict-core', project], { cwd: repoRoot, env });
+    const claudePath = path.join(project, 'CLAUDE.md');
+    const original = fs.readFileSync(claudePath, 'utf8');
+    fs.writeFileSync(claudePath, original.replace('Follow the selected', 'Manually changed'));
+    const result = spawnSync(process.execPath, [cli, 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Managed file changed outside Agentic/);
+    assert.match(fs.readFileSync(claudePath, 'utf8'), /Manually changed/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('sync stops when the Core-owned portion of AGENTS.md was manually changed', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-agents-conflict-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'core', 'create', 'agents-conflict'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'init', '--core', 'agents-conflict', project], { cwd: repoRoot, env });
+    const agentsPath = path.join(project, 'AGENTS.md');
+    const original = fs.readFileSync(agentsPath, 'utf8');
+    fs.writeFileSync(agentsPath, original.replace('공통 에이전틱 개발 지침을 관리한다', 'Manually changed Core guidance'));
+    const result = spawnSync(process.execPath, [cli, 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /Managed file changed outside Agentic: AGENTS\.md/);
+    assert.match(fs.readFileSync(agentsPath, 'utf8'), /Manually changed Core guidance/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -265,6 +436,22 @@ test('core remove deletes only the selected Core and preserves an applied projec
     assert.equal(fs.existsSync(path.join(home, '.agentic-cores', 'company')), false);
     assert.equal(fs.existsSync(path.join(project, 'AGENTS.md')), true);
     assert.equal(fs.existsSync(path.join(project, 'agentic.project.json')), true);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('core remove requires a Core name when confirmation is supplied non-interactively', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-remove-approval-test-'));
+
+  try {
+    const result = spawnSync(process.execPath, [cli, 'core', 'remove', '--yes'], {
+      cwd: repoRoot,
+      env: { ...process.env, AGENTIC_HOME: home },
+      encoding: 'utf8'
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /core remove --yes requires <name>/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

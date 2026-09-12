@@ -28,14 +28,14 @@
 
 ## 2. 프로젝트 실행 및 검사 명령
 
-* **문서 계약·저장소 평가:** `pnpm run check`
+* **문법·문서 계약·저장소 평가:** `pnpm run check`
 * **CLI 직접 실행:** `node bin/agentic.mjs <command>`
 
 ---
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약 (자동 감지)
 
-* **개발 언어:** JavaScript (Node.js 환경)
+* **개발 언어:** JavaScript (Node.js 24 LTS 이상 환경)
 * **패키지 매니저:** pnpm — 저장소 의존성·스크립트·CI는 고정된 pnpm 버전을 사용하라. 사용자의 npm 설치 명령은 배포 호환성을 위해 README에 유지한다.
 
 ---
@@ -62,6 +62,7 @@
 | `docs/discussion/`          | 아직 채택되지 않았거나 구현·검증 중인 주제별 논의와 계약                 |
 | `docs/adr/`                 | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력                       |
 | `docs/workflow.md`          | 구현된 기능의 사용·운영·릴리즈 절차                             |
+| `docs/repository-operations.md` | 공개 저장소 품질 게이트·릴리스·보안·기여 운영 계약                  |
 | `docs/references.md`        | 외부 근거와 참고 자료                                     |
 | `docs/README.md`            | 문서 탐색 시작점과 색인                                    |
 | `CHANGELOG.md`              | 사용자 영향 변경과 릴리스 버전 이력                             |
@@ -91,4 +92,5 @@
 - 패키지의 목적·책임 경계·기본 작업 모델을 바꾸면 `docs/product-direction.md`, 관련 README 요약, ADR을 같은 변경에서 갱신하라.
 - 문서화 방향, 문서별 책임, 문서화 구조, 이 표의 위치 또는 변경 규칙 자체를 바꾸면 이 `AGENTS.md` 섹션과 `docs/product-direction.md`, `docs/README.md`를 같은 변경에서 함께 갱신하라.
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
+- 공개 저장소 운영 계약을 변경할 때는 `docs/repository-operations.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.

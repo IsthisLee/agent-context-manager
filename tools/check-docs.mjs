@@ -105,7 +105,9 @@ function checkDiscussionStatuses() {
     errors.push(`docs/discussion/architecture/${name}: move topic documents into topics/`);
   }
 
-  for (const name of fs.readdirSync(topicsDir).filter(name => name.endsWith('.md'))) {
+  const topicFiles = fs.readdirSync(topicsDir).filter(name => name.endsWith('.md')).sort();
+  const indexedTopics = [...index.matchAll(/\]\(topics\/([^\s)#]+\.md)\)/g)].map(match => match[1]);
+  for (const name of topicFiles) {
     const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
     const match = content.match(/^\*\*상태:\*\* (.+)$/m);
     if (!match || !allowed.has(match[1].trim())) {
@@ -121,11 +123,33 @@ function checkDiscussionStatuses() {
       }
     }
 
+    const occurrences = indexedTopics.filter(indexedName => indexedName === name).length;
+    if (occurrences !== 1) {
+      errors.push(`docs/discussion/architecture/README.md: ${name} must be indexed exactly once`);
+    }
     const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
     const indexStatus = indexRow?.split('|').map(cell => cell.trim()).filter(Boolean).at(-1);
     if (indexStatus !== match[1].trim()) {
       errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);
     }
+  }
+
+  for (const indexedName of new Set(indexedTopics)) {
+    if (!topicFiles.includes(indexedName)) {
+      errors.push(`docs/discussion/architecture/README.md: index references missing topic ${indexedName}`);
+    }
+  }
+}
+
+function checkReadme() {
+  const readmePath = path.join(root, 'README.md');
+  const content = fs.readFileSync(readmePath, 'utf8');
+  const requiredHeadings = ['## 핵심 목표', '## 핵심 기능', '## 🧭 아키텍처 방향과 진행 상태', '## 빠른 시작', '## 문서'];
+  for (const heading of requiredHeadings) {
+    if (!content.includes(heading)) errors.push(`README.md: missing required section ${heading}`);
+  }
+  for (const requiredText of ['@isthis/agentic', 'npm install --global', 'agt', 'pnpm run check', 'docs/discussion/architecture/']) {
+    if (!content.includes(requiredText)) errors.push(`README.md: missing required product guidance ${requiredText}`);
   }
 }
 
@@ -134,7 +158,8 @@ function checkDocumentationGovernance() {
   const requiredReferences = [
     path.join(root, 'AGENTS.md'),
     path.join(root, 'docs', 'product-direction.md'),
-    path.join(root, 'docs', 'README.md')
+    path.join(root, 'docs', 'README.md'),
+    path.join(root, 'docs', 'repository-operations.md')
   ];
 
   const formatContent = fs.readFileSync(proposalFormat, 'utf8');
@@ -146,6 +171,16 @@ function checkDocumentationGovernance() {
     if (!fs.readFileSync(file, 'utf8').includes('implementation-contracts.md')) {
       errors.push(`${path.relative(root, file)}: must link to the canonical proposal format`);
     }
+  }
+
+  for (const file of [
+    path.join(root, 'CONTRIBUTING.md'),
+    path.join(root, 'CODE_OF_CONDUCT.md'),
+    path.join(root, 'SECURITY.md'),
+    path.join(root, '.github', 'workflows', 'ci.yml'),
+    path.join(root, '.github', 'workflows', 'publish.yml')
+  ]) {
+    if (!fs.existsSync(file)) errors.push(`${path.relative(root, file)}: public repository contract file must exist`);
   }
 }
 
@@ -164,6 +199,7 @@ checkAdrs();
 checkDiscussionStatuses();
 checkDocumentationGovernance();
 checkChangelog();
+checkReadme();
 
 if (errors.length > 0) {
   console.error('Documentation check failed:');

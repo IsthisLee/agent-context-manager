@@ -38,9 +38,25 @@ test('documentation checker keeps document-system entry points linked to the can
   assert.match(checker, /implementation-contracts\.md/);
 });
 
+test('documentation checker protects the public repository operations contract', () => {
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
+
+  assert.match(checker, /repository-operations\.md/);
+  assert.match(checker, /CONTRIBUTING\.md/);
+  assert.match(checker, /SECURITY\.md/);
+});
+
 test('documentation checker validates local Markdown heading anchors', () => {
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
 
   assert.match(checker, /checkInternalAnchors/);
   assert.match(checker, /markdownHeadingSlug/);
+});
+
+test('documentation checker protects the README product entry point and discussion index integrity', () => {
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
+
+  assert.match(checker, /checkReadme/);
+  assert.match(checker, /must be indexed exactly once/);
+  assert.match(checker, /index references missing topic/);
 });

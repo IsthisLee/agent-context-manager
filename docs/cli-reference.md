@@ -9,6 +9,8 @@ npm install --global @isthis/agentic
 agt help
 ```
 
+현재 공개 배포 전인 저장소에서는 `pnpm install` 후 `node bin/agentic.mjs help`로 동일한 CLI를 로컬 실행할 수 있다.
+
 저장소 개발 환경에서는 고정된 pnpm 버전을 사용한다. npm 설치 사용자는 별도 설정 없이 `agentic`과 `agt`를 모두 사용할 수 있다.
 
 ## 공통 규칙
@@ -139,12 +141,13 @@ agt setup --core company --tdd strict --security strict
 선택한 Core를 대상 프로젝트에 처음 적용한다.
 
 ```bash
-agt init --core <name> <project>
+agt init --core <name> [--dry-run] <project>
 ```
 
 | 옵션·인자 | 설명 |
 | --- | --- |
 | `--core <name>` | 적용할 Core 이름; 필수 |
+| `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `<project>` | 적용할 프로젝트 경로; 필수 |
 
 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일, `agentic.project.json`을 만든다. 기존 `AGENTS.md`의 프로젝트 도메인 규칙 확장은 보존한다.
@@ -154,15 +157,18 @@ agt init --core <name> <project>
 Core의 최신 공통 지침을 프로젝트에 다시 적용한다.
 
 ```bash
-agt sync [--core <name>] <project>
+agt sync [--core <name>] [--dry-run] <project>
 ```
 
 | 옵션·인자 | 설명 |
 | --- | --- |
 | `--core <name>` | 동기화할 Core; 생략하면 프로젝트 `agentic.project.json`에서 선택 |
+| `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `<project>` | 동기화할 프로젝트 경로; 필수 |
 
-프로젝트 `AGENTS.md`의 도메인 규칙 확장은 보존한다. Agentic이 관리하는 에이전트별 포인터 파일은 재생성한다.
+프로젝트 `AGENTS.md`의 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존한다. Agentic이 관리하는 블록만 갱신한다.
+
+`--dry-run`을 사용하면 생성·갱신·보존·변경 없음 파일의 계획을 출력하고 실제 파일을 변경하지 않는다. TUI에서 프로젝트 적용·동기화를 선택하면 먼저 계획만 확인할지 선택할 수 있다.
 
 ## TUI와 자동화 선택
 

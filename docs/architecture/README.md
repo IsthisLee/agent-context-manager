@@ -16,16 +16,21 @@
   └── 프로젝트 코드·테스트
 ```
 
-현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·조회·설정·삭제한다. Core에는 `personal`, `company`, `team`, `workspace` scope가 있으며, `core list --scope <scope>`로 CLI 필터링할 수 있다. TUI의 `core list`는 scope를 먼저 선택한 뒤 Core를 고르고 생성·설정·프로젝트 적용·동기화·상세 보기·삭제 메뉴를 제공하며, `setup`만 실행한 경우에도 scope와 Core를 선택하게 한다. 각 기능은 CLI 명령과 TUI 경로를 모두 제공한다. 적용 시 프로젝트 `AGENTS.md`의 기존 지침을 보존하며, Agentic이 관리하는 에이전트별 포인터 파일은 `init/sync` 때 재생성한다. Core 삭제는 해당 Core 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다.
+현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·조회·설정·삭제한다. Core에는 `personal`, `company`, `team`, `workspace` scope가 있으며, `core list --scope <scope>`로 CLI 필터링할 수 있다. TUI의 `core list`는 scope를 먼저 선택한 뒤 Core를 고르고 생성·설정·프로젝트 적용·동기화·상세 보기·삭제 메뉴를 제공하며, `setup`만 실행한 경우에도 scope와 Core를 선택하게 한다. 각 기능은 CLI 명령과 TUI 경로를 모두 제공한다. 적용 시 프로젝트 `AGENTS.md`의 기존 지침과 에이전트별 산출물의 사용자 영역을 보존하며, `AGENTS.md`의 Core 소유 영역과 에이전트별 산출물의 Agentic 관리 블록만 `init/sync` 때 갱신한다. 두 영역의 hash도 `agentic.project.json`에 기록해 수동 변경 시 동기화를 중단한다. Core 삭제는 해당 Core 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다. 관리 마커가 없는 기존 에이전트별 파일은 기존 내용을 보존한 채 Agentic 관리 블록을 추가한다.
 
 ## 저장소 파일 구조
 
 ```text
 agentic/
+├── .github/                    # CI·배포·Dependabot·커뮤니티 운영 설정
+├── .editorconfig               # 편집기 공통 형식 규칙
+├── .gitattributes              # Git 줄바꿈·바이너리 판정 규칙
+├── .nvmrc                      # 기여자 기본 Node.js 메이저 버전
 ├── bin/
 │   ├── agentic.mjs              # 메인 CLI와 Core·프로젝트 적용 로직
 │   ├── agt.mjs                  # agentic CLI 별칭
-│   └── analyzer.mjs             # 프로젝트 AGENTS.md 도메인 규칙 병합
+│   ├── analyzer.mjs             # 프로젝트 AGENTS.md 도메인 규칙 병합
+│   └── fs-utils.mjs             # 원자적 텍스트 파일 교체·심볼릭 링크 보호
 ├── templates/
 │   ├── core/AGENTS.md           # 새 Core의 초기 지침 템플릿
 │   └── ...                      # 에이전트별 지침 포인터 템플릿
@@ -42,6 +47,9 @@ agentic/
 │   └── references.md            # 외부 근거와 비교 자료
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본
 ├── README.md                    # npm 패키지 소개
+├── CONTRIBUTING.md              # 기여 절차와 품질 게이트
+├── SECURITY.md                  # 보안 신고·안전한 사용 정책
+├── CODE_OF_CONDUCT.md           # 커뮤니티 행동 규범
 ├── package.json                 # npm 패키지·CLI·스크립트 정의
 └── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
 ```

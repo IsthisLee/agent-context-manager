@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+const changelog = fs.readFileSync(path.join(repoRoot, 'CHANGELOG.md'), 'utf8');
+const tag = process.argv.slice(2).find(argument => argument !== '--');
+
+if (!tag) throw new Error('A release tag is required, for example v0.1.0.');
+const version = tag.replace(/^v/, '');
+assert.equal(version, packageJson.version, `Release tag ${tag} does not match package version ${packageJson.version}.`);
+const changelogHeading = `^## \\[${version.replaceAll('.', '\\\.')}\\]`;
+assert.match(changelog, new RegExp(changelogHeading, 'm'), `CHANGELOG.md is missing version ${version}.`);
+console.log(`Release contract passed for ${tag}.`);

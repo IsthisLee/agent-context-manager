@@ -3,6 +3,14 @@
   "version": "0.1.0",
   "packageManager": "pnpm@10.15.0",
   "description": "Shared AI-agent project guidance generation, configuration, synchronization, and application",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IsthisLee/agentic.git"
+  },
+  "homepage": "https://github.com/IsthisLee/agentic#readme",
+  "bugs": {
+    "url": "https://github.com/IsthisLee/agentic/issues"
+  },
   "type": "module",
   "bin": {
     "agentic": "./bin/agentic.mjs",
@@ -17,7 +25,13 @@
   "scripts": {
     "test": "node --test evals/**/*.test.mjs",
     "check:docs": "node tools/check-docs.mjs",
-    "check": "npm run check:docs && npm test"
+    "check:syntax": "node tools/check-syntax.mjs",
+    "check": "pnpm run check:syntax && pnpm run check:docs && pnpm test",
+    "check:release": "node tools/check-release.mjs",
+    "pack:check": "npm pack --dry-run",
+    "audit": "pnpm audit --audit-level high",
+    "package:smoke": "node tools/package-smoke.mjs",
+    "prepublishOnly": "pnpm run check && pnpm run pack:check"
   },
   "keywords": [
     "agentic",
@@ -35,8 +49,11 @@
   ],
   "author": "Isthis",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=24.0.0"
   },
   "dependencies": {
     "@clack/prompts": "^1.8.0"

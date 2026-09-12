@@ -8,6 +8,14 @@
 - 테스트 실행 결과는 유용한 검증 신호지만, 요구사항 충족·지침 준수·제품 품질 전체의 증명은 아니다. 별도 grader나 사람 검토가 필요할 수 있다. [Anthropic Evals 설명](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 - 루트 지침은 필요한 고신호 정보를 제공하고 상세 지침은 필요할 때 찾을 수 있게 구성한다. 특정 줄 수를 공식 기준으로 취급하지 않는다. [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 
+## 공개 npm·GitHub 저장소 운영 근거
+
+- npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/)
+- npm trusted publishing은 장기 토큰 대신 CI의 OIDC를 사용하고 provenance attestation을 생성한다. GitHub Actions에서 사용하려면 저장소·workflow·`repository.url`을 정확히 연결하고 publish job에 `id-token: write` 권한을 부여해야 한다. [npm Trusted publishing](https://docs.npmjs.com/trusted-publishers), [GitHub Node.js package publishing](https://docs.github.com/en/actions/tutorials/publish-packages/publish-nodejs-packages)
+- GitHub는 공개 저장소의 community profile에서 README, LICENSE, CONTRIBUTING, CODE_OF_CONDUCT 같은 커뮤니티 건강 파일을 점검한다. 기여 안내는 저장소 루트·`docs`·`.github`에 둘 수 있으며, 공개 저장소 운영자는 이를 통해 기여 기대치를 명확히 할 수 있다. [GitHub community profile](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/about-community-profiles-for-public-repositories), [GitHub contributing guidelines](https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/setting-guidelines-for-repository-contributors)
+- GitHub는 공개 저장소에서 Dependabot alerts, secret scanning, push protection, code scanning을 최소 보안 기준으로 권장하고, Dependency Review는 PR에 새 취약 의존성이 들어오는 것을 확인하는 게이트로 사용할 수 있다고 설명한다. [GitHub security settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-security-and-analysis-settings-for-your-repository), [GitHub dependency review](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependency-review)
+- Node.js의 내장 `node:test`는 지원되는 LTS 런타임에서 안정적인 테스트 러너로 제공된다. Agentic은 Node.js 24 LTS 이상을 지원 기준으로 삼고, 저장소 평가는 별도 테스트 프레임워크 없이 이 러너로 실행한다. [Node.js test runner](https://nodejs.org/api/test.html), [Node.js 릴리스 일정](https://nodejs.org/en/about/previous-releases)
+
 ## 비교 대상
 
 비교의 기준은 “에이전트가 무엇을 잘하게 하는가”와 “여러 프로젝트·에이전트에 공통 지침을 어떻게 배포하고 관리하는가”를 분리하는 것이다. Agentic은 후자에 초점을 둔다. 따라서 아래 도구들은 일부 기능이 겹쳐도 목적과 책임 범위가 다르며, 함께 사용할 수 있다.

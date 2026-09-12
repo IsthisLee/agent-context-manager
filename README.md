@@ -1,6 +1,11 @@
 # Agentic
 
+![CI](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml/badge.svg)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 > 여러 AI 에이전트가 동일한 프로젝트 개발 지침을 사용하도록, 지침을 생성·설정·동기화·적용하는 패키지입니다.
+
+> 배포 상태: 현재 공개 npm 배포 전입니다. 공개 배포 후에는 아래의 global 설치 명령을 사용할 수 있으며, 지금은 저장소에서 로컬 실행할 수 있습니다.
 
 ## 핵심 목표
 
@@ -10,9 +15,10 @@
 
 개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. Core의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
-가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
+공개 npm 배포 후 가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
 
 ```bash
+npm install --global @isthis/agentic
 agt
 ```
 
@@ -27,15 +33,61 @@ agt
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
 
+## 🧭 아키텍처 방향과 진행 상태
+
+Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 아래 표는 각 논의 문서의 제안 요약을 사용자 관점에서 압축한 것입니다. `Proposed` 항목은 아직 현재 동작으로 보장하지 않는 후속 작업입니다.
+
+| 주제 | 대상과 목표 | 중요도·상태 | 다음 작업 |
+| --- | --- | --- | --- |
+| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md) | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented | 조직 공유 계약 검토 |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 사용자·CLI가 Core의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성 | High · Implemented | preset·설정 diff 고도화 |
+| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | 선택한 Core를 프로젝트에 적용하고 도메인 지침을 분리 보존 | Critical · Implemented | 충돌·복구 확정 |
+| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Core에서 관리 블록만 에이전트별 지침 파일에 생성·동기화 | High · Implemented | manifest·drift 고도화 |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계 | High · Proposed | 비대화형 CLI·JSON·종료 코드 |
+| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장 | Critical · Implementing | 충돌 시각화·복구 |
+
+### 제안 요약
+
+각 문서는 코드 기능만이 아니라 대상 계층, 도입 이유, 중요도, 선행·후속·연관 작업, 구현 전에 결정할 계약을 함께 관리합니다. 아래는 그 정보를 영역별로 압축한 지도이며, 상세한 현재 상태와 구현 기록은 각 문서에서 확인할 수 있습니다.
+
+#### 1. Core와 공통 지침 구성
+
+| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
+| --- | --- | --- | --- |
+| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md) | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ Core | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행 |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·리뷰·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ Core `AGENTS.md` | High · Implemented | preset·기본값·재실행·대화형/비대화형; Core 모델 후, 프로젝트 적용 전 |
+
+#### 2. 프로젝트 적용과 에이전트 전달
+
+| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
+| --- | --- | --- | --- |
+| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | 공통 지침과 프로젝트 도메인 지침을 분리해 함께 사용 · 사용자 ↔ CLI ↔ Core ↔ 프로젝트 | Critical · Implemented | 대상·병합·승인·적용 기록; setup 후, 동기화 전 |
+| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | 에이전트별 파일 형식에 같은 공통 기준 전달 · Core ↔ CLI ↔ 프로젝트 산출물 | High · Implemented | 어댑터·포인터·파일 소유권·drift; 프로젝트 적용 후 |
+| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 재적용·업데이트 때 사용자 내용과 수동 변경을 보호 · CLI/TUI ↔ Core ↔ 프로젝트 파일 | Critical · Implementing | 관리 블록·hash·dry-run·충돌·백업·복구; 적용·동기화의 안전성 후속 작업 |
+
+#### 3. 사용자·에이전트 자동화 경계
+
+| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
+| --- | --- | --- | --- |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Proposed | 명시적 대상·기계 판독 결과·승인·종료 코드; 현재 CLI/TUI 위의 후속 작업 |
+
+현재의 선행 구조는 Core 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.
+
 ## 빠른 시작
 
 Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설정할 수 있습니다. `agentic setup`만 실행하면 scope별 Core 목록에서 대상을 고른 뒤 모든 지침 설정을 입력합니다.
 
+### 전제 조건
+
+- 실행 환경: Node.js 24 LTS 이상
+- 일반 사용자: 공개 배포 후 `npm install --global @isthis/agentic`
+- 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
+
 짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.
 
 ```bash
-agentic core create
-agentic setup
+pnpm install
+node bin/agentic.mjs
 ```
 
 옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
@@ -49,15 +101,27 @@ agentic init --core company /path/to/project
 
 개인 Core는 `~/.agentic-cores/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
-Core 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](docs/architecture/)와 [구현 계획](docs/discussion/architecture/)에서 확인합니다.
+Core 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인합니다.
+
+### 검증의 범위
+
+저장소 개발자는 `pnpm run check`로 Agentic 자체의 문법·문서 계약·CLI 평가를 확인합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하거나 에이전트의 코드 품질을 보증하는 명령이 아닙니다. 대상 프로젝트의 실제 검증은 해당 프로젝트가 제공하는 명령을 에이전트가 실행하며, Core에는 그 검증을 요구하는 지침만 선택해 기록할 수 있습니다.
 
 ## 문서
 
-- [제품 방향](docs/product-direction.md)
-- [사용자 워크플로](docs/workflow.md)
-- [CLI Reference](docs/cli-reference.md)
-- [아키텍처 구현 계획](docs/discussion/architecture/)
-- [외부 참고 문헌](docs/references.md)
+- [제품 방향](https://github.com/IsthisLee/agentic/blob/main/docs/product-direction.md)
+- [사용자 워크플로](https://github.com/IsthisLee/agentic/blob/main/docs/workflow.md)
+- [CLI Reference](https://github.com/IsthisLee/agentic/blob/main/docs/cli-reference.md)
+- [공개 저장소 운영](https://github.com/IsthisLee/agentic/blob/main/docs/repository-operations.md)
+- [아키텍처 구현 계획](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)
+- [외부 참고 문헌](https://github.com/IsthisLee/agentic/blob/main/docs/references.md)
+
+## 공개 프로젝트 참여
+
+- [기여 가이드](https://github.com/IsthisLee/agentic/blob/main/CONTRIBUTING.md)
+- [보안 정책](https://github.com/IsthisLee/agentic/blob/main/SECURITY.md)
+- [행동 규범](https://github.com/IsthisLee/agentic/blob/main/CODE_OF_CONDUCT.md)
+- [이슈 제보](https://github.com/IsthisLee/agentic/issues)
 
 ## 라이선스
 

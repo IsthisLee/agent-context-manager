@@ -7,9 +7,9 @@
 
 ## 핵심 목표
 
+- 여러 에이전트가 동일한 공통 지침을 기준으로 작업합니다.
 - 다양한 개발자가 동일한 에이전틱 개발 지침으로 협업합니다.
 - Personal·Company·Team·Workspace 등 용도별 Core(공통 지침 저장소)를 생성·관리하고 프로젝트마다 선택해 적용합니다.
-- 여러 에이전트가 동일한 공통 지침을 기준으로 작업합니다.
 
 개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. Core의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
@@ -35,14 +35,14 @@ agt
 
 Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 아래 표는 각 논의 문서의 제안 요약을 사용자 관점에서 압축한 것입니다. `Proposed` 항목은 아직 현재 동작으로 보장하지 않는 후속 작업입니다.
 
-| 주제 | 대상과 목표 | 중요도·상태 | 다음 작업 |
-| --- | --- | --- | --- |
-| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md) | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented | 조직 공유 계약 검토 |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 사용자·CLI가 Core의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성 | High · Implemented | preset·설정 diff 고도화 |
-| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | 선택한 Core를 프로젝트에 적용하고 도메인 지침을 분리 보존 | Critical · Implemented | 충돌·복구 확정 |
-| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Core에서 관리 블록만 에이전트별 지침 파일에 생성·동기화 | High · Implemented | manifest·drift 고도화 |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계 | High · Proposed | 비대화형 CLI·JSON·종료 코드 |
-| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장 | Critical · Implementing | 충돌 시각화·복구 |
+| 주제                                                                                                                                         | 대상과 목표                                                      | 중요도·상태             | 다음 작업                   |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------- | --------------------------- |
+| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md)                       | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented  | 조직 공유 계약 검토         |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)                | 사용자·CLI가 Core의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성   | High · Implemented      | preset·설정 diff 고도화     |
+| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)                   | 선택한 Core를 프로젝트에 적용하고 도메인 지침을 분리 보존        | Critical · Implemented  | 충돌·복구 확정              |
+| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                   | Core에서 관리 블록만 에이전트별 지침 파일에 생성·동기화          | High · Implemented      | manifest·drift 고도화       |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)        | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계           | High · Proposed         | 비대화형 CLI·JSON·종료 코드 |
+| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장           | Critical · Implementing | 충돌 시각화·복구            |
 
 ### 제안 요약
 
@@ -50,23 +50,23 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 
 #### 1. Core와 공통 지침 구성
 
-| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
-| --- | --- | --- | --- |
-| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md) | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ Core | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행 |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·리뷰·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ Core `AGENTS.md` | High · Implemented | preset·기본값·재실행·대화형/비대화형; Core 모델 후, 프로젝트 적용 전 |
+| 주제                                                                                                                          | 목적·대상 계층                                                                        | 중요도·상태            | 결정할 것과 관계                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
+| [Core 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md)        | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ Core  | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행                     |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·리뷰·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ Core `AGENTS.md` | High · Implemented     | preset·기본값·재실행·대화형/비대화형; Core 모델 후, 프로젝트 적용 전 |
 
 #### 2. 프로젝트 적용과 에이전트 전달
 
-| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
-| --- | --- | --- | --- |
-| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | 공통 지침과 프로젝트 도메인 지침을 분리해 함께 사용 · 사용자 ↔ CLI ↔ Core ↔ 프로젝트 | Critical · Implemented | 대상·병합·승인·적용 기록; setup 후, 동기화 전 |
-| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | 에이전트별 파일 형식에 같은 공통 기준 전달 · Core ↔ CLI ↔ 프로젝트 산출물 | High · Implemented | 어댑터·포인터·파일 소유권·drift; 프로젝트 적용 후 |
-| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 재적용·업데이트 때 사용자 내용과 수동 변경을 보호 · CLI/TUI ↔ Core ↔ 프로젝트 파일 | Critical · Implementing | 관리 블록·hash·dry-run·충돌·백업·복구; 적용·동기화의 안전성 후속 작업 |
+| 주제                                                                                                                                         | 목적·대상 계층                                                                       | 중요도·상태             | 결정할 것과 관계                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------- | --------------------------------------------------------------------- |
+| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)                   | 공통 지침과 프로젝트 도메인 지침을 분리해 함께 사용 · 사용자 ↔ CLI ↔ Core ↔ 프로젝트 | Critical · Implemented  | 대상·병합·승인·적용 기록; setup 후, 동기화 전                         |
+| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                   | 에이전트별 파일 형식에 같은 공통 기준 전달 · Core ↔ CLI ↔ 프로젝트 산출물            | High · Implemented      | 어댑터·포인터·파일 소유권·drift; 프로젝트 적용 후                     |
+| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 재적용·업데이트 때 사용자 내용과 수동 변경을 보호 · CLI/TUI ↔ Core ↔ 프로젝트 파일   | Critical · Implementing | 관리 블록·hash·dry-run·충돌·백업·복구; 적용·동기화의 안전성 후속 작업 |
 
 #### 3. 사용자·에이전트 자동화 경계
 
-| 주제 | 목적·대상 계층 | 중요도·상태 | 결정할 것과 관계 |
-| --- | --- | --- | --- |
+| 주제                                                                                                                                  | 목적·대상 계층                                                                                           | 중요도·상태     | 결정할 것과 관계                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------- |
 | [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Proposed | 명시적 대상·기계 판독 결과·승인·종료 코드; 현재 CLI/TUI 위의 후속 작업 |
 
 현재의 선행 구조는 Core 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.
@@ -108,6 +108,7 @@ Core 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약�
 ## 문서
 
 - [제품 방향](https://github.com/IsthisLee/agentic/blob/main/docs/product-direction.md)
+- [구현 원리](https://github.com/IsthisLee/agentic/blob/main/docs/implementation-principles.md)
 - [사용자 워크플로](https://github.com/IsthisLee/agentic/blob/main/docs/workflow.md)
 - [CLI Reference](https://github.com/IsthisLee/agentic/blob/main/docs/cli-reference.md)
 - [공개 저장소 운영](https://github.com/IsthisLee/agentic/blob/main/docs/repository-operations.md)

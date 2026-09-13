@@ -13,15 +13,7 @@
 >
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Profile, project files" width="840">
-</p>
-
-<p align="center">
-  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ Animated flow (WebM)</a>
-  ·
-  <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">Interactive diagram</a>
-</p>
+[agentic.webm](https://github.com/user-attachments/assets/2d240a00-4ceb-4e89-83b9-e21dd5bebfbe)
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
 

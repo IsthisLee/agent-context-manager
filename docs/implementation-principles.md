@@ -13,7 +13,7 @@
 - 명령을 실행하는 주체가 **사용자**인지, 처리하는 주체가 **Agentic 내부 코드**인지 구분해서 적는다.
 - 사용자·워크플로·아키텍처의 정본은 [사용자 워크플로](workflow.md), [CLI Reference](cli-reference.md), [현재 아키텍처](architecture/), [제품 방향](product-direction.md)이다. 이 문서는 그 계약을 다시 정의하지 않고, 원리 설명에 필요한 만큼만 인용한다.
 
-배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm으로 배포되는 것은 `package.json`의 `files`에 적힌 `bin/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성뿐이다(`package.json:19-24`). `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
+배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm tarball에 담기는 것은 `package.json`의 `files`에 적힌 `bin/`, `templates/`, `README.md`, `LICENSE`와 npm이 메타데이터로 항상 넣는 `package.json`이다(`package.json:19-24`). 런타임 의존성(`@clack/prompts`)은 tarball 파일이 아니라 설치 시 별도로 내려받아 구성된다. `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
 
 ## 한눈에 보는 전체 그림
 
@@ -448,7 +448,7 @@ GitHub Actions는 저장소 이벤트(예: 릴리스 게시)에 반응해 정해
 - 게시 전 검증: `pnpm run check && pnpm run pack:check && pnpm run package:smoke`(`.github/workflows/publish.yml:31-32`).
 - 릴리스 버전 계약: `check:release`가 태그(`v0.1.0` 등)에서 버전을 뽑아 `package.json`의 버전과 같은지, `CHANGELOG.md`에 해당 버전 항목이 있는지 확인한다(`.github/workflows/publish.yml:33-34`, `tools/check-release.mjs`).
 - 중복 게시 방지: Registry에 같은 버전이 있으면 게시 단계를 건너뛴다(`.github/workflows/publish.yml:37-50`).
-- CI 워크플로는 배포와 별개로 push·PR마다 세 OS × 두 Node 버전에서 검증한다(`.github/workflows/ci.yml`).
+- CI 워크플로는 배포와 별개로 `main` 브랜치 push와 모든 PR에서 검증한다(`.github/workflows/ci.yml:3-5`). 조합은 Ubuntu(Node 24·26)·macOS(Node 24)·Windows(Node 24)로 총 4가지이며 여섯 조합을 모두 도는 것은 아니다(`.github/workflows/ci.yml:22-31`).
 
 게시 워크플로의 단계 순서는 이렇다.
 
@@ -514,7 +514,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 1. **(사용자)** `npm install --global @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:518-519`).
-3. **(사용자)** Core 생성·설정 선택 → **(Agentic)** `~/.agentic-cores/<name>/`에 `agentic-core.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:64-74`), `setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:305-325`).
+3. **(사용자)** Core 생성·설정 선택 → **(Agentic)** `~/.agentic-cores/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-core.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:64-74`), `setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:305-325`).
 4. **(사용자)** `agt init --core <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:442-499`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([워크플로 4절](workflow.md), `docs/product-direction.md:28`).
 6. **(사용자)** Core를 바꾼 뒤 `agt sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:501-509`).

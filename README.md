@@ -41,9 +41,9 @@
 
 | 상황 | 이렇게 사용합니다 | 기대 효과 |
 | --- | --- | --- |
-| 개인 개발 | 프로젝트 성격별 Personal Profile을 만들고 `setup`으로 지침을 구성한 뒤, 각 프로젝트에 `init`으로 적용합니다. | AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 재사용합니다. |
-| 팀 협업 | 팀 Profile을 Git 저장소로 공유하고, 구성원이 clone·pull한 뒤 담당 프로젝트에 적용합니다. | 팀의 공통 지침 갱신을 같은 이력으로 검토·배포하고 개인별 설정 차이를 줄입니다. |
-| 조직 표준 | 조직 Profile의 공통 기준을 Git으로 관리하고, 팀·프로젝트는 각자의 도메인 지침을 프로젝트 `AGENTS.md`에 추가합니다. | 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 독립적으로 관리합니다. |
+| 개인 | 프로젝트 성격별 Personal Profile을 만들고 `setup`으로 지침을 구성한 뒤, 각 프로젝트에 `init`으로 적용합니다. | AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 재사용합니다. |
+| 팀 | 팀 Profile을 Git 저장소로 공유하고, 구성원이 clone·pull한 뒤 담당 프로젝트에 적용합니다. | 팀의 공통 지침 갱신을 같은 이력으로 검토·배포하고 개인별 설정 차이를 줄입니다. |
+| 조직 | 조직 Profile의 공통 기준을 Git으로 관리하고, 팀·프로젝트는 각자의 도메인 지침을 프로젝트 `AGENTS.md`에 추가합니다. | 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 독립적으로 관리합니다. |
 
 [빠른 시작](#빠른-시작)에서 설치·TUI 실행·프로젝트 적용 순서를 확인할 수 있습니다.
 
@@ -148,6 +148,6 @@ Core 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약�
 - [행동 규범](https://github.com/IsthisLee/agentic/blob/main/CODE_OF_CONDUCT.md)
 - [이슈 제보](https://github.com/IsthisLee/agentic/issues)
 
-## 라이선스
+---
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](LICENSE) · Built with Codex, Claude Code, and Antigravity.

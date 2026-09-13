@@ -41,9 +41,9 @@ Cores are currently managed locally. Sharing and updating organization Cores thr
 
 | Situation | Use it this way | Benefit |
 | --- | --- | --- |
-| Individual development | Create Personal Profiles for different project types, configure their guidance through `setup`, and apply one to each project with `init`. | Reuse the same development standard when switching AI tools or starting a new project. |
-| Team collaboration | Share a team Profile in a Git repository; members clone or pull it, then apply it to their projects. | Review and distribute shared-guidance updates through one history while reducing per-person configuration drift. |
-| Organization standards | Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`. | Keep organization standards independent from project-specific requirements. |
+| Individual | Create Personal Profiles for different project types, configure their guidance through `setup`, and apply one to each project with `init`. | Reuse the same development standard when switching AI tools or starting a new project. |
+| Team | Share a team Profile in a Git repository; members clone or pull it, then apply it to their projects. | Review and distribute shared-guidance updates through one history while reducing per-person configuration drift. |
+| Organization | Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`. | Keep organization standards independent from project-specific requirements. |
 
 See [Quick start](#quick-start) for installation, the TUI entry point, and applying guidance to a project. English is opt-in: choose it once on the first interactive run, or pass `--lang en` / `AGENTIC_LANG=en`, or run `agentic config lang en`. The default is Korean.
 
@@ -92,6 +92,6 @@ Repository developers run `pnpm run check` to verify Agentic's own syntax, docum
 - [Repository operations](https://github.com/IsthisLee/agentic/blob/main/docs/repository-operations.md)
 - [Architecture discussion](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)
 
-## License
+---
 
-[Apache License 2.0](LICENSE)
+[Apache License 2.0](LICENSE) · Built with Codex, Claude Code, and Antigravity.

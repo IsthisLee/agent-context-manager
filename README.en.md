@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
-[![Supported agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Gemini%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#supported-agents)
+[![Supported agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot%20%C2%B7%20Codex-6f42c1)](https://github.com/IsthisLee/agentic#supported-agents)
 
 [한국어](README.md) · **English**
 
@@ -71,10 +71,10 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Agent | Generated file |
 | --- | --- |
 | Claude Code | `CLAUDE.md` |
-| Gemini | `.gemini/rules/agentic.md` |
+| Antigravity | `.gemini/rules/agentic.md` |
 | Cursor | `.cursor/rules/agentic.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
-| Codex · Antigravity, etc. (AGENTS.md standard) | `AGENTS.md` |
+| Codex, etc. (AGENTS.md standard) | `AGENTS.md` |
 
 ## Language
 

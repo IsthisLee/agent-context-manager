@@ -15,7 +15,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자 · Agentic CLI/TUI · Core `AGENTS.md` |
+| 대상 계층 | 사용자 · Agentic CLI/TUI · 프로필 `AGENTS.md` |
 | 결정할 것 | 레벨 정의 문구, 정의의 저장 위치(단일 정본), 산출물 범례 위치, TUI 노출 방식 |
 | 비범위 | 지침 6개의 규칙 문구 변경, 레벨별로 다른 규칙 문구 생성, 새 레벨 추가, 새 CLI 명령 |
 | 중요도 | Medium — 산출물 계약을 넓히지만 기존 선택 모델(항목별 3단계)은 그대로 둔다. |
@@ -46,7 +46,7 @@
 
 ## 1. 현재 동작과 빈 곳
 
-`agentic setup`은 항목마다 `off`/`recommended`/`strict`를 받아 Core `AGENTS.md`의 guidance 블록을 만든다. 그런데 레벨을 바꿔도 산출물에서 바뀌는 것은 `적용 수준:` 라벨 한 줄뿐이고, 그 아래 규칙 문구는 두 레벨에서 동일하다.
+`agentic profile setup`은 항목마다 `off`/`recommended`/`strict`를 받아 프로필 `AGENTS.md`의 guidance 블록을 만든다. 그런데 레벨을 바꿔도 산출물에서 바뀌는 것은 `적용 수준:` 라벨 한 줄뿐이고, 그 아래 규칙 문구는 두 레벨에서 동일하다.
 
 실제로 `보안`을 strict와 recommended로 각각 생성해 비교하면 라벨 줄만 다르다.
 
@@ -94,7 +94,7 @@ flowchart LR
 | --- | --- |
 | `recommended` | 기본값. 일반적으로 지키되, 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다. |
 | `strict` | 예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다. |
-| `off` | 이 지침을 Core에 포함하지 않는다. (산출물 블록에서 항목 자체가 빠지므로 범례에서는 생략) |
+| `off` | 이 지침을 프로필에 포함하지 않는다. (산출물 블록에서 항목 자체가 빠지므로 범례에서는 생략) |
 
 ## 3. 산출물 범례
 
@@ -131,7 +131,7 @@ guidance 블록 맨 위, 첫 지침 항목 앞에 정의를 한 번 넣는다. �
 
 ```text
 ◆  보안 — 비밀값 보호와 외부 변경 승인에 관한 규칙
-   ○ Off        (이 지침을 Core에 포함하지 않음)
+   ○ Off        (이 지침을 프로필에 포함하지 않음)
  ● Recommended  (기본값 · 이유 있으면 예외 허용, 이유 기록)
    ○ Strict     (예외 없이 항상 적용 · 위반 시 작업 중단)
 ```
@@ -140,14 +140,14 @@ guidance 블록 맨 위, 첫 지침 항목 앞에 정의를 한 번 넣는다. �
 
 ```mermaid
 flowchart TD
-  U["사용자 TUI 선택 / CLI 플래그"] -->|항목별 off·recommended·strict| S["setupCore()"]
-  S --> M["Core metadata.settings 저장"]
+  U["사용자 TUI 선택 / CLI 플래그"] -->|항목별 off·recommended·strict| S["setupProfile()"]
+  S --> M["프로필 metadata.settings 저장"]
   S --> B["guidance 블록 생성"]
   B --> L["① 적용 수준 정의 범례 (레벨별 1회)"]
   B --> I["② 지침 항목 6개<br/>각 항목 = 적용 수준 + 규칙 문구(공유)"]
-  L --> F["Core AGENTS.md"]
+  L --> F["프로필 AGENTS.md"]
   I --> F
-  F -->|init / sync| P["프로젝트 AGENTS.md"]
+  F -->|apply / sync| P["프로젝트 AGENTS.md"]
   P --> A["에이전트가 규칙 + 강도를 함께 읽는다"]
 ```
 
@@ -171,7 +171,7 @@ flowchart TD
 
 | 대상 | 변경 |
 | --- | --- |
-| `bin/agentic.mjs` | `levelDefinitions` 상수 추가, `setupCore` 범례 삽입, TUI 힌트를 상수 참조로 교체 |
+| `bin/agentic.mjs` | `levelDefinitions` 상수 추가, `setupProfile` 범례 삽입, TUI 힌트를 상수 참조로 교체 |
 | `docs/adr/` | 산출물 계약 확장이므로 신규 ADR(`0002-*`) 기록 |
 | `docs/architecture/` | 채택 후 guidance 블록에 범례가 포함된다는 현재 사실 반영 |
 | `docs/workflow.md` | setup 결과 설명에 레벨 정의 노출 반영(요약 + 이 문서 링크) |

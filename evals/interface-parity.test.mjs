@@ -1,20 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CORE_OPERATION_CONTRACT } from '../bin/contracts.mjs';
+import { PROFILE_OPERATION_CONTRACT } from '../bin/contracts.mjs';
 
-test('every Core capability has CLI, TUI, and Core-list interface contracts', () => {
-  assert.ok(CORE_OPERATION_CONTRACT.length > 0);
-  for (const operation of CORE_OPERATION_CONTRACT) {
+test('every Guidance Profile capability has CLI, TUI, and profile-list interface contracts', () => {
+  assert.ok(PROFILE_OPERATION_CONTRACT.length > 0);
+  for (const operation of PROFILE_OPERATION_CONTRACT) {
     assert.ok(operation.id, 'operation must have an id');
     assert.ok(operation.cli, `${operation.id} must define a CLI entry`);
     assert.ok(operation.tui, `${operation.id} must define a TUI entry`);
-    assert.equal(operation.coreList, true, `${operation.id} must be available from core list`);
+    assert.equal(operation.profileList, true, `${operation.id} must be available from profile list`);
   }
 });
 
-test('the Core contract covers the complete user-facing capability set', () => {
+test('the profile contract covers the complete user-facing capability set', () => {
   assert.deepEqual(
-    CORE_OPERATION_CONTRACT.map(operation => operation.id),
+    PROFILE_OPERATION_CONTRACT.map(operation => operation.id),
     ['create', 'list', 'view', 'setup', 'apply', 'sync', 'remove']
   );
 });

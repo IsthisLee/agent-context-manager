@@ -11,7 +11,7 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-package-smoke-'));
 const packDir = path.join(smokeRoot, 'pack');
 const consumerDir = path.join(smokeRoot, 'consumer');
-const coreHome = path.join(smokeRoot, 'home');
+const profilesHome = path.join(smokeRoot, 'home');
 const projectDir = path.join(smokeRoot, 'project');
 const isWindows = process.platform === 'win32';
 const npmCommand = isWindows ? 'npm.cmd' : 'npm';
@@ -36,20 +36,20 @@ try {
   const tarball = path.join(packDir, filename);
   runCommand(npmCommand, ['install', '--prefix', consumerDir, tarball], { stdio: 'ignore' });
   const agt = path.join(consumerDir, 'node_modules', '.bin', isWindows ? 'agt.cmd' : 'agt');
-  const env = { ...process.env, AGENTIC_HOME: coreHome };
+  const env = { ...process.env, AGENTIC_HOME: profilesHome };
   const help = runCommand(agt, ['help'], { encoding: 'utf8', env });
   assert.match(help, /agt \(agentic\) shared project guidance manager/);
-  assert.match(help, /core list \[--scope <scope>\]/);
+  assert.match(help, /profile list \[--scope <scope>\]/);
   fs.mkdirSync(projectDir);
-  runCommand(agt, ['core', 'create', 'smoke-core', '--scope', 'workspace'], { env, stdio: 'ignore' });
-  runCommand(agt, ['setup', '--core', 'smoke-core', '--tdd', 'strict'], { env, stdio: 'ignore' });
-  runCommand(agt, ['init', '--core', 'smoke-core', projectDir], { env, stdio: 'ignore' });
-  runCommand(agt, ['sync', projectDir], { env, stdio: 'ignore' });
-  assert(fs.existsSync(path.join(coreHome, '.agentic-cores', 'smoke-core', 'AGENTS.md')));
+  runCommand(agt, ['profile', 'create', 'smoke-profile', '--scope', 'workspace'], { env, stdio: 'ignore' });
+  runCommand(agt, ['profile', 'setup', 'smoke-profile', '--tdd', 'strict'], { env, stdio: 'ignore' });
+  runCommand(agt, ['profile', 'apply', 'smoke-profile', projectDir], { env, stdio: 'ignore' });
+  runCommand(agt, ['profile', 'sync', projectDir], { env, stdio: 'ignore' });
+  assert(fs.existsSync(path.join(profilesHome, '.agentic-profiles', 'smoke-profile', 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));
   assert(fs.existsSync(path.join(projectDir, 'agentic.project.json')));
-  console.log('Installed package smoke test passed (help, Core setup, project init, and sync).');
+  console.log('Installed package smoke test passed (help, profile setup, project apply, and sync).');
 } finally {
   fs.rmSync(smokeRoot, { recursive: true, force: true });
 }

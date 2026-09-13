@@ -1,17 +1,16 @@
 #!/usr/bin/env node
 
-/** Agentic Core and project guidance manager. */
+/** Agentic guidance-profile and project manager. */
 
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { fileURLToPath } from 'node:url';
 import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, hashManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
 import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
-import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceSections, levelOptions, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
+import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
 
-const CORE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCOPES = ['personal', 'company', 'team', 'workspace'];
 const rawArgs = process.argv.slice(2);
 const langFlag = parseFlag(rawArgs, 'lang');
@@ -21,17 +20,13 @@ const invokedAs = path.basename(process.argv[1] || 'agentic').replace(/\.mjs$/, 
 let locale = DEFAULT_LOCALE;
 const _ = (key, vars) => t(locale, key, vars);
 
-function getCoreHome() {
-  return path.join(process.env.AGENTIC_HOME || os.homedir(), '.agentic-cores');
-}
-
-function validateCoreName(name) {
+function validateProfileName(name) {
   if (!name || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(name)) {
-    throw new Error('Core name must use 1-64 lowercase letters, numbers, or hyphens.');
+    throw new Error('Profile name must use 1-64 lowercase letters, numbers, or hyphens.');
   }
 }
 
-function isValidCoreMetadata(metadata, expectedName = null) {
+function isValidProfileMetadata(metadata, expectedName = null) {
   return metadata && typeof metadata === 'object'
     && metadata.schemaVersion === 1
     && typeof metadata.name === 'string'
@@ -57,38 +52,38 @@ function stripFlag(values, flag) {
   return removed;
 }
 
-function readCore(name) {
-  validateCoreName(name);
-  const coreDir = path.join(getCoreHome(), name);
-  const metadataPath = path.join(coreDir, 'agentic-core.json');
-  const instructionsPath = path.join(coreDir, 'AGENTS.md');
-  if (!fs.existsSync(metadataPath) || !fs.existsSync(instructionsPath)) throw new Error(`Core not found: ${name}`);
+function readProfile(name) {
+  validateProfileName(name);
+  const profileDir = path.join(profileHome(), name);
+  const metadataPath = path.join(profileDir, PROFILE_METADATA_FILE);
+  const instructionsPath = path.join(profileDir, 'AGENTS.md');
+  if (!fs.existsSync(metadataPath) || !fs.existsSync(instructionsPath)) throw new Error(`Profile not found: ${name}`);
   let metadata;
   try {
     metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
   } catch {
-    throw new Error(`Invalid Core metadata: ${name}`);
+    throw new Error(`Invalid profile metadata: ${name}`);
   }
-  if (!isValidCoreMetadata(metadata, name)) throw new Error(`Invalid Core metadata: ${name}`);
-  return { coreDir, metadataPath, instructionsPath, metadata };
+  if (!isValidProfileMetadata(metadata, name)) throw new Error(`Invalid profile metadata: ${name}`);
+  return { profileDir, metadataPath, instructionsPath, metadata };
 }
 
-function createCore(name, scope = 'personal') {
-  validateCoreName(name);
-  if (!SCOPES.includes(scope)) throw new Error(`Core scope must be one of: ${SCOPES.join(', ')}.`);
-  const coreDir = path.join(getCoreHome(), name);
-  if (fs.existsSync(coreDir)) throw new Error(`Core already exists: ${name}`);
-  fs.mkdirSync(coreDir, { recursive: true });
-  writeTextAtomic(path.join(coreDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
-  const coreTemplate = fs.readFileSync(path.join(CORE_ROOT, locale === 'en' ? 'templates/core/AGENTS.en.md' : 'templates/core/AGENTS.md'), 'utf8');
-  writeTextAtomic(path.join(coreDir, 'AGENTS.md'), coreTemplate.replaceAll('{{CORE_NAME}}', name));
-  console.log(`Created Core: ${name} (${scope})`);
+function createProfile(name, scope = 'personal') {
+  validateProfileName(name);
+  if (!SCOPES.includes(scope)) throw new Error(`Profile scope must be one of: ${SCOPES.join(', ')}.`);
+  const profileDir = path.join(profileHome(), name);
+  if (fs.existsSync(profileDir)) throw new Error(`Profile already exists: ${name}`);
+  fs.mkdirSync(profileDir, { recursive: true });
+  writeTextAtomic(path.join(profileDir, PROFILE_METADATA_FILE), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
+  const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, locale === 'en' ? 'templates/profile/AGENTS.en.md' : 'templates/profile/AGENTS.md'), 'utf8');
+  writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
+  console.log(`Created profile: ${name} (${scope})`);
 }
 
-async function createCoreTui() {
+async function createProfileTui() {
   if (!process.stdin.isTTY) {
     const [name, scope = 'personal'] = fs.readFileSync(0, 'utf8').split(/\r?\n/).map(value => value.trim());
-    createCore(name, scope || 'personal');
+    createProfile(name, scope || 'personal');
     return;
   }
   intro(_('create.intro'));
@@ -110,37 +105,37 @@ async function createCoreTui() {
 ${selectedScope.label} — ${selectedScope.hint}`, _('create.note.title'));
   const approved = await confirm({ message: _('create.confirm'), initialValue: true });
   if (isCancel(approved) || !approved) return cancel(_('create.cancel'));
-  createCore(name.trim(), scope);
+  createProfile(name.trim(), scope);
   outro(_('create.outro'));
 }
 
-function getCores() {
-  const home = getCoreHome();
+function getProfiles() {
+  const home = profileHome();
   if (!fs.existsSync(home)) return [];
-  const cores = [];
+  const profiles = [];
   for (const name of fs.readdirSync(home).sort()) {
-    const metadataPath = path.join(home, name, 'agentic-core.json');
+    const metadataPath = path.join(home, name, PROFILE_METADATA_FILE);
     if (!fs.existsSync(metadataPath)) continue;
     try {
       const metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-      if (isValidCoreMetadata(metadata, name)) cores.push(metadata);
+      if (isValidProfileMetadata(metadata, name)) profiles.push(metadata);
     } catch {}
   }
-  return cores.sort((a, b) => `${a.scope}:${a.name}`.localeCompare(`${b.scope}:${b.name}`));
+  return profiles.sort((a, b) => `${a.scope}:${a.name}`.localeCompare(`${b.scope}:${b.name}`));
 }
 
-async function listCores(scopeFilter = null) {
-  if (scopeFilter !== null && !SCOPES.includes(scopeFilter)) throw new Error(`Core scope must be one of: ${SCOPES.join(', ')}.`);
-  let cores = getCores();
-  if (scopeFilter) cores = cores.filter(core => core.scope === scopeFilter);
-  if (!cores.length) {
+async function listProfiles(scopeFilter = null) {
+  if (scopeFilter !== null && !SCOPES.includes(scopeFilter)) throw new Error(`Profile scope must be one of: ${SCOPES.join(', ')}.`);
+  let profiles = getProfiles();
+  if (scopeFilter) profiles = profiles.filter(profile => profile.scope === scopeFilter);
+  if (!profiles.length) {
     console.log(scopeFilter
-      ? `No Cores found in scope '${scopeFilter}'. Run \`agentic core create <name> --scope ${scopeFilter}\` to create one.`
-      : 'No Cores found. Run `agentic core create` to create one.');
+      ? `No profiles found in scope '${scopeFilter}'. Run \`agentic profile create <name> --scope ${scopeFilter}\` to create one.`
+      : 'No profiles found. Run `agentic profile create` to create one.');
     return;
   }
   const grouped = new Map();
-  for (const metadata of cores) {
+  for (const metadata of profiles) {
     if (!grouped.has(metadata.scope)) grouped.set(metadata.scope, []);
     grouped.get(metadata.scope).push(metadata.name);
   }
@@ -150,31 +145,31 @@ async function listCores(scopeFilter = null) {
       const selectedScope = await select({
         message: _('list.scope.message'),
         options: [
-          { value: '__all__', label: _('list.scope.all'), hint: _('list.scope.allHint', { n: cores.length }) },
-          ...scopeOptions(locale).filter(option => cores.some(core => core.scope === option.value)).map(option => ({
+          { value: '__all__', label: _('list.scope.all'), hint: _('list.scope.allHint', { n: profiles.length }) },
+          ...scopeOptions(locale).filter(option => profiles.some(profile => profile.scope === option.value)).map(option => ({
             ...option,
-            hint: _('list.scope.hint', { n: cores.filter(core => core.scope === option.value).length, hint: option.hint })
+            hint: _('list.scope.hint', { n: profiles.filter(profile => profile.scope === option.value).length, hint: option.hint })
           }))
         ]
       });
       if (isCancel(selectedScope)) return cancel(_('list.cancel'));
-      if (selectedScope !== '__all__') return listCores(selectedScope);
+      if (selectedScope !== '__all__') return listProfiles(selectedScope);
     }
     for (const [scope, names] of grouped) note(names.join('\n'), scope);
     const selected = await select({
       message: _('list.manage.message'),
       options: [
         { value: '__create__', label: _('list.create.label'), hint: _('main.create.hint') },
-        ...cores.map(core => ({
-          value: core.name,
-          label: `${core.scope} · ${core.name}`,
+        ...profiles.map(profile => ({
+          value: profile.name,
+          label: `${profile.scope} · ${profile.name}`,
           hint: _('list.manage.hint')
         }))
       ]
     });
     if (isCancel(selected)) return cancel(_('list.cancel'));
-    if (selected === '__create__') return createCoreTui();
-    await coreActions(selected);
+    if (selected === '__create__') return createProfileTui();
+    await profileActions(selected);
     return;
   }
   for (const [scope, names] of grouped) {
@@ -198,7 +193,7 @@ async function projectPathTui(message) {
   return target.trim() || process.cwd();
 }
 
-async function coreActions(name) {
+async function profileActions(name) {
   const action = await select({
     message: _('actions.message', { name }),
     options: [
@@ -211,11 +206,11 @@ async function coreActions(name) {
   });
   if (isCancel(action)) return cancel(_('list.cancel'));
 
-  if (action === 'setup') return setupCoreTui(name);
-  if (action === 'remove') return removeCoreTui(name);
+  if (action === 'setup') return setupProfileTui(name);
+  if (action === 'remove') return removeProfileTui(name);
   if (action === 'view') {
-    const core = readCore(name);
-    note(`${core.metadata.scope}\n\n${fs.readFileSync(core.instructionsPath, 'utf8').trim()}`, name);
+    const profile = readProfile(name);
+    note(`${profile.metadata.scope}\n\n${fs.readFileSync(profile.instructionsPath, 'utf8').trim()}`, name);
     return outro(_('actions.view.outro'));
   }
 
@@ -223,9 +218,10 @@ async function coreActions(name) {
   if (!target) return cancel(_('actions.project.cancel'));
   const preview = await confirm({ message: _('actions.preview.confirm'), initialValue: false });
   if (isCancel(preview)) return cancel(_('actions.project.cancel'));
-  const operationArgs = ['--core', name, ...(preview ? ['--dry-run'] : []), target];
-  if (action === 'apply') applyCore(operationArgs);
-  else syncProject(operationArgs);
+  const dryRun = preview ? ['--dry-run'] : [];
+  // apply names the profile to set/switch; sync only refreshes the profile the project is already bound to.
+  if (action === 'apply') applyProfile([name, ...dryRun, target]);
+  else syncProject([...dryRun, target]);
   outro(preview ? _('actions.outro.preview') : (action === 'apply' ? _('actions.outro.apply') : _('actions.outro.sync')));
 }
 
@@ -244,55 +240,55 @@ async function mainTui() {
       ]
     });
     if (isCancel(action) || action === 'exit') break;
-    if (action === 'manage') await listCores();
-    else if (action === 'create') await createCoreTui();
-    else if (action === 'setup') await setupCoreTui();
+    if (action === 'manage') await listProfiles();
+    else if (action === 'create') await createProfileTui();
+    else if (action === 'setup') await setupProfileTui();
     else if (action === 'lang') await changeLocaleTui();
     else if (action === 'help') help();
   }
   outro(_('main.outro'));
 }
 
-function removeCore(name) {
-  const core = readCore(name);
-  fs.rmSync(core.coreDir, { recursive: true, force: true });
-  console.log(`Removed Core: ${name}`);
+function removeProfile(name) {
+  const profile = readProfile(name);
+  fs.rmSync(profile.profileDir, { recursive: true, force: true });
+  console.log(`Removed profile: ${name}`);
 }
 
-function viewCore(name) {
-  const core = readCore(name);
-  console.log(`${core.metadata.name}\t${core.metadata.scope}`);
-  console.log(fs.readFileSync(core.instructionsPath, 'utf8').trim());
+function viewProfile(name) {
+  const profile = readProfile(name);
+  console.log(`${profile.metadata.name}\t${profile.metadata.scope}`);
+  console.log(fs.readFileSync(profile.instructionsPath, 'utf8').trim());
 }
 
-async function removeCoreTui(name = null) {
-  if (!process.stdin.isTTY) throw new Error('core remove requires <name> --yes outside a TUI terminal.');
+async function removeProfileTui(name = null) {
+  if (!process.stdin.isTTY) throw new Error('profile remove requires <name> --yes outside a TUI terminal.');
   intro(_('remove.intro'));
-  const cores = getCores();
-  if (!cores.length) throw new Error('No Cores found.');
+  const profiles = getProfiles();
+  if (!profiles.length) throw new Error('No profiles found.');
   if (!name) {
     const selected = await select({
       message: _('remove.select'),
-      options: cores.map(core => ({ value: core.name, label: `${core.scope} · ${core.name}`, hint: _('remove.select.hint') }))
+      options: profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') }))
     });
     if (isCancel(selected)) return cancel(_('remove.cancel'));
     name = selected;
   }
-  const core = readCore(name);
-  note(_('remove.note.body', { scope: core.metadata.scope, name }), _('remove.note.title'));
+  const profile = readProfile(name);
+  note(_('remove.note.body', { scope: profile.metadata.scope, name }), _('remove.note.title'));
   const approved = await confirm({ message: _('remove.confirm'), initialValue: false });
   if (isCancel(approved) || !approved) return cancel(_('remove.cancel'));
-  removeCore(name);
+  removeProfile(name);
   outro(_('remove.outro'));
 }
 
 const guidanceDefaults = { harness: 'recommended', tdd: 'recommended', review: 'recommended', verification: 'recommended', documentation: 'recommended', security: 'recommended' };
 
-function setupCore(name, values) {
-  const core = readCore(name);
+function setupProfile(name, values) {
+  const profile = readProfile(name);
   const settings = {};
   for (const key of Object.keys(guidanceDefaults)) {
-    const value = parseFlag(values, key, core.metadata.settings?.[key] || guidanceDefaults[key]);
+    const value = parseFlag(values, key, profile.metadata.settings?.[key] || guidanceDefaults[key]);
     if (!['off', 'recommended', 'strict'].includes(value)) throw new Error(`--${key} must be off, recommended, or strict.`);
     settings[key] = value;
   }
@@ -304,43 +300,43 @@ function setupCore(name, values) {
   const start = '<!-- agentic:guidance:start -->';
   const end = '<!-- agentic:guidance:end -->';
   const block = `${start}\n\n${blocks.join('\n\n')}\n\n${end}`;
-  const current = fs.readFileSync(core.instructionsPath, 'utf8');
+  const current = fs.readFileSync(profile.instructionsPath, 'utf8');
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
-  writeTextAtomic(core.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
-  writeTextAtomic(core.metadataPath, JSON.stringify({ ...core.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
-  console.log(`Configured Core: ${name}`);
+  writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
+  writeTextAtomic(profile.metadataPath, JSON.stringify({ ...profile.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
+  console.log(`Configured profile: ${name}`);
 }
 
-async function setupCoreTui(name = null) {
+async function setupProfileTui(name = null) {
   if (!process.stdin.isTTY) {
     const answers = fs.readFileSync(0, 'utf8').split(/\r?\n/).map(value => value.trim());
-    if (!name) name = selectCore(answers.shift());
-    const core = readCore(name);
+    if (!name) name = selectProfile(answers.shift());
+    const profile = readProfile(name);
     const values = [];
     for (const [index, key] of Object.keys(guidanceDefaults).entries()) {
-      values.push(`--${key}`, answers[index] || core.metadata.settings?.[key] || guidanceDefaults[key]);
+      values.push(`--${key}`, answers[index] || profile.metadata.settings?.[key] || guidanceDefaults[key]);
     }
-    setupCore(name, values);
+    setupProfile(name, values);
     return;
   }
   intro(_('setup.intro'));
   const labels = guidanceLabels(locale);
   const descriptions = guidanceDescriptions(locale);
   const levels = levelOptions(locale);
-  const cores = getCores();
+  const profiles = getProfiles();
   if (!name) {
-    if (!cores.length) throw new Error('No Cores found. Run `agentic core create` first.');
+    if (!profiles.length) throw new Error('No profiles found. Run `agentic profile create` first.');
     const selected = await select({
       message: _('setup.select'),
-      options: cores.map(core => ({ value: core.name, label: `${core.scope} · ${core.name}`, hint: _('setup.select.hint') }))
+      options: profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('setup.select.hint') }))
     });
     if (isCancel(selected)) return cancel(_('setup.cancel'));
     name = selected;
   }
-  const core = readCore(name);
+  const profile = readProfile(name);
   const values = [];
   for (const key of Object.keys(guidanceDefaults)) {
-    const current = core.metadata.settings?.[key] || guidanceDefaults[key];
+    const current = profile.metadata.settings?.[key] || guidanceDefaults[key];
     const value = await select({
       message: _('setup.item.message', { label: labels[key], description: descriptions[key] }),
       options: levels,
@@ -355,13 +351,13 @@ async function setupCoreTui(name = null) {
   note(summary, _('setup.note.title', { name }));
   const approved = await confirm({ message: _('setup.confirm'), initialValue: true });
   if (isCancel(approved) || !approved) return cancel(_('setup.cancel'));
-  setupCore(name, values);
+  setupProfile(name, values);
   outro(_('setup.outro'));
 }
 
-function printCoreChoices(cores) {
+function printProfileChoices(profiles) {
   let previousScope = null;
-  for (const [index, metadata] of cores.entries()) {
+  for (const [index, metadata] of profiles.entries()) {
     if (metadata.scope !== previousScope) {
       console.log(`\n[${metadata.scope}]`);
       previousScope = metadata.scope;
@@ -370,19 +366,19 @@ function printCoreChoices(cores) {
   }
 }
 
-function selectCore(selection, cores = getCores()) {
-  if (!cores.length) throw new Error('No Cores found. Run `agentic core create` first.');
+function selectProfile(selection, profiles = getProfiles()) {
+  if (!profiles.length) throw new Error('No profiles found. Run `agentic profile create` first.');
   const index = Number.parseInt(selection, 10);
   const selected = Number.isInteger(index) && index >= 1
-    ? cores[index - 1]
-    : cores.find(core => core.name === selection);
-  if (!selected) throw new Error(`Core selection not found: ${selection}`);
+    ? profiles[index - 1]
+    : profiles.find(profile => profile.name === selection);
+  if (!selected) throw new Error(`Profile selection not found: ${selection}`);
   return selected.name;
 }
 
-function renderCoreAgents(core, projectName) {
-  const content = fs.readFileSync(core.instructionsPath, 'utf8').trimEnd();
-  return `${content}\n\n> Applied from Agentic Core: ${core.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
+function renderProfileAgents(profile, projectName) {
+  const content = fs.readFileSync(profile.instructionsPath, 'utf8').trimEnd();
+  return `${content}\n\n> Applied from Agentic Profile: ${profile.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
 function getProjectName(targetDir) {
@@ -417,29 +413,33 @@ function readProjectConfig(configPath) {
   }
 }
 
+/** The profile a project is bound to, reading the current key and the pre-rename `core` key. */
+function boundProfile(projectConfig) {
+  return projectConfig.profile || projectConfig.core || null;
+}
+
 function renderAdapter(template, target, projectName) {
   const generated = fs.readFileSync(template, 'utf8').replaceAll('{{PROJECT_NAME}}', projectName);
   const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
   return mergeManagedDocument(generated, existing);
 }
 
-function projectArgs(values) {
-  const core = parseFlag(values, 'core');
-  const positional = values.filter((value, index) => !value.startsWith('--') && (values.indexOf('--core') === -1 || index !== values.indexOf('--core') + 1));
-  return { coreName: core, targetPath: positional[0] || '.' };
+/** Positional arguments for `profile apply`: `<name> [<project>]`. */
+function applyArgs(values) {
+  const positional = values.filter(value => !value.startsWith('--'));
+  return { name: positional[0] || null, targetPath: positional[1] || '.' };
 }
 
-function applyCore(values) {
-  const { coreName, targetPath } = projectArgs(values);
-  if (!coreName) throw new Error('init requires --core <name>.');
+function applyProfile(values) {
+  const { name, targetPath } = applyArgs(values);
+  if (!name) throw new Error('profile apply requires <name> <project>.');
   const targetDir = path.resolve(process.cwd(), targetPath);
   assertProjectDirectory(targetDir);
-  const core = readCore(coreName);
+  const profile = readProfile(name);
   const projectName = getProjectName(targetDir);
   const agentsPath = path.join(targetDir, 'AGENTS.md');
   const projectConfigPath = path.join(targetDir, 'agentic.project.json');
-  let projectConfig = {};
-  projectConfig = readProjectConfig(projectConfigPath);
+  const projectConfig = readProjectConfig(projectConfigPath);
   const changes = [];
   const planFile = (target, content) => {
     const relativePath = path.relative(targetDir, target) || path.basename(target);
@@ -451,7 +451,7 @@ function applyCore(values) {
   if (previousAgentsHash && hashAgentsManagedDocument(existingAgents) !== previousAgentsHash) {
     throw new Error('Managed file changed outside Agentic: AGENTS.md');
   }
-  const agents = mergeAgentsMd(renderCoreAgents(core, projectName), existingAgents);
+  const agents = mergeAgentsMd(renderProfileAgents(profile, projectName), existingAgents);
   planFile(agentsPath, agents);
   for (const [source, target] of [
     ['templates/CLAUDE.md', 'CLAUDE.md'],
@@ -465,7 +465,7 @@ function applyCore(values) {
     if (previousHash && hashManagedDocument(existing) !== previousHash) {
       throw new Error(`Managed file changed outside Agentic: ${target}`);
     }
-    planFile(targetPath, renderAdapter(path.join(CORE_ROOT, source), targetPath, projectName));
+    planFile(targetPath, renderAdapter(path.join(PACKAGE_ROOT, source), targetPath, projectName));
   }
   const managedHashes = {};
   if (extractAgentsManagedDocument(agents)) managedHashes['AGENTS.md'] = hashAgentsManagedDocument(agents);
@@ -473,9 +473,10 @@ function applyCore(values) {
     const managed = extractManagedDocument(change.content);
     if (managed) managedHashes[change.relativePath] = hashManagedDocument(change.content);
   }
-  planFile(projectConfigPath, JSON.stringify({ ...projectConfig, schemaVersion: 1, core: coreName, managedHashes }, null, 2) + '\n');
+  const { core: _legacyCore, ...restConfig } = projectConfig;
+  planFile(projectConfigPath, JSON.stringify({ ...restConfig, schemaVersion: 1, profile: name, managedHashes }, null, 2) + '\n');
   const changed = changes.filter(change => change.status !== 'unchanged');
-  console.log(`${hasFlag(values, 'dry-run') ? 'Dry-run' : 'Plan'}: ${changed.length} file(s) to ${hasFlag(values, 'dry-run') ? 'change' : 'change'}.`);
+  console.log(`${hasFlag(values, 'dry-run') ? 'Dry-run' : 'Plan'}: ${changed.length} file(s) to change.`);
   for (const change of changes) console.log(`  ${change.status.padEnd(9)} ${change.relativePath}`);
   if (hasFlag(values, 'dry-run')) {
     console.log('Dry-run: no files were changed.');
@@ -485,17 +486,29 @@ function applyCore(values) {
   for (const change of changed) {
     writeTextAtomic(change.target, change.content);
   }
-  console.log(`Applied Core ${coreName} to ${targetDir}`);
+  console.log(`Applied profile ${name} to ${targetDir}`);
 }
 
+/**
+ * Refresh the profile a project is already bound to. `sync` never switches the
+ * bound profile: naming a profile (a second positional, or `--profile`/`--core`)
+ * is rejected so bulk refreshes cannot silently rebind a project.
+ */
 function syncProject(values) {
-  const { coreName, targetPath } = projectArgs(values);
+  if (parseFlag(values, 'profile') || parseFlag(values, 'core')) {
+    throw new Error('profile sync does not switch profiles. To switch, use `agentic profile apply <name> <project>`.');
+  }
+  const positional = values.filter(value => !value.startsWith('--'));
+  if (positional.length > 1) {
+    throw new Error('profile sync takes only <project>. To switch profiles, use `agentic profile apply <name> <project>`.');
+  }
+  const targetPath = positional[0] || '.';
   const targetDir = path.resolve(process.cwd(), targetPath);
   assertProjectDirectory(targetDir);
   const selectionPath = path.join(targetDir, 'agentic.project.json');
-  const selected = coreName || readProjectConfig(selectionPath).core;
-  if (!selected) throw new Error('sync requires --core <name> or an existing agentic.project.json.');
-  applyCore(['--core', selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetPath]);
+  const selected = boundProfile(readProjectConfig(selectionPath));
+  if (!selected) throw new Error('profile sync requires a project already applied with `agentic profile apply <name> <project>`.');
+  applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 }
 
 async function promptLocale() {
@@ -526,7 +539,42 @@ function configLang(value) {
 function help() {
   const title = invokedAs === 'agt' ? 'agt (agentic)' : 'agentic (agt)';
   const commandName = invokedAs === 'agt' ? 'agt' : 'agentic';
-  console.log(`${title} shared project guidance manager\n\n  ${commandName} core create [<name>] [--scope <scope>]\n  ${commandName} core list [--scope <scope>]\n  ${commandName} core view <name>\n  ${commandName} core remove [<name>] [--yes]\n  ${commandName} setup [--core <name>] [--tdd <level>] ...\n  ${commandName} init --core <name> [--dry-run] <project>\n  ${commandName} sync [--core <name>] [--dry-run] <project>\n  ${commandName} config lang <ko|en>\n\nScopes: ${SCOPES.join(', ')}\nLanguage: ${SUPPORTED_LOCALES.join(', ')} (default ${DEFAULT_LOCALE}). Set with --lang, AGENTIC_LANG, or config lang; on first interactive run you are asked once and the choice is saved.\nUse either agentic or agt. Omit core create, setup, or remove options to use interactive TUI prompts.`);
+  console.log(`${title} shared project guidance manager\n\n  ${commandName} profile create [<name>] [--scope <scope>]\n  ${commandName} profile list [--scope <scope>]\n  ${commandName} profile view <name>\n  ${commandName} profile setup [<name>] [--tdd <level>] ...\n  ${commandName} profile apply <name> [--dry-run] <project>\n  ${commandName} profile sync [--dry-run] <project>\n  ${commandName} profile remove [<name>] [--yes]\n  ${commandName} config lang <ko|en>\n\nScopes: ${SCOPES.join(', ')}\nLanguage: ${SUPPORTED_LOCALES.join(', ')} (default ${DEFAULT_LOCALE}). Set with --lang, AGENTIC_LANG, or config lang; on first interactive run you are asked once and the choice is saved.\nUse either agentic or agt. Omit profile create, setup, or remove options to use interactive TUI prompts.`);
+}
+
+async function runProfileCommand(profileArgs) {
+  const sub = profileArgs[0];
+  const rest = profileArgs.slice(1);
+  if (sub === 'create') {
+    const name = rest.find(value => !value.startsWith('--'));
+    if (name) createProfile(name, parseFlag(rest, 'scope', 'personal'));
+    else await createProfileTui();
+  } else if (sub === 'list') {
+    await listProfiles(parseFlag(rest, 'scope'));
+  } else if (sub === 'view') {
+    if (!rest[0]) throw new Error('profile view requires <name>.');
+    viewProfile(rest[0]);
+  } else if (sub === 'remove') {
+    const name = rest.find(value => !value.startsWith('--')) || null;
+    if (hasFlag(rest, 'yes')) {
+      if (!name) throw new Error('profile remove --yes requires <name>.');
+      removeProfile(name);
+    } else await removeProfileTui(name);
+  } else if (sub === 'setup') {
+    const name = rest.find(value => !value.startsWith('--')) || null;
+    const optionCount = rest.filter(value => value.startsWith('--')).length;
+    if (optionCount <= 0) await setupProfileTui(name);
+    else {
+      if (!name) throw new Error('profile setup requires <name>.');
+      setupProfile(name, rest);
+    }
+  } else if (sub === 'apply') {
+    applyProfile(rest);
+  } else if (sub === 'sync') {
+    syncProject(rest);
+  } else {
+    help();
+  }
 }
 
 async function main() {
@@ -544,31 +592,11 @@ async function main() {
     await mainTui();
   } else if (command === 'config' && args[1] === 'lang') {
     configLang(args[2]);
-  } else if (command === 'core' && args[1] === 'create') {
-    if (args[2]) createCore(args[2], parseFlag(args.slice(3), 'scope', 'personal'));
-    else await createCoreTui();
-  } else if (command === 'core' && args[1] === 'remove') {
-    const removeArgs = args.slice(2);
-    const name = removeArgs.find(value => !value.startsWith('--')) || null;
-    if (hasFlag(removeArgs, 'yes')) {
-      if (!name) throw new Error('core remove --yes requires <name>.');
-      removeCore(name);
-    }
-    else await removeCoreTui(name);
-  } else if (command === 'core' && args[1] === 'view') {
-    if (!args[2]) throw new Error('core view requires <name>.');
-    viewCore(args[2]);
+  } else if (command === 'profile') {
+    await runProfileCommand(args.slice(1));
+  } else {
+    help();
   }
-  else if (command === 'core' && args[1] === 'list') await listCores(parseFlag(args.slice(2), 'scope'));
-  else if (command === 'setup') {
-    const name = parseFlag(args.slice(1), 'core');
-    const optionCount = args.slice(1).filter(value => value.startsWith('--')).length;
-    if (!name && optionCount > 0) throw new Error('setup requires --core <name>.');
-    if (optionCount <= 1) await setupCoreTui(name);
-    else setupCore(name, args.slice(1));
-  } else if (command === 'init') applyCore(args.slice(1));
-  else if (command === 'sync') syncProject(args.slice(1));
-  else help();
 }
 
 main().catch((error) => {

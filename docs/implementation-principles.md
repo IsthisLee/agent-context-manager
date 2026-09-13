@@ -24,8 +24,8 @@ flowchart TD
   DEV["개발자·GitHub Actions<br/>npm publish --provenance"] -->|"tarball 업로드"| REG["npm Registry<br/>@isthis/agentic"]
   REG -->|"npm install -g"| GBIN["전역 설치<br/>agentic·agt 진입점 생성"]
   GBIN -->|"사용자가 agt 실행"| CLI["Node가 bin/agentic.mjs 실행"]
-  CLI --> CORE["Core 저장소<br/>~/.agentic-cores 아래 이름별 폴더"]
-  CLI -->|"init·sync"| PROJ["대상 프로젝트<br/>AGENTS.md·포인터 파일·agentic.project.json"]
+  CLI --> CORE["프로필 저장소<br/>~/.agentic-profiles 아래 이름별 폴더"]
+  CLI -->|"apply·sync"| PROJ["대상 프로젝트<br/>AGENTS.md·포인터 파일·agentic.project.json"]
   PROJ -->|"에이전트가 읽음"| AGENT["AI 에이전트가 지침대로 코드 작업"]
 ```
 
@@ -77,7 +77,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 ### 사용자가 알아야 할 주의점
 
 - 전역 설치의 정확한 파일 경로는 OS·Node 설치 방식(시스템 Node, Homebrew, nvm 등)에 따라 다르다. **특정 절대 경로는 현재 저장소에서 확인되지 않으며**, 자신의 환경에서는 `npm root -g`와 `npm prefix -g`로 확인한다.
-- 전역 설치는 시스템 공용 위치에 쓰므로 환경에 따라 권한이 필요할 수 있다. 별도 Core 데이터 저장 위치는 이와 다르다([6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고).
+- 전역 설치는 시스템 공용 위치에 쓰므로 환경에 따라 권한이 필요할 수 있다. 별도 프로필 데이터 저장 위치는 이와 다르다([6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고).
 
 ---
 
@@ -139,27 +139,27 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 
 ### 실행 또는 데이터 흐름
 
-`agt core create` 예로 본 흐름:
+`agt profile create` 예로 본 흐름:
 
-1. **터미널/셸**: `agt`를 PATH에서 찾아 실행하고, 나머지 토큰(`core`, `create`)을 인자로 넘긴다.
+1. **터미널/셸**: `agt`를 PATH에서 찾아 실행하고, 나머지 토큰(`profile`, `create`)을 인자로 넘긴다.
 2. **OS**: 진입점(심볼릭 링크 또는 shim)을 따라 실제 스크립트를 Node로 실행한다.
 3. **Node.js**: `bin/agt.mjs`를 로드하고, 그것이 `bin/agentic.mjs`를 불러온다.
 4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:16-17`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:517-545`).
 
 ```mermaid
 flowchart TD
-  A["사용자: 터미널에 'agt core create' 입력"] --> B["셸: PATH에서 agt 진입점 탐색"]
+  A["사용자: 터미널에 'agt profile create' 입력"] --> B["셸: PATH에서 agt 진입점 탐색"]
   B --> C["OS: 심볼릭 링크·shim 따라 Node 실행"]
   C --> D["Node: bin/agt.mjs → bin/agentic.mjs 로드"]
   D --> E["JS: process.argv 파싱 후 command 결정"]
-  E --> F["main() 분기: core·setup·init·sync·help"]
+  E --> F["main() 분기: profile·config·help"]
   F --> G["결과는 stdout, 오류는 stderr + 종료 코드"]
 ```
 
 ### 이 패키지에서의 적용 예시
 
 - 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:518-519`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-60`, `bin/agentic.mjs:8`).
-- 명령별 분기: `core create/list/view/remove`, `setup`, `init`, `sync`, 그 외에는 도움말(`bin/agentic.mjs:520-544`).
+- 명령별 분기: `profile` 하위 명령(`create/list/view/remove/setup/apply/sync`)과 `config lang`, 그 외에는 도움말. `profile`은 `runProfileCommand()`가 다시 하위 명령으로 분기한다.
 - 오류가 나면 `main().catch`가 메시지를 출력하고 종료 코드 1로 끝낸다(`bin/agentic.mjs:547-550`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
 ### 사용자가 알아야 할 주의점
@@ -183,14 +183,14 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- Core 데이터의 기준 위치는 `getCoreHome()`이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic-cores`다(`bin/agentic.mjs:20-22`).
-- Core 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-core.json`과 지침 `AGENTS.md`가 있다(`bin/agentic.mjs:48-62`, `64-74`).
+- 프로필 데이터의 기준 위치는 `profileHome()`(`bin/i18n.mjs`)이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic-profiles`다. 이전 `.agentic-cores`가 있으면 최초 접근 때 `.agentic-profiles`로 한 번 이관한다.
+- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`가 있다(`bin/agentic.mjs:48-62`, `64-74`).
 - 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`을 만든다(`bin/agentic.mjs:449-486`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
-- `AGENTIC_HOME` 환경변수로 Core 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:40`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- Core 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-cores`에 있고 전역 설치 위치와 다르다(`bin/agentic.mjs:20-21`). Core를 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:242-246`, [워크플로 6절](workflow.md)).
+- `AGENTIC_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:40`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
+- 프로필 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-profiles`에 있고 전역 설치 위치와 다르다(`bin/agentic.mjs:20-21`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:242-246`, [워크플로 6절](workflow.md)).
 
 ---
 
@@ -202,9 +202,9 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 | 모듈            | 일반 역할                | 이 저장소에서 (배포 `bin/` 기준)                                                                          |
 | --------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `fs`            | 파일 읽기·쓰기·존재 확인 | Core·프로젝트 파일 입출력 (`bin/agentic.mjs:5`)                                                           |
+| `fs`            | 파일 읽기·쓰기·존재 확인 | 프로필·프로젝트 파일 입출력 (`bin/agentic.mjs:5`)                                                           |
 | `path`          | OS별 경로 조립           | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`bin/agentic.mjs:7`)                                                |
-| `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 Core 기준 위치 (`bin/agentic.mjs:6`, `21`)                                               |
+| `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 프로필 기준 위치 (`bin/agentic.mjs:6`, `21`)                                               |
 | `child_process` | 외부 프로그램 실행       | **배포 `bin/`에서는 안 씀.** 저장소 도구에서만 사용 (`tools/check-syntax.mjs`, `tools/package-smoke.mjs`) |
 
 > `crypto`도 쓰인다: 임시 파일 이름의 `randomUUID`(`bin/fs-utils.mjs:3`), 관리 영역 hash의 `createHash`(`bin/analyzer.mjs:1`).
@@ -216,7 +216,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- **배포되는 CLI(`bin/`)**는 `fs`·`os`·`path`를 쓴다(`bin/agentic.mjs:5-7`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 Core 기준 위치를 잡는다(`bin/agentic.mjs:21`).
+- **배포되는 CLI(`bin/`)**는 `fs`·`os`·`path`를 쓴다(`bin/agentic.mjs:5-7`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`bin/agentic.mjs:21`).
 - 이 밖에 `bin/fs-utils.mjs`와 `bin/analyzer.mjs`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`bin/fs-utils.mjs:3,52`), 관리 영역 무결성 확인에 `createHash`(`bin/analyzer.mjs:1,50-52`)를 사용한다.
 - **`child_process`는 배포되는 `bin/`에서는 쓰이지 않는다.** 저장소 개발 도구에서만 쓴다: 문법 검사가 `node --check`를 자식 프로세스로 실행하고(`tools/check-syntax.mjs:5,21`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.mjs:7,24-29`).
 
@@ -380,13 +380,13 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agentic-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`bin/fs-utils.mjs:41-59`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`bin/agentic.mjs:494`).
 - **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에 기록한다(`bin/agentic.mjs:480-486`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 “Managed file changed outside Agentic” 오류로 동기화를 멈춘다(`bin/agentic.mjs:461-463`, `475-477`). 병합·추출·hash 로직은 `bin/analyzer.mjs`에 있다.
-- 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 Core 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).
+- 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
 
 ```mermaid
 flowchart TD
-  P["init·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
+  P["apply·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
   H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>bin/agentic.mjs:461-463, 475-477"]
   H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
   SAFE -->|"위험"| REFUSE["교체 거부<br/>bin/fs-utils.mjs:11-38"]
@@ -398,7 +398,7 @@ flowchart TD
 
 - **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 하지만 여러 파일에 걸친 전체 롤백·충돌 시각화·자동 백업은 **아직 확정되지 않은 후속 작업**이다. 이는 제품 방향의 단계 4와 논의 문서에 그렇게 기록돼 있다(`docs/product-direction.md:40`, [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md)). 이 문서는 그 상태를 그대로 반영하며, 구현된 것처럼 쓰지 않는다.
 - 관리 영역을 손으로 고치면 동기화가 중단된다. 프로젝트 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 두어야 보존된다([워크플로 3절](workflow.md)).
-- 권한: 대상 파일에 쓰기 권한이 없으면 교체가 실패한다. Core 데이터와 프로젝트 파일은 각자 위치의 파일 권한을 따른다.
+- 권한: 대상 파일에 쓰기 권한이 없으면 교체가 실패한다. 프로필 데이터와 프로젝트 파일은 각자 위치의 파일 권한을 따른다.
 
 ---
 
@@ -417,7 +417,7 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- **dry-run**: `init`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:487-493`). TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`bin/agentic.mjs:212-217`).
+- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:487-493`). TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`bin/agentic.mjs:212-217`).
 - **로그**: 각 변경의 상태(create/update/unchanged)를 한 줄씩 출력한다(`bin/agentic.mjs:488-489`).
 - **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`bin/agentic.mjs:547-550`). 성공하면 기본 종료 코드 0이다.
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 문법 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:29`). 문법 검사는 `bin`·`tools`·`evals`의 `.mjs`를 `node --check`로 검사하고(`tools/check-syntax.mjs`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하며(`tools/check-docs.mjs`), 테스트는 `evals/**/*.test.mjs`를 `node --test`로 돌린다(`package.json:26`).
@@ -506,7 +506,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 ### 핵심 원리
 
-앞의 원리들이 하나로 이어지면, “설치 → 명령 실행 → Core 관리 → 프로젝트 적용”이라는 사용자 여정이 된다. 이 절은 그 전체를 한눈에 잇는다.
+앞의 원리들이 하나로 이어지면, “설치 → 명령 실행 → 프로필 관리 → 프로젝트 적용”이라는 사용자 여정이 된다. 이 절은 그 전체를 한눈에 잇는다.
 
 ### 실행 또는 데이터 흐름
 
@@ -514,10 +514,10 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 1. **(사용자)** `npm install -g @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:518-519`).
-3. **(사용자)** Core 생성·설정 선택 → **(Agentic)** `~/.agentic-cores/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-core.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:64-74`), `setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:305-325`).
-4. **(사용자)** `agt init --core <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:442-499`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
+3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic-profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:64-74`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:305-325`).
+4. **(사용자)** `agt profile apply <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:442-499`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([워크플로 4절](workflow.md), `docs/product-direction.md:28`).
-6. **(사용자)** Core를 바꾼 뒤 `agt sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:501-509`).
+6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:501-509`).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
 
@@ -526,24 +526,24 @@ sequenceDiagram
   actor U as 사용자
   participant N as npm
   participant C as Agentic CLI
-  participant K as Core 저장소
+  participant K as 프로필 저장소
   participant P as 대상 프로젝트
   participant A as AI 에이전트
   U->>N: npm install -g @isthis/agentic
   N-->>U: agentic·agt 진입점 생성
-  U->>C: agt 실행 후 Core 생성·설정
-  C->>K: agentic-core.json·AGENTS.md 기록
-  U->>C: agt init --core name project
+  U->>C: agt 실행 후 프로필 생성·설정
+  C->>K: agentic-profile.json·AGENTS.md 기록
+  U->>C: agt profile apply name project
   C->>P: AGENTS.md·포인터·agentic.project.json 생성
   U->>A: 작업 의뢰
   A->>P: AGENTS.md 읽고 코드·테스트 변경
-  U->>C: agt sync project
+  U->>C: agt profile sync project
   C->>P: 관리 블록만 갱신, 사용자 영역 보존
 ```
 
 ### 이 패키지에서의 적용 예시
 
-- 이 전체 여정이 실제로 이어지는지는 스모크 테스트가 한 번에 재현한다: help 출력 확인 → `core create` → `setup` → `init` → `sync` → 결과 파일 존재 확인(`tools/package-smoke.mjs:40-52`).
+- 이 전체 여정이 실제로 이어지는지는 스모크 테스트가 한 번에 재현한다: help 출력 확인 → `profile create` → `profile setup` → `profile apply` → `profile sync` → 결과 파일 존재 확인(`tools/package-smoke.mjs:40-52`).
 - 사용자·Agentic·에이전트·대상 프로젝트의 책임 구분 정본은 [사용자 워크플로의 “명령의 소유권” 표](workflow.md)와 [제품 방향의 범위·경계](product-direction.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
@@ -557,7 +557,7 @@ sequenceDiagram
 
 - [제품 방향](product-direction.md) — 목표·범위·단계별 완료 기준의 정본
 - [현재 아키텍처](architecture/) — 현재 구현된 구조와 소유권
-- [사용자 워크플로](workflow.md) — Core 생성부터 프로젝트 적용까지의 사용 흐름
+- [사용자 워크플로](workflow.md) — 프로필 생성부터 프로젝트 적용까지의 사용 흐름
 - [CLI Reference](cli-reference.md) — 명령어·옵션·TUI·자동화 방식
 - [공개 저장소 운영](repository-operations.md) — 품질 게이트·릴리스·보안 정책
 - [아키텍처 구현 계획](discussion/architecture/) — 단계별 계약과 미구현 기능

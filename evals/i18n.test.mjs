@@ -23,10 +23,10 @@ function run(home, args, env = {}) {
 }
 
 function buildProject(home, env = {}) {
-  run(home, ['core', 'create', 'demo', '--scope', 'team'], env);
-  run(home, ['setup', '--core', 'demo', '--harness', 'strict', '--tdd', 'strict', '--review', 'strict', '--verification', 'strict', '--documentation', 'strict', '--security', 'strict'], env);
+  run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
+  run(home, ['profile', 'setup', 'demo', '--harness', 'strict', '--tdd', 'strict', '--review', 'strict', '--verification', 'strict', '--documentation', 'strict', '--security', 'strict'], env);
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-proj-'));
-  run(home, ['init', '--core', 'demo', project], env);
+  run(home, ['profile', 'apply', 'demo', project], env);
   return fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
 }
 
@@ -69,11 +69,11 @@ test('AGENTIC_LANG=en generates guidance with no Korean characters', () => {
 test('a saved config.json locale is honored with no flag or env', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfg-'));
   try {
-    fs.mkdirSync(path.join(home, '.agentic-cores'), { recursive: true });
-    fs.writeFileSync(path.join(home, '.agentic-cores', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
-    run(home, ['core', 'create', 'demo', '--scope', 'team']);
+    fs.mkdirSync(path.join(home, '.agentic-profiles'), { recursive: true });
+    fs.writeFileSync(path.join(home, '.agentic-profiles', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+    run(home, ['profile', 'create', 'demo', '--scope', 'team']);
     const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfgproj-'));
-    run(home, ['init', '--core', 'demo', project]);
+    run(home, ['profile', 'apply', 'demo', project]);
     assert.equal(hasHangul(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8')), false);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -84,7 +84,7 @@ test('config lang persists the selected locale', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-save-'));
   try {
     run(home, ['config', 'lang', 'en']);
-    const config = JSON.parse(fs.readFileSync(path.join(home, '.agentic-cores', 'config.json'), 'utf8'));
+    const config = JSON.parse(fs.readFileSync(path.join(home, '.agentic-profiles', 'config.json'), 'utf8'));
     assert.equal(config.locale, 'en');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -94,7 +94,7 @@ test('config lang persists the selected locale', () => {
 test('an unsupported --lang value exits non-zero', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-bad-'));
   try {
-    const result = spawnSync(process.execPath, [cli, 'core', 'list', '--lang', 'fr'], {
+    const result = spawnSync(process.execPath, [cli, 'profile', 'list', '--lang', 'fr'], {
       cwd: repoRoot,
       env: { ...process.env, AGENTIC_HOME: home },
       encoding: 'utf8'

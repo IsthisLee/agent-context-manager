@@ -15,6 +15,20 @@
 
 배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm으로 배포되는 것은 `package.json`의 `files`에 적힌 `bin/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성뿐이다(`package.json:19-24`). `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
 
+## 한눈에 보는 전체 그림
+
+아래 그림은 이 문서가 다루는 흐름을 게시에서 프로젝트 적용까지 하나로 잇는다. 각 단계의 상세 원리는 이어지는 번호 항목에서 다룬다.
+
+```mermaid
+flowchart TD
+  DEV["개발자·GitHub Actions<br/>npm publish --provenance"] -->|"tarball 업로드"| REG["npm Registry<br/>@isthis/agentic"]
+  REG -->|"npm install -g"| GBIN["전역 설치<br/>agentic·agt 진입점 생성"]
+  GBIN -->|"사용자가 agt 실행"| CLI["Node가 bin/agentic.mjs 실행"]
+  CLI --> CORE["Core 저장소<br/>~/.agentic-cores 아래 이름별 폴더"]
+  CLI -->|"init·sync"| PROJ["대상 프로젝트<br/>AGENTS.md·포인터 파일·agentic.project.json"]
+  PROJ -->|"에이전트가 읽음"| AGENT["AI 에이전트가 지침대로 코드 작업"]
+```
+
 ---
 
 ## 1. npm Registry에 패키지가 저장·배포되는 원리
@@ -132,6 +146,16 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 3. **Node.js**: `bin/agt.mjs`를 로드하고, 그것이 `bin/agentic.mjs`를 불러온다.
 4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:16-17`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:517-545`).
 
+```mermaid
+flowchart TD
+  A["사용자: 터미널에 'agt core create' 입력"] --> B["셸: PATH에서 agt 진입점 탐색"]
+  B --> C["OS: 심볼릭 링크·shim 따라 Node 실행"]
+  C --> D["Node: bin/agt.mjs → bin/agentic.mjs 로드"]
+  D --> E["JS: process.argv 파싱 후 command 결정"]
+  E --> F["main() 분기: core·setup·init·sync·help"]
+  F --> G["결과는 stdout, 오류는 stderr + 종료 코드"]
+```
+
 ### 이 패키지에서의 적용 예시
 
 - 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:518-519`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-60`, `bin/agentic.mjs:8`).
@@ -175,6 +199,15 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 ### 핵심 원리
 
 Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 OS에 맞는 경로 조립, `os`는 홈 디렉터리·플랫폼 같은 시스템 정보, `child_process`는 외부 프로그램 실행을 담당한다.
+
+| 모듈 | 일반 역할 | 이 저장소에서 (배포 `bin/` 기준) |
+| --- | --- | --- |
+| `fs` | 파일 읽기·쓰기·존재 확인 | Core·프로젝트 파일 입출력 (`bin/agentic.mjs:5`) |
+| `path` | OS별 경로 조립 | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`bin/agentic.mjs:7`) |
+| `os` | 홈 디렉터리·플랫폼 정보 | `os.homedir()`로 Core 기준 위치 (`bin/agentic.mjs:6`, `21`) |
+| `child_process` | 외부 프로그램 실행 | **배포 `bin/`에서는 안 씀.** 저장소 도구에서만 사용 (`tools/check-syntax.mjs`, `tools/package-smoke.mjs`) |
+
+> `crypto`도 쓰인다: 임시 파일 이름의 `randomUUID`(`bin/fs-utils.mjs:3`), 관리 영역 hash의 `createHash`(`bin/analyzer.mjs:1`).
 
 ### 실행 또는 데이터 흐름
 
@@ -229,6 +262,13 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - macOS/Linux: PATH의 bin 디렉터리에 심볼릭 링크 → shebang이 `node`를 지정 → Node 실행.
 - Windows: PATH의 bin 디렉터리에 shim(`agt.cmd` 등) → shim이 Node로 대상 스크립트 실행.
 
+| 구분 | macOS / Linux | Windows |
+| --- | --- | --- |
+| 진입점 형태 | 대상 스크립트로의 심볼릭 링크 | `.cmd`/`.ps1` shim |
+| shebang | `#!/usr/bin/env node`로 인터프리터 지정 | 개념 없음. shim이 Node 실행을 연결 |
+| 경로 구분자 | 슬래시 | 역슬래시 |
+| 이 저장소의 대응 | `path`로 경로 조립 | `npm.cmd`·`agt.cmd`, `cmd.exe` 경유 (`tools/package-smoke.mjs:16-18`, `38`) |
+
 ### 이 패키지에서의 적용 예시
 
 - 코드가 경로를 문자열로 이어 붙이지 않고 항상 `path`로 조립해 OS 차이를 흡수한다(예: `bin/agentic.mjs:14`, `21`, `51-52`).
@@ -277,6 +317,12 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - `npm install`/`pnpm install`: 의존성을 받아 `node_modules/`를 구성한다.
 - `pnpm run <script>`/`npm run <script>`: `package.json`의 스크립트를 실행한다.
 - `npx <bin>`: 로컬/전역에서 실행 파일을 찾고, 없으면 임시로 받아 실행한다.
+
+| 도구 | 역할 | 이 저장소에서 |
+| --- | --- | --- |
+| `npm` | 패키지 매니저(설치·스크립트). 사용자 설치 안내에 사용 | `npm install -g @isthis/agentic` (`README.md:19`) |
+| `pnpm` | 패키지 매니저. 공유 저장소 링크로 디스크·시간 절약. 저장소 개발에 고정 | `packageManager: pnpm@10.15.0` (`package.json:4`), `pnpm run check` |
+| `npx` | 실행 파일을 찾아(없으면 임시로 받아) 실행 | 이 저장소가 요구하는 흐름은 현재 저장소에서 확인되지 않음 |
 
 ### 이 패키지에서의 적용 예시
 
@@ -336,6 +382,18 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에 기록한다(`bin/agentic.mjs:480-486`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 “Managed file changed outside Agentic” 오류로 동기화를 멈춘다(`bin/agentic.mjs:461-463`, `475-477`). 병합·추출·hash 로직은 `bin/analyzer.mjs`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 Core 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).
 
+파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
+
+```mermaid
+flowchart TD
+  P["init·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
+  H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>bin/agentic.mjs:461-463, 475-477"]
+  H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
+  SAFE -->|"위험"| REFUSE["교체 거부<br/>bin/fs-utils.mjs:11-38"]
+  SAFE -->|"안전"| ATOM["임시 파일 쓰기 후 rename 교체<br/>권한 모드 보존·bin/fs-utils.mjs:41-59"]
+  ATOM --> DONE["적용 완료 + 관리 hash 기록<br/>agentic.project.json"]
+```
+
 ### 사용자가 알아야 할 주의점
 
 - **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 하지만 여러 파일에 걸친 전체 롤백·충돌 시각화·자동 백업은 **아직 확정되지 않은 후속 작업**이다. 이는 제품 방향의 단계 4와 논의 문서에 그렇게 기록돼 있다(`docs/product-direction.md:40`, [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md)). 이 문서는 그 상태를 그대로 반영하며, 구현된 것처럼 쓰지 않는다.
@@ -392,6 +450,18 @@ GitHub Actions는 저장소 이벤트(예: 릴리스 게시)에 반응해 정해
 - 중복 게시 방지: Registry에 같은 버전이 있으면 게시 단계를 건너뛴다(`.github/workflows/publish.yml:37-50`).
 - CI 워크플로는 배포와 별개로 push·PR마다 세 OS × 두 Node 버전에서 검증한다(`.github/workflows/ci.yml`).
 
+게시 워크플로의 단계 순서는 이렇다.
+
+```mermaid
+flowchart TD
+  R["GitHub Release 게시"] --> CO["checkout + pnpm·Node 설치"]
+  CO --> V["검증: pnpm run check → pack:check → package:smoke"]
+  V --> TAG["릴리스 태그가 package.json 버전과 같은지<br/>check:release + CHANGELOG 확인"]
+  TAG --> EX{"이미 게시된 버전인가"}
+  EX -->|"예"| SKIP["게시 건너뜀"]
+  EX -->|"아니오"| PUB["npm publish --provenance --access public"]
+```
+
 ### 사용자가 알아야 할 주의점
 
 - 일반 사용자는 이 과정을 직접 실행하지 않는다. 배포는 저장소 관리자와 자동화의 몫이고, 사용자는 그 결과인 게시된 버전을 설치할 뿐이다.
@@ -409,6 +479,13 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 - 토큰 방식: 사전에 발급한 npm 토큰을 CI 비밀에 저장 → 게시 시 그 토큰으로 인증.
 - OIDC 방식: 워크플로에 `id-token: write` 권한 부여 → CI가 단기 OIDC 토큰 발급 → npm이 이를 검증해 게시 허용 → `--provenance`로 출처 정보 첨부.
+
+| 구분 | npm 토큰 방식 | OIDC Trusted Publishing (이 저장소) |
+| --- | --- | --- |
+| 자격 증명 | 장기 토큰을 CI 비밀로 저장 | 저장 안 함. CI가 단기 OIDC 토큰 발급 |
+| 유출 위험 | 저장된 비밀이 새면 오래 유효 | 저장된 비밀이 없음 |
+| 워크플로 설정 | `NODE_AUTH_TOKEN` 등 토큰 주입 | `id-token: write` + `--provenance` |
+| 근거 | 해당 없음 | `.github/workflows/publish.yml:7-9`, `50` (토큰 참조 없음) |
 
 ### 이 패키지에서의 적용 예시
 
@@ -441,6 +518,28 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 4. **(사용자)** `agt init --core <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:442-499`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([워크플로 4절](workflow.md), `docs/product-direction.md:28`).
 6. **(사용자)** Core를 바꾼 뒤 `agt sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:501-509`).
+
+주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
+
+```mermaid
+sequenceDiagram
+  actor U as 사용자
+  participant N as npm
+  participant C as Agentic CLI
+  participant K as Core 저장소
+  participant P as 대상 프로젝트
+  participant A as AI 에이전트
+  U->>N: npm install -g @isthis/agentic
+  N-->>U: agentic·agt 진입점 생성
+  U->>C: agt 실행 후 Core 생성·설정
+  C->>K: agentic-core.json·AGENTS.md 기록
+  U->>C: agt init --core name project
+  C->>P: AGENTS.md·포인터·agentic.project.json 생성
+  U->>A: 작업 의뢰
+  A->>P: AGENTS.md 읽고 코드·테스트 변경
+  U->>C: agt sync project
+  C->>P: 관리 블록만 갱신, 사용자 영역 보존
+```
 
 ### 이 패키지에서의 적용 예시
 

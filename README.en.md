@@ -5,7 +5,11 @@
 
 [한국어](README.md) · **English**
 
-> A package that creates and configures shared agentic-development guidance and then safely applies, syncs, and manages it across people, organizations, projects, and multiple AI agents.
+> **Agentic — Shared project and organizational development standards for people and AI agents.**
+>
+> **Different developers, different teams, different AI agents — one project standard.**
+>
+> Agentic creates and configures shared agentic-development guidance for individuals and organizations, manages it locally or through Git, and safely applies and synchronizes it across projects and multiple AI agents.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Core, project files" width="840">

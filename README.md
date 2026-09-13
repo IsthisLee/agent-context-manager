@@ -3,7 +3,25 @@
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-> Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
+**한국어** · [English](README.en.md)
+
+> **Agentic — 사람과 AI 에이전트가 함께 따르는 프로젝트·조직 개발 기준.**
+>
+> **개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로.**
+>
+> Agentic은 에이전틱 개발을 위한 공통 지침을 Core로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic 사용 흐름 — 사용자·AI 에이전트·Core·프로젝트 파일" width="840">
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ 움직이는 흐름 (WebM)</a>
+  ·
+  <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">인터랙티브 도식</a>
+</p>
+
+`core create` → `setup` → `init`/`sync` 한 흐름으로, **Core**(공통 지침 정본)를 만들어 **프로젝트 파일**로 적용하면 **여러 AI 에이전트**가 같은 기준으로 작업합니다.
 
 ## 핵심 목표
 
@@ -16,7 +34,7 @@
 가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
 
 ```bash
-npm install --global @isthis/agentic
+npm install -g @isthis/agentic
 agt
 ```
 
@@ -30,6 +48,7 @@ agt
 - `agentic core remove [<name>]` — 확인 후 선택한 Core 삭제; 적용된 프로젝트 파일은 유지
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
+- `agentic config lang <ko|en>` — 표시·생성 언어 설정; 기본은 한국어이고 `--lang`·`AGENTIC_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
 ## 🧭 아키텍처 방향과 진행 상태
 
@@ -78,7 +97,7 @@ Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설
 ### 전제 조건
 
 - 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: `npm install --global @isthis/agentic`
+- 일반 사용자: `npm install --global @isthis/agentic` (짧게는 `npm install -g`)
 - 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
 
 짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.

@@ -7,6 +7,18 @@
 
 > 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic 사용 흐름 — 사용자·AI 에이전트·Core·프로젝트 파일" width="840">
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ 움직이는 흐름 (WebM)</a>
+  ·
+  <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">인터랙티브 도식</a>
+</p>
+
+`core create` → `setup` → `init`/`sync` 한 흐름으로, **Core**(공통 지침 정본)를 만들어 **프로젝트 파일**로 적용하면 **여러 AI 에이전트**가 같은 기준으로 작업합니다.
+
 ## 핵심 목표
 
 - 여러 에이전트가 동일한 공통 지침을 기준으로 작업합니다.
@@ -81,7 +93,7 @@ Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설
 ### 전제 조건
 
 - 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: `npm install -g @isthis/agentic`
+- 일반 사용자: `npm install --global @isthis/agentic` (짧게는 `npm install -g`)
 - 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
 
 짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.

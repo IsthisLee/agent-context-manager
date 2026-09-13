@@ -7,6 +7,18 @@
 
 > A package that creates and configures shared agentic-development guidance and then safely applies, syncs, and manages it across people, organizations, projects, and multiple AI agents.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Core, project files" width="840">
+</p>
+
+<p align="center">
+  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ Animated flow (WebM)</a>
+  ·
+  <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">Interactive diagram</a>
+</p>
+
+One flow — `core create` → `setup` → `init`/`sync`: build a **Core** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
+
 ## Core goals
 
 - Multiple agents work against the same shared guidance.

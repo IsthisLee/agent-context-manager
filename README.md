@@ -10,12 +10,12 @@
 > Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화하는 패키지입니다.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic 사용 흐름 — 사용자·AI 에이전트·프로필·프로젝트 파일" width="840">
+  <video src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm" poster="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" width="840" autoplay loop muted playsinline controls>
+    <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic 사용 흐름 — 사용자·AI 에이전트·프로필·프로젝트 파일" width="840">
+  </video>
 </p>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ 움직이는 흐름 (WebM)</a>
-  ·
   <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">인터랙티브 도식</a>
 </p>
 

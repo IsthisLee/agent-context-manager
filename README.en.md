@@ -10,12 +10,12 @@
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Profile, project files" width="840">
+  <video src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm" poster="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" width="840" autoplay loop muted playsinline controls>
+    <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Profile, project files" width="840">
+  </video>
 </p>
 
 <p align="center">
-  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ Animated flow (WebM)</a>
-  ·
   <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">Interactive diagram</a>
 </p>
 

@@ -35,14 +35,17 @@ Individual developers can also reuse separate `Personal` Cores per project and k
 
 Cores are currently managed locally. Sharing and updating organization Cores through Git is tracked as a [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md), not advertised as a current capability.
 
-The simplest start is a single command.
+## Use cases
 
-```bash
-npm install --global @isthis/agentic
-agt
-```
+> The Git-based flows below apply after remote Profile management is implemented. The current release provides local Core management, application, and synchronization only.
 
-The main TUI lets you manage, create, and configure Cores and open help. English is opt-in: choose it once on the first interactive run, or pass `--lang en` / `AGENTIC_LANG=en`, or run `agentic config lang en`. The default is Korean.
+| Situation | Use it this way | Benefit |
+| --- | --- | --- |
+| Individual development | Create Personal Profiles for different project types, configure their guidance through `setup`, and apply one to each project with `init`. | Reuse the same development standard when switching AI tools or starting a new project. |
+| Team collaboration | Share a team Profile in a Git repository; members clone or pull it, then apply it to their projects. | Review and distribute shared-guidance updates through one history while reducing per-person configuration drift. |
+| Organization standards | Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`. | Keep organization standards independent from project-specific requirements. |
+
+See [Quick start](#quick-start) for installation, the TUI entry point, and applying guidance to a project. English is opt-in: choose it once on the first interactive run, or pass `--lang en` / `AGENTIC_LANG=en`, or run `agentic config lang en`. The default is Korean.
 
 ## Core features
 

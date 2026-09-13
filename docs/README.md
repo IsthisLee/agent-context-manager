@@ -14,6 +14,7 @@
 8. [외부 참고 문헌](references.md) — 연구·사례·비교 도구
 9. [결정 기록](adr/) — 확정된 장기 결정
    - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
+   - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

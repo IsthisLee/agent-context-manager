@@ -3,7 +3,9 @@
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-> Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
+**한국어** · [English](README.en.md)
+
+> 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
 
 ## 핵심 목표
 
@@ -30,6 +32,7 @@ agt
 - `agentic core remove [<name>]` — 확인 후 선택한 Core 삭제; 적용된 프로젝트 파일은 유지
 - `agentic init --core <name> <project>` — 선택한 Core를 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
+- `agentic config lang <ko|en>` — 표시·생성 언어 설정; 기본은 한국어이고 `--lang`·`AGENTIC_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
 ## 🧭 아키텍처 방향과 진행 상태
 

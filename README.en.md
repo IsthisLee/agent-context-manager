@@ -31,6 +31,8 @@ One flow — `core create` → `setup` → `init`/`sync`: build a **Core** (the 
 
 Cores keep the shared guidance as a single source of truth; each project adds its own domain rules in its own `AGENTS.md`. This reduces the drift in working style, guidance, and verification standards that otherwise varies by developer and agent.
 
+Individual developers can also reuse separate `Personal` Cores per project and keep the same guidance when switching AI tools. This reduces repeated setup and guidance drift between projects, making both maintenance and development easier.
+
 Cores are currently managed locally. Sharing and updating organization Cores through Git is tracked as a [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md), not advertised as a current capability.
 
 The simplest start is a single command.

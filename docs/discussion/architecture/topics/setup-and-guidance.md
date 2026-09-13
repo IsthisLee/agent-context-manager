@@ -26,7 +26,7 @@
 | 선행 작업 | [Core 모델과 저장소](core-model.md) |
 | 선행 제안 | [Core 모델과 저장소](core-model.md) |
 | 후속 제안 | [프로젝트 적용](project-application.md) |
-| 연관 제안 | [에이전트 산출물 동기화](agent-sync.md) |
+| 연관 제안 | [에이전트 산출물 동기화](agent-sync.md), [지침 적용 수준의 의미 정의](guidance-level-semantics.md) |
 | 후속 작업 | 옵션 schema·preset 템플릿·설정 diff 평가 |
 | 권장 다음 작업 | `tdd`, `review`, `verification`, `documentation`, `security`의 최소 값과 기본값 확정 |
 

@@ -3,7 +3,7 @@
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-> 여러 AI 에이전트가 동일한 프로젝트 개발 지침을 사용하도록, 지침을 생성·설정·동기화·적용하는 패키지입니다.
+> Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
 
 ## 핵심 목표
 

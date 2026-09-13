@@ -2,6 +2,8 @@
 
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다.
 
+Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리한다.
+
 ## 현재 구조
 
 ```text

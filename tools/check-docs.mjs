@@ -148,7 +148,14 @@ function checkReadme() {
   for (const heading of requiredHeadings) {
     if (!content.includes(heading)) errors.push(`README.md: missing required section ${heading}`);
   }
-  for (const requiredText of ['@isthis/agentic', 'npm install --global', 'agt', 'pnpm run check', 'docs/discussion/architecture/']) {
+  for (const requiredText of [
+    '@isthis/agentic',
+    'npm install --global',
+    'agt',
+    'pnpm run check',
+    'docs/discussion/architecture/',
+    '개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리'
+  ]) {
     if (!content.includes(requiredText)) errors.push(`README.md: missing required product guidance ${requiredText}`);
   }
 }

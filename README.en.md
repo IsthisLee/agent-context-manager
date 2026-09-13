@@ -9,7 +9,7 @@
 >
 > **Different developers, different teams, different AI agents — one project development standard.**
 >
-> Agentic creates and configures shared agentic-development guidance as Cores for individuals and organizations, then safely applies and synchronizes it across projects and multiple AI agents.
+> Agentic creates and configures shared agentic-development guidance as Cores for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Core, project files" width="840">

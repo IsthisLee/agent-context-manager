@@ -13,7 +13,7 @@
 >
 > Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화하는 패키지입니다.
 
-[agentic-flow.webm](https://github.com/user-attachments/assets/678059f2-2e67-484e-bff8-84aba34558b0)
+[agentic.webm](https://github.com/user-attachments/assets/2d240a00-4ceb-4e89-83b9-e21dd5bebfbe)
 
 `profile create` → `profile setup` → `profile apply`/`profile sync` 한 흐름으로, **프로필**(공통 지침 정본)를 만들어 **프로젝트 파일**로 적용하면 **여러 AI 에이전트**가 같은 기준으로 작업합니다.
 

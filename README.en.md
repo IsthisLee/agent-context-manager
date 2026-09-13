@@ -1,7 +1,11 @@
 # Agentic — AI agent guidance management
 
-[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
+[![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
+[![npm](https://img.shields.io/npm/v/@isthis/agentic?logo=npm&color=cb3837)](https://www.npmjs.com/package/@isthis/agentic)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
+[![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
 
 [한국어](README.md) · **English**
 
@@ -10,12 +14,12 @@
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
 <p align="center">
-  <video src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm" poster="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" width="840" autoplay loop muted playsinline controls>
-    <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Profile, project files" width="840">
-  </video>
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Profile, project files" width="840">
 </p>
 
 <p align="center">
+  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ Animated flow (WebM)</a>
+  ·
   <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">Interactive diagram</a>
 </p>
 

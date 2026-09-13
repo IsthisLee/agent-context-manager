@@ -169,8 +169,8 @@ test('apply applies the selected profile to a project without changing the profi
     assert.equal(selection.schemaVersion, 1);
     assert.equal(selection.profile, 'company');
     assert.deepEqual(Object.keys(selection.managedHashes).map(file => file.replaceAll(path.sep, '/')).sort(), [
+      '.agents/rules/agentic.md',
       '.cursor/rules/agentic.mdc',
-      '.gemini/rules/agentic.md',
       '.github/copilot-instructions.md',
       'AGENTS.md',
       'CLAUDE.md'
@@ -349,12 +349,12 @@ test('apply preflights all targets and leaves the project unchanged when an adap
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-symlink-test-'));
   const project = path.join(home, 'project');
   const outside = path.join(home, 'outside.md');
-  fs.mkdirSync(path.join(project, '.gemini', 'rules'), { recursive: true });
+  fs.mkdirSync(path.join(project, '.agents', 'rules'), { recursive: true });
   fs.writeFileSync(outside, 'outside content\n');
 
   try {
     try {
-      fs.symlinkSync(outside, path.join(project, '.gemini', 'rules', 'agentic.md'));
+      fs.symlinkSync(outside, path.join(project, '.agents', 'rules', 'agentic.md'));
     } catch (error) {
       if (error.code === 'EPERM' || error.code === 'EACCES') return;
       throw error;
@@ -364,7 +364,7 @@ test('apply preflights all targets and leaves the project unchanged when an adap
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'preflight-profile', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
     assert.match(result.stderr, /symbolic link/);
-    assert.deepEqual(fs.readdirSync(project), ['.gemini']);
+    assert.deepEqual(fs.readdirSync(project), ['.agents']);
     assert.equal(fs.readFileSync(outside, 'utf8'), 'outside content\n');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -375,7 +375,7 @@ test('apply preflights adapter parent paths and leaves the project unchanged whe
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-parent-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
-  fs.writeFileSync(path.join(project, '.gemini'), 'not a directory\n');
+  fs.writeFileSync(path.join(project, '.agents'), 'not a directory\n');
 
   try {
     const env = { ...process.env, AGENTIC_HOME: home };
@@ -383,7 +383,7 @@ test('apply preflights adapter parent paths and leaves the project unchanged whe
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'parent-check', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Parent path is not a directory/);
-    assert.deepEqual(fs.readdirSync(project), ['.gemini']);
+    assert.deepEqual(fs.readdirSync(project), ['.agents']);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

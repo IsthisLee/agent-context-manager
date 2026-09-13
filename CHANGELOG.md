@@ -12,6 +12,7 @@
 - 공개 저장소 운영 문서와 기여·보안·행동규범 안내
 - Node.js 24 LTS·26 Current CI, npm tarball 검사, Dependabot 설정, provenance 배포 workflow
 - OpenSSF Scorecard workflow와 README의 자동 계산 점수 뱃지
+- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/architecture/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 워크플로 문서에 명시
 
 ### Changed
 
@@ -32,6 +33,7 @@
 - 프로젝트 `AGENTS.md`의 프로필 영역과 에이전트 산출물 관리 블록의 수동 변경 감지, 파일 단위 원자적 교체 제공
 - 손상된 프로필·프로젝트 metadata와 디렉터리가 아닌 적용 대상을 명확한 오류로 거부
 - 적용 전 모든 대상 파일의 심볼릭 링크 여부를 검사해 알려진 위험에서 부분 변경을 방지
+- Antigravity 지침 산출물 경로를 `.gemini/rules/agentic.md`에서 `.agents/rules/agentic.md`(Antigravity 공식 워크스페이스 규칙 폴더)로 정정. 이전에 적용한 프로젝트에 남은 `.gemini/rules/agentic.md`는 자동 삭제하지 않으므로 수동으로 지운다. 근거는 [ADR 0004](docs/adr/0004-antigravity-rules-path.md)
 
 ### Removed
 

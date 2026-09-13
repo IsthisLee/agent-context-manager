@@ -47,7 +47,7 @@
 ### ADR 기록 및 관리
 
 - 아키텍처, 주요 기술 선택, 공개 인터페이스, 데이터/보안 경계 또는 되돌리기 어려운 설계 결정을 내리거나 변경할 때는 반드시 `docs/adr/`에 ADR을 추가하거나 기존 ADR을 갱신하라.
-- ADR 파일은 `NNNN-kebab-case-title.md` 형식의 순차 번호를 사용하고, 최소한 배경(Context), 검토한 대안(Options), 결정(Decision), 결과 및 영향(Consequences)을 기록하라.
+- ADR 파일은 `NNNN-kebab-case-title.md` 형식의 순차 번호를 사용하라. 제목 아래 머리말에는 `* **상태:**`, `* **일자:**`, `* **결정자:**`를 불릿으로 기록하고 관련 ADR이 있으면 `* **관련:**`을 덧붙여 대상 ADR로 링크하라. 본문에는 최소한 배경(Context), 검토한 대안(Options), 결정(Decision), 결과 및 영향(Consequences)을 기록하라. `결정자` 머리말 필드는 `pnpm run check`의 `check:docs`가 강제한다.
 - 채택된 결정은 기존 ADR의 이력을 임의로 덮어쓰지 말고, 변경이 필요하면 새 ADR을 작성하여 이전 결정과의 관계를 명시하라. 오탈자·링크 수정 등 의미가 바뀌지 않는 정정은 기존 ADR에 반영할 수 있다.
 - 새 ADR을 추가하거나 상태를 변경하면 `docs/README.md`의 ADR 인덱스도 함께 갱신하라.
 
@@ -94,3 +94,4 @@
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
 - 공개 저장소 운영 계약을 변경할 때는 `docs/repository-operations.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.
+- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서(코드를 `파일:줄`로 인용하거나 특정 소스의 동작을 서술하는 문서)를 새로 만들거나 고칠 때는 문서 상단에 소스 해시 마커 두 줄을 두고 `node tools/check-docs.mjs --stamp`로 해시를 기록하라. 마커는 `<!-- agentic-doc-sources: <소스 경로들> -->`와 `<!-- agentic-doc-sources-sha256: <값> -->`이다. 핀한 소스가 바뀌면 `pnpm run check`의 `check:docs`가 실패하므로 문서를 다시 읽어 드리프트를 고친 뒤 다시 stamp하라. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/`, `evals/synthetic/` 등)은 대상이 아니다. 게이트 계약과 현재 대상 목록의 정본은 `docs/repository-operations.md`의 "문서 소스 해시 게이트" 절이다.

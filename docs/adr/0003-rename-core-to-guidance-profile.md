@@ -1,8 +1,9 @@
 # 0003. Core를 Guidance Profile(프로필)로 개명하고 apply/sync 의미를 분리한다
 
-**상태:** Accepted
-**날짜:** 2026-09-13
-**관련:** [0001 제품 범위](0001-product-scope.md)의 "Core" 용어를 대체한다.
+* **상태:** 채택됨 (Accepted)
+* **일자:** 2026-09-13
+* **결정자:** 제품 소유자·개발자
+* **관련:** [0001 제품 범위](0001-product-scope.md)의 "Core" 용어를 대체한다.
 
 ## 배경 (Context)
 

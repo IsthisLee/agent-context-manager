@@ -1,8 +1,13 @@
 # 개발 원리 및 실행 구조
 
+**문서 유형:** 생태계 원리 해설 (입문자·기여자용). npm·Node.js·CLI 일반 원리를 이 패키지 구현에 연결해 전체 그림을 설명한다. 현재 구현된 각 기능의 내부 로직은 [기능 구현 메커니즘](architecture/implementation-mechanics.md)이 다룬다.
+
 **작성·검증 기준:** `@isthis/agentic` `0.1.0` · 커밋 `fbcb2ed` · 2026-09-13
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:580-600`). 줄 번호는 **위 커밋 기준**이며, 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 위 커밋이나 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다.
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:580-600`). 줄 번호는 **위 커밋 기준**이며, 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 위 커밋이나 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json -->
+<!-- agentic-doc-sources-sha256: 842909b59d98b1523643847af5c7d0aff17bb2dc888b9ea30e8510b1fecaff1b -->
 
 이 문서는 `@isthis/agentic`이 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -96,6 +101,13 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 ### 이 패키지에서의 적용 예시
 
 - 이 패키지는 두 개의 명령을 노출한다: `agentic → ./bin/agentic.mjs`, `agt → ./bin/agt.mjs`(`package.json:15-18`).
+
+  ```json
+  "bin": {
+    "agentic": "./bin/agentic.mjs",
+    "agt": "./bin/agt.mjs"
+  }
+  ```
 - `agt`는 `agentic`의 짧은 별칭이다. `bin/agt.mjs`는 한 줄로 본체를 불러올 뿐이다: `import './agentic.mjs';`(`bin/agt.mjs:3`).
 - 두 이름 중 무엇으로 실행했는지는 코드가 스스로 판별한다. `bin/agentic.mjs:19`이 `process.argv[1]`의 파일 이름으로 `invokedAs`를 정하고, 도움말 출력의 명령어 이름을 그에 맞춰 바꾼다(`bin/agentic.mjs:540-541`).
 - 설치된 실행 진입점이 실제로 만들어지는지는 `tools/package-smoke.mjs:38`이 `node_modules/.bin/agt`(Windows에서는 `agt.cmd`)를 호출해 확인한다.
@@ -352,6 +364,10 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - tarball에 담기는 파일은 `files`에 적힌 `bin`, `templates`, `README.md`, `LICENSE`이며(`package.json:19-24`) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. 런타임 의존성(`@clack/prompts`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json:58-60`).
+
+  ```json
+  "files": ["bin", "templates", "README.md", "LICENSE"]
+  ```
 - 따라서 `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** 현재 아키텍처 문서도 같은 사실을 명시한다(`docs/architecture/README.md:57`).
 - 이 경계는 테스트로 강제된다. `evals/package-contents.test.mjs`는 tarball에 `README.md`·`bin/`·`templates/`가 있고 `docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.mjs:23-27`).
 

@@ -45,7 +45,7 @@
 
 - 프로필의 공통 지침을 프로젝트 `AGENTS.md`에 적용한다.
 - 기존 `AGENTS.md`의 프로젝트 지침은 확장 영역으로 보존한다.
-- `CLAUDE.md`, `.gemini/rules/`, `.cursor/rules/`, Copilot 지침은 Agentic 관리 마커 내부만 갱신하고, 기존 사용자 내용은 보존한다.
+- `CLAUDE.md`, `.agents/rules/`, `.cursor/rules/`, Copilot 지침은 Agentic 관리 마커 내부만 갱신하고, 기존 사용자 내용은 보존한다.
 - `agentic.project.json`에는 선택된 프로필을 기록한다.
 
 따라서 기존 `AGENTS.md`와 에이전트별 산출물의 사용자 내용은 현재 구현에서 보존된다. `AGENTS.md`는 프로필 소유 영역의 hash를, 에이전트별 산출물은 관리 블록의 hash를 기록하며, 기록된 영역을 직접 수정하면 충돌로 중단한다. 다만 마커 손상에 대한 세분화된 진단·충돌 시각화·복구는 아직 구현되지 않았다.
@@ -58,7 +58,7 @@
 | --- | --- | --- |
 | `AGENTS.md` | 프로필 공통 지침 영역 | 프로젝트 도메인 지침과 기존 사용자 지침 |
 | `CLAUDE.md` | Agentic 공통 지침 블록 | Claude 전용 추가 지침 |
-| `.gemini/rules/agentic.md` | Agentic 블록 | 같은 파일의 사용자 블록 또는 별도 사용자 파일 |
+| `.agents/rules/agentic.md` | Agentic 블록 | 같은 파일의 사용자 블록 또는 별도 사용자 파일 |
 | `.cursor/rules/agentic.mdc` | Agentic 블록 | Cursor 전용 추가 지침 |
 | Copilot 지침 | Agentic 블록 | 프로젝트·조직 전용 추가 지침 |
 | `agentic.project.json` | Agentic 메타데이터 | 사용자 소유 키를 둘 경우 별도 네임스페이스로 보존 |

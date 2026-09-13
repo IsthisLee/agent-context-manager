@@ -31,6 +31,12 @@ test('documentation checker requires complete proposal summaries', () => {
   }
 });
 
+test('documentation checker requires the ADR decider header field', () => {
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
+
+  assert.match(checker, /결정자/);
+});
+
 test('documentation checker keeps document-system entry points linked to the canonical proposal format', () => {
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
 

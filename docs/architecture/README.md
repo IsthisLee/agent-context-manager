@@ -1,6 +1,9 @@
 # 현재 아키텍처
 
-이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다.
+이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이 정본이다.
+
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json -->
+<!-- agentic-doc-sources-sha256: 842909b59d98b1523643847af5c7d0aff17bb2dc888b9ea30e8510b1fecaff1b -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고, 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 

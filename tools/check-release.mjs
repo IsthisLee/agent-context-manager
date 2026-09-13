@@ -13,8 +13,9 @@ function checkRelease(tag) {
   if (!tag) throw new Error('A release tag is required, for example v0.1.0.');
   const version = tag.replace(/^v/, '');
   assert.equal(version, packageJson.version, `Release tag ${tag} does not match package version ${packageJson.version}.`);
-  const changelogHeading = `^## \\[${version.replaceAll('.', '\\\.')}\\]`;
-  assert.match(changelog, new RegExp(changelogHeading, 'm'), `CHANGELOG.md is missing version ${version}.`);
+  const changelogHeading = `## [${version}]`;
+  const hasChangelogEntry = changelog.split('\n').some(line => line.startsWith(changelogHeading));
+  assert.ok(hasChangelogEntry, `CHANGELOG.md is missing version ${version}.`);
   console.log(`Release contract passed for ${tag}.`);
 }
 

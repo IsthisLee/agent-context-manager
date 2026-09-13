@@ -122,7 +122,7 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 ### 이 패키지에서의 적용 예시
 
 - 두 진입점 모두 첫 줄이 `#!/usr/bin/env node`다(`bin/agentic.mjs:1`, `bin/agt.mjs:1`).
-- 파일 확장자가 `.mjs`이고 `package.json:14`에 `"type": "module"`이 있어, Node는 이 파일들을 ES 모듈로 실행한다. 그래서 `import` 문법이 그대로 동작한다(`bin/agentic.mjs:5-12`).
+- 두 진입점은 확장자가 `.mjs`이므로 `package.json` 설정과 무관하게 Node가 항상 ES 모듈로 실행한다. 그래서 `import` 문법이 그대로 동작한다(`bin/agentic.mjs:5-12`). `package.json:14`의 `"type": "module"`은 별개로, 확장자가 `.js`인 파일을 ES 모듈로 해석하게 하는 설정이다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -190,7 +190,7 @@ flowchart TD
 ### 사용자가 알아야 할 주의점
 
 - `AGENTIC_HOME` 환경변수로 Core 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:40`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- Core 데이터는 사용자 홈 아래에 있고 전역 설치 위치와 다르다. Core를 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:242-246`, [워크플로 6절](workflow.md)).
+- Core 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-cores`에 있고 전역 설치 위치와 다르다(`bin/agentic.mjs:20-21`). Core를 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:242-246`, [워크플로 6절](workflow.md)).
 
 ---
 
@@ -316,7 +316,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - `npm install`/`pnpm install`: 의존성을 받아 `node_modules/`를 구성한다.
 - `pnpm run <script>`/`npm run <script>`: `package.json`의 스크립트를 실행한다.
-- `npx <bin>`: 로컬/전역에서 실행 파일을 찾고, 없으면 임시로 받아 실행한다.
+- `npx <bin>`: 현재 프로젝트의 `node_modules/.bin`에서 실행 파일을 먼저 찾고 없으면 Registry에서 임시로 받아 실행한다(전역 설치본을 탐색하는 흐름이 아니다).
 
 | 도구 | 역할 | 이 저장소에서 |
 | --- | --- | --- |
@@ -326,7 +326,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:25-35`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:37-39`, `.github/workflows/publish.yml:19-21`).
+- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:25-35`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:37-40`, `.github/workflows/publish.yml:19-22`).
 - **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다(`README.md:19`, `docs/cli-reference.md:14`). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
 - `npx`를 이 저장소가 요구하는 흐름은 **현재 저장소에서 확인되지 않는다.** README·CLI Reference의 사용 예시는 전역 설치 후 `agt`/`agentic` 실행을 전제로 한다.
 
@@ -351,13 +351,13 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 배포 대상은 `bin`, `templates`, `README.md`, `LICENSE`다(`package.json:19-24`). 런타임 의존성(`@clack/prompts`)은 설치 시 함께 받아진다(`package.json:58-60`).
+- tarball에 담기는 파일은 `files`에 적힌 `bin`, `templates`, `README.md`, `LICENSE`이며(`package.json:19-24`) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. 런타임 의존성(`@clack/prompts`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json:58-60`).
 - 따라서 `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** 현재 아키텍처 문서도 같은 사실을 명시한다(`docs/architecture/README.md:57`).
 - 이 경계는 테스트로 강제된다. `evals/package-contents.test.mjs`는 tarball에 `README.md`·`bin/`·`templates/`가 있고 `docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.mjs:23-27`).
 
 ### 사용자가 알아야 할 주의점
 
-- 같은 테스트가 **README의 링크 형태**까지 강제한다. README에서 `docs/` 등으로 시작하는 상대 링크를 금지하고(`evals/package-contents.test.mjs:32`), 대신 `https://github.com/IsthisLee/agentic/blob/main/docs/...` 형태의 절대 링크를 요구한다(`:33`). 이는 배포된 README에는 저장소 문서 파일이 함께 있지 않기 때문이다. 그래서 이 문서로 향하는 README 링크도 GitHub 절대 URL로 추가한다.
+- 같은 테스트가 **README의 링크 형태**까지 강제한다. README에서 `docs/` 등으로 시작하는 상대 링크를 금지하고(`evals/package-contents.test.mjs:32`), 대신 `https://github.com/IsthisLee/agentic/blob/main/docs/...` 형태의 절대 링크를 요구한다(`evals/package-contents.test.mjs:33`). 이는 배포된 README에는 저장소 문서 파일이 함께 있지 않기 때문이다. 그래서 이 문서로 향하는 README 링크도 GitHub 절대 URL로 추가한다.
 - 배포 파일을 바꾸려면 `files`를 수정하고 `npm pack --dry-run`(`package.json:31`의 `pack:check`)으로 결과를 확인한다.
 
 ---
@@ -377,7 +377,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`bin/fs-utils.mjs:11-18`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`bin/fs-utils.mjs:21-38`).
-- **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agentic-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며, 기존 파일 권한 모드를 보존한다(`bin/fs-utils.mjs:41-59`).
+- **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agentic-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`bin/fs-utils.mjs:41-59`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`bin/agentic.mjs:494`).
 - **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에 기록한다(`bin/agentic.mjs:480-486`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 “Managed file changed outside Agentic” 오류로 동기화를 멈춘다(`bin/agentic.mjs:461-463`, `475-477`). 병합·추출·hash 로직은 `bin/analyzer.mjs`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 Core 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).

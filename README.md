@@ -15,13 +15,6 @@
 
 [agentic-flow.webm](https://github.com/user-attachments/assets/678059f2-2e67-484e-bff8-84aba34558b0)
 
-
-<p align="center">
-  <a href="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.webm">▶ 움직이는 흐름 (WebM)</a>
-  ·
-  <a href="https://github.com/IsthisLee/agentic/blob/main/docs/assets/agentic-flow.html">인터랙티브 도식</a>
-</p>
-
 `profile create` → `profile setup` → `profile apply`/`profile sync` 한 흐름으로, **프로필**(공통 지침 정본)를 만들어 **프로젝트 파일**로 적용하면 **여러 AI 에이전트**가 같은 기준으로 작업합니다.
 
 ## 핵심 목표

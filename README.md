@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
+[![Supported agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Gemini%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#지원-에이전트)
 
 **한국어** · [English](README.en.md)
 
@@ -14,7 +15,9 @@
 >
 > Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화하는 패키지입니다.
 
-[agentic.webm](https://github.com/user-attachments/assets/2d240a00-4ceb-4e89-83b9-e21dd5bebfbe)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic 사용 흐름 — profile create → setup → apply·sync로 프로필을 만들어 프로젝트에 적용하고 여러 AI 에이전트가 같은 기준으로 작업" width="800">
+</p>
 
 `profile create` → `profile setup` → `profile apply`/`profile sync` 한 흐름으로, **프로필**(공통 지침 정본)를 만들어 **프로젝트 파일**로 적용하면 **여러 AI 에이전트**가 같은 기준으로 작업합니다.
 
@@ -60,6 +63,18 @@
 - `agentic profile apply <name> <project>` — 선택한 프로필을 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
 - `agentic config lang <ko|en>` — 표시·생성 언어 설정; 기본은 한국어이고 `--lang`·`AGENTIC_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
+
+## 지원 에이전트
+
+프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 생성·동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
+
+| 에이전트 | 생성 파일 |
+| --- | --- |
+| Claude Code | `CLAUDE.md` |
+| Gemini | `.gemini/rules/agentic.md` |
+| Cursor | `.cursor/rules/agentic.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Codex · Antigravity 등 (AGENTS.md 표준) | `AGENTS.md` |
 
 ## 🧭 아키텍처 방향과 진행 상태
 

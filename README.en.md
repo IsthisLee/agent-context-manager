@@ -7,6 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
+[![Supported agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Gemini%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#supported-agents)
 
 [한국어](README.md) · **English**
 
@@ -14,7 +15,9 @@
 >
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
-[agentic.webm](https://github.com/user-attachments/assets/2d240a00-4ceb-4e89-83b9-e21dd5bebfbe)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic flow — profile create → setup → apply·sync: build a Profile, apply it to project files, and multiple AI agents work to the same standard" width="800">
+</p>
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
 
@@ -60,6 +63,18 @@ See [Quick start](#quick-start) for installation, the TUI entry point, and apply
 - `agentic profile apply <name> <project>` — apply the selected Profile to a project.
 - `agentic config lang <ko|en>` — set the display and generated-guidance language.
 - Generate and sync per-agent guidance files.
+
+## Supported agents
+
+Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read.
+
+| Agent | Generated file |
+| --- | --- |
+| Claude Code | `CLAUDE.md` |
+| Gemini | `.gemini/rules/agentic.md` |
+| Cursor | `.cursor/rules/agentic.mdc` |
+| GitHub Copilot | `.github/copilot-instructions.md` |
+| Codex · Antigravity, etc. (AGENTS.md standard) | `AGENTS.md` |
 
 ## Language
 

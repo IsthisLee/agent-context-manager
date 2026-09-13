@@ -11,6 +11,7 @@
 - 선택한 프로필의 프로젝트 적용과 에이전트별 지침 산출물 동기화
 - 공개 저장소 운영 문서와 기여·보안·행동규범 안내
 - Node.js 24 LTS·26 Current CI, npm tarball 검사, Dependabot 설정, provenance 배포 workflow
+- OpenSSF Scorecard workflow와 README의 자동 계산 점수 뱃지
 
 ### Changed
 

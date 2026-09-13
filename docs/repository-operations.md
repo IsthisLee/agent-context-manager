@@ -51,9 +51,10 @@ GitHub Actions의 `CI`는 Ubuntu에서 Node.js 24 LTS·26 Current를, macOS와 W
 - Dependabot은 npm 의존성과 GitHub Actions 참조를 주기적으로 확인한다.
 - 공개 저장소의 PR에는 Dependency Review를 활성화하고, 취약한 의존성 도입 여부를 검토한다.
 - CodeQL workflow는 JavaScript 변경을 security-extended 쿼리로 분석한다.
+- OpenSSF Scorecard workflow는 공급망 보안 지표를 주기적으로 계산해 결과를 code scanning에 업로드하고 OpenSSF API에 게시하며 README의 자동 계산 점수 뱃지를 갱신한다. 뱃지는 기본 브랜치에서 workflow가 처음 성공적으로 게시된 뒤에 값을 표시한다.
 - GitHub의 secret scanning, push protection, code scanning을 저장소 설정에서 활성화한다.
 - `SECURITY.md`의 비공개 신고 절차를 통해 취약점을 접수한다.
-- GitHub Actions는 필요한 최소 권한만 선언한다. 배포 workflow만 `id-token: write`를 사용한다.
+- GitHub Actions는 필요한 최소 권한만 선언한다. 배포 workflow와 Scorecard workflow가 `id-token: write`를 사용한다(각각 npm trusted publishing과 결과 게시).
 - 모든 외부 GitHub Action은 검토한 버전의 불변 commit SHA로 고정하고 버전 주석을 함께 둔다. 모든 checkout 단계에서 `persist-credentials: false`를 사용해 workflow 작업 공간에 GitHub token을 유지하지 않는다.
 - [`CODEOWNERS`](../.github/CODEOWNERS)는 기본 브랜치와 저장소 자동화 변경의 기본 검토 소유자를 지정한다. 실제 병합 보호와 required review 적용은 GitHub 저장소 설정에서 별도로 활성화한다.
 

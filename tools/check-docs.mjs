@@ -144,7 +144,7 @@ function checkDiscussionStatuses() {
 function checkReadme() {
   const readmePath = path.join(root, 'README.md');
   const content = fs.readFileSync(readmePath, 'utf8');
-  const requiredHeadings = ['## 핵심 목표', '## 핵심 기능', '## 🧭 아키텍처 방향과 진행 상태', '## 빠른 시작', '## 문서'];
+  const requiredHeadings = ['## 핵심 목표', '## 핵심 기능', '## 🧭 아키텍처 방향과 진행 상태', '## 시작하기', '## 문서'];
   for (const heading of requiredHeadings) {
     if (!content.includes(heading)) errors.push(`README.md: missing required section ${heading}`);
   }

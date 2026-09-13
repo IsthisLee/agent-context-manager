@@ -7,7 +7,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
-[![Supported agents](https://img.shields.io/badge/agents-Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot%20%C2%B7%20Codex-6f42c1)](https://github.com/IsthisLee/agentic#지원-에이전트)
+[![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#지원-에이전트)
 
 **한국어** · [English](README.en.md)
 
@@ -52,7 +52,39 @@
 - **이렇게 사용합니다:** 조직 Profile의 공통 기준을 Git으로 관리하고, 팀·프로젝트는 각자의 도메인 지침을 프로젝트 `AGENTS.md`에 추가합니다.
 - **기대 효과:** 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 독립적으로 관리합니다.
 
-[빠른 시작](#빠른-시작)에서 설치·TUI 실행·프로젝트 적용 순서를 확인할 수 있습니다.
+## 시작하기
+
+Agentic은 터미널에서 TUI(Terminal User Interface)로 프로필과 지침을 설정할 수 있습니다. `agentic profile setup`만 실행하면 scope별 프로필 목록에서 대상을 고른 뒤 모든 지침 설정을 입력합니다.
+
+### 전제 조건
+
+- 실행 환경: Node.js 24 LTS 이상
+- 일반 사용자: `npm install --global @isthis/agentic` (짧게는 `npm install -g`)
+- 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
+
+짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.
+
+```bash
+pnpm install
+node bin/agentic.mjs
+```
+
+옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
+
+```bash
+npm install -g @isthis/agentic
+agentic profile create company --scope company
+agentic profile setup company --tdd recommended --security strict
+agentic profile apply company /path/to/project
+```
+
+개인 프로필은 `~/.agentic-profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
+
+프로필 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인합니다.
+
+### 검증의 범위
+
+저장소 개발자는 `pnpm run check`로 Agentic 자체의 문법·문서 계약·CLI 평가를 확인합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하거나 에이전트의 코드 품질을 보증하는 명령이 아닙니다. 대상 프로젝트의 실제 검증은 해당 프로젝트가 제공하는 명령을 에이전트가 실행하며, 프로필에는 그 검증을 요구하는 지침만 선택해 기록할 수 있습니다.
 
 ## 핵심 기능
 
@@ -70,11 +102,11 @@
 
 | 에이전트 | 생성 파일 |
 | --- | --- |
+| Codex 등 (AGENTS.md 표준) | `AGENTS.md` |
 | Claude Code | `CLAUDE.md` |
 | Antigravity | `.gemini/rules/agentic.md` |
 | Cursor | `.cursor/rules/agentic.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
-| Codex 등 (AGENTS.md 표준) | `AGENTS.md` |
 
 ## 🧭 아키텍처 방향과 진행 상태
 
@@ -115,40 +147,6 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 | [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Proposed | 명시적 대상·기계 판독 결과·승인·종료 코드; 현재 CLI/TUI 위의 후속 작업 |
 
 현재의 선행 구조는 프로필 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.
-
-## 빠른 시작
-
-Agentic은 터미널에서 TUI(Terminal User Interface)로 프로필과 지침을 설정할 수 있습니다. `agentic profile setup`만 실행하면 scope별 프로필 목록에서 대상을 고른 뒤 모든 지침 설정을 입력합니다.
-
-### 전제 조건
-
-- 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: `npm install --global @isthis/agentic` (짧게는 `npm install -g`)
-- 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
-
-짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.
-
-```bash
-pnpm install
-node bin/agentic.mjs
-```
-
-옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
-
-```bash
-npm install -g @isthis/agentic
-agentic profile create company --scope company
-agentic profile setup company --tdd recommended --security strict
-agentic profile apply company /path/to/project
-```
-
-개인 프로필은 `~/.agentic-profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
-
-프로필 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인합니다.
-
-### 검증의 범위
-
-저장소 개발자는 `pnpm run check`로 Agentic 자체의 문법·문서 계약·CLI 평가를 확인합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하거나 에이전트의 코드 품질을 보증하는 명령이 아닙니다. 대상 프로젝트의 실제 검증은 해당 프로젝트가 제공하는 명령을 에이전트가 실행하며, 프로필에는 그 검증을 요구하는 지침만 선택해 기록할 수 있습니다.
 
 ## 문서
 

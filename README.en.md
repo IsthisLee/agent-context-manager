@@ -18,7 +18,7 @@ Cores keep the shared guidance as a single source of truth; each project adds it
 The simplest start is a single command.
 
 ```bash
-npm install --global @isthis/agentic
+npm install -g @isthis/agentic
 agt
 ```
 
@@ -43,7 +43,7 @@ The CLI and generated guidance support Korean (`ko`) and English (`en`); the def
 ### Prerequisites
 
 - Runtime: Node.js 24 LTS or newer
-- End users: `npm install --global @isthis/agentic`
+- End users: `npm install -g @isthis/agentic`
 - Repository contributors: run `pnpm install` at the repo root, then the development commands
 
 `agt` is a short alias for `agentic`.

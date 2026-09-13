@@ -42,7 +42,7 @@ GitHub Actions의 `CI`는 Ubuntu에서 Node.js 24 LTS·26 Current를, macOS와 W
 2. 버전·변경 이력을 커밋하고 해당 버전의 Git tag와 GitHub Release를 만든다.
 3. Release가 published 상태가 되면 `Publish to npm` workflow가 다시 `check`와 package 파일 검사를 실행한다.
 4. 검사가 통과하면 npm trusted publishing과 provenance를 사용해 `@isthis/agentic`을 public으로 배포한다.
-5. 배포 후 `npm install --global @isthis/agentic`와 `agt help`을 별도 임시 디렉터리에서 확인하고, GitHub Release와 npm 버전이 일치하는지 확인한다.
+5. 배포 후 `npm install -g @isthis/agentic`와 `agt help`을 별도 임시 디렉터리에서 확인하고, GitHub Release와 npm 버전이 일치하는지 확인한다.
 
 배포 workflow에는 장기 npm 토큰을 저장하지 않는다. npm trusted publishing을 사용할 수 없는 환경에서는 별도 보안 검토 없이 토큰 방식을 추가하지 않는다.
 

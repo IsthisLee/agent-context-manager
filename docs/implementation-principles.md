@@ -70,7 +70,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 권장 설치는 전역 설치다. README와 CLI Reference 모두 `npm install --global @isthis/agentic`을 안내한다(`README.md:19`, `docs/cli-reference.md:8`).
+- 권장 설치는 전역 설치다. README와 CLI Reference 모두 `npm install -g @isthis/agentic`을 안내한다(`README.md:19`, `docs/cli-reference.md:8`).
 - 이 저장소 자체를 개발할 때는 설치 없이 `node bin/agentic.mjs`로 직접 실행한다(`README.md:88`).
 - 설치와 실행을 실제로 재현하는 근거는 `tools/package-smoke.mjs`다. 이 스크립트는 tarball을 임시 소비자 디렉터리에 **로컬 설치**하고(`tools/package-smoke.mjs:37`), `node_modules/.bin/`에 생긴 실행 파일을 직접 호출해 동작을 확인한다(`tools/package-smoke.mjs:38-47`).
 
@@ -200,12 +200,12 @@ flowchart TD
 
 Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 OS에 맞는 경로 조립, `os`는 홈 디렉터리·플랫폼 같은 시스템 정보, `child_process`는 외부 프로그램 실행을 담당한다.
 
-| 모듈 | 일반 역할 | 이 저장소에서 (배포 `bin/` 기준) |
-| --- | --- | --- |
-| `fs` | 파일 읽기·쓰기·존재 확인 | Core·프로젝트 파일 입출력 (`bin/agentic.mjs:5`) |
-| `path` | OS별 경로 조립 | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`bin/agentic.mjs:7`) |
-| `os` | 홈 디렉터리·플랫폼 정보 | `os.homedir()`로 Core 기준 위치 (`bin/agentic.mjs:6`, `21`) |
-| `child_process` | 외부 프로그램 실행 | **배포 `bin/`에서는 안 씀.** 저장소 도구에서만 사용 (`tools/check-syntax.mjs`, `tools/package-smoke.mjs`) |
+| 모듈            | 일반 역할                | 이 저장소에서 (배포 `bin/` 기준)                                                                          |
+| --------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `fs`            | 파일 읽기·쓰기·존재 확인 | Core·프로젝트 파일 입출력 (`bin/agentic.mjs:5`)                                                           |
+| `path`          | OS별 경로 조립           | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`bin/agentic.mjs:7`)                                                |
+| `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 Core 기준 위치 (`bin/agentic.mjs:6`, `21`)                                               |
+| `child_process` | 외부 프로그램 실행       | **배포 `bin/`에서는 안 씀.** 저장소 도구에서만 사용 (`tools/check-syntax.mjs`, `tools/package-smoke.mjs`) |
 
 > `crypto`도 쓰인다: 임시 파일 이름의 `randomUUID`(`bin/fs-utils.mjs:3`), 관리 영역 hash의 `createHash`(`bin/analyzer.mjs:1`).
 
@@ -262,12 +262,12 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - macOS/Linux: PATH의 bin 디렉터리에 심볼릭 링크 → shebang이 `node`를 지정 → Node 실행.
 - Windows: PATH의 bin 디렉터리에 shim(`agt.cmd` 등) → shim이 Node로 대상 스크립트 실행.
 
-| 구분 | macOS / Linux | Windows |
-| --- | --- | --- |
-| 진입점 형태 | 대상 스크립트로의 심볼릭 링크 | `.cmd`/`.ps1` shim |
-| shebang | `#!/usr/bin/env node`로 인터프리터 지정 | 개념 없음. shim이 Node 실행을 연결 |
-| 경로 구분자 | 슬래시 | 역슬래시 |
-| 이 저장소의 대응 | `path`로 경로 조립 | `npm.cmd`·`agt.cmd`, `cmd.exe` 경유 (`tools/package-smoke.mjs:16-18`, `38`) |
+| 구분             | macOS / Linux                           | Windows                                                                     |
+| ---------------- | --------------------------------------- | --------------------------------------------------------------------------- |
+| 진입점 형태      | 대상 스크립트로의 심볼릭 링크           | `.cmd`/`.ps1` shim                                                          |
+| shebang          | `#!/usr/bin/env node`로 인터프리터 지정 | 개념 없음. shim이 Node 실행을 연결                                          |
+| 경로 구분자      | 슬래시                                  | 역슬래시                                                                    |
+| 이 저장소의 대응 | `path`로 경로 조립                      | `npm.cmd`·`agt.cmd`, `cmd.exe` 경유 (`tools/package-smoke.mjs:16-18`, `38`) |
 
 ### 이 패키지에서의 적용 예시
 
@@ -318,11 +318,11 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - `pnpm run <script>`/`npm run <script>`: `package.json`의 스크립트를 실행한다.
 - `npx <bin>`: 현재 프로젝트의 `node_modules/.bin`에서 실행 파일을 먼저 찾고 없으면 Registry에서 임시로 받아 실행한다(전역 설치본을 탐색하는 흐름이 아니다).
 
-| 도구 | 역할 | 이 저장소에서 |
-| --- | --- | --- |
-| `npm` | 패키지 매니저(설치·스크립트). 사용자 설치 안내에 사용 | `npm install -g @isthis/agentic` (`README.md:19`) |
+| 도구   | 역할                                                                   | 이 저장소에서                                                       |
+| ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `npm`  | 패키지 매니저(설치·스크립트). 사용자 설치 안내에 사용                  | `npm install -g @isthis/agentic` (`README.md:19`)                   |
 | `pnpm` | 패키지 매니저. 공유 저장소 링크로 디스크·시간 절약. 저장소 개발에 고정 | `packageManager: pnpm@10.15.0` (`package.json:4`), `pnpm run check` |
-| `npx` | 실행 파일을 찾아(없으면 임시로 받아) 실행 | 이 저장소가 요구하는 흐름은 현재 저장소에서 확인되지 않음 |
+| `npx`  | 실행 파일을 찾아(없으면 임시로 받아) 실행                              | 이 저장소가 요구하는 흐름은 현재 저장소에서 확인되지 않음           |
 
 ### 이 패키지에서의 적용 예시
 
@@ -480,12 +480,12 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 - 토큰 방식: 사전에 발급한 npm 토큰을 CI 비밀에 저장 → 게시 시 그 토큰으로 인증.
 - OIDC 방식: 워크플로에 `id-token: write` 권한 부여 → CI가 단기 OIDC 토큰 발급 → npm이 이를 검증해 게시 허용 → `--provenance`로 출처 정보 첨부.
 
-| 구분 | npm 토큰 방식 | OIDC Trusted Publishing (이 저장소) |
-| --- | --- | --- |
-| 자격 증명 | 장기 토큰을 CI 비밀로 저장 | 저장 안 함. CI가 단기 OIDC 토큰 발급 |
-| 유출 위험 | 저장된 비밀이 새면 오래 유효 | 저장된 비밀이 없음 |
-| 워크플로 설정 | `NODE_AUTH_TOKEN` 등 토큰 주입 | `id-token: write` + `--provenance` |
-| 근거 | 해당 없음 | `.github/workflows/publish.yml:7-9`, `50` (토큰 참조 없음) |
+| 구분          | npm 토큰 방식                  | OIDC Trusted Publishing (이 저장소)                        |
+| ------------- | ------------------------------ | ---------------------------------------------------------- |
+| 자격 증명     | 장기 토큰을 CI 비밀로 저장     | 저장 안 함. CI가 단기 OIDC 토큰 발급                       |
+| 유출 위험     | 저장된 비밀이 새면 오래 유효   | 저장된 비밀이 없음                                         |
+| 워크플로 설정 | `NODE_AUTH_TOKEN` 등 토큰 주입 | `id-token: write` + `--provenance`                         |
+| 근거          | 해당 없음                      | `.github/workflows/publish.yml:7-9`, `50` (토큰 참조 없음) |
 
 ### 이 패키지에서의 적용 예시
 
@@ -512,7 +512,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 명령을 실행하는 **사용자**와 처리하는 **Agentic 내부**를 구분해 적는다.
 
-1. **(사용자)** `npm install --global @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
+1. **(사용자)** `npm install -g @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:518-519`).
 3. **(사용자)** Core 생성·설정 선택 → **(Agentic)** `~/.agentic-cores/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-core.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:64-74`), `setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:305-325`).
 4. **(사용자)** `agt init --core <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:442-499`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).

@@ -18,7 +18,7 @@
 가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
 
 ```bash
-npm install --global @isthis/agentic
+npm install -g @isthis/agentic
 agt
 ```
 
@@ -81,7 +81,7 @@ Agentic은 터미널에서 TUI(Terminal User Interface)로 Core와 지침을 설
 ### 전제 조건
 
 - 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: `npm install --global @isthis/agentic`
+- 일반 사용자: `npm install -g @isthis/agentic`
 - 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
 
 짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.

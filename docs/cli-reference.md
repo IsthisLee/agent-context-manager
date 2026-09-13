@@ -5,7 +5,7 @@
 ## 설치와 실행
 
 ```bash
-npm install --global @isthis/agentic
+npm install -g @isthis/agentic
 agt help
 ```
 
@@ -45,11 +45,11 @@ agt --tui
 agt core create [<name>] [--scope <scope>]
 ```
 
-| 인자·옵션 | 설명 | 기본값·허용값 |
-| --- | --- | --- |
-| `<name>` | Core 이름 | TUI에서 입력; 소문자·숫자·하이픈 1-64자 |
-| `--scope <scope>` | Core의 용도 분류 | `personal` |
-| `scope` | 분류값 | `personal`, `company`, `team`, `workspace` |
+| 인자·옵션         | 설명             | 기본값·허용값                              |
+| ----------------- | ---------------- | ------------------------------------------ |
+| `<name>`          | Core 이름        | TUI에서 입력; 소문자·숫자·하이픈 1-64자    |
+| `--scope <scope>` | Core의 용도 분류 | `personal`                                 |
+| `scope`           | 분류값           | `personal`, `company`, `team`, `workspace` |
 
 이름을 생략하면 TUI에서 이름과 scope를 선택하고 생성 여부를 확인한다.
 
@@ -100,10 +100,10 @@ agt core view <name>
 agt core remove [<name>] [--yes]
 ```
 
-| 인자·옵션 | 설명 |
-| --- | --- |
-| `<name>` | 삭제할 Core 이름; TUI에서 선택 가능 |
-| `--yes` | 자동화 환경에서 삭제 확인을 명시적으로 승인 |
+| 인자·옵션 | 설명                                        |
+| --------- | ------------------------------------------- |
+| `<name>`  | 삭제할 Core 이름; TUI에서 선택 가능         |
+| `--yes`   | 자동화 환경에서 삭제 확인을 명시적으로 승인 |
 
 터미널에서 이름과 `--yes`를 생략하면 TUI에서 Core를 선택하고 삭제 대상·영향을 보여 준 뒤 최종 확인한다. 비대화형 환경에서는 `<name>`과 `--yes`가 모두 필요하다.
 
@@ -115,15 +115,15 @@ Core의 공통 에이전틱 개발 지침을 설정한다. 프로젝트 파일�
 agt setup [--core <name>] [지침 옵션]
 ```
 
-| 옵션 | 설정 대상 |
-| --- | --- |
-| `--core <name>` | 설정할 Core; 생략하면 TUI에서 scope와 이름으로 선택 |
-| `--harness <level>` | 하네스 동작 지침 |
-| `--tdd <level>` | TDD 지침 |
-| `--review <level>` | 리뷰 지침 |
-| `--verification <level>` | 검증 지침 |
-| `--documentation <level>` | 문서화 지침 |
-| `--security <level>` | 보안 지침 |
+| 옵션                      | 설정 대상                                           |
+| ------------------------- | --------------------------------------------------- |
+| `--core <name>`           | 설정할 Core; 생략하면 TUI에서 scope와 이름으로 선택 |
+| `--harness <level>`       | 하네스 동작 지침                                    |
+| `--tdd <level>`           | TDD 지침                                            |
+| `--review <level>`        | 리뷰 지침                                           |
+| `--verification <level>`  | 검증 지침                                           |
+| `--documentation <level>` | 문서화 지침                                         |
+| `--security <level>`      | 보안 지침                                           |
 
 모든 지침 옵션의 `<level>`은 `off`, `recommended`, `strict` 중 하나다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 `recommended`다.
 
@@ -144,11 +144,11 @@ agt setup --core company --tdd strict --security strict
 agt init --core <name> [--dry-run] <project>
 ```
 
-| 옵션·인자 | 설명 |
-| --- | --- |
-| `--core <name>` | 적용할 Core 이름; 필수 |
-| `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
-| `<project>` | 적용할 프로젝트 경로; 필수 |
+| 옵션·인자       | 설명                                      |
+| --------------- | ----------------------------------------- |
+| `--core <name>` | 적용할 Core 이름; 필수                    |
+| `--dry-run`     | 변경 계획만 출력하고 파일은 변경하지 않음 |
+| `<project>`     | 적용할 프로젝트 경로; 필수                |
 
 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일, `agentic.project.json`을 만든다. 기존 `AGENTS.md`의 프로젝트 도메인 규칙 확장은 보존한다.
 
@@ -160,11 +160,11 @@ Core의 최신 공통 지침을 프로젝트에 다시 적용한다.
 agt sync [--core <name>] [--dry-run] <project>
 ```
 
-| 옵션·인자 | 설명 |
-| --- | --- |
+| 옵션·인자       | 설명                                                             |
+| --------------- | ---------------------------------------------------------------- |
 | `--core <name>` | 동기화할 Core; 생략하면 프로젝트 `agentic.project.json`에서 선택 |
-| `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
-| `<project>` | 동기화할 프로젝트 경로; 필수 |
+| `--dry-run`     | 변경 계획만 출력하고 파일은 변경하지 않음                        |
+| `<project>`     | 동기화할 프로젝트 경로; 필수                                     |
 
 프로젝트 `AGENTS.md`의 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존한다. Agentic이 관리하는 블록만 갱신한다.
 

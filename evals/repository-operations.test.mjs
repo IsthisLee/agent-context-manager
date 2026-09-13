@@ -1,11 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relative => fs.readFileSync(path.join(repoRoot, relative), 'utf8');
+
+function runReleaseCheck(args) {
+  return spawnSync(process.execPath, [path.join(repoRoot, 'tools/check-release.mjs'), ...args], { encoding: 'utf8' });
+}
 
 test('CI verifies the repository on supported Node and operating system combinations', () => {
   const ci = read('.github/workflows/ci.yml');
@@ -69,4 +74,18 @@ test('every GitHub workflow disables checkout credential persistence', () => {
     assert(checkouts.length > 0, `${relative} must use checkout`);
     for (const [, block] of checkouts) assert.match(block, /persist-credentials: false/);
   }
+});
+
+test('release check reports a missing tag as a clean error without a stack trace', () => {
+  const result = runReleaseCheck([]);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /^Error: A release tag is required/m);
+  assert.doesNotMatch(result.stderr, /\n\s+at /, 'must not print a Node stack trace');
+});
+
+test('release check passes for the current package version tag', () => {
+  const { version } = JSON.parse(read('package.json'));
+  const result = runReleaseCheck([`v${version}`]);
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, new RegExp(`Release contract passed for v${version.replaceAll('.', '\\.')}\\.`));
 });

@@ -1,13 +1,11 @@
-# Agentic
+# Agentic — AI agent guidance management
 
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
 [한국어](README.md) · **English**
 
-> **Agentic — Development standards that people and AI agents follow together.**
->
-> **Different developers, different teams, different AI agents — one project development standard.**
+## Different developers, different teams, different AI agents — one project development standard.
 >
 > Agentic creates and configures shared agentic-development guidance as Cores for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
@@ -39,11 +37,20 @@ Cores are currently managed locally. Sharing and updating organization Cores thr
 
 > The Git-based flows below apply after remote Profile management is implemented. The current release provides local Core management, application, and synchronization only.
 
-| Situation | Use it this way | Benefit |
-| --- | --- | --- |
-| Individual | Create Personal Profiles for different project types, configure their guidance through `setup`, and apply one to each project with `init`. | Reuse the same development standard when switching AI tools or starting a new project. |
-| Team | Share a team Profile in a Git repository; members clone or pull it, then apply it to their projects. | Review and distribute shared-guidance updates through one history while reducing per-person configuration drift. |
-| Organization | Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`. | Keep organization standards independent from project-specific requirements. |
+### Individual development
+
+- **Use it this way:** Create Personal Profiles for different project types, configure their guidance through `setup`, and apply one to each project with `init`.
+- **Benefit:** Reuse the same development standard when switching AI tools or starting a new project.
+
+### Team collaboration
+
+- **Use it this way:** Share a team Profile in a Git repository; members clone or pull it, then apply it to their projects.
+- **Benefit:** Review and distribute shared-guidance updates through one history while reducing per-person configuration drift.
+
+### Organization standards
+
+- **Use it this way:** Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`.
+- **Benefit:** Keep organization standards independent from project-specific requirements.
 
 See [Quick start](#quick-start) for installation, the TUI entry point, and applying guidance to a project. English is opt-in: choose it once on the first interactive run, or pass `--lang en` / `AGENTIC_LANG=en`, or run `agentic config lang en`. The default is Korean.
 

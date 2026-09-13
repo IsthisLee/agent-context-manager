@@ -1,6 +1,6 @@
 # 사용 가이드
 
-**문서 유형:** 사용 가이드 (사용자용). 설치부터 프로필 생성·설정·적용·동기화까지 `@isthis/agentic`을 쓰는 전체 흐름을 처음부터 끝까지 한 문서로 설명한다. 명령·옵션의 전체 목록은 [CLI Reference](cli-reference.md)가 정본이고, 현재 구조는 [현재 아키텍처](architecture/)에 있다.
+**문서 유형:** 사용 가이드 (사용자용). 설치부터 프로필 생성·설정·적용·동기화까지 `@isthis/agentic`을 쓰는 전체 흐름을 처음부터 끝까지 한 문서로 설명한다. 명령·옵션의 전체 목록은 [CLI Reference](cli-reference.md)가 정본이고, 순서와 소유권 요약은 [사용자 워크플로](workflow.md)에, 현재 구조는 [현재 아키텍처](architecture/)에 있다.
 
 **작성·검증 기준:** `@isthis/agentic` `0.1.0` · 커밋 `68494f3` · 2026-09-13
 
@@ -8,6 +8,9 @@
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
 <!-- agentic-doc-sources-sha256: 5fc1978c8724c9213bd2de9b01e45735cb15a2a3a38af59d71a4fe71408a6311 -->
+
+> [!TIP]
+> 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
 
 ## Agentic이 하는 일
 

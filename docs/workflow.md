@@ -1,6 +1,6 @@
 # 사용자 워크플로
 
-이 문서는 배포된 `@isthis/agentic`을 사용해 공통 개발 지침을 만들고 프로젝트에 적용하는 최종 사용자 흐름을 설명한다.
+이 문서는 `@isthis/agentic` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
 <!-- agentic-doc-sources-sha256: 5fc1978c8724c9213bd2de9b01e45735cb15a2a3a38af59d71a4fe71408a6311 -->
@@ -8,69 +8,16 @@
 > [!TIP]
 > 가장 간단한 사용법은 `agt` 또는 `agentic`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.
 
-## 1. 프로필 생성
+## 절차
 
-```bash
-npm install -g @isthis/agentic
-agt profile create
-```
+1. **생성**: `agt profile create [<name>] [--scope <scope>]`
+2. **설정**: `agt profile setup [<name>] [--tdd <level> ...]`
+3. **적용**: `agt profile apply <name> <project>` (먼저 `--dry-run`으로 계획 확인 가능)
+4. **개발**: 평소 쓰는 에이전트에 작업 의뢰. 에이전트가 프로젝트 `AGENTS.md`를 읽고 작업한다
+5. **동기화**: 프로필을 고친 뒤 `agt profile sync <project>`로 관리 영역만 재적용
+6. **삭제**: `agt profile remove [<name>] [--yes]` (적용된 프로젝트 파일은 보존)
 
-TUI에서 프로필 이름과 용도를 선택한다. 자동화나 반복 실행이 필요할 때만 `agt profile create <name> --scope <scope>`처럼 옵션을 직접 전달한다.
-
-scope는 `personal`, `company`, `team`, `workspace` 중 프로필의 사용 범위를 나타낸다. 기존 프로필을 찾을 때는 `agt profile list`에서 scope를 먼저 선택하거나 `agt profile list --scope company`처럼 직접 필터링한다.
-
-프로필은 공통 지침을 보관하는 사용자·조직 소유 저장소다. 생성만으로 대상 프로젝트는 변경되지 않는다.
-
-## 2. 프로필 설정
-
-```bash
-agt profile setup
-```
-
-TUI에서 scope와 이름이 함께 표시된 프로필 선택 메뉴를 먼저 사용하고, 이어서 TDD·리뷰·검증·문서화·보안·하네스 동작 지침을 선택한다. 각 항목의 설명·현재값을 확인하고, 마지막 설정 요약을 검토한 뒤 저장을 승인한다. 자동화가 필요하면 `agt profile setup <name> --tdd <level>`처럼 옵션을 직접 전달한다. 에이전트는 설정 초안을 제안할 수 있지만 프로필 정책의 최종 승인자는 사용자다.
-
-`setup`은 시작점이다. 프로필의 `AGENTS.md`는 일반 텍스트 파일이므로 원하는 지침을 직접 편집해 채워도 된다. `setup`은 `<!-- agentic:guidance:start --> … end -->` 관리 블록 안만 교체하므로 그 바깥에 직접 쓴 내용은 다음 `setup`에서도 보존되고 `profile apply` 때 프로젝트로 그대로 전달된다. 배포되는 6개 항목의 정본과 이 두 경로는 [지침 카탈로그](architecture/guidance-catalog.md)에 정리돼 있다.
-
-## 3. 프로젝트에 적용
-
-```bash
-agentic profile apply company /path/to/project
-```
-
-Agentic은 선택한 프로필의 공통 지침을 프로젝트에 적용하고 에이전트별 지침 파일을 생성한다. 프로젝트의 도메인 지침은 프로젝트의 `AGENTS.md`에 별도로 추가한다. 적용·재동기화 때 `AGENTS.md`의 프로필 영역과 에이전트별 산출물의 Agentic 관리 블록만 갱신하고, 각 사용자 영역은 보존한다. 관리 영역이 수동으로 변경된 경우 동기화를 중단한다. 파일은 원자적으로 교체되며, 사용자는 변경 계획을 확인하고 필요하면 먼저 `--dry-run`으로 검토한다.
-
-## 4. 개발
-
-사용자는 평소 사용하는 Codex·Claude Code·Cursor·Copilot 등 에이전트에 작업을 의뢰한다. 에이전트는 프로젝트의 `AGENTS.md`와 관련 문서를 읽고, 공통 지침과 프로젝트 도메인 지침에 따라 작업한다. Agentic은 에이전트 런타임을 실행하거나 통제하지 않는다.
-
-모든 `agentic` 명령은 짧은 별칭인 `agt`로도 실행할 수 있다.
-
-## 5. 프로필 변경과 프로젝트 동기화
-
-```bash
-agt profile setup
-agt profile sync /path/to/project
-```
-
-TUI에서 프로필을 다시 선택·설정한 뒤, 동기화 대상 프로젝트와 적용할 프로필을 명시해 `profile sync`를 실행한다. 동기화 후 생성 파일의 diff와 프로젝트 도메인 지침의 보존 여부를 확인한다. 프로필 업데이트가 프로젝트를 자동으로 변경하지 않는 것이 기본 원칙이다.
-
-## 6. 프로필 삭제
-
-```bash
-agt profile remove
-```
-
-TUI에서 삭제할 프로필을 선택하고 삭제 대상과 영향을 확인한 뒤 최종 승인한다. 자동화 환경에서는 `agt profile remove <name> --yes`를 사용한다. 삭제되는 것은 사용자 프로필의 원본과 설정뿐이며, 이미 프로젝트에 적용된 `AGENTS.md`, 포인터 파일, `agentic.project.json`은 변경하지 않는다.
-
-## 7. 프로필 관리 메뉴
-
-```bash
-agt profile list
-```
-
-TUI에서 scope별 프로필 목록을 확인한 뒤 하나를 선택하면 지침 설정, 프로젝트 적용, 프로젝트 동기화, 상세 보기, 삭제 중 원하는 작업을 이어서 실행할 수 있다. 프로젝트 적용·동기화 시에는 현재 작업 폴더를 기준으로 디렉터리를 탐색해 선택하며, 파일은 선택할 수 없다. 자동화 환경에서는 각 명령어를 직접 사용한다.
-
-프로젝트 적용·동기화 전에 TUI에서 변경 계획만 먼저 확인할 수 있다. CLI·자동화에서는 `agt profile apply <name> --dry-run <project>` 또는 `agt profile sync --dry-run <project>`를 사용하며, 이 모드에서는 파일을 변경하지 않는다.
+관리 메뉴는 `agt profile list`로 열고 scope를 고른 뒤 위 작업을 이어서 실행한다. 각 명령의 정확한 인자·옵션과 TUI·자동화 방식은 [CLI Reference](cli-reference.md)를 따른다.
 
 ## 명령의 소유권
 

@@ -61,7 +61,8 @@
 | `docs/architecture/`        | 현재 채택되어 실제로 동작하는 아키텍처                            |
 | `docs/discussion/`          | 아직 채택되지 않았거나 구현·검증 중인 주제별 논의와 계약                 |
 | `docs/adr/`                 | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력                       |
-| `docs/workflow.md`          | 구현된 기능의 사용·운영·릴리즈 절차                             |
+| `docs/usage-guide.md`       | 설치부터 동기화까지 처음부터 끝까지 읽는 사용 가이드(개념·설명·문제 해결)     |
+| `docs/workflow.md`          | 구현된 기능의 사용 절차 요약과 명령 소유권                        |
 | `docs/repository-operations.md` | 공개 저장소 품질 게이트·릴리스·보안·기여 운영 계약                  |
 | `docs/references.md`        | 외부 근거와 참고 자료                                     |
 | `docs/README.md`            | 문서 탐색 시작점과 색인                                    |

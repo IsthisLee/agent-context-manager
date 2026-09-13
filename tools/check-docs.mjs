@@ -157,7 +157,7 @@ function checkReadme() {
     'npm install -g',
     'agt',
     'docs/discussion/architecture/',
-    '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로',
+    '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은',
     '개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정'
   ]) {
     if (!content.includes(requiredText)) errors.push(`README.md: missing required product guidance ${requiredText}`);

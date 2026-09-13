@@ -11,7 +11,7 @@
    - [지침 카탈로그](architecture/guidance-catalog.md): 프로필에 배포되는 공통 지침 6개의 정본과 작성 경로
 4. [아키텍처 구현 계획](discussion/architecture/): 단계별 계약과 미구현 기능
 5. [사용 가이드](usage-guide.md): 설치부터 동기화까지 처음부터 끝까지 읽는 사용 설명
-6. [사용자 워크플로](workflow.md): 프로필 생성부터 프로젝트 적용까지의 사용 흐름
+6. [사용자 워크플로](workflow.md): 순서와 명령 소유권을 빠르게 보는 절차 요약
 7. [CLI Reference](cli-reference.md): 모든 명령어·옵션·TUI·자동화 방식
 8. [공개 저장소 운영](repository-operations.md): 품질 게이트·릴리스·보안·기여 정책
 9. [외부 참고 문헌](references.md): 연구·사례·비교 도구

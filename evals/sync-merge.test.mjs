@@ -59,6 +59,30 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
   assert.ok(merged.includes('결제 승인 API 호출 시 멱등키(Idempotency Key)를 전송할 것.'));
 });
 
+test('mergeAgentsMd regenerates the profile-owned region above the extension header', () => {
+  // Ownership boundary contract: users add domain rules BELOW the
+  // `## N. 프로젝트 규칙 확장` header. Everything above it is profile-owned and is
+  // regenerated on every apply. The test above pins that the extension body is
+  // preserved; this one pins that the above-header region is replaced, not kept.
+  // On applied projects, manual edits to this region are caught by the AGENTS.md
+  // drift hash (which throws before writing), so silent loss is limited to a
+  // first apply onto a file that already carries the header.
+  const existing = [
+    '# Hand-written core',
+    '',
+    '- A rule someone typed into the profile-owned region.',
+    '',
+    '## 4. 프로젝트 규칙 확장 (SSOT)',
+    ''
+  ].join('\n');
+  const profileContent = '# Regenerated core\n\n- Profile rule.';
+
+  const merged = mergeAgentsMd(profileContent, existing);
+
+  assert.equal(merged, profileContent);
+  assert.doesNotMatch(merged, /profile-owned region/);
+});
+
 test('AGENTS managed hash excludes the project extension and detects Core-area edits', () => {
   const document = `# Core guidance\n\n- Run checks.\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Keep the domain rule.`;
   const managed = extractAgentsManagedDocument(document);

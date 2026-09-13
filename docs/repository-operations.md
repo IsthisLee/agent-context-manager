@@ -2,6 +2,9 @@
 
 이 문서는 Agentic 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
+<!-- agentic-doc-sources: package.json, .github/workflows/ci.yml, .github/workflows/publish.yml -->
+<!-- agentic-doc-sources-sha256: ec95c56d775c9b08761465bb3d7a40b1325b1c4fa856c29f8392e12261c6c8c5 -->
+
 `@isthis/agentic`은 공개 GitHub 저장소와 npm registry에 배포된 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
 ## 품질 게이트
@@ -19,6 +22,15 @@ pnpm run package:smoke
 `pnpm run check`는 Node.js 문법 검사, 문서 계약 검사, Node.js 테스트 러너 기반 평가를 실행한다. `pnpm run pack:check`는 npm tarball에 들어갈 파일 목록을 확인해 개발 문서·평가·로컬 파일이 배포물에 섞이지 않는지 검토한다. 배포물에 포함되는 README의 저장소 문서 링크는 GitHub 절대 링크를 사용해 npm 페이지에서도 깨지지 않도록 유지한다. 이 검사는 패키지 동작과 저장소 문서 계약을 확인하지만, 모든 제품 요구사항·보안·사용자 경험을 증명하지는 않는다.
 `pnpm run audit`는 의존성 취약점이 high 이상으로 보고되는 경우 실패한다. 이 검사는 알려진 취약점 신호이며, 악성 코드·설정 오류·런타임 전체의 안전을 보증하지 않는다.
 `pnpm run package:smoke`는 실제 npm tarball을 임시 소비자 프로젝트에 설치하고 설치된 `agt help`, 프로필 생성·설정, 프로젝트 `profile apply`·`profile sync`까지 실행한다. 저장소 소스가 아니라 배포 산출물의 설치·핵심 실행 경로를 확인하는 검사다. 프로젝트 적용·동기화는 현재 `AGENTS.md`의 프로필 영역과 에이전트별 관리 블록을 사용자 영역과 분리해 갱신하고, 대상 preflight·dry-run·수동 수정 충돌 중단·파일 단위 원자적 교체를 제공한다. 여러 파일 전체 롤백·충돌 시각화·복구는 후속 안전 동기화 계약으로 관리한다.
+
+### 문서 소스 해시 게이트
+
+현재 코드 동작을 서술하는 문서는 인용·서술하는 소스 파일 목록과 그 sha256을 문서 상단 HTML 주석 마커로 고정한다. `pnpm run check`의 `check:docs`가 마커의 소스를 다시 해싱해 기록된 값과 다르면 실패한다. 현재 대상은 `implementation-principles.md`, `architecture/implementation-mechanics.md`, `architecture/README.md`, `architecture/guidance-catalog.md`, `usage-guide.md`, `cli-reference.md`, `workflow.md`, 이 문서, 그리고 루트 `README.md`·`README.en.md`이다. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다.
+
+- 마커는 `<!-- agentic-doc-sources: <쉼표로 구분한 경로> -->`와 `<!-- agentic-doc-sources-sha256: <64자리 hex> -->` 두 줄이다.
+- 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.mjs --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
+- 이 게이트는 인용된 소스가 바뀌면 문서를 다시 보게 강제하지만 문서 내용이 정확한지까지 증명하지는 않는다. 정확성은 사람이 재검증할 몫이다.
+- 인용하는 소스가 늘거나 줄면 마커의 목록도 같은 변경에서 갱신한다.
 
 GitHub Actions의 `CI`는 Ubuntu에서 Node.js 24 LTS·26 Current를, macOS와 Windows에서 Node.js 24 LTS를 고정된 pnpm 버전으로 검증한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 Node.js 24로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
 

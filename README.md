@@ -1,5 +1,8 @@
 # Agentic — AI 에이전트 지침 관리
 
+<!-- agentic-doc-sources: bin/agentic.mjs, package.json -->
+<!-- agentic-doc-sources-sha256: 98c6b41278b51d9e164c88a7d2996563553459e758ab32fad9e9bb69fe07362c -->
+
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agentic/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agentic)
@@ -12,7 +15,7 @@
 **한국어** · [English](README.en.md)
 
 ## 개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로.
->
+
 > Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화하는 패키지입니다.
 
 <p align="center">
@@ -23,15 +26,17 @@
 
 ## 핵심 목표
 
-- 여러 에이전트가 동일한 공통 지침을 기준으로 작업합니다.
-- 다양한 개발자가 동일한 에이전틱 개발 지침으로 협업합니다.
-- Personal·Company·Team·Workspace 등 용도별 프로필(공통 지침 저장소)를 생성·관리하고 프로젝트마다 선택해 적용합니다.
+> 여러 에이전트와 개발자가가 동일한 공통 지침을 기준으로 작업·협업합니다.
+>
+> 용도별 프로필(공통 지침 저장소, Personal·Company·Team·Workspace 등)을 생성·관리하고 프로젝트마다 선택해 적용합니다.
 
-개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. 프로필의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
+개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다.
+
+프로필의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
 개인 개발자도 프로젝트별 `Personal` 프로필을 나누어 재사용하고, 사용하는 AI 도구가 바뀌어도 같은 지침을 유지할 수 있습니다. 반복 설정과 프로젝트 사이의 규칙 드리프트를 줄여 관리와 개발을 더 편하게 만듭니다.
 
-현재 프로필은 로컬에서 관리합니다. 조직이 Git으로 프로필을 공유·갱신하는 기능은 [후속 아키텍처 논의](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)로 관리하며, 현재 제공 기능으로 표현하지 않습니다.
+> (현재 프로필은 로컬에서 관리합니다. 조직이 Git으로 프로필을 공유·갱신하는 기능은 [후속 아키텍처 논의](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)로 관리하며, 현재 제공 기능으로 표현하지 않습니다.)
 
 ## 사용 사례
 
@@ -54,29 +59,22 @@
 
 ## 시작하기
 
-Agentic은 터미널에서 TUI(Terminal User Interface)로 프로필과 지침을 설정할 수 있습니다. `agentic profile setup`만 실행하면 scope별 프로필 목록에서 대상을 고른 뒤 모든 지침 설정을 입력합니다.
+> 전체 사용 흐름은 [사용 가이드](https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md)에서 설치부터 동기화까지 단계별로 확인할 수 있습니다.
 
-### 전제 조건
-
-- 실행 환경: Node.js 24 LTS 이상
-- 일반 사용자: `npm install --global @isthis/agentic` (짧게는 `npm install -g`)
-- 저장소 기여자: 저장소 루트에서 `pnpm install` 후 개발용 명령 실행
-
-짧은 명령어가 필요하면 `agt`를 `agentic`의 별칭으로 사용할 수 있습니다.
-
-```bash
-pnpm install
-node bin/agentic.mjs
-```
-
-옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
+> 실행 환경: Node.js 24 LTS 이상
 
 ```bash
 npm install -g @isthis/agentic
-agentic profile create company --scope company
-agentic profile setup company --tdd recommended --security strict
-agentic profile apply company /path/to/project
+
+agt profile create company --scope company
+agt profile setup company --tdd recommended --security strict
+agt profile apply company /path/to/project
 ```
+
+> [!Tip]
+> 터미널에서 `agt` 또는 `agentic`을 입력하여 TUI를 통해 모든 기능을 간편하게 사용 가능합니다.
+>
+> 옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
 
 개인 프로필은 `~/.agentic-profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
@@ -100,13 +98,13 @@ agentic profile apply company /path/to/project
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 생성·동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 
-| 에이전트 | 생성 파일 |
-| --- | --- |
-| Codex 등 (AGENTS.md 표준) | `AGENTS.md` |
-| Claude Code | `CLAUDE.md` |
-| Antigravity | `.gemini/rules/agentic.md` |
-| Cursor | `.cursor/rules/agentic.mdc` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
+| 에이전트                  | 생성 파일                         |
+| ------------------------- | --------------------------------- |
+| Codex 등 (AGENTS.md 표준) | `AGENTS.md`                       |
+| Claude Code               | `CLAUDE.md`                       |
+| Antigravity               | `.agents/rules/agentic.md`        |
+| Cursor                    | `.cursor/rules/agentic.mdc`       |
+| GitHub Copilot            | `.github/copilot-instructions.md` |
 
 ## 🧭 아키텍처 방향과 진행 상태
 
@@ -114,10 +112,10 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 
 | 주제                                                                                                                                         | 대상과 목표                                                      | 중요도·상태             | 다음 작업                   |
 | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------- | --------------------------- |
-| [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)                       | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented  | 조직 공유 계약 검토         |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)                | 사용자·CLI가 프로필의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성   | High · Implemented      | preset·설정 diff 고도화     |
-| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)                   | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존        | Critical · Implemented  | 충돌·복구 확정              |
-| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                   | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화          | High · Implemented      | manifest·drift 고도화       |
+| [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)                  | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented  | 조직 공유 계약 검토         |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)                | 사용자·CLI가 프로필의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성 | High · Implemented      | preset·설정 diff 고도화     |
+| [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)                   | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존      | Critical · Implemented  | 충돌·복구 확정              |
+| [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                   | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화        | High · Implemented      | manifest·drift 고도화       |
 | [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)        | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계           | High · Proposed         | 비대화형 CLI·JSON·종료 코드 |
 | [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장           | Critical · Implementing | 충돌 시각화·복구            |
 
@@ -127,15 +125,15 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 
 #### 1. 프로필과 공통 지침 구성
 
-| 주제                                                                                                                          | 목적·대상 계층                                                                        | 중요도·상태            | 결정할 것과 관계                                                     |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------- | -------------------------------------------------------------------- |
-| [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)        | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ 프로필  | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행                     |
+| 주제                                                                                                                          | 목적·대상 계층                                                                          | 중요도·상태            | 결정할 것과 관계                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------- |
+| [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)   | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ 프로필  | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행                       |
 | [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·리뷰·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ 프로필 `AGENTS.md` | High · Implemented     | preset·기본값·재실행·대화형/비대화형; 프로필 모델 후, 프로젝트 적용 전 |
 
 #### 2. 프로젝트 적용과 에이전트 전달
 
-| 주제                                                                                                                                         | 목적·대상 계층                                                                       | 중요도·상태             | 결정할 것과 관계                                                      |
-| -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------- | --------------------------------------------------------------------- |
+| 주제                                                                                                                                         | 목적·대상 계층                                                                         | 중요도·상태             | 결정할 것과 관계                                                      |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------- |
 | [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)                   | 공통 지침과 프로젝트 도메인 지침을 분리해 함께 사용 · 사용자 ↔ CLI ↔ 프로필 ↔ 프로젝트 | Critical · Implemented  | 대상·병합·승인·적용 기록; setup 후, 동기화 전                         |
 | [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                   | 에이전트별 파일 형식에 같은 공통 기준 전달 · 프로필 ↔ CLI ↔ 프로젝트 산출물            | High · Implemented      | 어댑터·포인터·파일 소유권·drift; 프로젝트 적용 후                     |
 | [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 재적용·업데이트 때 사용자 내용과 수동 변경을 보호 · CLI/TUI ↔ 프로필 ↔ 프로젝트 파일   | Critical · Implementing | 관리 블록·hash·dry-run·충돌·백업·복구; 적용·동기화의 안전성 후속 작업 |

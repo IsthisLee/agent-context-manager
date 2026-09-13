@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -80,6 +81,9 @@ function checkAdrs() {
         errors.push(`docs/adr/${adrFile}: missing required ADR section (${section})`);
       }
     }
+    if (!/^\s*[*-]?\s*\*\*(결정자|Deciders):\*\*\s+\S/m.test(content)) {
+      errors.push(`docs/adr/${adrFile}: missing required ADR header field (결정자)`);
+    }
   }
 
   const index = fs.readFileSync(path.join(root, 'docs', 'README.md'), 'utf8');
@@ -150,9 +154,8 @@ function checkReadme() {
   }
   for (const requiredText of [
     '@isthis/agentic',
-    'npm install --global',
+    'npm install -g',
     'agt',
-    'pnpm run check',
     'docs/discussion/architecture/',
     '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로',
     '개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정'
@@ -199,6 +202,100 @@ function checkChangelog() {
   }
 }
 
+// A document may pin the source files it cites so its `파일:줄` citations do not
+// silently drift. It carries two HTML-comment markers: the source list and the
+// sha256 of those files. When any listed source changes, the recorded hash no
+// longer matches and `pnpm run check` fails, forcing a re-read of the document.
+// `--stamp` re-records the hash after a human has re-verified the document.
+const DOC_SOURCES_LIST = /<!--\s*agentic-doc-sources:\s*([^\n]+?)\s*-->/;
+const DOC_SOURCES_HASH = /<!--\s*agentic-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
+
+function docSourceSpec(content) {
+  const listMatch = content.match(DOC_SOURCES_LIST);
+  // Documentation that describes the marker format uses <placeholder> text. Ignore
+  // it so the gate acts only on real markers whose list is concrete source paths.
+  if (listMatch && /[<>]/.test(listMatch[1])) return null;
+  const hashMatch = content.match(DOC_SOURCES_HASH);
+  if (!listMatch && !hashMatch) return null;
+  const sources = listMatch ? listMatch[1].split(',').map(value => value.trim()).filter(Boolean) : [];
+  return { listMatch, hashMatch, sources };
+}
+
+/** sha256 over each source's relative path and bytes, in listed order. */
+function computeDocSourcesHash(sources) {
+  const hash = createHash('sha256');
+  for (const source of sources) {
+    const sourcePath = path.join(root, source);
+    if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
+      return { error: `doc-source file not found: ${source}` };
+    }
+    hash.update(source);
+    hash.update('\0');
+    hash.update(fs.readFileSync(sourcePath));
+    hash.update('\0');
+  }
+  return { digest: hash.digest('hex') };
+}
+
+function checkDocSources() {
+  for (const markdownFile of walkMarkdown(root)) {
+    const spec = docSourceSpec(fs.readFileSync(markdownFile, 'utf8'));
+    if (!spec) continue;
+    const relative = path.relative(root, markdownFile);
+    if (!spec.listMatch || !spec.hashMatch) {
+      errors.push(`${relative}: doc-source marker needs both the agentic-doc-sources and agentic-doc-sources-sha256 lines`);
+      continue;
+    }
+    if (!spec.sources.length) {
+      errors.push(`${relative}: agentic-doc-sources list is empty`);
+      continue;
+    }
+    const computed = computeDocSourcesHash(spec.sources);
+    if (computed.error) {
+      errors.push(`${relative}: ${computed.error}`);
+      continue;
+    }
+    const recorded = spec.hashMatch[1];
+    if (recorded === 'PENDING') {
+      errors.push(`${relative}: doc-source hash is PENDING. Verify the doc against ${spec.sources.join(', ')}, then run \`node tools/check-docs.mjs --stamp\`.`);
+      continue;
+    }
+    if (recorded !== computed.digest) {
+      errors.push(`${relative}: doc sources changed since last verified. Re-read the doc against ${spec.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.mjs --stamp\`.`);
+    }
+  }
+}
+
+function stampDocSources() {
+  let failed = false;
+  const updated = [];
+  for (const markdownFile of walkMarkdown(root)) {
+    const content = fs.readFileSync(markdownFile, 'utf8');
+    const spec = docSourceSpec(content);
+    if (!spec || !spec.listMatch || !spec.hashMatch || !spec.sources.length) continue;
+    const computed = computeDocSourcesHash(spec.sources);
+    if (computed.error) {
+      console.error(`- ${path.relative(root, markdownFile)}: ${computed.error}`);
+      failed = true;
+      continue;
+    }
+    if (spec.hashMatch[1] === computed.digest) continue;
+    fs.writeFileSync(markdownFile, content.replace(DOC_SOURCES_HASH, `<!-- agentic-doc-sources-sha256: ${computed.digest} -->`));
+    updated.push(path.relative(root, markdownFile));
+  }
+  if (updated.length) {
+    console.log('Stamped doc-source hashes:');
+    for (const file of updated) console.log(`- ${file}`);
+  } else if (!failed) {
+    console.log('Doc-source hashes already current.');
+  }
+  return !failed;
+}
+
+if (process.argv.includes('--stamp')) {
+  process.exit(stampDocSources() ? 0 : 1);
+}
+
 for (const markdownFile of walkMarkdown(root)) {
   checkInternalLinks(markdownFile);
   checkInternalAnchors(markdownFile);
@@ -208,6 +305,7 @@ checkDiscussionStatuses();
 checkDocumentationGovernance();
 checkChangelog();
 checkReadme();
+checkDocSources();
 
 if (errors.length > 0) {
   console.error('Documentation check failed:');

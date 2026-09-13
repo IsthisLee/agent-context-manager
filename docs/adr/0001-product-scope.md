@@ -3,6 +3,7 @@
 * **상태:** 채택됨 (Accepted)
 * **일자:** 2026-09-13
 * **결정자:** 제품 소유자·개발자
+* **관련:** [0003](0003-rename-core-to-guidance-profile.md)이 이 결정의 "Core" 용어를 Guidance Profile로 대체한다.
 
 ## 배경
 

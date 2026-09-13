@@ -1,5 +1,8 @@
 # Agentic — AI agent guidance management
 
+<!-- agentic-doc-sources: bin/agentic.mjs, package.json -->
+<!-- agentic-doc-sources-sha256: 98c6b41278b51d9e164c88a7d2996563553459e758ab32fad9e9bb69fe07362c -->
+
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agentic/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agentic)
@@ -12,7 +15,7 @@
 [한국어](README.md) · **English**
 
 ## Different developers, different teams, different AI agents — one project development standard.
->
+
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
 <p align="center">
@@ -21,17 +24,19 @@
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
 
-## Profile goals
+## Core goals
 
-- Multiple agents work against the same shared guidance.
-- Different developers collaborate under the same agentic-development guidance.
-- Create and manage per-purpose Profiles (shared guidance stores) — Personal, Company, Team, Workspace — and apply the chosen one per project.
+> Multiple agents and developers work and collaborate against the same shared guidance.
+>
+> Create and manage per-purpose Profiles (shared guidance stores such as Personal, Company, Team, and Workspace) and choose which to apply per project.
 
-Profiles keep the shared guidance as a single source of truth; each project adds its own domain rules in its own `AGENTS.md`. This reduces the drift in working style, guidance, and verification standards that otherwise varies by developer and agent.
+Reduce the working styles, guidance, and verification standards that otherwise vary by developer and agent, keeping a consistent collaboration standard.
 
-Individual developers can also reuse separate `Personal` Profiles per project and keep the same guidance when switching AI tools. This reduces repeated setup and guidance drift between projects, making both maintenance and development easier.
+A Profile's shared guidance is managed as a single source of truth, while each project adds its own domain rules separately in its own `AGENTS.md`.
 
-Profiles are currently managed locally. Sharing and updating organization Profiles through Git is tracked as a [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md), not advertised as a current capability.
+Individual developers can also split and reuse per-project `Personal` Profiles and keep the same guidance even when the AI tools they use change. This reduces repeated setup and rule drift between projects, making both maintenance and development easier.
+
+> (Profiles are currently managed locally. Sharing and updating Profiles across an organization through Git is tracked as a [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) and is not presented as a current capability.)
 
 ## Use cases
 
@@ -50,19 +55,17 @@ Profiles are currently managed locally. Sharing and updating organization Profil
 ### Organization standards
 
 - **Use it this way:** Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain guidance in the project `AGENTS.md`.
-- **Benefit:** Keep organization standards independent from project-specific requirements.
-
-English is opt-in: choose it once on the first interactive run, or pass `--lang en` / `AGENTIC_LANG=en`, or run `agentic config lang en`. The default is Korean.
+- **Benefit:** Keep organization standards and project-specific requirements managed independently, without mixing them.
 
 ## Getting Started
 
-### Prerequisites
+> The full usage flow — from installation to synchronization — is documented step by step in the [usage guide](https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md).
 
-- Runtime: Node.js 24 LTS or newer
-- End users: `npm install --global @isthis/agentic`
-- Repository contributors: run `pnpm install` at the repo root, then the development commands
+> Runtime: Node.js 24 LTS or newer
 
-`agt` is a short alias for `agentic`.
+```bash
+npm install --global @isthis/agentic
+```
 
 ```bash
 npm install -g @isthis/agentic
@@ -71,45 +74,97 @@ agentic profile setup company --tdd recommended --security strict
 agentic profile apply company /path/to/project
 ```
 
-Personal Profiles are stored under `~/.agentic-profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after applying a Profile.
+> [!Tip]
+> Type `agt` or `agentic` in your terminal to use every feature through the TUI.
+>
+> Passing options directly is useful for automation or repeated runs.
+
+Personal Profiles are stored under `~/.agentic-profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
+
+Agentic provides commands to create, set up, apply, and synchronize Profiles. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/).
 
 ### Scope of verification
 
 Repository developers run `pnpm run check` to verify Agentic's own syntax, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
 
-## Profile features
+## Core features
 
-- `agentic profile create [<name>] [--scope <scope>]` — create a Profile for `personal`, `company`, `team`, or `workspace`; omit the name for TUI input.
-- `agentic profile list [--scope <scope>]` — list, select, and manage Profiles by scope.
-- `agentic profile setup [<name>]` — after selecting a Profile, configure harness, TDD, review, verification, documentation, and security guidance.
+- `agentic profile create [<name>] [--scope <scope>]` — create a Profile for the `personal`, `company`, `team`, or `workspace` purpose; omit the name for TUI input.
+- `agentic profile list [--scope <scope>]` — list, select, and manage Profiles by scope; in the TUI you choose the scope first.
+- `agentic profile setup [<name>]` — after selecting a Profile by scope, configure harness behavior, TDD, review, verification, documentation, and security guidance; omit everything for the full TUI.
 - `agentic profile remove [<name>]` — delete the selected Profile after confirmation; files already applied to projects are kept.
 - `agentic profile apply <name> <project>` — apply the selected Profile to a project.
-- `agentic config lang <ko|en>` — set the display and generated-guidance language.
-- Generate and sync per-agent guidance files.
+- Generate and synchronize per-agent guidance files.
+- `agentic config lang <ko|en>` — set the display and generation language; the default is Korean, can also be set with `--lang` / `AGENTIC_LANG`, and is chosen once on the first interactive run and saved.
 
 ## Supported agents
 
-Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read.
+Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 
 | Agent | Generated file |
 | --- | --- |
 | Codex, etc. (AGENTS.md standard) | `AGENTS.md` |
 | Claude Code | `CLAUDE.md` |
-| Antigravity | `.gemini/rules/agentic.md` |
+| Antigravity | `.agents/rules/agentic.md` |
 | Cursor | `.cursor/rules/agentic.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 
-## Language
+## 🧭 Architecture direction and progress
 
-The CLI and generated guidance support Korean (`ko`) and English (`en`); the default is `ko`. The locale is resolved as `--lang` → `AGENTIC_LANG` → a saved choice → (interactive: asked once on first run and saved; non-interactive: `ko`). A non-interactive run with nothing set behaves exactly as before. See [ADR 0002](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0002-locale-i18n.md).
+Agentic's implementation is managed in stages around the questions of where the shared guidance lives and who changes what. The table below condenses each discussion document's proposal summary from a user's perspective. `Proposed` items are follow-up work not yet guaranteed as current behavior.
+
+| Topic | Target and goal | Priority · Status | Next work |
+| --- | --- | --- | --- |
+| [Profile model and store](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) | A per-Personal/Company/Team/Workspace shared-guidance store for users and organizations | Critical · Implemented | Review the organization-sharing contract |
+| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Users and the CLI selectively configure a Profile's TDD, review, verification, documentation, and security guidance | High · Implemented | Advance presets and configuration diffs |
+| [Project application](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | Apply the chosen Profile to a project while keeping domain guidance separate | Critical · Implemented | Finalize conflict and recovery handling |
+| [Agent artifact synchronization](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
+| [Use through natural-language requests](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Proposed | Non-interactive CLI, JSON, and exit codes |
+| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Conflict visualization and recovery |
+
+### Proposal summaries
+
+Each document manages not only the code feature but also the target layer, the reason for introduction, priority, preceding/following/related work, and the contracts to decide before implementation. Below is a map that condenses that information by area; the detailed current status and implementation records are in each document.
+
+#### 1. Profiles and shared-guidance configuration
+
+| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
+| --- | --- | --- | --- |
+| [Profile model and store](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) | Separate and reuse shared guidance per Personal/Company/Team/Workspace · users and organizations ↔ CLI ↔ Profile | Critical · Implemented | Path, name, scope, default selection; precedes every follow-up feature |
+| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Select only the needed harness, TDD, review, verification, documentation, and security guidance · user ↔ CLI ↔ Profile `AGENTS.md` | High · Implemented | Presets, defaults, re-runs, interactive/non-interactive; after the profile model, before project application |
+
+#### 2. Project application and agent delivery
+
+| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
+| --- | --- | --- | --- |
+| [Project application](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | Use shared guidance and project domain guidance together while keeping them separate · user ↔ CLI ↔ Profile ↔ project | Critical · Implemented | Target, merge, approval, application record; after setup, before synchronization |
+| [Agent artifact synchronization](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Deliver the same shared standard to each agent's file format · Profile ↔ CLI ↔ project artifacts | High · Implemented | Adapters, pointers, file ownership, drift; after project application |
+| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Protect user content and manual changes during re-application and updates · CLI/TUI ↔ Profile ↔ project files | Critical · Implementing | Managed blocks, hash, dry-run, conflict, backup, recovery; follow-up on the safety of application and synchronization |
+
+#### 3. User and agent automation boundaries
+
+| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
+| --- | --- | --- | --- |
+| [Use through natural-language requests](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Keep AI agents from changing the wrong target on an ambiguous request · user ↔ AI agent ↔ CLI/TUI ↔ project | High · Proposed | Explicit target, machine-readable result, approval, exit codes; follow-up on top of the current CLI/TUI |
+
+The current sequence is profile creation → guidance setup → project application → agent artifact synchronization. Each proposal's status, its preceding/following/related proposals, follow-up work, recommended next steps, and the decisions to make are in the [architecture discussion index](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/).
 
 ## Documentation
 
 - [Product direction](https://github.com/IsthisLee/agentic/blob/main/docs/product-direction.md)
+- [Implementation principles](https://github.com/IsthisLee/agentic/blob/main/docs/implementation-principles.md)
 - [User workflow](https://github.com/IsthisLee/agentic/blob/main/docs/workflow.md)
 - [CLI Reference](https://github.com/IsthisLee/agentic/blob/main/docs/cli-reference.md)
 - [Repository operations](https://github.com/IsthisLee/agentic/blob/main/docs/repository-operations.md)
-- [Architecture discussion](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)
+- [Architecture implementation plans](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)
+- [External references](https://github.com/IsthisLee/agentic/blob/main/docs/references.md)
+
+## Open-source participation
+
+- [Contributing guide](https://github.com/IsthisLee/agentic/blob/main/CONTRIBUTING.md)
+- [Security policy](https://github.com/IsthisLee/agentic/blob/main/SECURITY.md)
+- [Code of conduct](https://github.com/IsthisLee/agentic/blob/main/CODE_OF_CONDUCT.md)
+- [Report an issue](https://github.com/IsthisLee/agentic/issues)
 
 ---
 

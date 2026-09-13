@@ -455,7 +455,7 @@ function applyProfile(values) {
   planFile(agentsPath, agents);
   for (const [source, target] of [
     ['templates/CLAUDE.md', 'CLAUDE.md'],
-    ['templates/gemini-rules/agentic.md', '.gemini/rules/agentic.md'],
+    ['templates/antigravity-rules/agentic.md', '.agents/rules/agentic.md'],
     ['templates/cursor-rules/agentic.mdc', '.cursor/rules/agentic.mdc'],
     ['templates/copilot-instructions.md', '.github/copilot-instructions.md']
   ]) {

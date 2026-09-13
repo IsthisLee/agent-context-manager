@@ -40,7 +40,7 @@ Agentic은 각 에이전트의 모델 호출·인증·세션·런타임을 실�
 
 #### 구현 기록: 에이전트별 산출물 동기화
 
-* **결정:** `CLAUDE.md`, `.gemini/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`를 포인터 산출물로 관리한다.
+* **결정:** `CLAUDE.md`, `.agents/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`를 포인터 산출물로 관리한다.
 * **구현:** `profile apply`·`profile sync`가 선택 프로필과 프로젝트 확장 영역을 사용해 산출물을 생성하고, 관리 마커 내부만 갱신한다.
 * **평가:** `evals/core.test.mjs`, `evals/sync-merge.test.mjs`에서 산출물과 규칙 보존을 확인.
 * **제약:** 각 에이전트가 포인터를 해석하는 방식 자체는 Agentic이 보장하지 않는다.

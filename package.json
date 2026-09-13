@@ -2,7 +2,7 @@
   "name": "@isthis/agentic",
   "version": "0.1.0",
   "packageManager": "pnpm@10.15.0",
-  "description": "Create, configure, safely apply, synchronize, and manage shared agentic development guidance across people, organizations, projects, and AI agents",
+  "description": "Create shared development-guidance Cores and safely apply and synchronize them across projects and AI agents",
   "repository": {
     "type": "git",
     "url": "https://github.com/IsthisLee/agentic.git"

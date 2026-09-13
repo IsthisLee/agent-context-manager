@@ -2,7 +2,7 @@
 
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다.
 
-Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 이를 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리한다.
+Agentic은 개인·조직별 에이전틱 개발 지침을 Core로 생성·설정하고, 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
 ## 현재 구조
 
@@ -19,6 +19,8 @@ Agentic은 에이전틱 개발을 위한 공통 지침을 생성·설정하고, 
 ```
 
 현재 CLI는 옵션 기반 또는 TUI 방식으로 Core를 생성·목록화·조회·설정·삭제한다. Core에는 `personal`, `company`, `team`, `workspace` scope가 있으며, `core list --scope <scope>`로 CLI 필터링할 수 있다. TUI의 `core list`는 scope를 먼저 선택한 뒤 Core를 고르고 생성·설정·프로젝트 적용·동기화·상세 보기·삭제 메뉴를 제공하며, `setup`만 실행한 경우에도 scope와 Core를 선택하게 한다. 각 기능은 CLI 명령과 TUI 경로를 모두 제공한다. 적용 시 프로젝트 `AGENTS.md`의 기존 지침과 에이전트별 산출물의 사용자 영역을 보존하며, `AGENTS.md`의 Core 소유 영역과 에이전트별 산출물의 Agentic 관리 블록만 `init/sync` 때 갱신한다. 두 영역의 hash도 `agentic.project.json`에 기록해 수동 변경 시 동기화를 중단한다. Core 삭제는 해당 Core 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. 다음 `sync`에서는 `agentic.project.json`의 Core를 사용한다. 관리 마커가 없는 기존 에이전트별 파일은 기존 내용을 보존한 채 Agentic 관리 블록을 추가한다.
+
+현재 구현에서 Core는 로컬 파일 시스템의 `~/.agentic-cores/<name>`에 보관한다. Git 원격 저장소를 Core로 등록·공유·pull·push하는 기능은 아직 현재 아키텍처에 포함되지 않으며, [`core-model` 논의](../discussion/architecture/topics/core-model.md)의 후속 단계다.
 
 ## 저장소 파일 구조
 

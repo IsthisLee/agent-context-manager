@@ -31,6 +31,8 @@
 
 개발자와 에이전트마다 달라지는 작업 방식·지침·검증 기준을 줄여 일관된 협업 기준을 유지합니다. Core의 공통 지침은 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 지침을 별도로 추가합니다.
 
+현재 Core는 로컬에서 관리합니다. 조직이 Git으로 Core를 공유·갱신하는 기능은 [후속 아키텍처 논의](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/core-model.md)로 관리하며, 현재 제공 기능으로 표현하지 않습니다.
+
 가장 간단한 시작은 명령어 하나만 입력하는 것입니다.
 
 ```bash

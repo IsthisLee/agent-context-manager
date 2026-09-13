@@ -154,7 +154,8 @@ function checkReadme() {
     'agt',
     'pnpm run check',
     'docs/discussion/architecture/',
-    '개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리'
+    '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로',
+    '개인·조직별 에이전틱 개발 지침을 Core로 생성·설정'
   ]) {
     if (!content.includes(requiredText)) errors.push(`README.md: missing required product guidance ${requiredText}`);
   }

@@ -2,7 +2,7 @@
 
 이 문서는 Agentic 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
-현재 준비 상태는 “공개 전 품질 체계 구성”이다. GitHub 원격 저장소의 실제 visibility는 아직 private이고, `@isthis/agentic`도 npm registry에 게시되지 않았다. 공개 전환과 첫 배포는 아래 사전 점검을 모두 통과한 뒤 저장소 관리자 권한으로 수행한다.
+`@isthis/agentic`은 공개 GitHub 저장소와 npm registry에 배포된 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
 ## 품질 게이트
 
@@ -26,13 +26,13 @@ GitHub Actions의 `CI`는 Ubuntu에서 Node.js 24 LTS·26 Current를, macOS와 W
 
 ## 릴리스
 
-### 공개 전 사전 점검
+### 릴리스 전 점검
 
-- GitHub repository visibility를 Public으로 전환하고, README·License·Contributing·Code of Conduct·Security가 실제 화면에서 노출되는지 확인한다.
+- GitHub repository가 Public이며 README·License·Contributing·Code of Conduct·Security가 실제 화면에서 노출되는지 확인한다.
 - `repository.url`이 실제 공개 저장소 URL과 일치하는지 확인한다.
-- npm에서 패키지 이름과 scope 소유권을 확인하고, public package로 게시할 권한을 준비한다.
-- npm trusted publisher에 정확한 저장소와 `.github/workflows/publish.yml`을 연결한다.
-- 첫 배포 전에 `pnpm run check`, `pnpm run pack:check`, `pnpm run audit`와 임시 디렉터리 설치 smoke test를 실행한다.
+- npm에서 패키지 이름·scope 소유권과 public package 게시 권한을 확인한다.
+- npm trusted publisher가 정확한 저장소와 `.github/workflows/publish.yml`에 연결되어 있는지 확인한다.
+- 배포 전에 `pnpm run check`, `pnpm run pack:check`, `pnpm run audit`와 임시 디렉터리 설치 smoke test를 실행한다.
 - `npm publish` 자체도 `prepublishOnly`에서 `pnpm run check`와 `pnpm run pack:check`를 실행하므로, 검증되지 않은 로컬 게시를 기본적으로 차단한다.
 - Release tag가 `package.json` 버전 및 `CHANGELOG.md` 항목과 일치하는지 `pnpm run check:release -- v<version>`으로 확인한다.
 

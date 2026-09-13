@@ -5,11 +5,11 @@
 
 **한국어** · [English](README.en.md)
 
-> **Agentic — 사람과 AI 에이전트가 함께 따르는 프로젝트·조직 개발 기준.**
+> **Agentic — 사람과 AI 에이전트가 함께 따르는 개발 기준.**
 >
 > **개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 프로젝트의 개발 기준은 하나로.**
 >
-> Agentic은 에이전틱 개발을 위한 공통 지침을 Core로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 개인·조직·프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화·관리하는 패키지입니다.
+> Agentic은 개인·조직별 에이전틱 개발 지침을 Core로 생성·설정하고, 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화하는 패키지입니다.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic 사용 흐름 — 사용자·AI 에이전트·Core·프로젝트 파일" width="840">

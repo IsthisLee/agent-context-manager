@@ -5,11 +5,11 @@
 
 [한국어](README.md) · **English**
 
-> **Agentic — Shared project and organizational development standards for people and AI agents.**
+> **Agentic — Development standards that people and AI agents follow together.**
 >
-> **Different developers, different teams, different AI agents — one project standard.**
+> **Different developers, different teams, different AI agents — one project development standard.**
 >
-> Agentic creates and configures shared agentic-development guidance for individuals and organizations, manages it locally or through Git, and safely applies and synchronizes it across projects and multiple AI agents.
+> Agentic creates and configures shared agentic-development guidance as Cores for individuals and organizations, then safely applies and synchronizes it across projects and multiple AI agents.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-flow.png" alt="Agentic flow — user, AI agent, Core, project files" width="840">
@@ -34,7 +34,7 @@ Cores keep the shared guidance as a single source of truth; each project adds it
 The simplest start is a single command.
 
 ```bash
-npm install -g @isthis/agentic
+npm install --global @isthis/agentic
 agt
 ```
 
@@ -59,7 +59,7 @@ The CLI and generated guidance support Korean (`ko`) and English (`en`); the def
 ### Prerequisites
 
 - Runtime: Node.js 24 LTS or newer
-- End users: `npm install -g @isthis/agentic`
+- End users: `npm install --global @isthis/agentic`
 - Repository contributors: run `pnpm install` at the repo root, then the development commands
 
 `agt` is a short alias for `agentic`.

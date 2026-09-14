@@ -1,4 +1,4 @@
-# Agentic — Profile-based AI development guidance
+# Agentic — Profile-based AI Agent development guidance
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
 <!-- agentic-doc-sources-sha256: 98a6cbb31b6b8bdb0054e3186e830f22cb079eaff5c4f0d4ae9e231a9130326b -->

@@ -3,7 +3,7 @@
 `@isthis/agentic`은 `agentic`과 짧은 별칭 `agt`로 실행할 수 있다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 40020b89f67e96757d366128da33af014fd7bf1f9a686c6ed35910c320e2ce11 -->
+<!-- agentic-doc-sources-sha256: 591da7cc1623c2725aa044eb8a1566b39e5f527a855c29aa59d0da18ae275b27 -->
 
 ## 설치와 실행
 
@@ -43,7 +43,7 @@ agt --tui
 
 ### `profile create`
 
-새 프로필과 초기 `AGENTS.md`를 만든다. 프로필은 기본적으로 `~/.agentic-profiles/<name>`에 저장된다.
+새 프로필과 초기 `AGENTS.md`를 만든다. 프로필은 기본적으로 `~/.agentic/profiles/<name>`에 저장된다.
 
 ```bash
 agt profile create [<name>] [--scope <scope>]
@@ -190,7 +190,7 @@ agt config lang <ko|en>
 
 ## 저장 위치와 마이그레이션
 
-프로필은 `~/.agentic-profiles/<name>` 아래에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`로 저장된다. `AGENTIC_HOME` 환경변수를 설정하면 그 경로 아래에 저장한다. 이전 버전의 `~/.agentic-cores`가 있으면 최초 실행 때 `~/.agentic-profiles`로 한 번 이관하고, 각 `agentic-core.json`을 `agentic-profile.json`으로 바꾼다.
+프로필은 `~/.agentic/profiles/<name>` 아래에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`로 저장된다. 언어 설정은 `~/.agentic/config.json`에 저장된다. `AGENTIC_HOME` 환경변수를 설정하면 그 경로 아래에 저장한다. 이전 버전의 `~/.agentic-cores`나 `~/.agentic-profiles`가 있으면 최초 실행 때 `~/.agentic/profiles`로 한 번 이관하고 `config.json`은 `~/.agentic/`로 올린다. Core 시절의 `agentic-core.json`은 `agentic-profile.json`으로 바꾼다.
 
 ## TUI와 자동화 선택
 

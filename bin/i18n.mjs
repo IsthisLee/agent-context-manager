@@ -14,44 +14,67 @@ import { writeTextAtomic } from './fs-utils.mjs';
 export const SUPPORTED_LOCALES = ['ko', 'en'];
 export const DEFAULT_LOCALE = 'ko';
 
-const LEGACY_HOME_DIR = '.agentic-cores';
+const LEGACY_CORES_DIR = '.agentic-cores';        // pre-rename layout (Core era)
+const LEGACY_PROFILES_DIR = '.agentic-profiles';  // post-rename, pre-nesting layout
 const LEGACY_METADATA_FILE = 'agentic-core.json';
-const PROFILE_HOME_DIR = '.agentic-profiles';
+const AGENTIC_DIR = '.agentic';
+const PROFILES_SUBDIR = 'profiles';
+const CONFIG_FILE = 'config.json';
 export const PROFILE_METADATA_FILE = 'agentic-profile.json';
 
 /**
- * Rename a pre-rename `.agentic-cores` home to `.agentic-profiles` and rename
- * each profile's `agentic-core.json` to `agentic-profile.json`. Best-effort and
- * one-time: if anything fails, fall back to the new (possibly empty) home
- * instead of crashing the CLI.
+ * Move a flat legacy home (`.agentic-cores` or `.agentic-profiles`) into
+ * `.agentic/profiles`, lift its `config.json` up to `.agentic/config.json`,
+ * and, for the Core-era layout, rename each `agentic-core.json` to
+ * `agentic-profile.json`. Best-effort and one-time: if anything fails, fall
+ * back to the new (possibly empty) home instead of crashing the CLI.
  */
-function migrateLegacyHome(legacy, current) {
+function migrateFlatHome(flatDir, agenticDir, profilesDir, { renameMetadata }) {
   try {
-    fs.renameSync(legacy, current);
+    fs.mkdirSync(agenticDir, { recursive: true });
+    fs.renameSync(flatDir, profilesDir);
   } catch {
     return;
   }
-  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const legacyMetadata = path.join(current, entry.name, LEGACY_METADATA_FILE);
-    const currentMetadata = path.join(current, entry.name, PROFILE_METADATA_FILE);
-    if (fs.existsSync(legacyMetadata) && !fs.existsSync(currentMetadata)) {
-      try { fs.renameSync(legacyMetadata, currentMetadata); } catch {}
+  if (renameMetadata) {
+    for (const entry of fs.readdirSync(profilesDir, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const legacyMetadata = path.join(profilesDir, entry.name, LEGACY_METADATA_FILE);
+      const currentMetadata = path.join(profilesDir, entry.name, PROFILE_METADATA_FILE);
+      if (fs.existsSync(legacyMetadata) && !fs.existsSync(currentMetadata)) {
+        try { fs.renameSync(legacyMetadata, currentMetadata); } catch {}
+      }
     }
+  }
+  // config.json sat beside the profile dirs in the flat layout; lift it out.
+  const movedConfig = path.join(profilesDir, CONFIG_FILE);
+  const targetConfig = path.join(agenticDir, CONFIG_FILE);
+  if (fs.existsSync(movedConfig) && !fs.existsSync(targetConfig)) {
+    try { fs.renameSync(movedConfig, targetConfig); } catch {}
   }
 }
 
-/** Resolve the user's profile home, migrating a legacy `.agentic-cores` once. */
+/**
+ * Resolve the user's profile home (`<base>/.agentic/profiles`), migrating a
+ * legacy `.agentic-profiles` or `.agentic-cores` home once on first use.
+ */
 export function profileHome() {
   const base = process.env.AGENTIC_HOME || os.homedir();
-  const current = path.join(base, PROFILE_HOME_DIR);
-  const legacy = path.join(base, LEGACY_HOME_DIR);
-  if (!fs.existsSync(current) && fs.existsSync(legacy)) migrateLegacyHome(legacy, current);
+  const agenticDir = path.join(base, AGENTIC_DIR);
+  const current = path.join(agenticDir, PROFILES_SUBDIR);
+  if (!fs.existsSync(current)) {
+    const legacyProfiles = path.join(base, LEGACY_PROFILES_DIR);
+    const legacyCores = path.join(base, LEGACY_CORES_DIR);
+    if (fs.existsSync(legacyProfiles)) migrateFlatHome(legacyProfiles, agenticDir, current, { renameMetadata: false });
+    else if (fs.existsSync(legacyCores)) migrateFlatHome(legacyCores, agenticDir, current, { renameMetadata: true });
+  }
   return current;
 }
 
+/** The locale config lives beside the profiles dir, at `<base>/.agentic/config.json`. */
 function configPath() {
-  return path.join(profileHome(), 'config.json');
+  profileHome(); // trigger the one-time legacy migration before reading or writing config
+  return path.join(process.env.AGENTIC_HOME || os.homedir(), AGENTIC_DIR, CONFIG_FILE);
 }
 
 export function readAgenticConfig() {

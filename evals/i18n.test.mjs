@@ -92,8 +92,8 @@ test('AGENTIC_LANG=en sync preserves domain rules added under the extension sect
 test('a saved config.json locale is honored with no flag or env', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfg-'));
   try {
-    fs.mkdirSync(path.join(home, '.agentic-profiles'), { recursive: true });
-    fs.writeFileSync(path.join(home, '.agentic-profiles', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+    fs.mkdirSync(path.join(home, '.agentic'), { recursive: true });
+    fs.writeFileSync(path.join(home, '.agentic', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
     run(home, ['profile', 'create', 'demo', '--scope', 'team']);
     const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfgproj-'));
     run(home, ['profile', 'apply', 'demo', project]);
@@ -107,7 +107,7 @@ test('config lang persists the selected locale', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-save-'));
   try {
     run(home, ['config', 'lang', 'en']);
-    const config = JSON.parse(fs.readFileSync(path.join(home, '.agentic-profiles', 'config.json'), 'utf8'));
+    const config = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'config.json'), 'utf8'));
     assert.equal(config.locale, 'en');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

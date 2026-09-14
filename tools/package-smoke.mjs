@@ -45,7 +45,7 @@ try {
   runCommand(agt, ['profile', 'setup', 'smoke-profile', '--tdd', 'strict'], { env, stdio: 'ignore' });
   runCommand(agt, ['profile', 'apply', 'smoke-profile', projectDir], { env, stdio: 'ignore' });
   runCommand(agt, ['profile', 'sync', projectDir], { env, stdio: 'ignore' });
-  assert(fs.existsSync(path.join(profilesHome, '.agentic-profiles', 'smoke-profile', 'AGENTS.md')));
+  assert(fs.existsSync(path.join(profilesHome, '.agentic', 'profiles', 'smoke-profile', 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));
   assert(fs.existsSync(path.join(projectDir, 'agentic.project.json')));

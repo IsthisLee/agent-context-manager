@@ -20,7 +20,7 @@ test('profile create creates a named scoped profile in the user profile director
       encoding: 'utf8'
     });
 
-    const profileDir = path.join(home, '.agentic-profiles', 'company');
+    const profileDir = path.join(home, '.agentic', 'profiles', 'company');
     const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'agentic-profile.json'), 'utf8'));
     assert.equal(metadata.name, 'company');
     assert.equal(metadata.scope, 'company');
@@ -77,7 +77,7 @@ test('profile list ignores malformed metadata instead of presenting an invalid p
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-invalid-metadata-test-'));
 
   try {
-    const profileDir = path.join(home, '.agentic-profiles', 'broken');
+    const profileDir = path.join(home, '.agentic', 'profiles', 'broken');
     fs.mkdirSync(profileDir, { recursive: true });
     fs.writeFileSync(path.join(profileDir, 'agentic-profile.json'), JSON.stringify({ schemaVersion: 1, name: 'broken', scope: 'unknown' }));
     const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
@@ -92,7 +92,7 @@ test('profile list ignores malformed metadata instead of presenting an invalid p
   }
 });
 
-test('a legacy .agentic-cores home migrates to .agentic-profiles on first use', () => {
+test('a legacy .agentic-cores home migrates to .agentic/profiles on first use', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-migrate-test-'));
 
   try {
@@ -109,8 +109,34 @@ test('a legacy .agentic-cores home migrates to .agentic-profiles on first use', 
 
     assert.match(output, /\[team\]\s+legacy/);
     assert.equal(fs.existsSync(path.join(home, '.agentic-cores')), false);
-    assert.equal(fs.existsSync(path.join(home, '.agentic-profiles', 'legacy', 'agentic-profile.json')), true);
-    assert.equal(fs.existsSync(path.join(home, '.agentic-profiles', 'legacy', 'agentic-core.json')), false);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-profile.json')), true);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-core.json')), false);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('a legacy .agentic-profiles home migrates to .agentic/profiles and lifts config.json', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-migrate2-test-'));
+
+  try {
+    const legacyDir = path.join(home, '.agentic-profiles', 'legacy');
+    fs.mkdirSync(legacyDir, { recursive: true });
+    fs.writeFileSync(path.join(legacyDir, 'agentic-profile.json'), JSON.stringify({ schemaVersion: 1, name: 'legacy', scope: 'team' }, null, 2) + '\n');
+    fs.writeFileSync(path.join(legacyDir, 'AGENTS.md'), '# Agentic Profile: legacy\n');
+    fs.writeFileSync(path.join(home, '.agentic-profiles', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+
+    const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
+      cwd: repoRoot,
+      env: { ...process.env, AGENTIC_HOME: home },
+      encoding: 'utf8'
+    });
+
+    assert.match(output, /\[team\]\s+legacy/);
+    assert.equal(fs.existsSync(path.join(home, '.agentic-profiles')), false);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-profile.json')), true);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'config.json')), true);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'config.json')), false);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -128,7 +154,7 @@ test('setup applies selected guidance to the profile and preserves its project-i
       '--verification', 'recommended', '--documentation', 'off', '--security', 'strict'
     ], { cwd: repoRoot, env, encoding: 'utf8' });
 
-    const profileDir = path.join(home, '.agentic-profiles', 'team');
+    const profileDir = path.join(home, '.agentic', 'profiles', 'team');
     const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'agentic-profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       harness: 'recommended',
@@ -156,7 +182,7 @@ test('setup writes a level-definition legend that shares its wording with the le
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--security', 'strict'], { cwd: repoRoot, env });
 
-    const instructions = fs.readFileSync(path.join(home, '.agentic-profiles', 'team', 'AGENTS.md'), 'utf8');
+    const instructions = fs.readFileSync(path.join(home, '.agentic', 'profiles', 'team', 'AGENTS.md'), 'utf8');
     const definitions = guidanceLevelDefinitions('ko');
     assert.match(instructions, /## 적용 수준 정의/);
     assert.ok(instructions.includes(definitions.recommended), 'legend must reuse the recommended definition from the level constant');
@@ -176,7 +202,7 @@ test('apply applies the selected profile to a project without changing the profi
     const env = { ...process.env, AGENTIC_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
-    const profileAgentsBefore = fs.readFileSync(path.join(home, '.agentic-profiles', 'company', 'AGENTS.md'), 'utf8');
+    const profileAgentsBefore = fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company', 'AGENTS.md'), 'utf8');
 
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
 
@@ -198,7 +224,7 @@ test('apply applies the selected profile to a project without changing the profi
     execFileSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env });
     assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from Agentic Profile: company/);
     assert.match(fs.readFileSync(path.join(project, 'CLAUDE.md'), 'utf8'), /Keep this local workflow/);
-    assert.equal(fs.readFileSync(path.join(home, '.agentic-profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
+    assert.equal(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -471,7 +497,7 @@ test('profile create and setup support interactive TUI input when options are om
     });
     assert.equal(setup.status, 0, setup.stderr);
 
-    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic-profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
+    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       harness: 'recommended',
       tdd: 'strict',
@@ -500,7 +526,7 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
     });
     assert.equal(setup.status, 0, setup.stderr);
 
-    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic-profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
+    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
     assert.equal(metadata.settings.verification, 'strict');
     assert.equal(metadata.settings.documentation, 'off');
   } finally {
@@ -537,7 +563,7 @@ test('profile remove deletes only the selected profile and preserves an applied 
     assert.match(view, /company\s+company/);
     execFileSync(process.execPath, [cli, 'profile', 'remove', 'company', '--yes'], { cwd: repoRoot, env });
 
-    assert.equal(fs.existsSync(path.join(home, '.agentic-profiles', 'company')), false);
+    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'company')), false);
     assert.equal(fs.existsSync(path.join(project, 'AGENTS.md')), true);
     assert.equal(fs.existsSync(path.join(project, 'agentic.project.json')), true);
   } finally {

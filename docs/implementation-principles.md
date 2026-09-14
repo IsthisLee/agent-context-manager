@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:585-605`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json, tools/package-smoke.mjs, tools/check-syntax.mjs, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.mjs -->
-<!-- agentic-doc-sources-sha256: 103e1ed4dacd7acd2196e0892e7f00412780e58bd4f4ccf8e529ff8703142d5b -->
+<!-- agentic-doc-sources-sha256: 1d105500e81fd8b91f212a7d2a3afdbc87244ea15266d8a97137f269662f4c74 -->
 
 이 문서는 `@isthis/agentic`이 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -29,7 +29,7 @@ flowchart TD
   DEV["개발자·GitHub Actions<br/>npm publish --provenance"] -->|"tarball 업로드"| REG["npm Registry<br/>@isthis/agentic"]
   REG -->|"npm install -g"| GBIN["전역 설치<br/>agentic·agt 진입점 생성"]
   GBIN -->|"사용자가 agt 실행"| CLI["Node가 bin/agentic.mjs 실행"]
-  CLI --> CORE["프로필 저장소<br/>~/.agentic-profiles 아래 이름별 폴더"]
+  CLI --> CORE["프로필 저장소<br/>~/.agentic/profiles 아래 이름별 폴더"]
   CLI -->|"apply·sync"| PROJ["대상 프로젝트<br/>AGENTS.md·포인터 파일·agentic.project.json"]
   PROJ -->|"에이전트가 읽음"| AGENT["AI 에이전트가 지침대로 코드 작업"]
 ```
@@ -195,14 +195,14 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- 프로필 데이터의 기준 위치는 `profileHome()`(`bin/i18n.mjs`)이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic-profiles`다. 이전 `.agentic-cores`가 있으면 최초 접근 때 `.agentic-profiles`로 한 번 이관한다.
+- 프로필 데이터의 기준 위치는 `profileHome()`(`bin/i18n.mjs`)이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic/profiles`다. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 `.agentic/profiles`로 한 번 이관한다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `bin/agentic.mjs:55-69`, `createProfile` `:71-81`).
 - 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`을 만든다(`bin/agentic.mjs:438-495`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - `AGENTIC_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:39`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-profiles`에 있고 전역 설치 위치와 다르다(`bin/i18n.mjs:45-50`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:252-256`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
+- 프로필 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic/profiles`에 있고 전역 설치 위치와 다르다(`bin/i18n.mjs:61-73`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:252-256`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
 
 ---
 
@@ -532,7 +532,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 1. **(사용자)** `npm install -g @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:596-597`).
-3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic-profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:71-81`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:287-313`).
+3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic/profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:71-81`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:287-313`).
 4. **(사용자)** `agt profile apply <name> <project>` → **(Agentic)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:438-495`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([사용 가이드 4절](usage-guide.md#4-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
 6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:502-517`).

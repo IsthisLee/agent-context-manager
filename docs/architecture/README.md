@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json, templates, tools -->
-<!-- agentic-doc-sources-sha256: f1f89b294f77e9aa299fbd985c3e1562e1d639e35d6fbd67183b0ff4456a14e4 -->
+<!-- agentic-doc-sources-sha256: 385279afafb4ecd1bad33f9e70a64de18387dfcd6cf5e5cf74d28538a704449d -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -11,7 +11,7 @@ Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·
 
 ```mermaid
 flowchart LR
-  subgraph HOME["프로필 저장소 · ~/.agentic-profiles/이름"]
+  subgraph HOME["프로필 저장소 · ~/.agentic/profiles/이름"]
     PAGENTS["AGENTS.md<br/>공통 지침 정본"]
     PMETA["agentic-profile.json<br/>scope · setup 설정"]
   end
@@ -37,7 +37,7 @@ flowchart LR
 - **수동 변경 감지:** 두 관리 영역의 hash를 `agentic.project.json`에 기록하고 기록된 영역이 바뀌면 `apply`와 `sync` 모두 파일을 쓰기 전에 중단한다.
 - **삭제와 재동기화:** 프로필 삭제는 해당 프로필 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. `profile sync`는 `agentic.project.json`에 기록된 프로필을 사용한다.
 
-현재 구현에서 프로필은 로컬 파일 시스템의 `~/.agentic-profiles/<name>`에 보관한다. Git 원격 저장소를 프로필로 등록·공유·pull·push하는 기능은 아직 현재 아키텍처에 포함되지 않으며 [프로필 모델 논의](../discussion/architecture/topics/profile-model.md)의 후속 단계다.
+현재 구현에서 프로필은 로컬 파일 시스템의 `~/.agentic/profiles/<name>`에 보관한다. Git 원격 저장소를 프로필로 등록·공유·pull·push하는 기능은 아직 현재 아키텍처에 포함되지 않으며 [프로필 모델 논의](../discussion/architecture/topics/profile-model.md)의 후속 단계다.
 
 ## 저장소 파일 구조
 

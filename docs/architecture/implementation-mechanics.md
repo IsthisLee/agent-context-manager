@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:438-495`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 40020b89f67e96757d366128da33af014fd7bf1f9a686c6ed35910c320e2ce11 -->
+<!-- agentic-doc-sources-sha256: 591da7cc1623c2725aa044eb8a1566b39e5f527a855c29aa59d0da18ae275b27 -->
 
 ## 읽는 법
 
@@ -99,18 +99,18 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 
 ## 3. 프로필 저장소 모델
 
-`profileHome()`(`bin/i18n.mjs:45-51`)이 기준 위치를 정한다: `AGENTIC_HOME`이 있으면 그 아래, 없으면 `os.homedir()` 아래의 `.agentic-profiles`. `AGENTIC_HOME`으로 저장 위치를 바꿀 수 있고 테스트·스모크가 이를 쓴다. `.agentic-profiles`가 없고 `.agentic-cores`가 있으면 최초 접근 때 한 번 폴더와 각 메타데이터를 `rename`으로 이관한다(`migrateLegacyHome`, `:28-42`). best-effort이며 실패하면 크래시하지 않고 새 홈으로 진행한다.
+`profileHome()`(`bin/i18n.mjs:61-73`)이 기준 위치를 정한다: `AGENTIC_HOME`이 있으면 그 아래, 없으면 `os.homedir()` 아래의 `.agentic/profiles`. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. `AGENTIC_HOME`으로 저장 위치를 바꿀 수 있고 테스트·스모크가 이를 쓴다. `.agentic/profiles`가 없고 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 한 번 폴더를 `.agentic/profiles`로 옮기고 `config.json`을 `.agentic/`로 올린다. Core 시절 홈은 각 메타데이터도 `agentic-profile.json`으로 바꾼다(`migrateFlatHome`, `:32-59`). best-effort이며 실패하면 크래시하지 않고 새 홈으로 진행한다.
 
 프로필 저장소와 적용 결과물의 온디스크 배치는 다음과 같다.
 
 ```text
 $AGENTIC_HOME 또는 ~/            대상 프로젝트/
-└── .agentic-profiles/          ├── AGENTS.md              (프로필 영역 + 프로젝트 확장)
+└── .agentic/                   ├── AGENTS.md              (프로필 영역 + 프로젝트 확장)
     ├── config.json  (locale)   ├── agentic.project.json   (profile, managedHashes)
-    └── <name>/                 ├── CLAUDE.md              (관리 블록)
-        ├── agentic-profile.json├── .agents/rules/agentic.md
-        └── AGENTS.md           ├── .cursor/rules/agentic.mdc
-                                └── .github/copilot-instructions.md
+    └── profiles/               ├── CLAUDE.md              (관리 블록)
+        └── <name>/             ├── .agents/rules/agentic.md
+            ├── agentic-profile.json├── .cursor/rules/agentic.mdc
+            └── AGENTS.md       └── .github/copilot-instructions.md
 ```
 
 메타데이터 스키마와 프로젝트 설정의 관계를 ERD로 보면 이렇다.

@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **호환성 파괴:** 프로필 저장 위치를 `~/.agentic/profiles/<name>`로, 언어 설정을 `~/.agentic/config.json`으로 옮김. 이전 `~/.agentic-cores`·`~/.agentic-profiles`는 최초 실행 때 새 위치로 자동 이관하고 `config.json`을 `~/.agentic/`로 올린다. 근거는 [ADR 0007](docs/adr/0007-profile-home-layout.md)
+
 ## [0.2.0] - 2026-09-14
 
 ### Added

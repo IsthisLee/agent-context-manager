@@ -3,7 +3,7 @@
 이 문서는 Agentic이 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `bin/i18n.mjs`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
 <!-- agentic-doc-sources: bin/i18n.mjs, bin/agentic.mjs -->
-<!-- agentic-doc-sources-sha256: 353c5efb5e8a4e25d9010db901a2a8d2433f87460e6366546555a274683d72d5 -->
+<!-- agentic-doc-sources-sha256: 66c02484468a4216bbc800a44753fb3b1ad415e8dedc2eacae68eaa0a0ba0141 -->
 
 ## 지침이 만들어지는 두 경로
 

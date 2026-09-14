@@ -22,7 +22,7 @@
     { "id": "create", "lane": "user", "col": 0, "type": "backend", "label": "profile create", "sublabel": "이름 · scope", "width": 150 },
     { "id": "setup", "lane": "user", "col": 1, "type": "backend", "label": "profile setup", "sublabel": "TDD · 리뷰 · 검증 · 보안", "tag": "지침 선택", "width": 160 },
     { "id": "apply", "lane": "user", "col": 2, "type": "backend", "label": "apply · sync", "sublabel": "프로젝트에 적용", "width": 150 },
-    { "id": "core", "lane": "core", "col": 1, "type": "database", "label": "프로필 저장소", "sublabel": "~/.agentic-profiles · AGENTS.md", "tag": "공통 지침 정본", "width": 180 },
+    { "id": "core", "lane": "core", "col": 1, "type": "database", "label": "프로필 저장소", "sublabel": "~/.agentic/profiles · AGENTS.md", "tag": "공통 지침 정본", "width": 180 },
     { "id": "project", "lane": "project", "col": 3, "type": "database", "label": "프로젝트 파일", "sublabel": "AGENTS.md · 포인터 · agentic.project.json", "width": 180 },
     { "id": "agent", "lane": "agent", "col": 4, "type": "external", "label": "AI 에이전트", "sublabel": "지침 읽고 코드 작업", "width": 150 }
   ],

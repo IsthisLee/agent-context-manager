@@ -91,6 +91,21 @@ test('AGENTS managed hash excludes the project extension and detects Core-area e
   assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument('# Changed Core guidance'));
 });
 
+test('the English extension header bounds the managed AGENTS.md region like the Korean one', () => {
+  const header = '## 4. Project rule extensions (SSOT)';
+  const boilerplate = 'Add domain rules specific to this project below this section. They are not synced back to the profile.';
+  const document = `# Core guidance\n\n- Run checks.\n\n${header}\n\n${boilerplate}\n\n- Keep the domain rule.`;
+
+  assert.equal(extractAgentsManagedDocument(document), '# Core guidance\n\n- Run checks.');
+  assert.equal(hashAgentsManagedDocument(document), hashAgentsManagedDocument(`# Core guidance\n\n- Run checks.\n\n${header}\n\n${boilerplate}\n`));
+
+  const merged = mergeAgentsMd(`# Core guidance v2\n\n${header}\n\n${boilerplate}\n`, document);
+  assert.match(merged, /Core guidance v2/);
+  assert.match(merged, /Keep the domain rule/);
+  assert.equal(merged.split(boilerplate).length - 1, 1, 'the English boilerplate must not be duplicated');
+  assert.doesNotMatch(merged, /Existing project guidance/);
+});
+
 test('mergeManagedDocument updates only the Agentic block and preserves user edits', () => {
   const first = mergeManagedDocument('Generated v1', null);
   const existing = `${first}\n\n## User additions\n\nKeep this rule.\n`;

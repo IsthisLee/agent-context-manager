@@ -1,9 +1,16 @@
 import { createHash } from 'node:crypto';
+import { SUPPORTED_LOCALES, t } from './i18n.mjs';
 
 /**
  * Project guidance merge helpers.
  * Profile instructions and project-specific instructions remain separate owners.
  */
+
+// The extension header is rendered in the active locale, so recognize every
+// locale's heading. Otherwise an English project loses its boundary and any
+// domain rule added under it reads as an edit to the profile-owned region.
+const EXTENSION_HEADER = /## \d+\.\s*(?:프로젝트 규칙 확장|Project rule extensions)[^\n]*\n+/i;
+const EXTENSION_BOILERPLATES = SUPPORTED_LOCALES.map(locale => t(locale, 'scaffold.extBody'));
 
 /**
  * Merge a profile-rendered AGENTS.md with the project's domain-rule extension.
@@ -14,8 +21,7 @@ import { createHash } from 'node:crypto';
 export function mergeAgentsMd(profileContent, existingContent) {
   if (!existingContent || typeof existingContent !== 'string') return profileContent;
 
-  const headerRegex = /## \d+\.\s*프로젝트 규칙 확장[^\n]*\n+/i;
-  const match = existingContent.match(headerRegex);
+  const match = existingContent.match(EXTENSION_HEADER);
   if (!match) {
     return `${profileContent.trimEnd()}\n\n## Existing project guidance\n\n${existingContent.trim()}\n`;
   }
@@ -23,8 +29,8 @@ export function mergeAgentsMd(profileContent, existingContent) {
   const contentAfterHeader = existingContent.slice(match.index + match[0].length).trim();
   if (!contentAfterHeader) return profileContent;
 
-  const boilerplate = '이 프로젝트에만 적용되는 도메인 규칙은 이 섹션 아래에 추가한다. 프로필에는 역으로 동기화하지 않는다.';
-  const customRules = contentAfterHeader.startsWith(boilerplate)
+  const boilerplate = EXTENSION_BOILERPLATES.find(text => contentAfterHeader.startsWith(text));
+  const customRules = boilerplate
     ? contentAfterHeader.slice(boilerplate.length).trim()
     : contentAfterHeader;
   if (!customRules) return profileContent;
@@ -40,7 +46,7 @@ export function mergeAgentsMd(profileContent, existingContent) {
  */
 export function extractAgentsManagedDocument(content) {
   if (typeof content !== 'string') return null;
-  const extension = content.match(/## \d+\.\s*프로젝트 규칙 확장[^\n]*\n+/i);
+  const extension = content.match(EXTENSION_HEADER);
   if (extension) return content.slice(0, extension.index).trimEnd();
   const preserved = content.match(/## Existing project guidance\s*\n+/i);
   if (preserved) return content.slice(0, preserved.index).trimEnd();

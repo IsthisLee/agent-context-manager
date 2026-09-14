@@ -176,6 +176,8 @@ const messages = {
     'setup.cancel': '프로필 설정을 취소했습니다.',
     'setup.outro': '프로필 지침이 설정되었습니다.',
     'setup.block.level': '적용 수준',
+    'setup.legend.title': '적용 수준 정의',
+    'setup.legend.intro': '아래 각 지침의 `적용 수준`은 이 정의를 따른다.',
 
     'scaffold.extHeading': '## 4. 프로젝트 규칙 확장 (SSOT)',
     'scaffold.extBody': '이 프로젝트에만 적용되는 도메인 규칙은 이 섹션 아래에 추가한다. 프로필에는 역으로 동기화하지 않는다.'
@@ -259,6 +261,8 @@ const messages = {
     'setup.cancel': 'Profile configuration cancelled.',
     'setup.outro': 'Profile guidance configured.',
     'setup.block.level': 'Level',
+    'setup.legend.title': 'What the levels mean',
+    'setup.legend.intro': 'The `Level` on each guidance item below follows these definitions.',
 
     'scaffold.extHeading': '## 4. Project rule extensions (SSOT)',
     'scaffold.extBody': 'Add domain rules specific to this project below this section. They are not synced back to the profile.'
@@ -290,16 +294,35 @@ export function scopeOptions(locale) {
 }
 
 const levelHints = {
-  ko: { off: '이 지침을 프로필에 포함하지 않음', recommended: '일반적으로 권장되는 수준', strict: '항상 엄격하게 적용하는 수준' },
-  en: { off: 'Exclude this guidance from the profile', recommended: 'The generally recommended level', strict: 'Always applied strictly' }
+  ko: { off: '이 지침을 프로필에 포함하지 않음' },
+  en: { off: 'Exclude this guidance from the profile' }
 };
+
+// The meaning of each level, defined once. The setup legend and the TUI level
+// hints both read from here so a person choosing a level and an agent reading
+// the produced AGENTS.md see the same definition.
+const levelDefinitions = {
+  ko: {
+    recommended: '기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다.',
+    strict: '예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다.'
+  },
+  en: {
+    recommended: 'The default. Follow it as a rule; when a sound reason calls for an exception, make it and record why.',
+    strict: 'Always applied, with no exceptions. If you find a violation, stop, resolve it, then continue.'
+  }
+};
+
+export function guidanceLevelDefinitions(locale) {
+  return levelDefinitions[locale] || levelDefinitions[DEFAULT_LOCALE];
+}
 
 export function levelOptions(locale) {
   const hints = levelHints[locale] || levelHints[DEFAULT_LOCALE];
+  const definitions = guidanceLevelDefinitions(locale);
   return [
     { value: 'off', label: 'Off', hint: hints.off },
-    { value: 'recommended', label: 'Recommended', hint: hints.recommended },
-    { value: 'strict', label: 'Strict', hint: hints.strict }
+    { value: 'recommended', label: 'Recommended', hint: definitions.recommended },
+    { value: 'strict', label: 'Strict', hint: definitions.strict }
   ];
 }
 
@@ -315,12 +338,12 @@ const guidance = {
       security: '비밀값 보호와 외부 변경 승인에 관한 규칙'
     },
     sections: {
-      harness: ['하네스 동작', '작업을 작은 단위로 계획하고, 변경 후 프로젝트의 검증 명령을 실행해 실제 결과를 보고한다.'],
-      tdd: ['TDD', 'strict이면 Red-Green-Refactor를 따르고, recommended이면 가능한 경우 실패 테스트부터 작성한다.'],
-      review: ['리뷰', '변경 범위와 위험을 검토하고, 설정된 경우 독립적인 리뷰 결과를 남긴다.'],
-      verification: ['검증', '프로젝트가 선택한 검증 명령을 실행한다. 실행 결과는 실행 사실이며 품질 전체의 증명이 아님을 명시한다.'],
-      documentation: ['문서화', '사용자에게 영향을 주는 계약·정책·구조 변경은 관련 정본 문서와 함께 갱신한다.'],
-      security: ['보안', '비밀값을 출력·커밋하지 않고, 외부 변경과 권한이 필요한 작업은 사용자 승인을 받는다.']
+      harness: ['하네스 동작', '작업을 작은 단위로 계획한 뒤 변경마다 프로젝트의 검증 명령을 실행해 실제 결과를 보고한다. 기본 작업 방식은 작게 유지하고 복잡한 자동화나 도구는 필요할 때만 더한다. 말이나 추론이 아니라 실행 결과로 판단한다.'],
+      tdd: ['TDD', '구현 전에 실패하는 테스트를 먼저 쓴다. 통과시키는 최소 코드를 쓴 뒤 테스트를 유지하며 정리한다(Red-Green-Refactor).'],
+      review: ['리뷰', '변경의 범위와 위험을 먼저 확인한다. 보안·데이터·공개 인터페이스가 얽히면 독립적인 리뷰를 거친다.'],
+      verification: ['검증', '프로젝트가 선택한 검증 명령을 실행하고 그 출력을 근거로 남긴다. 실행 결과는 실행 사실일 뿐 요구사항 충족이나 품질 전체의 증명이 아니다.'],
+      documentation: ['문서화', '다른 사람이 관찰하거나 의존하는 계약·정책·구조가 바뀌면 관련 정본 문서를 같은 변경에서 갱신한다. 루트 지침에는 고신호 정보만 두고 상세는 링크로 찾게 한다.'],
+      security: ['보안', '비밀값을 출력하거나 커밋하지 않는다. 외부로 나가는 작업이나 권한이 필요한 작업은 실행 전에 사용자 승인을 받는다.']
     }
   },
   en: {
@@ -334,12 +357,12 @@ const guidance = {
       security: 'Rules on protecting secrets and approving outbound changes'
     },
     sections: {
-      harness: ['Harness behavior', 'Plan work in small units and, after each change, run the project verification command and report the real result.'],
-      tdd: ['TDD', 'At strict, follow Red-Green-Refactor; at recommended, start from a failing test when feasible.'],
-      review: ['Review', 'Review the scope and risk of changes and, when configured, leave an independent review result.'],
-      verification: ['Verification', "Run the project's chosen verification command. Its result is evidence of execution, not proof of overall quality."],
-      documentation: ['Documentation', 'Update the relevant canonical documents together with any contract, policy, or structure change that affects users.'],
-      security: ['Security', 'Never print or commit secrets; get user approval for outbound changes and privileged operations.']
+      harness: ['Harness behavior', 'Plan work in small units and run the project verification command after each change, reporting the real result. Keep the default way of working small and add complex automation or tooling only when it is needed. Judge by execution results, not by claims or reasoning.'],
+      tdd: ['TDD', 'Write a failing test before the implementation. Write the minimal code to make it pass, then refactor while the tests stay green (Red-Green-Refactor).'],
+      review: ['Review', 'Check the scope and risk of a change first. When security, data, or a public interface is involved, put the change through an independent review.'],
+      verification: ['Verification', "Run the project's chosen verification command and keep its output as evidence. The result proves that it ran, not that requirements are met or that overall quality is sound."],
+      documentation: ['Documentation', 'When a contract, policy, or structure that others observe or depend on changes, update the canonical document in the same change. Keep root guidance to high-signal information and let detail be found through links.'],
+      security: ['Security', 'Never print or commit secrets. Get user approval before any outbound action or privileged operation.']
     }
   }
 };

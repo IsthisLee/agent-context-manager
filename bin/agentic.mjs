@@ -8,7 +8,7 @@ import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, sele
 import { fileURLToPath } from 'node:url';
 import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, hashManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
 import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
-import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
+import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceLevelDefinitions, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SCOPES = ['personal', 'company', 'team', 'workspace'];
@@ -297,9 +297,14 @@ function setupProfile(name, values) {
     const [title, body] = sections[key];
     return `## ${title}\n\n- ${_('setup.block.level')}: ${value}\n- ${body}`;
   });
+  // Define what the levels mean once, from the shared constant, so the produced
+  // file explains its own `적용 수준` labels instead of leaving them undefined.
+  const definitions = guidanceLevelDefinitions(locale);
+  const legend = `## ${_('setup.legend.title')}\n\n- recommended: ${definitions.recommended}\n- strict: ${definitions.strict}\n\n${_('setup.legend.intro')}`;
   const start = '<!-- agentic:guidance:start -->';
   const end = '<!-- agentic:guidance:end -->';
-  const block = `${start}\n\n${blocks.join('\n\n')}\n\n${end}`;
+  const body = blocks.length ? [legend, ...blocks].join('\n\n') : '';
+  const block = `${start}\n\n${body}\n\n${end}`;
   const current = fs.readFileSync(profile.instructionsPath, 'utf8');
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
   writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));

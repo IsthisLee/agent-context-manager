@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { guidanceLevelDefinitions } from '../bin/i18n.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'bin', 'agentic.mjs');
@@ -142,6 +143,24 @@ test('setup applies selected guidance to the profile and preserves its project-i
     assert.match(instructions, /strict/);
     assert.doesNotMatch(instructions, /## 리뷰/);
     assert.doesNotMatch(instructions, /## 문서화/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('setup writes a level-definition legend that shares its wording with the level constant', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-legend-test-'));
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--security', 'strict'], { cwd: repoRoot, env });
+
+    const instructions = fs.readFileSync(path.join(home, '.agentic-profiles', 'team', 'AGENTS.md'), 'utf8');
+    const definitions = guidanceLevelDefinitions('ko');
+    assert.match(instructions, /## 적용 수준 정의/);
+    assert.ok(instructions.includes(definitions.recommended), 'legend must reuse the recommended definition from the level constant');
+    assert.ok(instructions.includes(definitions.strict), 'legend must reuse the strict definition from the level constant');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

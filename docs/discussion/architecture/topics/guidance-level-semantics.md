@@ -1,6 +1,6 @@
 # 지침 적용 수준(off/recommended/strict)의 의미 정의
 
-**상태:** Proposed
+**상태:** Implemented
 
 ## 제안 요약
 
@@ -41,6 +41,7 @@
 6. 대안과 판단
 7. 검증 계획
 8. 영향과 문서 정합화
+9. 구현 기록
 
 ---
 
@@ -87,6 +88,8 @@ flowchart LR
   LEG --> AG["에이전트가 읽는 AGENTS.md"]
   HINT --> USER["사용자가 setup에서 선택"]
 ```
+
+레벨 문구를 고칠 곳은 상수 한 곳이다. 산출물 범례와 TUI 힌트가 같은 값을 읽기 때문에, 사용자가 고를 때 본 뜻과 에이전트가 읽는 뜻이 같아진다.
 
 제안하는 정의(확정 대상):
 
@@ -143,13 +146,15 @@ flowchart TD
   U["사용자 TUI 선택 / CLI 플래그"] -->|항목별 off·recommended·strict| S["setupProfile()"]
   S --> M["프로필 metadata.settings 저장"]
   S --> B["guidance 블록 생성"]
-  B --> L["① 적용 수준 정의 범례 (레벨별 1회)"]
+  B --> L["① 적용 수준 정의 범례 (블록당 1회)"]
   B --> I["② 지침 항목 6개<br/>각 항목 = 적용 수준 + 규칙 문구(공유)"]
   L --> F["프로필 AGENTS.md"]
   I --> F
   F -->|apply / sync| P["프로젝트 AGENTS.md"]
   P --> A["에이전트가 규칙 + 강도를 함께 읽는다"]
 ```
+
+레벨 값은 프로필 metadata와 guidance 블록 두 곳에 기록된다. 범례는 포함된 항목이 하나라도 있을 때 블록 맨 위에 한 번만 들어가며 프로젝트에는 `apply`·`sync`로 전달된다.
 
 ## 6. 대안과 판단
 
@@ -177,3 +182,13 @@ flowchart TD
 | `docs/workflow.md` | setup 결과 설명에 레벨 정의 노출 반영(요약 + 이 문서 링크) |
 | `CHANGELOG.md` | `Unreleased`에 사용자 영향(산출물·TUI에 레벨 정의 노출) 기록 |
 | `setup-and-guidance.md` | 이 제안으로 링크 |
+
+## 9. 구현 기록
+
+**상태 승격:** Proposed → Implemented (2026-09-14).
+
+- `bin/i18n.mjs`에 `levelDefinitions` 상수와 `guidanceLevelDefinitions(locale)`를 추가했다. recommended·strict의 뜻을 한 곳에 둔다.
+- `setupProfile`(`bin/agentic.mjs`)이 guidance 블록 맨 위에 "## 적용 수준 정의" 범례를 넣는다. 포함된 항목이 하나라도 있을 때만 넣는다.
+- setup TUI의 레벨 힌트가 같은 상수를 읽는다. 사람과 에이전트가 같은 정의를 본다.
+- 평가: `evals/profile.test.mjs`가 범례 존재와 "범례 문구 == 상수"를 확인한다.
+- 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../architecture/guidance-catalog.md)에 반영했다.

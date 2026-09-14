@@ -18,6 +18,17 @@
 - **실측 연구도 저장소 개요의 효과를 확인하지 못했다.** Gloaguen 외(ETH Zurich)는 LLM이 생성한 컨텍스트 파일을 붙인 SWE-bench 과제와 개발자가 커밋한 컨텍스트 파일이 있는 저장소의 이슈로 여러 LLM과 코딩 에이전트를 평가했다. 컨텍스트 파일은 과제 성공률을 일반적으로 높이지 않았으며 추론 비용을 평균 20% 넘게 늘렸다. 생성한 파일과 개발자가 쓴 파일 모두 같은 경향이었다. 에이전트는 파일 안의 지시를 잘 따랐지만 저장소 개요는 도움이 되지 않았다. 저자들은 컨텍스트 파일이 비표준 코딩 관례를 지정할 때 유용하다고 결론 내렸다. [arXiv 2602.11988](https://arxiv.org/abs/2602.11988)
 - **지침을 만드는 방식이 결과를 가른다는 반대 결과도 있다.** probe-and-refine 방식은 합성 버그 수정 과제로 지침 파일의 부족한 곳을 찾아 LLM 호출로 반복 수정한다. SWE-bench Verified에서 Qwen3.5-35B-A3B로 4회 시행한 평균 해결률은 지침 없음 25.5%, 수정 전 지침 28.3%, 수정 후 지침 33.0%였다. 향상은 수정의 정밀도가 아니라 에이전트가 올바른 파일에 도달하는 비율에서 나왔다. 진단용 출력을 충분히 만들지 못한 다른 모델에서는 수정 루프의 효과가 떨어졌다. 이 방식도 모델 호출로 지침을 만들므로 모델 호출을 범위 밖에 둔 Agentic의 결정을 바꾸지 않는다. [arXiv 2606.20512](https://arxiv.org/abs/2606.20512)
 
+## 기본 지침의 근거와 분량에 관한 자료
+
+패키지가 배포하는 기본 지침의 근거 기준과 분량 예산 논의([기본 지침의 근거 기준과 분량 예산](discussion/architecture/topics/guidance-evidence-and-budget.md))의 외부 근거다. 지침이 길어지면 규칙이 무시된다는 경고는 [프로젝트 지침 자동 생성에 관한 근거](#프로젝트-지침-자동-생성에-관한-근거)에 있다.
+
+- **공식 가이드는 지침 한 줄마다 필요성을 따지고 확인할 수 있게 쓰라고 권한다.** best practices는 "For each line, ask: *Would removing this cause Claude to make mistakes?* If not, cut it."라고 쓴다. memory 문서는 "Use 2-space indentation" instead of "Format code properly"처럼 지켰는지 확인할 수 있는 지침을 예로 든다. [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Claude Code memory](https://code.claude.com/docs/en/memory)
+- **지침은 권고이고 반드시 지켜야 하는 동작은 hooks의 몫이다.** best practices는 "Unlike CLAUDE.md instructions which are advisory, hooks are deterministic and guarantee the action happens."라고 구분한다. 지침을 바꾼 뒤에는 "test changes by observing whether Claude's behavior actually shifts"라고 권한다. [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+- **성공을 주장하지 말고 증거를 보이게 하라고 권한다.** "Have Claude show evidence rather than asserting success: the test output, the command it ran and what it returned, or a screenshot of the result." [Claude Code best practices](https://code.claude.com/docs/en/best-practices)
+- **좋은 컨텍스트는 신호가 높은 최소한의 토큰이다.** Anthropic은 "good context engineering means finding the smallest possible set of high-signal tokens that maximize the likelihood of some desired outcome."라고 정의한다. 토큰이 늘수록 "the model's ability to accurately recall information from that context decreases."라고 설명하고, 시스템 프롬프트는 너무 경직되지도 모호하지도 않은 "right altitude"를 찾으라고 권한다. [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)
+- **Claude Code는 지침 파일 분량의 목표치와 한도를 밝힌다.** "target under 200 lines per CLAUDE.md file. Longer files consume more context and reduce adherence." 4 MiB를 넘는 CLAUDE.md는 읽지 않는다. `@path` import는 정리에는 도움이 되지만 "doesn't reduce context, since imported files load at launch"이다. 자동 메모리의 200줄·25KB 한도는 "applies only to `MEMORY.md`"이다. [Claude Code memory](https://code.claude.com/docs/en/memory)
+- **Codex는 지침 파일의 합산 크기에 한도를 둔다.** "Codex skips empty files and stops adding files once the combined size reaches the limit defined by `project_doc_max_bytes` (32 KiB by default)." 한도에 닿으면 "Raise the limit or split instructions across nested directories when you hit the cap."라고 안내한다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
+
 ## 공개 npm·GitHub 저장소 운영 근거
 
 - npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/)

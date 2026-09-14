@@ -17,6 +17,7 @@
 | 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6 | 프로필이 MCP·skills·subagents까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
 | 10 | [스코프 확장과 지침 합성](topics/scope-composition.md) | Medium | 1·6 | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합 | Proposed |
 | 11 | [Git 기반 프로필 관리](topics/git-profile-management.md) | Critical | 1 | 표준 Git 원격을 통한 프로필 공유·확인·안전한 갱신 | Proposed |
+| 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Proposed |
 | — | [문서 정확성 자동 리뷰](topics/doc-accuracy-review.md) | Medium | — | 해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 
@@ -44,12 +45,14 @@ flowchart LR
   S1 --> S10["10 스코프 합성"]
   S6 --> S10
   S1 --> S11["11 Git 기반 프로필 관리"]
+  S2 --> S12["12 기본 지침 근거·분량"]
+  S7 --> S12
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
   class S1,S2,S3,S4,S7 done
   class S6 doing
-  class S5,S8,S9,S10,S11 todo
+  class S5,S8,S9,S10,S11,S12 todo
 ```
 
 화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다.

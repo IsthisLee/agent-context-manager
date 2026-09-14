@@ -14,6 +14,8 @@
 
 [한국어](README.md) · **English**
 
+[The problem it solves](#the-problem-it-solves) · [Core goals](#core-goals) · [Use cases](#use-cases) · [Getting Started](#getting-started) · [Core features](#core-features) · [Supported agents](#supported-agents) · [Not supported](#not-supported) · [Architecture direction](#-architecture-direction-and-progress) · [Documentation](#documentation) · [Open-source participation](#open-source-participation)
+
 ## Different developers, different teams, different AI agents — one set of development guidance.
 
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
@@ -30,7 +32,7 @@ One flow — `profile create` → `profile setup` → `profile apply`/`profile s
 
 **Your coding conventions and test rules are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
 
-Agentic manages those standards as a Profile and, when you apply it to a project, generates the files that Codex, Claude Code, Antigravity, Cursor, and Copilot read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
+Agentic manages those standards as a Profile and, when you apply it to a project, generates the files that compatible agents read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
 
 > Git-based sharing and updating of Profiles across a team is planned. The current release provides local Profile management, application, and synchronization. See the [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) for the plan.
 

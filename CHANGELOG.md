@@ -20,6 +20,8 @@
 ### Fixed
 
 - Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록하고 이전 `\` 키도 읽는다
+- `.cursor/rules/agentic.mdc`의 frontmatter가 관리 마커 뒤에 놓여 파일 첫 줄에서 시작하지 않던 문제를 고침. 이제 템플릿 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다. 이전 버전이 만든 파일은 다음 `sync`에서 충돌 없이 고쳐진다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
+- Antigravity가 `.agents/rules/agentic.md`를 로드하지 않던 문제를 고침. 템플릿에 `trigger: always_on` frontmatter를 추가했다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
 
 ## [0.2.0] - 2026-09-14
 

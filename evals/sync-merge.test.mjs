@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractAgentsManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../bin/analyzer.mjs';
+import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../bin/analyzer.mjs';
 
 test('mergeAgentsMd preserves user custom rules under section 4', () => {
   const existingContent = `# Agent Guidelines for my-app
@@ -117,6 +117,43 @@ test('mergeManagedDocument updates only the Agentic block and preserves user edi
   assert.match(updated, /Keep this rule/);
   assert.equal((updated.match(/agentic:managed:start/g) || []).length, 1);
   assert.equal((updated.match(/agentic:managed:end/g) || []).length, 1);
+});
+
+const frontmatterTemplate = '---\nalwaysApply: true\n---\n\n# Generated rules v1\n';
+
+test('mergeManagedDocument keeps template frontmatter at the top of a new file, outside the managed block', () => {
+  const created = mergeManagedDocument(frontmatterTemplate, null);
+
+  assert.ok(created.startsWith('---\nalwaysApply: true\n---\n'), 'frontmatter must be the first lines so the agent parses it');
+  assert.doesNotMatch(extractManagedDocument(created), /alwaysApply/);
+  assert.match(extractManagedDocument(created), /Generated rules v1/);
+});
+
+test('mergeManagedDocument moves frontmatter out of a managed block written by an earlier version', () => {
+  const earlier = '<!-- agentic:managed:start -->\n---\nalwaysApply: true\n---\n\n# Generated rules v1\n<!-- agentic:managed:end -->\n';
+  const merged = mergeManagedDocument(frontmatterTemplate.replace('v1', 'v2'), earlier);
+
+  assert.ok(merged.startsWith('---\nalwaysApply: true\n---\n'));
+  assert.equal((merged.match(/alwaysApply/g) || []).length, 1);
+  assert.match(merged, /Generated rules v2/);
+  assert.equal((merged.match(/agentic:managed:start/g) || []).length, 1);
+});
+
+test('mergeManagedDocument keeps frontmatter the user already has at the top', () => {
+  const existing = `---\nalwaysApply: false\n---\n\n${extractManagedDocument(mergeManagedDocument(frontmatterTemplate, null))}\n`;
+  const merged = mergeManagedDocument(frontmatterTemplate.replace('v1', 'v2'), existing);
+
+  assert.ok(merged.startsWith('---\nalwaysApply: false\n---\n'));
+  assert.equal((merged.match(/alwaysApply/g) || []).length, 1);
+  assert.match(merged, /Generated rules v2/);
+});
+
+test('mergeManagedDocument adds template frontmatter to the top of an unmarked legacy file without it', () => {
+  const merged = mergeManagedDocument(frontmatterTemplate, '# Existing rules\n\n- Keep this content.\n');
+
+  assert.ok(merged.startsWith('---\nalwaysApply: true\n---\n'));
+  assert.match(merged, /Keep this content/);
+  assert.equal((merged.match(/alwaysApply/g) || []).length, 1);
 });
 
 test('mergeManagedDocument preserves an unmarked legacy file instead of replacing it', () => {

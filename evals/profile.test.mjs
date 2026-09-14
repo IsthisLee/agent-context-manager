@@ -6,6 +6,7 @@ import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { guidanceLevelDefinitions } from '../bin/i18n.mjs';
+import { hashManagedDocument } from '../bin/analyzer.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'bin', 'agentic.mjs');
@@ -225,6 +226,43 @@ test('apply applies the selected profile to a project without changing the profi
     assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from Agentic Profile: company/);
     assert.match(fs.readFileSync(path.join(project, 'CLAUDE.md'), 'utf8'), /Keep this local workflow/);
     assert.equal(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('apply puts agent rule frontmatter first and sync repairs rule files an earlier version wrapped in the managed block', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-rule-frontmatter-test-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+  fs.writeFileSync(path.join(project, 'package.json'), JSON.stringify({ name: 'sample-project', version: '1.0.0' }));
+
+  try {
+    const env = { ...process.env, AGENTIC_HOME: home };
+    execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
+
+    const cursorRulePath = path.join(project, '.cursor', 'rules', 'agentic.mdc');
+    const cursorRule = fs.readFileSync(cursorRulePath, 'utf8');
+    assert.ok(cursorRule.startsWith('---\n'), 'Cursor parses rule frontmatter only from the first line');
+    assert.match(cursorRule, /alwaysApply: true/);
+    assert.ok(fs.readFileSync(path.join(project, '.agents', 'rules', 'agentic.md'), 'utf8').startsWith('---\ntrigger: always_on\n---\n'),
+      'Antigravity loads a workspace rule on every task only with trigger: always_on');
+
+    const [, frontmatter, rest] = cursorRule.match(/^(---\n[\s\S]*?\n---\n)\n?([\s\S]*)$/);
+    const earlierLayout = rest.replace('<!-- agentic:managed:start -->\n', `<!-- agentic:managed:start -->\n${frontmatter}\n`);
+    fs.writeFileSync(cursorRulePath, earlierLayout);
+    const configPath = path.join(project, 'agentic.project.json');
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    config.managedHashes['.cursor/rules/agentic.mdc'] = hashManagedDocument(earlierLayout);
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    execFileSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env });
+
+    const repaired = fs.readFileSync(cursorRulePath, 'utf8');
+    assert.ok(repaired.startsWith('---\n'));
+    assert.equal((repaired.match(/alwaysApply/g) || []).length, 1);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

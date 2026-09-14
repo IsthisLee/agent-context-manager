@@ -1,6 +1,6 @@
 # 0004. Antigravity 규칙 파일을 `.agents/rules/`로 생성한다
 
-* **상태:** 채택됨 (Accepted)
+* **상태:** 채택됨 (Accepted), 일부 정정됨: 결과의 "기능적 중복" 판단과 공식 문서 인용은 [ADR 0009](0009-agent-rule-frontmatter.md)가 정정한다.
 * **일자:** 2026-09-13
 * **결정자:** 제품 소유자·개발자
 * **관련:** [에이전트 산출물 동기화](../discussion/architecture/topics/agent-sync.md)의 "실제 해석 가능성 확인" 후속을 부분 해소한다. 적용 전 규칙 위치 탐지는 [에이전트 규칙 위치 탐지](../discussion/architecture/topics/agent-rule-discovery.md)로 분리한다.

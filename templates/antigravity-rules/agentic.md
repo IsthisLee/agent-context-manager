@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Antigravity Rules for {{PROJECT_NAME}}
 
 All behavioral, development, and verification rules in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.

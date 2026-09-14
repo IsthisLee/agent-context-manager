@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI development guidance
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: cec9f192ac205d6e21fcef6f284502ed810956f2ab157e5627fce5c5da9828fa -->
+<!-- agentic-doc-sources-sha256: 98a6cbb31b6b8bdb0054e3186e830f22cb079eaff5c4f0d4ae9e231a9130326b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -18,7 +18,7 @@
 
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
-> (⚙️ We are expanding the scope from guidance to the agent environment. Git support is also in progress.)
+> (⚙️ I am expanding the scope from guidance to the agent environment. (ex. Skills, Hooks, etc) Git support is also in progress.)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.en.png" alt="Agentic structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, Antigravity, Cursor, and Copilot read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">

@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 개발 지침 관리
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: cec9f192ac205d6e21fcef6f284502ed810956f2ab157e5627fce5c5da9828fa -->
+<!-- agentic-doc-sources-sha256: 98a6cbb31b6b8bdb0054e3186e830f22cb079eaff5c4f0d4ae9e231a9130326b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -20,7 +20,7 @@
 
 
 
-> (⚙️ 지침 -> 환경으로 적용 범위를 넓혀가는 중입니다. Git 기능 반영도 작업 중입니다.)
+> (⚙️ 지침 -> 환경(Skills, Hooks 등)으로 적용 범위를 넓혀가는 중입니다. Git 기능 반영도 작업 중입니다.)
 
 <p align="center">
 

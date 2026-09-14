@@ -14,9 +14,11 @@
 
 [한국어](README.md) · **English**
 
-## Different developers, different teams, different AI agents — one development standard.
+## Different developers, different teams, different AI agents — one set of development guidance.
 
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
+
+> (⚙️ We are expanding the scope from guidance to the agent environment. Git support is also in progress.)
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic flow — profile create → setup → apply·sync: build a Profile, apply it to project files, and multiple AI agents work to the same standard" width="800">

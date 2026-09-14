@@ -138,8 +138,8 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Reason | Evidence |
 | --- | --- |
 | Each agent already provides it. | `/init` in Claude Code and Codex analyzes the codebase and drafts guidance. |
-| Official guidance advises against that content. | Anthropic recommends leaving out anything the agent can figure out by reading code and file-by-file descriptions. Guidance should hold commands, conventions, decisions, and gotchas the agent cannot guess. |
-| The benefit is unproven. | In a study, context files did not generally improve task success rates and raised inference cost by over 20% on average. Repository overviews were not helpful. |
+| Official guidance advises against that content. | Anthropic recommends leaving out anything the agent can figure out by reading code and file-by-file descriptions. Guidance should hold commands, conventions, decisions, and gotchas the agent cannot guess. It also warns that when guidance grows too long, important rules get lost and ignored. |
+| The benefit is unproven. | In a study, agents followed the instructions in context files, yet task success rates did not generally improve and inference cost rose by over 20% on average. Repository overviews were not helpful. |
 | It is outside Agentic's scope. | Deep analysis needs model calls. Agentic does not handle model calls or agent runtimes. |
 
 Refine a `/init` draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the Agentic managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agentic/blob/main/docs/references.md).

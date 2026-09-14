@@ -6,6 +6,8 @@
 
 ### Changed
 
+- 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
+
 - **호환성 파괴:** 프로필 저장 위치를 `~/.agentic/profiles/<name>`로, 언어 설정을 `~/.agentic/config.json`으로 옮김. 이전 `~/.agentic-cores`·`~/.agentic-profiles`는 최초 실행 때 새 위치로 자동 이관하고 `config.json`을 `~/.agentic/`로 올린다. 근거는 [ADR 0007](docs/adr/0007-profile-home-layout.md)
 
 ## [0.2.0] - 2026-09-14

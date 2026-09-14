@@ -7,7 +7,7 @@
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 591da7cc1623c2725aa044eb8a1566b39e5f527a855c29aa59d0da18ae275b27 -->
+<!-- agentic-doc-sources-sha256: 7827db1920af340f3d0e9abe768eee0e2eb4ae6832dff40183eb6b87a5c237aa -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -68,7 +68,7 @@ agt profile create company --scope company
 
 ## 2. 지침 설정
 
-프로필에 담을 공통 지침 수준을 정한다. 항목은 하네스 동작·TDD·리뷰·검증·문서화·보안 6개이고 각 항목은 `off`·`recommended`·`strict` 중 하나다.
+프로필에 담을 공통 지침 수준을 정한다. 항목은 하네스 동작·TDD·변경 검토·검증·문서화·보안 6개이고 각 항목은 `off`·`recommended`·`strict` 중 하나다.
 
 ```bash
 agt profile setup company --tdd strict --security strict

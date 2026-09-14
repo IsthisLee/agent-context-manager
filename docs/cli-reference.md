@@ -3,7 +3,7 @@
 `@isthis/agentic`은 `agentic`과 짧은 별칭 `agt`로 실행할 수 있다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 591da7cc1623c2725aa044eb8a1566b39e5f527a855c29aa59d0da18ae275b27 -->
+<!-- agentic-doc-sources-sha256: 7827db1920af340f3d0e9abe768eee0e2eb4ae6832dff40183eb6b87a5c237aa -->
 
 ## 설치와 실행
 
@@ -123,7 +123,7 @@ agt profile setup [<name>] [지침 옵션]
 | `<name>` | 설정할 프로필; 생략하면 TUI에서 `scope · 이름` 목록으로 선택 |
 | `--harness <level>` | 하네스 동작 지침 |
 | `--tdd <level>` | TDD 지침 |
-| `--review <level>` | 리뷰 지침 |
+| `--review <level>` | 변경 검토 지침 |
 | `--verification <level>` | 검증 지침 |
 | `--documentation <level>` | 문서화 지침 |
 | `--security <level>` | 보안 지침 |
@@ -132,7 +132,7 @@ agt profile setup [<name>] [지침 옵션]
 
 지침 옵션을 하나라도 전달하면 `<name>`이 필요하다. 옵션을 생략하면 TUI에서 프로필을 고르고 각 지침의 설명과 현재값을 확인해 선택한다. 마지막에 전체 설정 요약을 보여 주며, 사용자가 승인한 경우에만 프로필에 저장한다.
 
-표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 하네스 동작·TDD·리뷰·검증·문서화·보안 순서의 수준이다. 빈 줄은 기존 설정을 유지한다.
+표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 하네스 동작·TDD·변경 검토·검증·문서화·보안 순서의 수준이다. 빈 줄은 기존 설정을 유지한다.
 
 예:
 

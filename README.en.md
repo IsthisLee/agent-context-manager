@@ -33,7 +33,7 @@ One flow — `profile create` → `profile setup` → `profile apply`/`profile s
 
 ## The problem it solves
 
-**Your coding conventions and test rules are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
+**Your working principles for TDD, verification, security, and documentation are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
 
 Agentic manages those standards as a Profile and, when you apply it to a project, generates the files that compatible agents read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
 

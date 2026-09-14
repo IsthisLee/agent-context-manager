@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI Agent development guidance
 
-<!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 9d6c2acf594a55068e9bddb163347e2846fcf055e5c907a7c97b467947401cca -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/conflicts.mjs, bin/project-plan.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
+<!-- agentic-doc-sources-sha256: 078fcf3de1a8d4530b6f1a9f279743ae935028f661a566887f9e830ff0dc2cfb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -116,6 +116,7 @@ Repository developers run `pnpm run check` to verify Agentic's own syntax, docum
 - `agentic profile setup [<name>]` — after selecting a Profile by scope, configure harness behavior, TDD, change review, verification, documentation, and security guidance; omit everything for the full TUI.
 - `agentic profile remove [<name>]` — delete the selected Profile after confirmation; files already applied to projects are kept.
 - `agentic profile apply <name> <project>` — apply the selected Profile to a project.
+- `agentic profile resolve <project>` — move edits made inside a managed area outside it and regenerate the area; when the last applied version is unknown, `--discard` backs up and regenerates, and `--edit` opens a VS Code three-way merge.
 - Generate and synchronize per-agent guidance files.
 - `agentic config lang <ko|en>` — set the display and generation language; the default is Korean, can also be set with `--lang` / `AGENTIC_LANG`, and is chosen once on the first interactive run and saved.
 
@@ -131,6 +132,8 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Cursor | `.cursor/rules/agentic.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 
+Applying also records the managed areas as last written under `.agentic/base/`. Commit it, because it is the reference for resolving managed-area conflicts.
+
 ## Not supported
 
 **Agentic does not analyze a codebase to write project guidance automatically.** Agentic distributes a Profile's shared guidance to projects and to multiple agents. Project-specific guidance belongs to the project, and Agentic does not write it on the project's behalf.
@@ -142,7 +145,7 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | The benefit is unproven. | In a study, agents followed the instructions in context files, yet task success rates did not generally improve and inference cost rose by over 20% on average. Repository overviews were not helpful. |
 | It is outside Agentic's scope. | Deep analysis needs model calls. Agentic does not handle model calls or agent runtimes. |
 
-Refine a `/init` draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the Agentic managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agentic/blob/main/docs/references.md).
+Refine a `/init` draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the Agentic managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict, and `profile resolve` then moves those edits outside the managed area. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agentic/blob/main/docs/references.md).
 
 ## 🧭 Architecture direction and progress
 

@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 에이전트 개발 지침 관리
 
-<!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 9d6c2acf594a55068e9bddb163347e2846fcf055e5c907a7c97b467947401cca -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/conflicts.mjs, bin/project-plan.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
+<!-- agentic-doc-sources-sha256: 078fcf3de1a8d4530b6f1a9f279743ae935028f661a566887f9e830ff0dc2cfb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -117,6 +117,7 @@ agt profile apply company /path/to/project
 - `agentic profile setup [<name>]` — scope별 프로필 선택 후 하네스 동작·TDD·변경 검토·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
 - `agentic profile remove [<name>]` — 확인 후 선택한 프로필 삭제; 적용된 프로젝트 파일은 유지
 - `agentic profile apply <name> <project>` — 선택한 프로필을 프로젝트에 적용
+- `agentic profile resolve <project>` — 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 생성; 마지막 적용본을 모르면 `--discard`로 백업 후 재생성, `--edit`로 VS Code 3-way merge
 - 에이전트별 지침 파일 생성·동기화
 - `agentic config lang <ko|en>` — 표시·생성 언어 설정; 기본은 한국어이고 `--lang`·`AGENTIC_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
@@ -133,6 +134,8 @@ agt profile apply company /path/to/project
 | Cursor                 | `.cursor/rules/agentic.mdc`       |
 | GitHub Copilot         | `.github/copilot-instructions.md` |
 
+적용하면 마지막으로 쓴 관리 영역 원문도 `.agentic/base/`에 함께 기록합니다. 관리 영역 충돌을 풀 때 기준이 되므로 git에 커밋하세요.
+
 
 ## 지원하지 않는 기능
 
@@ -147,7 +150,7 @@ agt profile apply company /path/to/project
 | Agentic의 범위 밖입니다.     | 깊은 분석에는 모델 호출이 필요합니다. Agentic은 모델 호출과 에이전트 런타임을 다루지 않습니다.                                       |
 
 
-`/init`으로 만든 초안은 사람이 다듬은 뒤 `AGENTS.md`의 `프로젝트 규칙 확장` 영역에 두세요. 여러 에이전트가 공통으로 읽는 표준이 `AGENTS.md`이기 때문입니다. `CLAUDE.md`에 남긴다면 Agentic 관리 블록 밖에 두세요. 관리 영역 안을 고치면 다음 `profile sync`가 충돌로 멈춥니다. 결정 이유와 출처는 [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md)과 [참고 자료](https://github.com/IsthisLee/agentic/blob/main/docs/references.md#프로젝트-지침-자동-생성에-관한-근거)에 있습니다.
+`/init`으로 만든 초안은 사람이 다듬은 뒤 `AGENTS.md`의 `프로젝트 규칙 확장` 영역에 두세요. 여러 에이전트가 공통으로 읽는 표준이 `AGENTS.md`이기 때문입니다. `CLAUDE.md`에 남긴다면 Agentic 관리 블록 밖에 두세요. 관리 영역 안을 고치면 다음 `profile sync`가 충돌로 멈춥니다. 이때 `profile resolve`가 그 편집을 관리 영역 밖으로 옮겨 풀어 줍니다. 결정 이유와 출처는 [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md)과 [참고 자료](https://github.com/IsthisLee/agentic/blob/main/docs/references.md#프로젝트-지침-자동-생성에-관한-근거)에 있습니다.
 
 ## 🧭 아키텍처 방향과 진행 상태
 

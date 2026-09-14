@@ -2,8 +2,8 @@
 
 이 문서는 `@isthis/agentic` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 7827db1920af340f3d0e9abe768eee0e2eb4ae6832dff40183eb6b87a5c237aa -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
+<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agt` 또는 `agentic`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.
@@ -15,7 +15,8 @@
 3. **적용**: `agt profile apply <name> <project>` (먼저 `--dry-run`으로 계획 확인 가능)
 4. **개발**: 평소 쓰는 에이전트에 작업 의뢰. 에이전트가 프로젝트 `AGENTS.md`를 읽고 작업한다
 5. **동기화**: 프로필을 고친 뒤 `agt profile sync <project>`로 관리 영역만 재적용
-6. **삭제**: `agt profile remove [<name>] [--yes]` (적용된 프로젝트 파일은 보존)
+6. **충돌 해결**: 관리 영역을 밖에서 고쳐 `apply`·`sync`가 멈추면 `agt profile sync --dry-run <project>`로 차이를 보고 `agt profile resolve <project>`로 푼다
+7. **삭제**: `agt profile remove [<name>] [--yes]` (적용된 프로젝트 파일은 보존)
 
 관리 메뉴는 `agt profile list`로 열고 scope를 고른 뒤 위 작업을 이어서 실행한다. 각 명령의 정확한 인자·옵션과 TUI·자동화 방식은 [CLI Reference](cli-reference.md)를 따른다.
 

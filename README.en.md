@@ -23,7 +23,10 @@
 > (⚙️ I am expanding the scope from guidance to the agent environment. (ex. Skills, Hooks, etc) Git support is also in progress.)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.en.png" alt="Agentic structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, Antigravity, Cursor, and Copilot read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.en.dark.png">
+    <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.en.png" alt="Agentic structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, Antigravity, Cursor, and Copilot read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">
+  </picture>
 </p>
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.

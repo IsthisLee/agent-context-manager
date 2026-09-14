@@ -26,7 +26,10 @@
 
 <p align="center">
 
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.ko.png" alt="Agentic 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity·Cursor·Copilot이 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.ko.dark.png">
+    <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.ko.png" alt="Agentic 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity·Cursor·Copilot이 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
+  </picture>
 
 </p>
 

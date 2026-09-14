@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.mjs';
 import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.mjs';
+import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors = [];
@@ -86,12 +87,22 @@ function checkAdrs() {
     if (!/^\s*[*-]?\s*\*\*(결정자|Deciders):\*\*\s+\S/m.test(content)) {
       errors.push(`docs/adr/${adrFile}: missing required ADR header field (결정자)`);
     }
+    const evidenceError = adrEvidenceError(adrFile, content);
+    if (evidenceError) errors.push(evidenceError);
   }
 
   const index = fs.readFileSync(path.join(root, 'docs', 'README.md'), 'utf8');
   const indexed = [...index.matchAll(/\]\(adr\/(\d{4}-[a-z0-9-]+\.md)\)/g)].map(match => match[1]);
   if (indexed.join('|') !== adrFiles.join('|')) {
     errors.push('docs/README.md: ADR index must contain every ADR exactly once in filename order');
+  }
+}
+
+function checkReferenceDates() {
+  const references = path.join(root, 'docs', 'references.md');
+  if (!fs.existsSync(references)) return;
+  for (const line of undatedReferenceLinkLines(fs.readFileSync(references, 'utf8'))) {
+    errors.push(`docs/references.md:${line}: external link needs (확인일: YYYY-MM-DD) after verifying the claim`);
   }
 }
 
@@ -327,6 +338,7 @@ for (const markdownFile of walkMarkdown(root)) {
   checkInternalAnchors(markdownFile);
 }
 checkAdrs();
+checkReferenceDates();
 checkDiscussionStatuses();
 checkDocumentationGovernance();
 checkChangelog();

@@ -24,7 +24,7 @@
 - **Why:** 안정적인 기본 환경을 제공하면서도 회사·팀·프로젝트에 필요한 지침만 선택할 수 있도록 하기 위해서다.
 - **How:** `agentic profile create <name>`으로 프로필을 생성한 뒤 `agentic profile setup <name>`에서 하네스 동작, TDD, 변경 검토, 검증, 문서화, 보안 지침을 선택하고 프로필의 `AGENTS.md`에 반영한다.
 
-외부 연구와 사례는 [`references.md`](references.md)에서 검토한다. 외부 자료는 선택의 근거이며, 실제 기본 지침의 정본은 프로필의 `AGENTS.md`와 패키지 템플릿이다.
+외부 연구와 사례는 [`references.md`](references.md)에서 검토한다. 외부 자료는 선택의 근거이며, 실제 기본 지침의 정본은 프로필의 `AGENTS.md`와 패키지 템플릿이다. 외부 자료는 링크한 문서에서 주장을 확인한 날짜와 함께 기록한다.
 
 ## 범위와 경계
 

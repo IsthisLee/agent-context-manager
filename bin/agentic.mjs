@@ -6,9 +6,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { fileURLToPath } from 'node:url';
-import { formatDiff } from './conflicts.mjs';
+import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from './conflicts.mjs';
 import { writeTextAtomic } from './fs-utils.mjs';
-import { planProject, writePlan } from './project-plan.mjs';
+import { mergeInVsCode } from './merge-editor.mjs';
+import { managedRegion, planProject, regionHash, writePlan } from './project-plan.mjs';
 import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceLevelDefinitions, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -201,6 +202,7 @@ async function profileActions(name) {
       { value: 'setup', label: _('actions.setup.label'), hint: _('actions.setup.hint') },
       { value: 'apply', label: _('actions.apply.label'), hint: _('actions.apply.hint') },
       { value: 'sync', label: _('actions.sync.label'), hint: _('actions.sync.hint') },
+      { value: 'resolve', label: _('actions.resolve.label'), hint: _('actions.resolve.hint') },
       { value: 'view', label: _('actions.view.label'), hint: _('actions.view.hint') },
       { value: 'remove', label: _('actions.remove.label'), hint: _('actions.remove.hint') }
     ]
@@ -215,15 +217,49 @@ async function profileActions(name) {
     return outro(_('actions.view.outro'));
   }
 
+  if (action === 'resolve') return resolveProjectTui();
+
   const target = await projectPathTui(action === 'apply' ? _('actions.apply.path') : _('actions.sync.path'));
   if (!target) return cancel(_('actions.project.cancel'));
   const preview = await confirm({ message: _('actions.preview.confirm'), initialValue: false });
   if (isCancel(preview)) return cancel(_('actions.project.cancel'));
   const dryRun = preview ? ['--dry-run'] : [];
-  // apply names the profile to set/switch; sync only refreshes the profile the project is already bound to.
-  if (action === 'apply') applyProfile([name, ...dryRun, target]);
-  else syncProject([...dryRun, target]);
+  try {
+    // apply names the profile to set/switch; sync only refreshes the profile the project is already bound to.
+    if (action === 'apply') applyProfile([name, ...dryRun, target]);
+    else syncProject([...dryRun, target]);
+  } catch (error) {
+    if (!(error instanceof ConflictError)) throw error;
+    note(error.message, _('resolve.conflict.title'));
+    const next = await confirm({ message: _('resolve.offer'), initialValue: true });
+    if (isCancel(next) || !next) return cancel(_('actions.project.cancel'));
+    return resolveProjectTui(target);
+  }
   outro(preview ? _('actions.outro.preview') : (action === 'apply' ? _('actions.outro.apply') : _('actions.outro.sync')));
+}
+
+/** Preview the conflicts of a project, then resolve them the way the user picks. */
+async function resolveProjectTui(target = null) {
+  const project = target || await projectPathTui(_('resolve.path'));
+  if (!project) return cancel(_('actions.project.cancel'));
+  let preview = null;
+  try {
+    preview = resolveProject(['--dry-run', project]);
+  } catch (error) {
+    note(error.message, _('resolve.conflict.title'));
+  }
+  if (preview?.conflicts === 0) return outro(_('resolve.nothing'));
+  const mode = await select({
+    message: _('resolve.mode.message'),
+    options: [
+      { value: 'auto', label: _('resolve.mode.auto'), hint: _('resolve.mode.auto.hint') },
+      { value: 'edit', label: _('resolve.mode.edit'), hint: _('resolve.mode.edit.hint') },
+      { value: 'discard', label: _('resolve.mode.discard'), hint: _('resolve.mode.discard.hint') }
+    ]
+  });
+  if (isCancel(mode)) return cancel(_('actions.project.cancel'));
+  resolveProject([...(mode === 'auto' ? [] : [`--${mode}`]), project]);
+  outro(_('resolve.outro'));
 }
 
 async function mainTui() {
@@ -448,6 +484,7 @@ function conflictError(conflicts, targetDir) {
   return new ConflictError([
     `Managed file changed outside Agentic: ${conflicts.map(file => file.rel).join(', ')}`,
     `  See the difference:  ${cliName()} profile sync --dry-run ${targetDir}`,
+    `  Resolve it:          ${cliName()} profile resolve ${targetDir}`,
     `  Guide: ${CONFLICT_GUIDE}`
   ].join('\n'), conflicts);
 }
@@ -480,7 +517,7 @@ function printConflicts(conflicts) {
   for (const file of conflicts) {
     console.log(`\nConflict: ${file.rel}`);
     if (file.conflict.kind === 'missing') {
-      console.log(`${file.rel} is missing.`);
+      console.log(`${file.rel} is missing. \`profile resolve\` recreates it.`);
     } else if (file.conflict.base !== null) {
       console.log('Edits inside the managed area since the last apply:');
       console.log(formatDiff(`last-applied/${file.rel}`, `current/${file.rel}`, file.conflict.base, file.currentRegion ?? ''));
@@ -536,6 +573,88 @@ function syncProject(values) {
   applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 }
 
+/** The current file with its managed area swapped back to the base, for a three-way merge. */
+function withBaseRegion(file) {
+  if (file.kind === 'agents') return `${file.conflict.base}${file.existing.slice(file.currentRegion.length)}`;
+  return file.existing.replace(file.currentRegion, () => file.conflict.base);
+}
+
+function mergeWithEditor(file) {
+  const merged = mergeInVsCode({ name: file.rel, current: file.existing, incoming: file.regenerated, base: withBaseRegion(file) });
+  if (regionHash(managedRegion(file.kind, merged.content)) !== regionHash(file.nextRegion)) {
+    throw new Error(`Merge result for ${file.rel} still changes the managed area. Move your lines outside it and run resolve again. Result kept at ${merged.resultPath}`);
+  }
+  merged.cleanup();
+  return merged.content;
+}
+
+/**
+ * Resolve managed-area conflicts on a project bound to a profile. Edits made
+ * inside a managed area move outside it and the area is regenerated. When the
+ * last applied version is unknown, only `--discard` (with a backup) proceeds.
+ */
+function resolveProject(values) {
+  const positional = values.filter(value => !value.startsWith('--'));
+  if (positional.length > 1) throw new Error('profile resolve takes only <project>.');
+  const targetDir = path.resolve(process.cwd(), positional[0] || '.');
+  assertProjectDirectory(targetDir);
+  const name = boundProfile(readProjectConfig(path.join(targetDir, 'agentic.project.json')));
+  if (!name) throw new Error('profile resolve requires a project already applied with `agentic profile apply <name> <project>`.');
+  const dryRun = hasFlag(values, 'dry-run');
+  const plan = planFor(name, targetDir);
+  if (!plan.conflicts.length) {
+    console.log('Nothing to resolve: every managed area matches the last apply.');
+    return { conflicts: 0 };
+  }
+
+  const stamp = new Date().toISOString().replaceAll(':', '-');
+  const will = (past, future) => (dryRun ? future : past);
+  const overrides = new Map();
+  const backups = [];
+  const unresolved = [];
+  for (const file of plan.conflicts) {
+    if (file.conflict.kind === 'missing') {
+      overrides.set(file.rel, null);
+      console.log(`${file.rel}: ${will('recreated', 'would recreate')} the missing file.`);
+    } else if (file.conflict.base === null) {
+      if (!hasFlag(values, 'discard')) {
+        unresolved.push(file);
+        continue;
+      }
+      const backup = `${BACKUP_DIR}/${stamp}/${file.rel}`;
+      backups.push({ target: path.join(targetDir, backup), relativePath: backup, content: file.existing, status: 'create' });
+      overrides.set(file.rel, file.regenerated);
+      console.log(`${file.rel}: ${will('backed up', 'would back up')} to ${backup} and ${will('regenerated', 'would regenerate')} the managed area.`);
+    } else if (hasFlag(values, 'edit') && !dryRun && file.currentRegion) {
+      overrides.set(file.rel, mergeWithEditor(file));
+      console.log(`${file.rel}: applied the VS Code merge result.`);
+    } else {
+      const edits = collectUserEdits(file.conflict.base, file.currentRegion ?? '');
+      overrides.set(file.rel, relocateUserEdits(file.regenerated, edits.addedLines, file.kind));
+      console.log(`${file.rel}: ${will('moved', 'would move')} ${edits.addedLines.length} line(s) outside the managed area; ${will('restored', 'would restore')} ${edits.removedLines.length} line(s) removed inside it.`);
+      if (edits.addedLines.length && edits.removedLines.length) {
+        console.log(`  Some lines were changed rather than added. Check ${file.rel} for near-duplicate lines below the managed area.`);
+      }
+    }
+  }
+
+  if (unresolved.length) {
+    printConflicts(unresolved);
+    throw new Error([
+      `Cannot tell your edits from profile changes in: ${unresolved.map(file => file.rel).join(', ')}. The last applied version is unknown.`,
+      `  Keep what you need outside the managed area, then run: ${cliName()} profile resolve --discard ${targetDir}`,
+      `  --discard backs up each file under ${BACKUP_DIR}/ before regenerating it.`
+    ].join('\n'));
+  }
+  if (dryRun) {
+    console.log('Dry-run: no files were changed.');
+    return { conflicts: plan.conflicts.length };
+  }
+  const resolved = planFor(name, targetDir, overrides);
+  writePlan([...backups, ...resolved.changes], targetDir);
+  console.log(`Resolved ${plan.conflicts.length} conflict(s) in ${targetDir}`);
+  return { conflicts: plan.conflicts.length };
+}
 
 async function promptLocale() {
   const selected = await select({
@@ -565,7 +684,7 @@ function configLang(value) {
 function help() {
   const title = invokedAs === 'agt' ? 'agt (agentic)' : 'agentic (agt)';
   const commandName = invokedAs === 'agt' ? 'agt' : 'agentic';
-  console.log(`${title} shared project guidance manager\n\n  ${commandName} profile create [<name>] [--scope <scope>]\n  ${commandName} profile list [--scope <scope>]\n  ${commandName} profile view <name>\n  ${commandName} profile setup [<name>] [--tdd <level>] ...\n  ${commandName} profile apply <name> [--dry-run] <project>\n  ${commandName} profile sync [--dry-run] <project>\n  ${commandName} profile remove [<name>] [--yes]\n  ${commandName} config lang <ko|en>\n\nScopes: ${SCOPES.join(', ')}\nLanguage: ${SUPPORTED_LOCALES.join(', ')} (default ${DEFAULT_LOCALE}). Set with --lang, AGENTIC_LANG, or config lang; on first interactive run you are asked once and the choice is saved.\nUse either agentic or agt. Omit profile create, setup, or remove options to use interactive TUI prompts.`);
+  console.log(`${title} shared project guidance manager\n\n  ${commandName} profile create [<name>] [--scope <scope>]\n  ${commandName} profile list [--scope <scope>]\n  ${commandName} profile view <name>\n  ${commandName} profile setup [<name>] [--tdd <level>] ...\n  ${commandName} profile apply <name> [--dry-run] <project>\n  ${commandName} profile sync [--dry-run] <project>\n  ${commandName} profile resolve [--dry-run] [--discard] [--edit] <project>\n  ${commandName} profile remove [<name>] [--yes]\n  ${commandName} config lang <ko|en>\n\nScopes: ${SCOPES.join(', ')}\nLanguage: ${SUPPORTED_LOCALES.join(', ')} (default ${DEFAULT_LOCALE}). Set with --lang, AGENTIC_LANG, or config lang; on first interactive run you are asked once and the choice is saved.\nUse either agentic or agt. Omit profile create, setup, or remove options to use interactive TUI prompts.`);
 }
 
 async function runProfileCommand(profileArgs) {
@@ -598,6 +717,8 @@ async function runProfileCommand(profileArgs) {
     applyProfile(rest);
   } else if (sub === 'sync') {
     syncProject(rest);
+  } else if (sub === 'resolve') {
+    resolveProject(rest);
   } else {
     help();
   }

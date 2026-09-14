@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
-import { baseFilePath, parseBase, serializeBase } from './conflicts.mjs';
+import { AGENTIC_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.mjs';
 import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
 
 /**
- * Plan what `profile apply`/`sync` would write to a project.
+ * Plan what `profile apply`/`sync`/`resolve` would write to a project.
  * Managed areas edited since the last apply are reported as conflicts instead
  * of throwing, so callers can show them, stop, or resolve them.
  */
@@ -60,15 +60,17 @@ function knownBase(targetDir, relativePath, recordedHash, nextRegion) {
  * @param {string} input.profileName
  * @param {string} input.renderedAgents - profile AGENTS.md rendered for this project
  * @param {object} input.projectConfig - parsed agentic.project.json
+ * @param {Map<string, string|null>} [overrides] - resolved contents to plan from instead of the files on disk
  */
-export function planProject({ packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig }) {
+export function planProject({ packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig }, overrides = new Map()) {
   const files = [];
   const describe = (relativePath, kind, regenerate) => {
-    const existing = readIfExists(path.join(targetDir, relativePath));
+    const overridden = overrides.has(relativePath);
+    const existing = overridden ? overrides.get(relativePath) : readIfExists(path.join(targetDir, relativePath));
     const regenerated = regenerate(existing);
     const currentRegion = managedRegion(kind, existing);
     const nextRegion = managedRegion(kind, regenerated);
-    const recordedHash = recordedHashFor(projectConfig, relativePath);
+    const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
     const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
       ? { kind: existing === null ? 'missing' : 'edited', base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
       : null;
@@ -95,6 +97,7 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   for (const file of files) {
     if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
+  planFile(AGENTIC_GITIGNORE, 'backups/\n');
   const { core: _legacyCore, ...restConfig } = projectConfig;
   planFile('agentic.project.json', JSON.stringify({ ...restConfig, schemaVersion: 1, profile: profileName, managedHashes }, null, 2) + '\n');
 

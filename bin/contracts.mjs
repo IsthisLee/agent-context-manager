@@ -9,5 +9,6 @@ export const PROFILE_OPERATION_CONTRACT = [
   { id: 'setup', cli: 'profile setup <name>', tui: 'profile list → 지침 설정', profileList: true },
   { id: 'apply', cli: 'profile apply <name> <project>', tui: 'profile list → 프로젝트에 적용', profileList: true },
   { id: 'sync', cli: 'profile sync <project>', tui: 'profile list → 프로젝트 동기화', profileList: true },
+  { id: 'resolve', cli: 'profile resolve <project>', tui: 'profile list → 프로젝트 충돌 해결', profileList: true },
   { id: 'remove', cli: 'profile remove', tui: 'profile list → 프로필 삭제', profileList: true }
 ];

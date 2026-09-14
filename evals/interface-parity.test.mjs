@@ -15,6 +15,6 @@ test('every Guidance Profile capability has CLI, TUI, and profile-list interface
 test('the profile contract covers the complete user-facing capability set', () => {
   assert.deepEqual(
     PROFILE_OPERATION_CONTRACT.map(operation => operation.id),
-    ['create', 'list', 'view', 'setup', 'apply', 'sync', 'remove']
+    ['create', 'list', 'view', 'setup', 'apply', 'sync', 'resolve', 'remove']
   );
 });

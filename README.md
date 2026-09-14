@@ -24,7 +24,7 @@
 
 <p align="center">
 
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic 사용 흐름 — profile create → setup → apply·sync로 프로필을 만들어 프로젝트에 적용하고 여러 AI 에이전트가 같은 기준으로 작업" width="800">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.ko.png" alt="Agentic 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity·Cursor·Copilot이 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
 
 </p>
 
@@ -82,6 +82,12 @@ agt profile create company --scope company
 agt profile setup company --tdd recommended --security strict
 agt profile apply company /path/to/project
 ```
+
+위 명령은 다음 흐름으로 동작합니다.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic 사용 흐름: profile create → setup → apply·sync로 프로필을 만들어 프로젝트에 적용하고 여러 AI 에이전트가 같은 기준으로 작업" width="800">
+</p>
 
 > [!Tip]
 > 터미널에서 `agt` 또는 `agentic`을 입력하여 TUI를 통해 모든 기능을 간편하게 사용 가능합니다.

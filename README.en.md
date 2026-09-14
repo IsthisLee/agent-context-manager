@@ -21,7 +21,7 @@
 > (⚙️ We are expanding the scope from guidance to the agent environment. Git support is also in progress.)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic flow — profile create → setup → apply·sync: build a Profile, apply it to project files, and multiple AI agents work to the same standard" width="800">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic-overview.en.png" alt="Agentic structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, Antigravity, Cursor, and Copilot read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">
 </p>
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
@@ -81,6 +81,12 @@ agentic profile create company --scope company
 agentic profile setup company --tdd recommended --security strict
 agentic profile apply company /path/to/project
 ```
+
+The commands above follow this flow.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic flow: profile create → setup → apply·sync builds a Profile, applies it to project files, and multiple AI agents work to the same standard" width="800">
+</p>
 
 > [!Tip]
 > Type `agt` or `agentic` in your terminal to use every feature through the TUI.

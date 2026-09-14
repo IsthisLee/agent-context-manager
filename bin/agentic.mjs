@@ -481,8 +481,15 @@ function printConflicts(conflicts) {
     console.log(`\nConflict: ${file.rel}`);
     if (file.conflict.kind === 'missing') {
       console.log(`${file.rel} is missing.`);
+    } else if (file.conflict.base !== null) {
+      console.log('Edits inside the managed area since the last apply:');
+      console.log(formatDiff(`last-applied/${file.rel}`, `current/${file.rel}`, file.conflict.base, file.currentRegion ?? ''));
+      if (file.nextRegion !== file.conflict.base) {
+        console.log('Profile or template changes Agentic will write:');
+        console.log(formatDiff(`last-applied/${file.rel}`, `next/${file.rel}`, file.conflict.base, file.nextRegion ?? ''));
+      }
     } else {
-      console.log('Current managed area compared with what Agentic will write:');
+      console.log('The last applied version is unknown. Current managed area compared with what Agentic will write:');
       console.log(formatDiff(`current/${file.rel}`, `next/${file.rel}`, file.currentRegion ?? '', file.nextRegion ?? ''));
     }
   }

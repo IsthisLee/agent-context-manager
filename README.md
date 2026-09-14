@@ -1,4 +1,4 @@
-# Agentic — 프로필 중심 AI 개발 지침 관리
+# Agentic — 프로필 기반 AI 개발 지침 관리
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
 <!-- agentic-doc-sources-sha256: a828d5986d2cab8fc8bf6c24a09da2198729f9d18d0697cfb2954d9384e487a4 -->

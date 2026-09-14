@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json, templates, tools -->
-<!-- agentic-doc-sources-sha256: 1c74923cb10dcb73b7e9e052a8bae6935bfea6cd681822cc27a01474796b5ae6 -->
+<!-- agentic-doc-sources-sha256: f1f89b294f77e9aa299fbd985c3e1562e1d639e35d6fbd67183b0ff4456a14e4 -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 

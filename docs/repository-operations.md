@@ -3,7 +3,7 @@
 이 문서는 Agentic 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
 <!-- agentic-doc-sources: package.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/check-docs.mjs, tools/package-smoke.mjs -->
-<!-- agentic-doc-sources-sha256: c2869c3841ac361c9503e32203cc86214166260c8f066a5ff97e787a915297ea -->
+<!-- agentic-doc-sources-sha256: c558609a0b5517b9309f68a89ae658e515c463f54c3a5a7b84c307427ae199c9 -->
 
 `@isthis/agentic`은 공개 GitHub 저장소와 npm registry에 배포된 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 

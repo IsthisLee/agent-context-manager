@@ -111,7 +111,7 @@ agt profile apply company /path/to/project
 
 - `agentic profile create [<name>] [--scope <scope>]` — `personal`, `company`, `team`, `workspace` 용도별 프로필 생성; 이름을 생략하면 TUI 입력
 - `agentic profile list [--scope <scope>]` — scope별 프로필 목록·선택·관리; TUI에서는 scope를 먼저 선택
-- `agentic profile setup [<name>]` — scope별 프로필 선택 후 하네스 동작·TDD·리뷰·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
+- `agentic profile setup [<name>]` — scope별 프로필 선택 후 하네스 동작·TDD·변경 검토·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
 - `agentic profile remove [<name>]` — 확인 후 선택한 프로필 삭제; 적용된 프로젝트 파일은 유지
 - `agentic profile apply <name> <project>` — 선택한 프로필을 프로젝트에 적용
 - 에이전트별 지침 파일 생성·동기화
@@ -154,7 +154,7 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 | 주제                                                                                                                               | 대상과 목표                                             | 중요도·상태                  | 다음 작업               |
 | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------- | ------------------- |
 | [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)               | 사용자·조직의 Personal·Company·Team·Workspace별 공통 지침 저장소 | Critical · Implemented  | 조직 공유 계약 검토         |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)         | 사용자·CLI가 프로필의 TDD·리뷰·검증·문서화·보안 지침을 선택 구성           | High · Implemented      | preset·설정 diff 고도화  |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)         | 사용자·CLI가 프로필의 TDD·변경 검토·검증·문서화·보안 지침을 선택 구성           | High · Implemented      | preset·설정 diff 고도화  |
 | [프로젝트 적용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md)             | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존                  | Critical · Implemented  | 충돌·복구 확정            |
 | [에이전트 산출물 동기화](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화                   | High · Implemented      | manifest·drift 고도화  |
 | [자연어 요청을 통한 사용](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Proposed         | 비대화형 CLI·JSON·종료 코드 |
@@ -172,7 +172,7 @@ Agentic의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변�
 | 주제                                                                                                                       | 목적·대상 계층                                                                 | 중요도·상태                 | 결정할 것과 관계                                    |
 | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------- | -------------------------------------------- |
 | [프로필 모델과 저장소](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md)       | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ 프로필      | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행              |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·리뷰·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ 프로필 `AGENTS.md`            | High · Implemented     | preset·기본값·재실행·대화형/비대화형; 프로필 모델 후, 프로젝트 적용 전 |
+| [setup과 지침 옵션](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·변경 검토·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ 프로필 `AGENTS.md`            | High · Implemented     | preset·기본값·재실행·대화형/비대화형; 프로필 모델 후, 프로젝트 적용 전 |
 | [스코프 확장과 지침 합성](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/scope-composition.md) | scope를 공유·재사용하는 지침 계층으로 확장하고 다계층 상속·병합 · 사용자·조직 ↔ CLI ↔ 프로필·scope ↔ 프로젝트 | Medium · Proposed      | 병합·충돌 규칙과 scope 공유 형식; 검증 게이트 후 착수           |
 
 

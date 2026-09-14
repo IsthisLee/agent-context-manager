@@ -167,7 +167,7 @@ test('setup applies selected guidance to the profile and preserves its project-i
     const instructions = fs.readFileSync(path.join(profileDir, 'AGENTS.md'), 'utf8');
     assert.match(instructions, /## TDD/);
     assert.match(instructions, /strict/);
-    assert.doesNotMatch(instructions, /## 리뷰/);
+    assert.doesNotMatch(instructions, /## 변경 검토/);
     assert.doesNotMatch(instructions, /## 문서화/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

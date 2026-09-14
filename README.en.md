@@ -110,7 +110,7 @@ Repository developers run `pnpm run check` to verify Agentic's own syntax, docum
 
 - `agentic profile create [<name>] [--scope <scope>]` — create a Profile for the `personal`, `company`, `team`, or `workspace` purpose; omit the name for TUI input.
 - `agentic profile list [--scope <scope>]` — list, select, and manage Profiles by scope; in the TUI you choose the scope first.
-- `agentic profile setup [<name>]` — after selecting a Profile by scope, configure harness behavior, TDD, review, verification, documentation, and security guidance; omit everything for the full TUI.
+- `agentic profile setup [<name>]` — after selecting a Profile by scope, configure harness behavior, TDD, change review, verification, documentation, and security guidance; omit everything for the full TUI.
 - `agentic profile remove [<name>]` — delete the selected Profile after confirmation; files already applied to projects are kept.
 - `agentic profile apply <name> <project>` — apply the selected Profile to a project.
 - Generate and synchronize per-agent guidance files.
@@ -148,7 +148,7 @@ Agentic's implementation is managed in stages around the questions of where the 
 | Topic | Target and goal | Priority · Status | Next work |
 | --- | --- | --- | --- |
 | [Profile model and store](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) | A per-Personal/Company/Team/Workspace shared-guidance store for users and organizations | Critical · Implemented | Review the organization-sharing contract |
-| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Users and the CLI selectively configure a Profile's TDD, review, verification, documentation, and security guidance | High · Implemented | Advance presets and configuration diffs |
+| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Users and the CLI selectively configure a Profile's TDD, change review, verification, documentation, and security guidance | High · Implemented | Advance presets and configuration diffs |
 | [Project application](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/project-application.md) | Apply the chosen Profile to a project while keeping domain guidance separate | Critical · Implemented | Finalize conflict and recovery handling |
 | [Agent artifact synchronization](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
 | [Use through natural-language requests](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Proposed | Non-interactive CLI, JSON, and exit codes |
@@ -164,7 +164,7 @@ Each document manages not only the code feature but also the target layer, the r
 | Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
 | --- | --- | --- | --- |
 | [Profile model and store](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) | Separate and reuse shared guidance per Personal/Company/Team/Workspace · users and organizations ↔ CLI ↔ Profile | Critical · Implemented | Path, name, scope, default selection; precedes every follow-up feature |
-| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Select only the needed harness, TDD, review, verification, documentation, and security guidance · user ↔ CLI ↔ Profile `AGENTS.md` | High · Implemented | Presets, defaults, re-runs, interactive/non-interactive; after the profile model, before project application |
+| [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Select only the needed harness, TDD, change review, verification, documentation, and security guidance · user ↔ CLI ↔ Profile `AGENTS.md` | High · Implemented | Presets, defaults, re-runs, interactive/non-interactive; after the profile model, before project application |
 | [Scope expansion and guidance composition](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/scope-composition.md) | Raise scope into shareable, reusable guidance layers with multi-layer inheritance and merging · users and organizations ↔ CLI ↔ Profile/scope ↔ project | Medium · Proposed | Merge and conflict rules, scope-sharing format; start after the validation gate |
 
 #### 2. Project application and agent delivery

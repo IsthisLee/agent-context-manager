@@ -144,7 +144,7 @@ const messages = {
 
     'actions.message': '{name}에서 수행할 작업을 선택하세요.',
     'actions.setup.label': '지침 설정',
-    'actions.setup.hint': 'TDD·리뷰·검증·문서화·보안 수준 변경',
+    'actions.setup.hint': 'TDD·변경 검토·검증·문서화·보안 수준 변경',
     'actions.apply.label': '프로젝트에 적용',
     'actions.apply.hint': '선택한 프로필을 프로젝트에 처음 적용',
     'actions.sync.label': '프로젝트 동기화',
@@ -229,7 +229,7 @@ const messages = {
 
     'actions.message': 'Select an action for {name}.',
     'actions.setup.label': 'Configure guidance',
-    'actions.setup.hint': 'Change TDD, review, verification, documentation, and security levels',
+    'actions.setup.hint': 'Change levels for TDD, change review, verification, documentation, and security',
     'actions.apply.label': 'Apply to a project',
     'actions.apply.hint': 'Apply the selected profile to a project for the first time',
     'actions.sync.label': 'Sync a project',
@@ -351,11 +351,11 @@ export function levelOptions(locale) {
 
 const guidance = {
   ko: {
-    labels: { harness: '하네스 동작', tdd: 'TDD', review: '리뷰', verification: '검증', documentation: '문서화', security: '보안' },
+    labels: { harness: '하네스 동작', tdd: 'TDD', review: '변경 검토', verification: '검증', documentation: '문서화', security: '보안' },
     descriptions: {
       harness: '작업을 계획하고 실제 검증 결과를 보고하는 기본 작업 방식',
       tdd: '실패 테스트부터 시작하는 Red-Green-Refactor 개발 방식',
-      review: '변경 범위와 위험을 확인하는 리뷰 방식',
+      review: '변경 범위와 위험을 확인하고 필요하면 독립 리뷰를 거치는 방식',
       verification: '프로젝트의 검증 명령을 실행하고 결과를 기록하는 방식',
       documentation: '계약·정책·구조 변경을 정본 문서에 반영하는 방식',
       security: '비밀값 보호와 외부 변경 승인에 관한 규칙'
@@ -363,18 +363,18 @@ const guidance = {
     sections: {
       harness: ['하네스 동작', '작업을 작은 단위로 계획한 뒤 변경마다 프로젝트의 검증 명령을 실행해 실제 결과를 보고한다. 기본 작업 방식은 작게 유지하고 복잡한 자동화나 도구는 필요할 때만 더한다. 말이나 추론이 아니라 실행 결과로 판단한다.'],
       tdd: ['TDD', '구현 전에 실패하는 테스트를 먼저 쓴다. 통과시키는 최소 코드를 쓴 뒤 테스트를 유지하며 정리한다(Red-Green-Refactor).'],
-      review: ['리뷰', '변경의 범위와 위험을 먼저 확인한다. 보안·데이터·공개 인터페이스가 얽히면 독립적인 리뷰를 거친다.'],
+      review: ['변경 검토', '변경의 범위와 위험을 먼저 확인한다. 보안·데이터·공개 인터페이스가 얽히면 독립적인 리뷰를 거친다.'],
       verification: ['검증', '프로젝트가 선택한 검증 명령을 실행하고 그 출력을 근거로 남긴다. 실행 결과는 실행 사실일 뿐 요구사항 충족이나 품질 전체의 증명이 아니다.'],
       documentation: ['문서화', '다른 사람이 관찰하거나 의존하는 계약·정책·구조가 바뀌면 관련 정본 문서를 같은 변경에서 갱신한다. 루트 지침에는 고신호 정보만 두고 상세는 링크로 찾게 한다.'],
       security: ['보안', '비밀값을 출력하거나 커밋하지 않는다. 외부로 나가는 작업이나 권한이 필요한 작업은 실행 전에 사용자 승인을 받는다.']
     }
   },
   en: {
-    labels: { harness: 'Harness behavior', tdd: 'TDD', review: 'Review', verification: 'Verification', documentation: 'Documentation', security: 'Security' },
+    labels: { harness: 'Harness behavior', tdd: 'TDD', review: 'Change review', verification: 'Verification', documentation: 'Documentation', security: 'Security' },
     descriptions: {
       harness: 'The default way of planning work and reporting real verification results',
       tdd: 'Red-Green-Refactor development that starts from a failing test',
-      review: 'Review that checks the scope and risk of changes',
+      review: 'Checking the scope and risk of changes, with independent review when needed',
       verification: 'Running the project verification command and recording the result',
       documentation: 'Reflecting contract, policy, and structure changes in canonical docs',
       security: 'Rules on protecting secrets and approving outbound changes'
@@ -382,7 +382,7 @@ const guidance = {
     sections: {
       harness: ['Harness behavior', 'Plan work in small units and run the project verification command after each change, reporting the real result. Keep the default way of working small and add complex automation or tooling only when it is needed. Judge by execution results, not by claims or reasoning.'],
       tdd: ['TDD', 'Write a failing test before the implementation. Write the minimal code to make it pass, then refactor while the tests stay green (Red-Green-Refactor).'],
-      review: ['Review', 'Check the scope and risk of a change first. When security, data, or a public interface is involved, put the change through an independent review.'],
+      review: ['Change review', 'Check the scope and risk of a change first. When security, data, or a public interface is involved, put the change through an independent review.'],
       verification: ['Verification', "Run the project's chosen verification command and keep its output as evidence. The result proves that it ran, not that requirements are met or that overall quality is sound."],
       documentation: ['Documentation', 'When a contract, policy, or structure that others observe or depend on changes, update the canonical document in the same change. Keep root guidance to high-signal information and let detail be found through links.'],
       security: ['Security', 'Never print or commit secrets. Get user approval before any outbound action or privileged operation.']

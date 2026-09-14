@@ -50,6 +50,8 @@ test('default (non-interactive) locale keeps Korean generated guidance', () => {
     const agents = buildProject(home);
     assert.ok(hasHangul(agents), 'ko AGENTS.md should still contain Korean guidance');
     assert.match(agents, /프로젝트 규칙 확장/);
+    assert.match(agents, /^## 변경 검토$/m);
+    assert.doesNotMatch(agents, /^## 리뷰$/m);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -61,6 +63,8 @@ test('AGENTIC_LANG=en generates guidance with no Korean characters', () => {
     const agents = buildProject(home, { AGENTIC_LANG: 'en' });
     assert.equal(hasHangul(agents), false, 'en AGENTS.md must contain no Korean characters');
     assert.match(agents, /Project rule extensions/);
+    assert.match(agents, /^## Change review$/m);
+    assert.doesNotMatch(agents, /^## Review$/m);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

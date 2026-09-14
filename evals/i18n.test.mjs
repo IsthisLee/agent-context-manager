@@ -66,6 +66,29 @@ test('AGENTIC_LANG=en generates guidance with no Korean characters', () => {
   }
 });
 
+test('AGENTIC_LANG=en sync preserves domain rules added under the extension section', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-en-sync-'));
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-en-sync-proj-'));
+  const env = { AGENTIC_LANG: 'en' };
+  try {
+    run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
+    run(home, ['profile', 'apply', 'demo', project], env);
+    const agentsPath = path.join(project, 'AGENTS.md');
+    fs.appendFileSync(agentsPath, '\n- Domain rule: use pnpm.\n');
+
+    run(home, ['profile', 'sync', project], env);
+    run(home, ['profile', 'sync', project], env);
+
+    const agents = fs.readFileSync(agentsPath, 'utf8');
+    assert.match(agents, /Domain rule: use pnpm/);
+    assert.equal(agents.split('Add domain rules specific to this project').length - 1, 1);
+    assert.doesNotMatch(agents, /Existing project guidance/);
+  } finally {
+    fs.rmSync(home, { recursive: true, force: true });
+    fs.rmSync(project, { recursive: true, force: true });
+  }
+});
+
 test('a saved config.json locale is honored with no flag or env', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfg-'));
   try {

@@ -30,6 +30,14 @@ test('documentation checker hashes a pinned directory so files inside it are cov
   assert.match(checker, /isDirectory\(\)/);
 });
 
+test('doc-source hash paths are POSIX on every platform so a stamp from one OS verifies on another', async () => {
+  const { docSourceHashPath } = await import('../tools/doc-source-path.mjs');
+
+  assert.equal(docSourceHashPath('D:\\a\\agentic', 'D:\\a\\agentic\\bin\\agentic.mjs', path.win32), 'bin/agentic.mjs');
+  assert.equal(docSourceHashPath('D:\\a\\agentic', 'D:\\a\\agentic\\.github\\workflows\\ci.yml', path.win32), '.github/workflows/ci.yml');
+  assert.equal(docSourceHashPath('/repo', '/repo/bin/agentic.mjs', path.posix), 'bin/agentic.mjs');
+});
+
 test('documentation checker requires complete proposal summaries', () => {
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
 

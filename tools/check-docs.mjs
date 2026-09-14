@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
+import { docSourceHashPath } from './doc-source-path.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors = [];
@@ -248,7 +249,7 @@ function computeDocSourcesHash(sources) {
       ? walkFiles(sourcePath).sort()
       : [sourcePath];
     for (const filePath of files) {
-      hash.update(path.relative(root, filePath));
+      hash.update(docSourceHashPath(root, filePath));
       hash.update('\0');
       hash.update(fs.readFileSync(filePath));
       hash.update('\0');

@@ -25,9 +25,9 @@
 | --- | --- |
 | 선행 작업 | 제품 용어·소유권 확정 |
 | 선행 제안 | 없음 |
-| 후속 제안 | [setup과 지침 옵션](setup-and-guidance.md), [프로젝트 적용](project-application.md) |
-| 연관 제안 | [에이전트 산출물 동기화](agent-sync.md) |
-| 후속 작업 | 조직 공유 프로필의 등록·업데이트 계약과 다중 사용자 충돌 정책 |
+| 후속 제안 | [setup과 지침 옵션](setup-and-guidance.md), [프로젝트 적용](project-application.md), [Git 기반 프로필 관리](git-profile-management.md) |
+| 연관 제안 | [에이전트 산출물 동기화](agent-sync.md), [Git 기반 프로필 관리](git-profile-management.md) |
+| 후속 작업 | [Git 기반 프로필 관리](git-profile-management.md)에서 조직 공유 프로필의 등록·업데이트 계약과 다중 사용자 충돌 정책을 확정 |
 | 권장 다음 작업 | 최소 `ProfileMetadata`와 저장 경로 계약을 평가로 고정 |
 
 ## 목표 계약
@@ -78,4 +78,4 @@ erDiagram
 * **구현:** `agentic profile create`, scope별 `agentic profile list`와 프로필 관리 메뉴, TUI 프로필 선택·삭제, `agentic profile remove`, `agentic-profile.json`, 프로필 `AGENTS.md` 생성.
 * **평가:** `evals/core.test.mjs`에서 생성·목록·이름·scope·metadata를 확인.
 * **제약:** 조직 원격 Git 등록·동기화는 아직 지원하지 않는다.
-* **다음 단계:** 조직 원격 Git 등록·업데이트와 다중 사용자 충돌 정책.
+* **다음 단계:** [Git 기반 프로필 관리](git-profile-management.md)에서 조직 원격 등록·업데이트와 다중 사용자 충돌 정책을 확정한다.

@@ -51,6 +51,9 @@ A Profile's shared guidance is managed as a single source of truth, while each p
 
 Individual developers can also split and reuse per-project `Personal` Profiles and keep the same guidance even when the AI tools they use change. This reduces repeated setup and rule drift between projects, making both maintenance and development easier.
 
+> [!NOTE]
+> Agentic distributes a Profile's shared guidance to projects and multiple agents. It does not analyze a codebase to write project guidance automatically. [See why](#not-supported)
+
 ## Use cases
 
 > The Git-based flows below apply after remote Profile management is implemented. The current release provides local Profile management, application, and synchronization only.

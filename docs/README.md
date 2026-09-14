@@ -16,10 +16,12 @@
 8. [공개 저장소 운영](repository-operations.md): 품질 게이트·릴리스·보안·기여 정책
 9. [외부 참고 문헌](references.md): 연구·사례·비교 도구
 10. [결정 기록](adr/): 확정된 장기 결정
-   - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
-   - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md)
-   - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md)
-   - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md)
+    - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
+    - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md)
+    - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md)
+    - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md)
+    - [ADR 0005: 지침 적용 수준의 뜻을 정의로 노출](adr/0005-guidance-level-semantics.md)
+    - [ADR 0006: 코드베이스 분석 기반 지침 생성을 구현하지 않음](adr/0006-no-codebase-analysis-guidance.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

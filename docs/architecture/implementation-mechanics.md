@@ -2,12 +2,12 @@
 
 **문서 유형:** 내부 동작 메커니즘 (유지보수자용). 현재 구현된 각 기능이 코드 안에서 어떻게 동작하는지를 기능 단위로 설명한다. npm·Node.js·CLI가 왜 그렇게 도는지의 일반 원리는 [구현 원리](../implementation-principles.md)에, 현재 구조·소유권의 정본은 [현재 아키텍처](README.md)에 있다. 이 문서는 그 사이, 이 패키지 고유의 로직을 기능별로 채운다.
 
-**작성·검증 기준:** `@isthis/agentic` `0.1.0` · 커밋 `68494f3` · 2026-09-13
+**작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-14 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:433-490`). 줄 번호와 코드블록은 **위 커밋 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 위 커밋이나 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:438-495`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 5fc1978c8724c9213bd2de9b01e45735cb15a2a3a38af59d71a4fe71408a6311 -->
+<!-- agentic-doc-sources-sha256: 40020b89f67e96757d366128da33af014fd7bf1f9a686c6ed35910c320e2ce11 -->
 
 ## 읽는 법
 
@@ -25,6 +25,7 @@ flowchart LR
   core --> analyzer["bin/analyzer.mjs<br/>관리 영역 병합·hash"]
   core --> fsutils["bin/fs-utils.mjs<br/>안전한 원자적 쓰기"]
   core --> i18n["bin/i18n.mjs<br/>로케일·프로필 홈·메시지"]
+  analyzer --> i18n
   i18n --> fsutils
   contracts["bin/contracts.mjs<br/>세 경로 동등성 계약"] -.->|"evals가 강제"| core
 ```
@@ -44,9 +45,9 @@ const invokedAs = path.basename(process.argv[1] || 'agentic').replace(/\.mjs$/, 
 ```
 
 - **플래그 헬퍼**: 값 읽기 `parseFlag`(`:38-41`), 존재 여부 `hasFlag`(`:43-45`), 제거 `stripFlag`(`:47-53`). `--dry-run`·`--scope`·`--yes` 등이 모두 이 헬퍼를 거친다.
-- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:19`). 도움말의 명령 이름·제목을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:539-542`).
+- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:19`). 도움말의 명령 이름·제목을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:544-547`).
 
-`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:591-599`).
+`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:596-604`).
 
 ```js
 if ((!args.length || command === '--tui') && process.stdin.isTTY) {
@@ -64,7 +65,7 @@ if ((!args.length || command === '--tui') && process.stdin.isTTY) {
 flowchart TD
   A["agt / agentic 실행"] --> B["process.argv 파싱<br/>--lang 분리, command 결정"]
   B --> C["main(): resolveLocale로 로케일 확정"]
-  C --> D{"인자 없음 그리고 TTY?"}
+  C --> D{"인자 없음 또는 --tui<br/>그리고 TTY?"}
   D -->|"예"| TUI["mainTui() 대화형 루프"]
   D -->|"아니오"| E{"command"}
   E -->|"config lang"| LANG["configLang()"]
@@ -74,7 +75,7 @@ flowchart TD
   LANG --> Z
   PROF --> Z
   HELP --> Z
-  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:602-605"]
+  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:607-610"]
 ```
 
 ## 2. 로케일 해석과 저장
@@ -92,9 +93,9 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 ```
 
 - `--lang`·`AGENTIC_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
-- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:587-590`).
-- **저장 위치**: `profileHome()/config.json`(`configPath`, `bin/i18n.mjs:53-55`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:533-537`).
-- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`:268-275`).
+- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:592-595`).
+- **저장 위치**: `profileHome()/config.json`(`configPath`, `bin/i18n.mjs:53-55`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:538-542`).
+- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`bin/i18n.mjs:272-279`).
 
 ## 3. 프로필 저장소 모델
 
@@ -128,6 +129,7 @@ erDiagram
     string scope "personal|company|team|workspace"
     string createdAt "ISO"
     object settings "setup 결과, 선택"
+    string updatedAt "setup 시각, 선택"
   }
   PROJECT_CONFIG {
     int schemaVersion "항상 1"
@@ -160,38 +162,42 @@ writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('
 
 ## 5. profile setup: 지침 블록 기록
 
-기본값은 6개 항목 모두 `recommended`다(`guidanceDefaults`, `bin/agentic.mjs:285`): `harness`·`tdd`·`review`·`verification`·`documentation`·`security`. `setupProfile`(`:287-308`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고, `off`가 아닌 항목만 블록으로 만들어 마커로 감싼다.
+기본값은 6개 항목 모두 `recommended`다(`guidanceDefaults`, `bin/agentic.mjs:285`): `harness`·`tdd`·`review`·`verification`·`documentation`·`security`. `setupProfile`(`:287-313`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고, `off`가 아닌 항목만 블록으로 만든다. 항목이 하나라도 있으면 맨 앞에 적용 수준 정의 범례를 붙인 뒤 마커로 감싼다(`:302-307`). 범례 문구는 `guidanceLevelDefinitions`가 돌려주는 상수이며 setup TUI 힌트와 같다. 모든 항목이 `off`면 블록 안은 비어 있다.
 
 ```js
+const definitions = guidanceLevelDefinitions(locale);
+const legend = `## ${_('setup.legend.title')}\n\n- recommended: ${definitions.recommended}\n- strict: ${definitions.strict}\n\n${_('setup.legend.intro')}`;
 const start = '<!-- agentic:guidance:start -->';
 const end = '<!-- agentic:guidance:end -->';
-const block = `${start}\n\n${blocks.join('\n\n')}\n\n${end}`;
+const body = blocks.length ? [legend, ...blocks].join('\n\n') : '';
+const block = `${start}\n\n${body}\n\n${end}`;
 const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
 writeTextAtomic(profile.instructionsPath,
   pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`);
 ```
 
-기존 블록이 있으면 정규식으로 교체하고 없으면 프로필 `AGENTS.md` 끝에 덧붙인다. 이 `guidance` 마커는 **프로필** `AGENTS.md` 안의 것으로, 프로젝트 산출물의 `managed` 마커([7절](#7-관리-영역-병합과-hash))와 다른 계층이다.
+기존 블록이 있으면 정규식으로 교체하고 없으면 프로필 `AGENTS.md` 끝에 덧붙인다. 선택 결과는 메타데이터의 `settings`와 `updatedAt`에도 기록한다(`:311`). 이 `guidance` 마커는 **프로필** `AGENTS.md` 안의 것으로, 프로젝트 산출물의 `managed` 마커([7절](#7-관리-영역-병합과-hash))와 다른 계층이다.
 
 ## 6. profile apply: 변경 계획과 적용
 
-`applyProfile`(`bin/agentic.mjs:433-490`)이 핵심이다. `applyArgs`(`:427-431`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑는다. 전체 파이프라인은 다음과 같다.
+`applyProfile`(`bin/agentic.mjs:438-495`)이 핵심이다. `applyArgs`(`:433-436`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑는다. 전체 파이프라인은 다음과 같다.
 
 ```mermaid
 flowchart TD
   A["applyArgs: name, project 추출"] --> B["assertProjectDirectory<br/>대상이 폴더인지"]
-  B --> C["변경 계획 planFile<br/>대상마다 create/update/unchanged"]
-  C --> D{"managedHashes에 기록된 hash가<br/>현재 관리 영역과 같은가?"}
-  D -->|"다름"| STOP["throw: Managed file changed outside Agentic<br/>:451-453, :465-467"]
-  D -->|"같음·최초"| E["mergeAgentsMd·mergeManagedDocument<br/>관리 영역만 병합"]
-  E --> F["managedHashes 재계산 + agentic.project.json 기록<br/>:470-477"]
+  B --> D{"파일마다 managedHashes에 기록된 hash가<br/>현재 관리 영역과 같은가?"}
+  D -->|"다름"| STOP["throw: Managed file changed outside Agentic<br/>:455-458, :469-472"]
+  D -->|"같음·기록 없음"| E["mergeAgentsMd·mergeManagedDocument로 새 내용 계산<br/>planFile: create·update·unchanged"]
+  E --> F["managedHashes 재계산<br/>agentic.project.json도 계획에 추가<br/>:475-482"]
   F --> G{"--dry-run?"}
-  G -->|"예"| PLAN["계획만 출력하고 종료<br/>:481-484"]
-  G -->|"아니오"| H["변경 대상마다 assertSafeTextTarget<br/>:485"]
-  H --> I["writeTextAtomic으로 원자적 교체<br/>:486-488"]
+  G -->|"예"| PLAN["계획만 출력, 파일을 쓰지 않음<br/>:486-489"]
+  G -->|"아니오"| H["변경 대상마다 assertSafeTextTarget<br/>:490"]
+  H --> I["writeTextAtomic으로 원자적 교체<br/>:491-493"]
 ```
 
-수동 변경 감지의 핵심은 이 검사다(`AGENTS.md`는 `:450-453`, 포인터 파일은 `:464-467`이 같은 형태).
+hash 검사는 파일마다 계획을 세우기 직전에 실행되므로 한 파일이라도 다르면 어떤 파일도 쓰지 않는다. dry-run에서는 `agentic.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 검사를 거치므로 같은 프로필로 다시 적용해도 중단이 풀리지 않는다. 사용자용 복구 절차는 [사용 가이드](../usage-guide.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
+
+수동 변경 감지의 핵심은 이 검사다(`AGENTS.md`는 `:454-458`, 포인터 파일은 `:468-472`이 같은 형태).
 
 ```js
 const previousAgentsHash = projectConfig.managedHashes?.['AGENTS.md'];
@@ -200,9 +206,9 @@ if (previousAgentsHash && hashAgentsManagedDocument(existingAgents) !== previous
 }
 ```
 
-- **포인터 파일 4종**(`:456-461`): `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`. 각각 `renderAdapter`(`:421-425`) → `mergeManagedDocument`로 관리 블록만 병합한다.
-- **`agentic.project.json`**: 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다(`:476-477`).
-- **출력**: 계획 요약과 파일별 상태를 한 줄씩 출력한다(`:478-480`).
+- **포인터 파일 4종**(`:461-466`): `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`. 각각 `renderAdapter`(`:426-430`) → `mergeManagedDocument`로 관리 블록만 병합한다.
+- **`agentic.project.json`**: 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다(`:481-482`).
+- **출력**: 계획 요약과 파일별 상태를 한 줄씩 출력한다(`:484-485`).
 
 ## 7. 관리 영역 병합과 hash
 
@@ -220,10 +226,15 @@ flowchart TD
   end
 ```
 
-`AGENTS.md`의 병합은 확장 헤더를 기준으로 위아래를 가른다(`mergeAgentsMd`, `bin/analyzer.mjs:14-33`). 포인터 파일은 마커 블록만 바꾼다.
+`AGENTS.md`의 병합은 확장 헤더를 기준으로 위아래를 가른다(`mergeAgentsMd`, `bin/analyzer.mjs:21-39`).
+
+- **확장 헤더 인식**: `EXTENSION_HEADER`(`:12`)가 한국어 `프로젝트 규칙 확장`과 영어 `Project rule extensions` 제목을 모두 인식한다. 헤더 바로 아래의 안내 문구는 두 로케일의 `scaffold.extBody`를 모두 걷어 낸 뒤 나머지를 사용자 규칙으로 옮긴다(`:13`, `:32-35`). 헤더를 한 로케일로만 인식하면 다른 로케일 프로젝트에서 확장 영역이 관리 영역으로 계산돼 동기화가 멈춘다.
+- **헤더가 없는 기존 파일**: 기존 내용 전체를 `## Existing project guidance` 아래로 옮겨 보존한다(`:25-27`). hash를 계산할 때도 이 제목 아래는 관리 영역에서 뺀다(`extractAgentsManagedDocument`, `:47-54`).
+
+포인터 파일은 마커 블록만 바꾼다.
 
 ```js
-// analyzer.mjs:63-72 — 관리 블록만 교체하거나 없으면 덧붙인다
+// analyzer.mjs:68-78 — 관리 블록만 교체하거나 없으면 덧붙인다
 const start = '<!-- agentic:managed:start -->';
 const end = '<!-- agentic:managed:end -->';
 const managedBlock = `${start}\n${managedContent.trim()}\n${end}`;
@@ -233,11 +244,11 @@ if (pattern.test(existingContent)) return `${existingContent.replace(pattern, ma
 return `${existingContent.trimEnd()}\n\n${managedBlock}\n`;
 ```
 
-`hashAgentsManagedDocument`(`:50-53`)와 `hashManagedDocument`(`:81-84`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `bin/analyzer.mjs:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
+`hashAgentsManagedDocument`(`:56-59`)와 `hashManagedDocument`(`:87-90`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `bin/analyzer.mjs:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
 
 ## 8. profile sync
 
-`syncProject`(`bin/agentic.mjs:497-512`)은 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.**
+`syncProject`(`bin/agentic.mjs:502-517`)은 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.**
 
 ```js
 if (parseFlag(values, 'profile') || parseFlag(values, 'core')) {
@@ -297,9 +308,9 @@ try {
 
 ## 10. dry-run · 로그 · 종료 코드
 
-- **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:481-484`). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`:219-224`).
-- **로그**: 계획 요약과 파일별 `create`/`update`/`unchanged` 상태를 한 줄씩 출력한다(`:478-480`).
-- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:602-605`). 성공하면 기본 0이다.
+- **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:486-489`). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`:219-224`).
+- **로그**: 계획 요약과 파일별 `create`/`update`/`unchanged` 상태를 한 줄씩 출력한다(`:484-485`).
+- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:607-610`). 성공하면 기본 0이다.
 
 ## 11. TUI 흐름 배선
 
@@ -319,7 +330,7 @@ flowchart TD
   ACT --> A2["apply / sync<br/>계획만 확인? → --dry-run"]
 ```
 
-비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`:175-178`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`:85`, `:312`). 파이프·CI·스모크 테스트 경로다.
+비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`:175-178`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`:85`, `:317`). 파이프·CI·스모크 테스트 경로다.
 
 ## 12. 기능 인터페이스 동등성 계약
 

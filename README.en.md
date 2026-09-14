@@ -1,7 +1,7 @@
-# Agentic — AI agent guidance management
+# Agentic — Profile-based AI development guidance
 
-<!-- agentic-doc-sources: bin/agentic.mjs, package.json -->
-<!-- agentic-doc-sources-sha256: 98c6b41278b51d9e164c88a7d2996563553459e758ab32fad9e9bb69fe07362c -->
+<!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
+<!-- agentic-doc-sources-sha256: a828d5986d2cab8fc8bf6c24a09da2198729f9d18d0697cfb2954d9384e487a4 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -14,7 +14,7 @@
 
 [한국어](README.md) · **English**
 
-## Different developers, different teams, different AI agents — one project development standard.
+## Different developers, different teams, different AI agents — one development standard.
 
 > Agentic creates and configures shared agentic-development guidance as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 
@@ -23,6 +23,14 @@
 </p>
 
 One flow — `profile create` → `profile setup` → `profile apply`/`profile sync`: build a **Profile** (the single source of truth for shared guidance), apply it to your **project files**, and **multiple AI agents** work to the same standard.
+
+## The problem it solves
+
+**Your coding conventions and test rules are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
+
+Agentic manages those standards as a Profile and, when you apply it to a project, generates the files that Codex, Claude Code, Antigravity, Cursor, and Copilot read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
+
+> Git-based sharing and updating of Profiles across a team is planned. The current release provides local Profile management, application, and synchronization. See the [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) for the plan.
 
 ## Core goals
 
@@ -35,8 +43,6 @@ Reduce the working styles, guidance, and verification standards that otherwise v
 A Profile's shared guidance is managed as a single source of truth, while each project adds its own domain rules separately in its own `AGENTS.md`.
 
 Individual developers can also split and reuse per-project `Personal` Profiles and keep the same guidance even when the AI tools they use change. This reduces repeated setup and rule drift between projects, making both maintenance and development easier.
-
-> (Profiles are currently managed locally. Sharing and updating Profiles across an organization through Git is tracked as a [follow-up architecture topic](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) and is not presented as a current capability.)
 
 ## Use cases
 
@@ -59,7 +65,7 @@ Individual developers can also split and reuse per-project `Personal` Profiles a
 
 ## Getting Started
 
-> The full usage flow — from installation to synchronization — is documented step by step in the [usage guide](https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md).
+> The full usage — from installation to synchronization — is documented step by step in the [usage guide](https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md).
 
 > Runtime: Node.js 24 LTS or newer
 
@@ -109,6 +115,19 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Cursor | `.cursor/rules/agentic.mdc` |
 | GitHub Copilot | `.github/copilot-instructions.md` |
 
+## Not supported
+
+**Agentic does not analyze a codebase to write project guidance automatically.** Agentic distributes a Profile's shared guidance to projects and to multiple agents. Project-specific guidance belongs to the project, and Agentic does not write it on the project's behalf.
+
+| Reason | Evidence |
+| --- | --- |
+| Each agent already provides it. | `/init` in Claude Code and Codex analyzes the codebase and drafts guidance. |
+| Official guidance advises against that content. | Anthropic recommends leaving out anything the agent can figure out by reading code and file-by-file descriptions. Guidance should hold commands, conventions, decisions, and gotchas the agent cannot guess. |
+| The benefit is unproven. | In a study, context files did not generally improve task success rates and raised inference cost by over 20% on average. Repository overviews were not helpful. |
+| It is outside Agentic's scope. | Deep analysis needs model calls. Agentic does not handle model calls or agent runtimes. |
+
+Refine a `/init` draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the Agentic managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agentic/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agentic/blob/main/docs/references.md).
+
 ## 🧭 Architecture direction and progress
 
 Agentic's implementation is managed in stages around the questions of where the shared guidance lives and who changes what. The table below condenses each discussion document's proposal summary from a user's perspective. `Proposed` items are follow-up work not yet guaranteed as current behavior.
@@ -121,6 +140,7 @@ Agentic's implementation is managed in stages around the questions of where the 
 | [Agent artifact synchronization](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
 | [Use through natural-language requests](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Proposed | Non-interactive CLI, JSON, and exit codes |
 | [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Conflict visualization and recovery |
+| [Scope expansion and guidance composition](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/scope-composition.md) | User-definable, shareable guidance layers and multi-layer inheritance and merging for a project | Medium · Proposed | Prototype the minimal composition after validation |
 
 ### Proposal summaries
 
@@ -132,6 +152,7 @@ Each document manages not only the code feature but also the target layer, the r
 | --- | --- | --- | --- |
 | [Profile model and store](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/profile-model.md) | Separate and reuse shared guidance per Personal/Company/Team/Workspace · users and organizations ↔ CLI ↔ Profile | Critical · Implemented | Path, name, scope, default selection; precedes every follow-up feature |
 | [setup and guidance options](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Select only the needed harness, TDD, review, verification, documentation, and security guidance · user ↔ CLI ↔ Profile `AGENTS.md` | High · Implemented | Presets, defaults, re-runs, interactive/non-interactive; after the profile model, before project application |
+| [Scope expansion and guidance composition](https://github.com/IsthisLee/agentic/blob/main/docs/discussion/architecture/topics/scope-composition.md) | Raise scope into shareable, reusable guidance layers with multi-layer inheritance and merging · users and organizations ↔ CLI ↔ Profile/scope ↔ project | Medium · Proposed | Merge and conflict rules, scope-sharing format; start after the validation gate |
 
 #### 2. Project application and agent delivery
 

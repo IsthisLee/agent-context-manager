@@ -14,6 +14,16 @@
 
 예외는 전역 도움말, 저장소 개발 전용 검사처럼 특정 프로필에 귀속되지 않는 기능뿐이다. 기능 registry와 평가 테스트에서 세 경로의 등록 누락을 실패로 처리한다.
 
+```mermaid
+flowchart LR
+  REG["PROFILE_OPERATION_CONTRACT<br/>bin/contracts.mjs"] -->|cli| CLI["CLI 명령·옵션"]
+  REG -->|tui| TUI["터미널 TUI 흐름"]
+  REG -->|profileList| MENU["agt profile list<br/>관리 메뉴"]
+  EVAL["평가 테스트"] -.->|세 경로 중 하나라도 빠지면 실패| REG
+```
+
+기능을 하나 추가하면 registry의 한 항목에 세 경로를 함께 적는다. 평가가 registry를 기준으로 세 경로를 확인하므로 한 경로만 구현한 기능은 검사에서 걸린다.
+
 각 단계는 다음 순서를 따른다.
 
 1. 목표·범위·비범위를 문서에 기록한다.
@@ -31,7 +41,9 @@
 | 현재 구현 | `docs/architecture/` |
 | 미구현 계약·단계 계획 | `docs/discussion/architecture/` |
 | 외부 근거 | `docs/references.md` |
-| 사용자 사용법 | `docs/workflow.md` |
+| 사용 흐름의 설명·문제 해결 | `docs/usage-guide.md` |
+| 사용 절차 요약·명령 소유권 | `docs/workflow.md` |
+| CLI 명령·옵션·TUI 문법 | `docs/cli-reference.md` |
 | 결정 이력 | `docs/adr/` |
 
 같은 사실을 여러 문서에서 다시 정의하지 않는다. 요약이 필요한 문서는 정본으로 링크한다.

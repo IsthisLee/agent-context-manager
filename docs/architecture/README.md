@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json, templates, tools -->
-<!-- agentic-doc-sources-sha256: 45b7659d7579f8db39e96f924ee72ae47730b3cd8542e64562a8173ec4dc1e83 -->
+<!-- agentic-doc-sources-sha256: 974738ff06ab29a20d1a6fd85817070271aaddecfed614ef3a91d6be9ec80957 -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -62,6 +62,7 @@ agentic/
 │   ├── check-docs.mjs           # 링크·ADR·discussion·README 계약과 문서 소스 해시 게이트
 │   ├── check-release.mjs        # 릴리스 태그·버전·CHANGELOG 일치 검사
 │   ├── check-syntax.mjs         # bin·tools·evals 문법 검사
+│   ├── discussion-record.mjs    # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
 │   ├── doc-source-path.mjs      # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
 │   └── package-smoke.mjs        # 실제 tarball 설치 후 핵심 명령 실행
 ├── docs/

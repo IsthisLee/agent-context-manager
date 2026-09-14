@@ -185,6 +185,8 @@ flowchart TD
 
 ## 9. 구현 기록
 
+#### 구현 기록: 적용 수준 정의를 산출물과 TUI에 노출
+
 **상태 승격:** Proposed → Implemented (2026-09-14).
 
 - `bin/i18n.mjs`에 `levelDefinitions` 상수와 `guidanceLevelDefinitions(locale)`를 추가했다. recommended·strict의 뜻을 한 곳에 둔다.

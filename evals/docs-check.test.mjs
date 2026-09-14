@@ -81,3 +81,18 @@ test('documentation checker protects the README product entry point and discussi
   assert.match(checker, /must be indexed exactly once/);
   assert.match(checker, /index references missing topic/);
 });
+
+test('Implemented discussion topics must carry an implementation record heading outside code blocks', async () => {
+  const { hasImplementationRecord, requiresImplementationRecord } = await import('../tools/discussion-record.mjs');
+
+  assert.equal(requiresImplementationRecord('Implemented'), true);
+  assert.equal(requiresImplementationRecord('Implementing'), false);
+  assert.equal(requiresImplementationRecord('Proposed'), false);
+  assert.equal(hasImplementationRecord('# 주제\n\n#### 구현 기록: 프로필 setup\n\n* **결정:** …'), true);
+  assert.equal(hasImplementationRecord('# 주제\n\n## 9. 구현 기록\n\n- 내용'), false);
+  assert.equal(hasImplementationRecord('```markdown\n#### 구현 기록: <구현한 범위>\n```'), false);
+
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
+  assert.match(checker, /hasImplementationRecord/);
+  assert.match(checker, /requiresImplementationRecord/);
+});

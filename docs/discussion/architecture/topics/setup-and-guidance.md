@@ -56,3 +56,28 @@ setup은 기존 선택을 보여 주고 사용자의 승인 없이 정책을 제
 * **평가:** `evals/core.test.mjs`에서 선택·제외·scope 분류·TUI·프로필 경계 보존을 확인.
 * **제약:** TUI는 터미널 환경에서만 활성화되며, CI·스크립트에서는 비대화형 flags 또는 stdin 입력을 사용한다.
 * **다음 단계:** preset 파일 분리와 사용자 승인 diff의 세분화.
+
+구현된 setup의 입력 경로는 다음과 같다.
+
+```mermaid
+flowchart TD
+  CMD["agentic profile setup"] --> FLAG{"지침 플래그가 있는가?"}
+  FLAG -->|있음| NAMED{"프로필 이름이 있는가?"}
+  NAMED -->|없음| ERR["오류 · 변경 없음"]
+  NAMED -->|있음| SAVE["setupProfile<br/>값 검증 · 생략한 항목은 현재값 또는 recommended"]
+  FLAG -->|없음| TTY{"터미널 TTY인가?"}
+  TTY -->|아니오| STDIN["stdin에서 읽기<br/>이름이 없으면 첫 줄로 프로필 선택"]
+  STDIN --> SAVE
+  TTY -->|예| PICK{"프로필 이름이 있는가?"}
+  PICK -->|없음| MENU["scope · 이름 선택 메뉴"]
+  PICK -->|있음| ITEMS
+  MENU --> ITEMS["지침 6개마다 off · recommended · strict 선택<br/>현재값이 초기값"]
+  ITEMS --> SUMMARY["전체 설정 요약"]
+  SUMMARY --> OK{"승인?"}
+  OK -->|아니오| CANCEL["취소 · 변경 없음"]
+  OK -->|예| SAVE
+  SAVE --> META["agentic-profile.json<br/>settings · updatedAt"]
+  SAVE --> AGENTS["프로필 AGENTS.md<br/>guidance 블록 · off 항목 제외"]
+```
+
+플래그를 하나라도 주면 TUI를 거치지 않고 바로 저장한다. 어느 경로든 바뀌는 파일은 프로필 디렉터리의 두 파일뿐이며 프로젝트 파일은 건드리지 않는다.

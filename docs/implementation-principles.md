@@ -1,13 +1,13 @@
-# 개발 원리 및 실행 구조
+# 구현 원리
 
-**문서 유형:** 생태계 원리 해설 (입문자·기여자용). npm·Node.js·CLI 일반 원리를 이 패키지 구현에 연결해 전체 그림을 설명한다. 현재 구현된 각 기능의 내부 로직은 [기능 구현 메커니즘](architecture/implementation-mechanics.md)이 다룬다.
+**문서 유형:** 생태계 원리 해설 (입문자·기여자용). npm·Node.js·CLI 일반 원리를 이 패키지 구현에 연결해 전체 그림을 설명한다. 현재 구현된 각 기능의 내부 로직은 [기능 구현 메커니즘](architecture/implementation-mechanics.md)이 정본이다. 이 문서는 원리와의 연결에 필요한 만큼만 인용한다.
 
-**작성·검증 기준:** `@isthis/agentic` `0.1.0` · 커밋 `fbcb2ed` · 2026-09-13
+**작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-14 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:580-600`). 줄 번호는 **위 커밋 기준**이며, 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 위 커밋이나 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:585-605`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json -->
-<!-- agentic-doc-sources-sha256: 842909b59d98b1523643847af5c7d0aff17bb2dc888b9ea30e8510b1fecaff1b -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, package.json, tools/package-smoke.mjs, tools/check-syntax.mjs, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.mjs -->
+<!-- agentic-doc-sources-sha256: 103e1ed4dacd7acd2196e0892e7f00412780e58bd4f4ccf8e529ff8703142d5b -->
 
 이 문서는 `@isthis/agentic`이 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -50,7 +50,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 패키지 이름과 버전은 `package.json:2-3`에 있다(`"@isthis/agentic"`, `"0.1.0"`). `@isthis/`는 스코프(scope)이고, `publishConfig.access`가 `public`이라 스코프 패키지를 공개로 게시한다(`package.json:52-54`).
+- 패키지 이름과 버전은 `package.json:2-3`에 있다(`"@isthis/agentic"`, `"0.2.0"`). `@isthis/`는 스코프(scope)이고, `publishConfig.access`가 `public`이라 스코프 패키지를 공개로 게시한다(`package.json:52-54`).
 - 실제 게시는 GitHub Actions가 수행한다. `release`가 게시되면 `.github/workflows/publish.yml`이 검증을 돌린 뒤 `npm publish --provenance --access public`을 실행한다(`.github/workflows/publish.yml:48-50`). 자세한 배포 원리는 [15번](#15-github-actions에서-npm으로-자동-배포되는-원리)에서 다룬다.
 - 같은 버전 중복 게시를 막기 위해, 워크플로는 게시 전에 Registry에 이미 그 버전이 있는지 확인하고 있으면 건너뛴다(`.github/workflows/publish.yml:37-50`).
 
@@ -75,8 +75,8 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 권장 설치는 전역 설치다. README와 CLI Reference 모두 `npm install -g @isthis/agentic`을 안내한다(`README.md:19`, `docs/cli-reference.md:8`).
-- 이 저장소 자체를 개발할 때는 설치 없이 `node bin/agentic.mjs`로 직접 실행한다(`README.md:88`).
+- 권장 설치는 전역 설치다. [README](../README.md)의 시작하기와 [CLI Reference](cli-reference.md#설치와-실행) 모두 `npm install -g @isthis/agentic`을 안내한다.
+- 이 저장소 자체를 개발할 때는 설치 없이 `node bin/agentic.mjs`로 직접 실행한다([CLI Reference](cli-reference.md#설치와-실행)).
 - 설치와 실행을 실제로 재현하는 근거는 `tools/package-smoke.mjs`다. 이 스크립트는 tarball을 임시 소비자 디렉터리에 **로컬 설치**하고(`tools/package-smoke.mjs:37`), `node_modules/.bin/`에 생긴 실행 파일을 직접 호출해 동작을 확인한다(`tools/package-smoke.mjs:38-47`).
 
 ### 사용자가 알아야 할 주의점
@@ -109,7 +109,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
   }
   ```
 - `agt`는 `agentic`의 짧은 별칭이다. `bin/agt.mjs`는 한 줄로 본체를 불러올 뿐이다: `import './agentic.mjs';`(`bin/agt.mjs:3`).
-- 두 이름 중 무엇으로 실행했는지는 코드가 스스로 판별한다. `bin/agentic.mjs:19`이 `process.argv[1]`의 파일 이름으로 `invokedAs`를 정하고, 도움말 출력의 명령어 이름을 그에 맞춰 바꾼다(`bin/agentic.mjs:540-541`).
+- 두 이름 중 무엇으로 실행했는지는 코드가 스스로 판별한다. `bin/agentic.mjs:19`이 `process.argv[1]`의 파일 이름으로 `invokedAs`를 정하고, 도움말 출력의 명령어 이름을 그에 맞춰 바꾼다(`bin/agentic.mjs:545-546`).
 - 설치된 실행 진입점이 실제로 만들어지는지는 `tools/package-smoke.mjs:38`이 `node_modules/.bin/agt`(Windows에서는 `agt.cmd`)를 호출해 확인한다.
 
 ### 사용자가 알아야 할 주의점
@@ -156,7 +156,7 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 1. **터미널/셸**: `agt`를 PATH에서 찾아 실행하고, 나머지 토큰(`profile`, `create`)을 인자로 넘긴다.
 2. **OS**: 진입점(심볼릭 링크 또는 shim)을 따라 실제 스크립트를 Node로 실행한다.
 3. **Node.js**: `bin/agt.mjs`를 로드하고, 그것이 `bin/agentic.mjs`를 불러온다.
-4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:15-18`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:580-600`).
+4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:15-18`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:585-605`).
 
 ```mermaid
 flowchart TD
@@ -170,9 +170,9 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:592-593`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-60`, `bin/agentic.mjs:7`).
+- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:596-597`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-60`, `bin/agentic.mjs:7`).
 - 명령별 분기: `profile` 하위 명령(`create/list/view/remove/setup/apply/sync`)과 `config lang`, 그 외에는 도움말. `profile`은 `runProfileCommand()`가 다시 하위 명령으로 분기한다.
-- 오류가 나면 `main().catch`가 메시지를 출력하고 종료 코드 1로 끝낸다(`bin/agentic.mjs:602-605`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
+- 오류가 나면 `main().catch`가 메시지를 출력하고 종료 코드 1로 끝낸다(`bin/agentic.mjs:607-610`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -196,13 +196,13 @@ flowchart TD
 ### 이 패키지에서의 적용 예시
 
 - 프로필 데이터의 기준 위치는 `profileHome()`(`bin/i18n.mjs`)이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic-profiles`다. 이전 `.agentic-cores`가 있으면 최초 접근 때 `.agentic-profiles`로 한 번 이관한다.
-- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`가 있다(`bin/agentic.mjs:55-74`, `64-74`).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`을 만든다(`bin/agentic.mjs:433-489`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
+- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `bin/agentic.mjs:55-69`, `createProfile` `:71-81`).
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`을 만든다(`bin/agentic.mjs:438-495`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
-- `AGENTIC_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:40`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-profiles`에 있고 전역 설치 위치와 다르다(`bin/i18n.mjs:45-50`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:252-255`, [워크플로 6절](workflow.md)).
+- `AGENTIC_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.mjs:39`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
+- 프로필 데이터는 기본적으로 사용자 홈 아래(`AGENTIC_HOME`이 설정되면 그 경로 아래)의 `.agentic-profiles`에 있고 전역 설치 위치와 다르다(`bin/i18n.mjs:45-50`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`bin/agentic.mjs:252-256`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
 
 ---
 
@@ -216,7 +216,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 | --------------- | ------------------------ | --------------------------------------------------------------------------------------------------------- |
 | `fs`            | 파일 읽기·쓰기·존재 확인 | 프로필·프로젝트 파일 입출력 (`bin/agentic.mjs:5`)                                                           |
 | `path`          | OS별 경로 조립           | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`bin/agentic.mjs:6`)                                                |
-| `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 프로필 기준 위치 (`bin/i18n.mjs:11`, `21`)                                               |
+| `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 프로필 기준 위치 (`bin/i18n.mjs:10`, `46`)                                               |
 | `child_process` | 외부 프로그램 실행       | **배포 `bin/`에서는 안 씀.** 저장소 도구에서만 사용 (`tools/check-syntax.mjs`, `tools/package-smoke.mjs`) |
 
 > `crypto`도 쓰인다: 임시 파일 이름의 `randomUUID`(`bin/fs-utils.mjs:3`), 관리 영역 hash의 `createHash`(`bin/analyzer.mjs:1`).
@@ -229,7 +229,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - **배포되는 CLI(`bin/`)**는 `fs`·`os`·`path`를 쓴다(`bin/agentic.mjs:5-6`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`bin/i18n.mjs:46`).
-- 이 밖에 `bin/fs-utils.mjs`와 `bin/analyzer.mjs`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`bin/fs-utils.mjs:3,52`), 관리 영역 무결성 확인에 `createHash`(`bin/analyzer.mjs:1,50-52`)를 사용한다.
+- 이 밖에 `bin/fs-utils.mjs`와 `bin/analyzer.mjs`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`bin/fs-utils.mjs:3,52`), 관리 영역 무결성 확인에 `createHash`(`bin/analyzer.mjs:1,56-58`)를 사용한다.
 - **`child_process`는 배포되는 `bin/`에서는 쓰이지 않는다.** 저장소 개발 도구에서만 쓴다: 문법 검사가 `node --check`를 자식 프로세스로 실행하고(`tools/check-syntax.mjs:5,21`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.mjs:7,24-29`).
 
 ### 사용자가 알아야 할 주의점
@@ -252,8 +252,8 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`bin/agentic.mjs:15`), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`bin/agentic.mjs:85`, `312`).
-- 출력은 화면 DOM이 아니라 표준 출력/오류다: `console.log`로 결과를, `console.error`로 오류를 낸다(`bin/agentic.mjs:81`, `603`).
+- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`bin/agentic.mjs:15`), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`bin/agentic.mjs:85`, `317`).
+- 출력은 화면 DOM이 아니라 표준 출력/오류다: `console.log`로 결과를, `console.error`로 오류를 낸다(`bin/agentic.mjs:80`, `608`).
 - “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`bin/agentic.mjs:7`, `89-109`).
 
 ### 사용자가 알아야 할 주의점
@@ -307,9 +307,9 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 이 도구는 여러 프로젝트에 지침을 적용하는 성격이라 **전역 설치**를 기본으로 안내한다(`README.md:19`, `docs/cli-reference.md:8`).
+- 이 도구는 여러 프로젝트에 지침을 적용하는 성격이라 **전역 설치**를 기본으로 안내한다([CLI Reference](cli-reference.md#설치와-실행)).
 - 로컬 설치도 가능함은 스모크 테스트가 보여 준다. tarball을 소비자 폴더에 로컬 설치하고 `node_modules/.bin/agt`로 실행한다(`tools/package-smoke.mjs:37-38`).
-- 저장소 개발 시에는 아예 설치하지 않고 `node bin/agentic.mjs`로 실행한다(`README.md:88`, `docs/cli-reference.md:12`).
+- 저장소 개발 시에는 아예 설치하지 않고 `node bin/agentic.mjs`로 실행한다([CLI Reference](cli-reference.md#설치와-실행)).
 
 ### 사용자가 알아야 할 주의점
 
@@ -332,14 +332,14 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 | 도구   | 역할                                                                   | 이 저장소에서                                                       |
 | ------ | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| `npm`  | 패키지 매니저(설치·스크립트). 사용자 설치 안내에 사용                  | `npm install -g @isthis/agentic` (`README.md:19`)                   |
+| `npm`  | 패키지 매니저(설치·스크립트). 사용자 설치 안내에 사용                  | `npm install -g @isthis/agentic` (README 시작하기)                  |
 | `pnpm` | 패키지 매니저. 공유 저장소 링크로 디스크·시간 절약. 저장소 개발에 고정 | `packageManager: pnpm@10.15.0` (`package.json:4`), `pnpm run check` |
 | `npx`  | 실행 파일을 찾아(없으면 임시로 받아) 실행                              | 이 저장소가 요구하는 흐름은 현재 저장소에서 확인되지 않음           |
 
 ### 이 패키지에서의 적용 예시
 
 - **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:25-35`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:37-40`, `.github/workflows/publish.yml:19-22`).
-- **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다(`README.md:19`, `docs/cli-reference.md:14`). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
+- **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다([CLI Reference](cli-reference.md#설치와-실행)). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
 - `npx`를 이 저장소가 요구하는 흐름은 **현재 저장소에서 확인되지 않는다.** README·CLI Reference의 사용 예시는 전역 설치 후 `agt`/`agentic` 실행을 전제로 한다.
 
 ### 사용자가 알아야 할 주의점
@@ -368,7 +368,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
   ```json
   "files": ["bin", "templates", "README.md", "LICENSE"]
   ```
-- 따라서 `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** 현재 아키텍처 문서도 같은 사실을 명시한다(`docs/architecture/README.md:57`).
+- 따라서 `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** [현재 아키텍처](architecture/README.md#저장소-파일-구조)도 같은 사실을 명시한다.
 - 이 경계는 테스트로 강제된다. `evals/package-contents.test.mjs`는 tarball에 `README.md`·`bin/`·`templates/`가 있고 `docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.mjs:23-27`).
 
 ### 사용자가 알아야 할 주의점
@@ -386,16 +386,18 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 실행 또는 데이터 흐름
 
-1. 변경 계획을 먼저 만든다(생성/갱신/보존/변경없음).
+1. 변경 계획을 먼저 만든다(생성·갱신·변경 없음).
 2. 쓰기 직전에 각 대상이 안전한지(심볼릭 링크·비정상 파일·경계 밖 링크 부모 아닌지) 검사한다.
 3. 임시 파일에 쓴 뒤 이름을 바꿔 교체해, 중간 실패 시에도 원본이 반쯤 망가지지 않게 한다.
 
 ### 이 패키지에서의 적용 예시
 
+각 관문이 코드에서 어떻게 도는지는 [기능 구현 메커니즘](architecture/implementation-mechanics.md)의 6·7·9절이 정본이다. 여기서는 일반 원리와 연결되는 지점만 요약한다.
+
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`bin/fs-utils.mjs:11-18`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`bin/fs-utils.mjs:21-38`).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agentic-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`bin/fs-utils.mjs:41-59`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
-- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`bin/agentic.mjs:485`).
-- **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에 기록한다(`bin/agentic.mjs:470-476`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 “Managed file changed outside Agentic” 오류로 동기화를 멈춘다(`bin/agentic.mjs:451-453`, `465-467`). 병합·추출·hash 로직은 `bin/analyzer.mjs`에 있다.
+- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`bin/agentic.mjs:490`).
+- **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에 기록한다(`bin/agentic.mjs:475-482`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 “Managed file changed outside Agentic” 오류로 동기화를 멈춘다(`bin/agentic.mjs:455-458`, `469-472`). 병합·추출·hash 로직은 `bin/analyzer.mjs`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
@@ -403,7 +405,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ```mermaid
 flowchart TD
   P["apply·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
-  H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>bin/agentic.mjs:451-453, 465-467"]
+  H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>bin/agentic.mjs:455-458, 469-472"]
   H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
   SAFE -->|"위험"| REFUSE["교체 거부<br/>bin/fs-utils.mjs:11-38"]
   SAFE -->|"안전"| ATOM["임시 파일 쓰기 후 rename 교체<br/>권한 모드 보존·bin/fs-utils.mjs:41-59"]
@@ -412,8 +414,8 @@ flowchart TD
 
 ### 사용자가 알아야 할 주의점
 
-- **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 하지만 여러 파일에 걸친 전체 롤백·충돌 시각화·자동 백업은 **아직 확정되지 않은 후속 작업**이다. 이는 제품 방향의 단계 4와 논의 문서에 그렇게 기록돼 있다(`docs/product-direction.md:40`, [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md)). 이 문서는 그 상태를 그대로 반영하며, 구현된 것처럼 쓰지 않는다.
-- 관리 영역을 손으로 고치면 동기화가 중단된다. 프로젝트 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 두어야 보존된다([워크플로 3절](workflow.md)).
+- **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 여러 파일에 걸친 전체 롤백·충돌 시각화·자동 백업은 아직 구현되지 않았다. 진행 상태의 정본은 [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md)다.
+- 관리 영역을 손으로 고치면 동기화가 중단된다. 프로젝트 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 두어야 보존된다([사용 가이드 3절](usage-guide.md#3-프로젝트에-적용)). 중단을 푸는 절차도 [사용 가이드](usage-guide.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
 - 권한: 대상 파일에 쓰기 권한이 없으면 교체가 실패한다. 프로필 데이터와 프로젝트 파일은 각자 위치의 파일 권한을 따른다.
 
 ---
@@ -433,14 +435,14 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:479-484`). TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`bin/agentic.mjs:223-229`).
-- **로그**: 각 변경의 상태(create/update/unchanged)를 한 줄씩 출력한다(`bin/agentic.mjs:485-488`).
-- **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`bin/agentic.mjs:602-605`). 성공하면 기본 종료 코드 0이다.
+- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:484-489`). TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`bin/agentic.mjs:219-224`).
+- **로그**: 각 변경의 상태(create/update/unchanged)를 한 줄씩 출력한다(`bin/agentic.mjs:484-485`).
+- **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`bin/agentic.mjs:607-610`). 성공하면 기본 종료 코드 0이다.
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 문법 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:29`). 문법 검사는 `bin`·`tools`·`evals`의 `.mjs`를 `node --check`로 검사하고(`tools/check-syntax.mjs`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하며(`tools/check-docs.mjs`), 테스트는 `evals/**/*.test.mjs`를 `node --test`로 돌린다(`package.json:26`).
 
 ### 사용자가 알아야 할 주의점
 
-- `pnpm run check`는 **Agentic 자체**의 문법·문서·CLI 평가를 확인하는 것이지, 대상 프로젝트의 품질이나 에이전트가 생성한 코드의 정확성을 보증하는 명령이 아니다. 이 경계는 README와 현재 아키텍처에 명시돼 있다(`README.md:104-106`, `docs/architecture/README.md:68-70`).
+- `pnpm run check`는 **Agentic 자체**의 문법·문서·CLI 평가를 확인하는 것이지, 대상 프로젝트의 품질이나 에이전트가 생성한 코드의 정확성을 보증하는 명령이 아니다. 이 경계는 README의 "검증의 범위"와 [현재 아키텍처](architecture/README.md#패키지-내부-검증)에 명시돼 있다.
 - 자동화에서는 되돌리기 어려운 작업 전에 `--dry-run`으로 계획을 먼저 확인하는 것이 안전하다.
 
 ---
@@ -529,11 +531,11 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 명령을 실행하는 **사용자**와 처리하는 **Agentic 내부**를 구분해 적는다.
 
 1. **(사용자)** `npm install -g @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
-2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:592-593`).
-3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic-profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:55-74`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:287-311`).
-4. **(사용자)** `agt profile apply <name> <project>` → **(Agentic)** 변경 계획을 만들고, 관리 영역 hash를 검사하고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:433-512`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
-5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([워크플로 4절](workflow.md), `docs/product-direction.md:28`).
-6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:497-512`).
+2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:596-597`).
+3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic-profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:71-81`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:287-313`).
+4. **(사용자)** `agt profile apply <name> <project>` → **(Agentic)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:438-495`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
+5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([사용 가이드 4절](usage-guide.md#4-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
+6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:502-517`).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
 
@@ -564,7 +566,7 @@ sequenceDiagram
 
 ### 사용자가 알아야 할 주의점
 
-- Agentic은 **지침을 만들고 적용·동기화하는 도구**이지, 코드를 대신 작성하거나 에이전트를 실행하는 도구가 아니다(`docs/product-direction.md:27-28`).
+- Agentic은 **지침을 만들고 적용·동기화하는 도구**이지, 코드를 대신 작성하거나 에이전트를 실행하는 도구가 아니다([제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
 - 어떤 단계가 실제로 구현됐고 무엇이 후속 작업인지는 [제품 방향의 단계표](product-direction.md)와 [아키텍처 구현 계획](discussion/architecture/)이 정본이다. 이 문서는 이미 구현된 동작만 “현재 동작”으로 설명하고, 미확정 항목은 그렇게 표시한다.
 
 ---

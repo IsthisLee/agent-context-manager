@@ -12,11 +12,45 @@
 | 4 | [에이전트 산출물 동기화](topics/agent-sync.md) | High | 3 | 도구별 포인터 생성·갱신·프로젝트 규칙 보존 | Implemented |
 | 5 | [자연어 요청을 통한 Agentic 사용](topics/agent-mediated-usage.md) | High | 1·3 | 사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계 | Proposed |
 | 6 | [Agentic 관리 산출물의 안전한 동기화](topics/managed-artifact-safety.md) | Critical | 1·3·4 | 관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화 | Implementing |
-| 7 | [지침 적용 수준의 의미 정의](topics/guidance-level-semantics.md) | Medium | 2 | off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출 | Proposed |
+| 7 | [지침 적용 수준의 의미 정의](topics/guidance-level-semantics.md) | Medium | 2 | off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출 | Implemented |
 | 8 | [에이전트 규칙 위치 탐지](topics/agent-rule-discovery.md) | Medium | 3·4 | 적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공 | Proposed |
+| 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6 | 프로필이 MCP·skills·subagents까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
+| 10 | [스코프 확장과 지침 합성](topics/scope-composition.md) | Medium | 1·6 | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합 | Proposed |
+| — | [문서 정확성 자동 리뷰](topics/doc-accuracy-review.md) | Medium | — | 해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 
 > **중요도**는 각 토픽의 제안 요약을 요약한 값이다: Critical(다른 단계의 기반·데이터 안전 경계), High(사용자 경계·전달 경로), Medium(계약 확장이나 기존 모델 유지). **선행 단계**는 해당 제안이 의존하는 단계 번호다. 근거와 세부는 각 토픽 문서의 `## 제안 요약`을 본다.
+
+## 단계 의존 관계
+
+```mermaid
+flowchart LR
+  S1["1 프로필 모델"] --> S2["2 setup·지침 옵션"]
+  S1 --> S3["3 프로젝트 적용"]
+  S2 --> S3
+  S3 --> S4["4 산출물 동기화"]
+  S1 --> S5["5 자연어 요청 사용"]
+  S3 --> S5
+  S1 --> S6["6 관리 산출물 안전 동기화"]
+  S3 --> S6
+  S4 --> S6
+  S2 --> S7["7 적용 수준 의미"]
+  S3 --> S8["8 규칙 위치 탐지"]
+  S4 --> S8
+  S3 --> S9["9 설정 표면 확장"]
+  S4 --> S9
+  S6 --> S9
+  S1 --> S10["10 스코프 합성"]
+  S6 --> S10
+  classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
+  classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
+  classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
+  class S1,S2,S3,S4,S7 done
+  class S6 doing
+  class S5,S8,S9,S10 todo
+```
+
+화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다.
 
 ## 공통 구현 규칙
 

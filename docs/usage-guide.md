@@ -2,12 +2,12 @@
 
 **문서 유형:** 사용 가이드 (사용자용). 설치부터 프로필 생성·설정·적용·동기화까지 `@isthis/agentic`을 쓰는 전체 흐름을 처음부터 끝까지 한 문서로 설명한다. 명령·옵션의 전체 목록은 [CLI Reference](cli-reference.md)가 정본이고, 순서와 소유권 요약은 [사용자 워크플로](workflow.md)에, 현재 구조는 [현재 아키텍처](architecture/)에 있다.
 
-**작성·검증 기준:** `@isthis/agentic` `0.1.0` · 커밋 `68494f3` · 2026-09-13
+**작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-14 · 아래 소스 해시 마커가 가리키는 소스
 
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 5fc1978c8724c9213bd2de9b01e45735cb15a2a3a38af59d71a4fe71408a6311 -->
+<!-- agentic-doc-sources-sha256: 40020b89f67e96757d366128da33af014fd7bf1f9a686c6ed35910c320e2ce11 -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -22,6 +22,22 @@ Agentic은 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여
 - **적용(apply)**: 프로필의 지침을 대상 프로젝트에 복사해 `AGENTS.md`와 에이전트별 포인터 파일을 만든다.
 - **관리 영역**: 적용된 파일에서 Agentic이 관리하는 부분. 사용자가 직접 쓴 부분과 분리돼 있어 동기화 때 사용자 내용은 보존된다.
 - **동기화(sync)**: 프로필을 고친 뒤 그 변경을 이미 적용한 프로젝트에 다시 반영한다. 관리 영역만 갱신한다.
+
+전체 흐름은 다음과 같다.
+
+```mermaid
+flowchart LR
+  INSTALL["설치<br/>npm install -g"] --> CREATE["1. profile create"]
+  CREATE --> SETUP["2. profile setup"]
+  SETUP --> APPLY["3. profile apply"]
+  APPLY --> DEV["4. 에이전트로 개발"]
+  DEV -->|"프로필 지침을 바꿀 때"| EDIT["profile setup 또는<br/>프로필 AGENTS.md 편집"]
+  EDIT --> SYNC["5. profile sync"]
+  SYNC --> DEV
+  CREATE -.->|"프로필이 더 필요 없을 때"| REMOVE["6. profile remove<br/>적용된 프로젝트 파일은 남음"]
+```
+
+프로필을 만들고 설정한 뒤 한 번 적용하면, 그 뒤로는 개발과 동기화를 반복한다. 삭제는 프로필 원본만 지우므로 이미 적용한 프로젝트에는 영향을 주지 않는다.
 
 ## 설치
 
@@ -86,7 +102,29 @@ agt profile apply company /path/to/project
 agt profile apply company --dry-run /path/to/project
 ```
 
-프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 이 부분은 동기화 때 보존된다.
+적용된 파일은 Agentic이 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
+
+```mermaid
+flowchart TB
+  subgraph AGENTS["프로젝트 AGENTS.md"]
+    direction TB
+    PROFILE_AREA["프로필 영역<br/>apply·sync가 다시 생성"]
+    EXTENSION["## 4. 프로젝트 규칙 확장 섹션 아래<br/>사용자 소유 · 보존"]
+    PROFILE_AREA --- EXTENSION
+  end
+  subgraph POINTER["CLAUDE.md 등 포인터 파일"]
+    direction TB
+    BLOCK["agentic:managed 블록<br/>apply·sync가 다시 생성"]
+    OUTSIDE["블록 밖 내용<br/>사용자 소유 · 보존"]
+    BLOCK --- OUTSIDE
+  end
+```
+
+Agentic이 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다.
+
+프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 한국어 로케일에서 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어 로케일에서 `## 4. Project rule extensions (SSOT)`이며 Agentic은 두 제목을 모두 인식한다.
+
+Agentic은 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤 사람이 다듬어 이 확장 섹션으로 옮긴다. 여러 에이전트가 공통으로 읽는 표준은 `AGENTS.md`이므로 함께 따를 규칙은 여기에 둔다. `CLAUDE.md`에 남기려면 `<!-- agentic:managed:start -->`와 `<!-- agentic:managed:end -->` 사이의 관리 블록 밖에 둔다. 관리 영역 안을 고치면 다음 `apply`·`sync`가 `Managed file changed outside Agentic`으로 멈추고 어떤 파일도 쓰지 않는다. 푸는 방법은 [문제 해결](#관리-영역을-고쳐서-멈췄을-때)에 있다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](adr/0006-no-codebase-analysis-guidance.md)에 있다.
 
 ## 4. 에이전트로 개발
 
@@ -126,7 +164,29 @@ agt profile apply company /path/to/project
 
 ## 문제 해결
 
-- **`Managed file changed outside Agentic`**: 적용된 파일의 관리 영역을 밖에서 손대면 동기화가 멈춘다. 도메인 규칙은 관리 영역이 아니라 프로젝트 확장 섹션에 둬야 보존된다. 관리 영역 변경을 되돌리거나 다시 `apply`로 재생성한다.
+### 관리 영역을 고쳐서 멈췄을 때
+
+`apply`·`sync`가 `Managed file changed outside Agentic: <파일>`로 멈추면, Agentic이 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 같은 프로필로 `apply`를 다시 실행하거나 해당 파일을 지워도 같은 검사를 거치므로 풀리지 않는다.
+
+```mermaid
+flowchart TD
+  STOP["apply·sync 중단<br/>Managed file changed outside Agentic"] --> KEEP["1. 남길 내용을 확장 섹션 아래나<br/>관리 블록 밖으로 옮긴다"]
+  KEEP --> Q{"관리 영역을 마지막 적용 상태로<br/>되돌릴 수 있는가?"}
+  Q -->|"예"| REVERT["2. 관리 영역의 수정만 되돌린다"]
+  REVERT --> OK["profile sync 통과"]
+  Q -->|"아니오"| RESET["3. agentic.project.json을 치우고<br/>profile apply 이름 프로젝트"]
+  RESET --> REGEN["관리 영역을 새로 생성<br/>관리 영역 안의 수정은 사라짐"]
+  REGEN --> OK
+```
+
+1. 관리 영역 안에 남기고 싶은 내용이 있으면 먼저 `AGENTS.md`의 확장 섹션 아래나 포인터 파일의 관리 블록 밖으로 옮긴다.
+2. 관리 영역을 마지막 적용 상태로 되돌린다. Git으로 관리하는 프로젝트라면 `git diff`로 관리 영역의 변경만 확인해 되돌린다. 비교는 hash로 하므로 공백 하나가 달라도 계속 멈춘다. 되돌리면 `agt profile sync <project>`가 통과한다.
+3. 되돌릴 원본이 없으면 `agentic.project.json`의 `profile` 값을 확인한 뒤 이 파일을 지우거나 다른 이름으로 옮기고 `agt profile apply <name> <project>`를 실행한다. 관리 영역을 새로 만들며 관리 영역 안에서 고친 내용은 경고 없이 사라진다. 확장 섹션 아래와 관리 블록 밖의 내용은 남는다. 실행 전에 `--dry-run`으로 바뀔 파일을 확인한다.
+
+충돌 내용을 비교해 보여 주거나 자동으로 복구하는 명령은 아직 없다. 이 후속 계약은 [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md#충돌-중단과-복구)에서 다룬다.
+
+### 그 밖의 오류
+
 - **`command not found: agt`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
 - **`profile sync requires a project already applied`**: 아직 `apply`하지 않은 프로젝트다. 먼저 `agt profile apply <name> <project>`를 실행한다.
 - **`Profile not found`**: 이름이 틀렸거나 다른 `AGENTIC_HOME`에 있다. `agt profile list`로 확인한다.

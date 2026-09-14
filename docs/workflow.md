@@ -3,7 +3,7 @@
 이 문서는 `@isthis/agentic` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 5fc1978c8724c9213bd2de9b01e45735cb15a2a3a38af59d71a4fe71408a6311 -->
+<!-- agentic-doc-sources-sha256: 40020b89f67e96757d366128da33af014fd7bf1f9a686c6ed35910c320e2ce11 -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agt` 또는 `agentic`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.
@@ -28,4 +28,4 @@
 | AI 에이전트   | 지침을 읽고 프로젝트 코드·테스트를 변경하며 결과를 보고                      |
 | 대상 프로젝트 | 비즈니스 코드·데이터·도메인 지침·검증 명령 보유                              |
 
-구체적인 CLI 옵션과 파일 형식은 [제품 방향](product-direction.md)과 [아키텍처 구현 계획](discussion/architecture/)의 현재 상태를 따른다.
+명령의 인자·옵션과 생성 파일 형식은 [CLI Reference](cli-reference.md)를 따르고 아직 구현되지 않은 계획은 [아키텍처 구현 계획](discussion/architecture/)에서 확인한다.

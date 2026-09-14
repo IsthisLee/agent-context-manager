@@ -34,12 +34,20 @@
 
 적용은 선택한 프로필의 공통 `AGENTS.md`를 프로젝트에 주입하고, 프로젝트의 도메인 지침은 프로젝트 쪽 확장 영역에 둔다. 프로필의 원본은 변경하지 않는다.
 
-```text
-프로필/AGENTS.md                  # 공통 지침 정본
-        │ agentic profile apply --core
-        ▼
-project/AGENTS.md               # 적용된 공통 지침 + 프로젝트 도메인 지침
+```mermaid
+flowchart LR
+  PA["프로필 AGENTS.md<br/>공통 지침 정본"] -->|읽기만| CMD["agentic profile apply<br/>프로필 이름 · 프로젝트 경로"]
+  CMD --> PJ
+  CMD --> PTR
+  CMD --> META
+  subgraph PROJ["대상 프로젝트"]
+    PJ["AGENTS.md<br/>공통 지침 영역 + 프로젝트 도메인 지침 영역"]
+    PTR["에이전트별 포인터"]
+    META["agentic.project.json<br/>선택한 프로필 기록"]
+  end
 ```
+
+적용은 프로필을 읽기만 하고 프로젝트 쪽 파일에만 쓴다. 프로젝트 도메인 지침은 `AGENTS.md`의 확장 영역에 남으며 프로필로 역동기화되지 않는다.
 
 적용 전에는 변경 파일과 기존 사용자 내용의 보존 여부를 보여 준다. 기존 프로젝트 파일을 자동으로 덮어쓰거나 프로필에 프로젝트 지침을 역동기화하지 않는다.
 

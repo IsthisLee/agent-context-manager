@@ -47,6 +47,28 @@
 - 모델링되지 않은 위치의 규칙은 읽지도, 합치지도, 보고하지도 않는다.
 - 결과적으로 이미 다른 위치에 규칙을 둔 프로젝트에 적용하면 우리 산출물과 기존 규칙이 갈라질 수 있다. [ADR 0004](../../../adr/0004-antigravity-rules-path.md) 이전 Antigravity가 이 갈라짐의 실제 사례였다. 프로젝트가 올바른 `.agents/rules/`를 쓰는데 패키지는 `.gemini/rules/`에 썼다.
 
+```mermaid
+flowchart LR
+  APPLY["profile apply · profile sync"]
+  subgraph W["쓰기 대상 · 모델링된 경로"]
+    A1["AGENTS.md"]
+    A2["CLAUDE.md"]
+    A3[".agents/rules/agentic.md"]
+    A4[".cursor/rules/agentic.mdc"]
+    A5[".github/copilot-instructions.md"]
+  end
+  subgraph N["발견하지 못하는 경로 · 탐지 후보"]
+    B1["GEMINI.md"]
+    B2[".agent/rules/"]
+    B3[".cursorrules"]
+    B4[".windsurfrules · .clinerules 등"]
+  end
+  APPLY -->|쓰기| W
+  APPLY -.->|읽지도 보고하지도 않음| N
+```
+
+`profile apply`·`profile sync`가 쓰는 곳은 왼쪽 다섯 경로뿐이다. 오른쪽 경로에 규칙이 있어도 지금은 읽지도 보고하지도 않으므로 두 규칙이 갈라졌다는 사실을 적용한 뒤에야 알게 된다.
+
 ## 기존 안전장치와의 관계
 
 이 안전장치들은 이미 있으므로 discovery는 재구현하지 않고 참조만 한다.
@@ -57,6 +79,26 @@
 - 프리플라이트: 심볼릭 링크·디렉터리 아닌 부모 경로를 거부한다.
 
 discovery의 몫은 이 위에 없는 것 하나다. 쓰기 전에 "무엇이 이미 있는지"를 사용자에게 보여 주는 읽기 전용 단계.
+
+```mermaid
+flowchart TD
+  START["profile apply 요청"] --> SCAN["규칙 위치 스캔<br/>읽기 전용"]
+  SCAN --> REPORT["보고<br/>사람용 요약 · 기계 판독 결과"]
+  REPORT --> DECIDE{"사용자·AI 에이전트가<br/>진행 여부 결정"}
+  DECIDE -->|중단| STOP["변경 없음"]
+  DECIDE -->|진행| HASH["drift 감지<br/>관리 영역 hash 비교"]
+  HASH --> MERGE["비파괴 병합<br/>mergeAgentsMd · mergeManagedDocument"]
+  MERGE --> PLAN["변경 계획 출력<br/>dry-run이면 여기서 종료"]
+  PLAN --> PRE["preflight<br/>심볼릭 링크 대상·부모 경로 거부"]
+  PRE --> WRITE["파일 단위 원자적 쓰기"]
+  SCAN -.->|모델링되지 않은 경로에는 쓰지 않음| ADOPT["채택은 별도 결정"]
+  classDef proposed fill:#fff3bf,stroke:#b08900,color:#5c4800
+  classDef existing fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
+  class SCAN,REPORT,DECIDE proposed
+  class HASH,MERGE,PLAN,PRE,WRITE existing
+```
+
+노란 단계만 새로 만들고 초록 단계는 지금 코드를 그대로 쓴다. 스캔 결과를 `--dry-run` 계획에 합칠지 별도 명령으로 둘지는 아직 정하지 않았으므로 그림에서는 스캔을 기존 흐름 앞에 두었다.
 
 ## 탐지 대상 후보
 

@@ -52,6 +52,25 @@
 
 `profile sync`를 여러 번 실행할 수 있다는 점도 중요하다. 첫 적용 이후 사용자가 파일을 수정했을 때, 현재 구현은 관리 마커 밖의 내용을 보존하고 기록된 관리 영역의 hash를 비교해 수동 수정이면 중단한다. 다만 충돌 내용을 사용자에게 비교 가능한 diff로 보여 주거나 안전하게 복구하는 계약은 아직 없다. 단순히 “포인터 파일이므로 덮어쓴다”고 문서화하는 것만으로는 안전한 업그레이드 계약이 되지 않는다.
 
+현재 구현이 에이전트별 산출물 하나를 판정하는 순서는 다음과 같다.
+
+```mermaid
+flowchart TD
+  START["profile apply · profile sync"] --> HASH{"managedHashes에 기록이 있고<br/>현재 관리 영역 hash와 다른가?"}
+  HASH -->|예| STOP["충돌로 중단<br/>어떤 파일도 쓰지 않음"]
+  HASH -->|아니오| MARK{"관리 마커 시작·종료가<br/>모두 있는가?"}
+  MARK -->|있음| REPLACE["관리 블록만 교체"]
+  MARK -->|없음 또는 새 파일| APPEND["기존 내용 뒤에<br/>관리 블록 추가"]
+  REPLACE --> PLAN["변경 계획 출력<br/>create · update · unchanged"]
+  APPEND --> PLAN
+  PLAN --> DRY{"dry-run인가?"}
+  DRY -->|예| NOCHANGE["변경 없이 종료"]
+  DRY -->|아니오| PRE["preflight<br/>심볼릭 링크 대상·부모 경로 거부"]
+  PRE --> WRITE["파일 단위 원자적 교체<br/>새 hash 기록"]
+```
+
+쓰기 전에 모든 대상의 hash를 먼저 비교하므로 한 파일이라도 충돌하면 어떤 파일도 바뀌지 않는다. 한쪽 마커만 남은 파일은 hash 기록이 있으면 불일치로 중단된다. 기록이 없으면 마커가 없는 파일처럼 관리 블록이 덧붙는다. `AGENTS.md`는 마커 대신 프로젝트 확장 헤딩으로 영역을 나누지만 hash 비교 순서는 같다.
+
 ## 보존 범위
 
 | 대상 | Agentic이 갱신할 수 있는 영역 | 사용자 보존 영역 |
@@ -93,6 +112,20 @@ Agentic이 프로필에서 생성한 내용
 
 기본값은 1번처럼 보수적으로 중단하는 것이 안전하다. 기존 프로젝트의 관례와 도구별 파일 우선순위에 따라 2번 또는 3번을 선택할 수 있도록 명시적인 옵션을 제공할 수 있다.
 
+```mermaid
+flowchart LR
+  F["마커 없는 기존 파일"] --> NOW["현재 구현<br/>기존 내용 뒤에 관리 블록 추가"]
+  F --> P1["제안 1 · 기본값<br/>변경 없이 충돌로 중단"]
+  F -.->|명시적 옵션| P2["제안 2<br/>확인 후 기존 내용을 사용자 영역으로 감싸고<br/>관리 블록 삽입"]
+  F -.->|명시적 옵션| P3["제안 3<br/>별도 Agentic 파일 생성<br/>기존 파일 유지"]
+  classDef current fill:#e9ecef,stroke:#6c757d,color:#343a40
+  classDef proposed fill:#fff3bf,stroke:#b08900,color:#5c4800
+  class NOW current
+  class P1,P2,P3 proposed
+```
+
+현재 구현은 확인 없이 관리 블록을 덧붙인다. 제안은 기본 동작을 중단으로 바꾼다. 감싸기와 별도 파일 생성은 사용자가 옵션으로 고를 때만 허용한다.
+
 ### dry-run과 변경 증거
 
 `profile apply`·`profile sync`·향후 삭제나 마이그레이션은 실제 변경 전에 다음 정보를 보여줘야 한다.
@@ -111,6 +144,32 @@ Agentic이 프로필에서 생성한 내용
 ### 메타데이터 추적
 
 `agentic.project.json`에는 선택 프로필뿐 아니라 Agentic이 관리하는 파일, 관리 포맷 버전, 마지막 적용 버전을 기록하는 방안을 검토한다. 사용자 정의 키가 허용될 경우 Agentic 네임스페이스와 사용자 네임스페이스를 구분해 메타데이터 자체의 덮어쓰기도 방지한다.
+
+```mermaid
+erDiagram
+  PROJECT_METADATA ||--o{ MANAGED_HASH : "managedHashes 현재"
+  PROJECT_METADATA ||--o{ MANAGED_FILE : "관리 파일 목록 제안"
+  PROJECT_METADATA ||--o| USER_NAMESPACE : "사용자 키 제안"
+  PROJECT_METADATA {
+    int schemaVersion "현재"
+    string profile "현재 · 적용한 프로필 이름"
+    string managedFormatVersion "제안 · 관리 포맷 버전"
+    string lastAppliedVersion "제안 · 마지막 적용 버전"
+  }
+  MANAGED_HASH {
+    string path "AGENTS.md 등 상대 경로"
+    string sha256 "관리 영역 hash"
+  }
+  MANAGED_FILE {
+    string path "제안"
+    string format "제안 · 관리 마커 형식"
+  }
+  USER_NAMESPACE {
+    object keys "제안 · 사용자 소유 키"
+  }
+```
+
+지금 `agentic.project.json`에 기록되는 값은 `schemaVersion`, `profile`, `managedHashes`다. `제안`으로 표시한 필드와 엔터티는 검토 중이며 이름도 확정되지 않았다. 현재 구현은 모르는 키를 지우지 않고 다시 기록하지만 사용자 네임스페이스를 따로 구분하지는 않는다.
 
 ## 동기화 시나리오
 

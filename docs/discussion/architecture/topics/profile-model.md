@@ -42,6 +42,32 @@
 └── agentic-profile.json  # 이름·용도·schema metadata
 ```
 
+```mermaid
+erDiagram
+  PROFILE ||--|| PROFILE_METADATA : "agentic-profile.json"
+  PROFILE ||--|| PROFILE_AGENTS : "AGENTS.md"
+  PROFILE ||--o{ PROJECT_METADATA : "적용한 프로젝트가 이름으로 참조"
+  PROFILE_METADATA {
+    int schemaVersion "1"
+    string name "디렉터리 이름과 같아야 함"
+    string scope "personal · company · team · workspace"
+    string createdAt
+    object settings "setup 후 기록"
+    string updatedAt "setup 후 기록"
+  }
+  PROFILE_AGENTS {
+    text template "생성 시 패키지 템플릿"
+    text guidance "setup이 쓰는 guidance 블록"
+  }
+  PROJECT_METADATA {
+    int schemaVersion "1"
+    string profile "적용한 프로필 이름"
+    object managedHashes "관리 영역 hash"
+  }
+```
+
+프로필은 디렉터리 하나에 metadata와 지침 정본을 둔다. 프로젝트는 `agentic.project.json`에 프로필 이름만 기록한다. 그래서 프로필을 삭제해도 이미 적용된 프로젝트 파일은 남지만 다음 `profile sync`는 프로필을 찾지 못해 실패한다.
+
 프로필 생성은 프로젝트를 변경하지 않는다. 프로필을 선택해 프로젝트에 적용하는 작업은 별도의 명령과 승인 흐름으로 둔다.
 
 #### 구현 기록: 프로필 생성·목록

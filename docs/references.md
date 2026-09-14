@@ -8,6 +8,15 @@
 - 테스트 실행 결과는 유용한 검증 신호지만, 요구사항 충족·지침 준수·제품 품질 전체의 증명은 아니다. 별도 grader나 사람 검토가 필요할 수 있다. [Anthropic Evals 설명](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)
 - 루트 지침은 필요한 고신호 정보를 제공하고 상세 지침은 필요할 때 찾을 수 있게 구성한다. 특정 줄 수를 공식 기준으로 취급하지 않는다. [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 
+## 프로젝트 지침 자동 생성에 관한 근거
+
+코드베이스를 분석해 프로젝트 지침을 작성하는 기능을 Agentic에 두지 않는 결정([ADR 0006](adr/0006-no-codebase-analysis-guidance.md))의 외부 근거다.
+
+- **각 에이전트가 초안 생성 기능을 기본으로 제공한다.** Claude Code의 `/init`은 코드베이스를 분석해 빌드 명령·테스트 방법·프로젝트 관례를 담은 `CLAUDE.md` 초안을 만든다. 기존 `CLAUDE.md`가 있으면 덮어쓰지 않고 개선안을 제안한다. Codex의 `/init`은 `AGENTS.md` 초안을 만들며 생성 결과를 검토한 뒤 저장소 관례에 맞게 고치라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex developer commands](https://learn.chatgpt.com/docs/developer-commands?surface=cli)
+- **공식 가이드는 에이전트가 코드를 읽어 알아낼 수 있는 내용을 지침에서 빼라고 권한다.** Anthropic은 넣을 내용으로 추측할 수 없는 Bash 명령, 기본값과 다른 코드 스타일, 테스트 방법, 프로젝트 고유의 아키텍처 결정, 흔한 함정을 든다. 뺄 내용으로는 "코드를 읽으면 알 수 있는 모든 것", 파일별 코드베이스 설명, 자주 바뀌는 정보를 든다. `/doctor`는 디렉터리 구조·의존성 목록·아키텍처 개요처럼 코드에서 도출할 수 있는 내용을 잘라내자고 제안한다. [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Claude Code memory](https://code.claude.com/docs/en/memory)
+- **실측 연구도 저장소 개요의 효과를 확인하지 못했다.** Gloaguen 외(ETH Zurich)는 LLM이 생성한 컨텍스트 파일을 붙인 SWE-bench 과제와 개발자가 커밋한 컨텍스트 파일이 있는 저장소의 이슈로 여러 LLM과 코딩 에이전트를 평가했다. 컨텍스트 파일은 과제 성공률을 일반적으로 높이지 않았으며 추론 비용을 평균 20% 넘게 늘렸다. 생성한 파일과 개발자가 쓴 파일 모두 같은 경향이었다. 에이전트는 파일 안의 지시를 잘 따랐지만 저장소 개요는 도움이 되지 않았다. 저자들은 컨텍스트 파일이 비표준 코딩 관례를 지정할 때 유용하다고 결론 내렸다. [arXiv 2602.11988](https://arxiv.org/abs/2602.11988)
+- **지침을 만드는 방식이 결과를 가른다는 반대 결과도 있다.** probe-and-refine 방식은 합성 버그 수정 과제로 지침 파일의 부족한 곳을 찾아 LLM 호출로 반복 수정한다. SWE-bench Verified에서 Qwen3.5-35B-A3B로 4회 시행한 평균 해결률은 지침 없음 25.5%, 수정 전 지침 28.3%, 수정 후 지침 33.0%였다. 향상은 수정의 정밀도가 아니라 에이전트가 올바른 파일에 도달하는 비율에서 나왔다. 진단용 출력을 충분히 만들지 못한 다른 모델에서는 수정 루프의 효과가 떨어졌다. 이 방식도 모델 호출로 지침을 만들므로 모델 호출을 범위 밖에 둔 Agentic의 결정을 바꾸지 않는다. [arXiv 2606.20512](https://arxiv.org/abs/2606.20512)
+
 ## 공개 npm·GitHub 저장소 운영 근거
 
 - npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/)
@@ -30,7 +39,7 @@
 | [Everything Claude Code (ECC)](https://github.com/affaan-m/ECC) | 에이전트의 개발 능력과 작업 방법을 확장 | 전문 에이전트, 스킬, 명령, 훅, 규칙, 메모리·보안 도구와 워크플로를 제공하며 여러 하네스에 어댑터를 제공 | Claude Code 중심의 에이전트 작업 자동화·전문화, Codex 등 인접 하네스 지원 | ECC는 에이전트가 계획·구현·리뷰·보안·도메인 작업을 수행하도록 기능과 방법론을 제공한다. Agentic은 ECC 같은 도구를 실행·통제하지 않고, 조직·팀·프로젝트가 선택한 공통 개발 지침을 프로필에서 관리해 여러 에이전트와 프로젝트에 적용하는 데 집중한다. | ECC는 선택한 에이전트의 능력·워크플로를 제공하고 Agentic은 조직·프로젝트 공통 지침을 관리하는 식으로 역할을 나눌 수 있다. ECC 지침을 프로필에 자동 수입하는 공식 계약은 확인하지 않았으므로, 채택할 내용은 검토 후 별도로 복사·정리해야 한다. |
 | [GitHub Spec Kit](https://github.com/github/spec-kit) | 명세 중심 개발을 돕기 | 요구사항·설계·구현으로 이어지는 spec-driven 개발 템플릿과 흐름 제공 | 신규 기능의 명세화와 계획 수립 | Spec Kit은 기능 개발 방법론과 산출물에 초점을 둔다. Agentic은 특정 명세 방법론을 강제하지 않고, 프로젝트가 선택한 공통 지침을 에이전트별 파일로 적용하는 기반을 제공한다. | Spec Kit의 명세·계획 산출물을 프로젝트 도메인 작업에 사용하고, Agentic으로 그 프로젝트의 공통 지침을 여러 에이전트에 적용하는 조합이 자연스럽다. 이는 역할 분리에 따른 활용 방식이며 공식 Agentic 플러그인 통합을 뜻하지 않는다. |
 | [obra/superpowers](https://github.com/obra/superpowers) | 에이전트의 개발 작업 품질과 습관 개선 | 스킬과 개발 방법론을 조합해 계획·구현·검토 흐름을 안내 | 에이전트 주도 개발 프로세스와 재사용 스킬 | superpowers는 에이전트가 작업하는 방법을 제공하고, Agentic은 그런 방법론을 프로필에 선택적으로 포함·관리하고 여러 에이전트에 전달하는 역할을 맡는다. | Superpowers를 특정 에이전트의 작업 방법으로 사용하고, Agentic에는 팀·프로젝트가 실제로 채택한 공통 규칙만 관리한다. 양쪽의 자동 동기화나 공식 연동은 확인하지 않았으므로 동일 규칙을 양쪽에 중복 관리하지 않는다. |
-| [revfactory/harness](https://github.com/revfactory/harness) | Claude Code에서 에이전트 팀 패턴을 쉽게 구성 | 팀·전문 에이전트·스킬과 실행 모드를 제공 | 복잡하거나 병렬화 가능한 작업의 역할 분담·오케스트레이션 | revfactory/harness는 특정 에이전트 런타임 안의 팀 실행 방식에 가깝다. Agentic은 런타임 래퍼나 오케스트레이터를 만들지 않고, 단일 에이전트 작업과 선택적 리뷰·팀 분업 모두에 적용될 공통 지침을 관리한다. | Agentic이 공통 작업·안전·문서 지침을 제공하고, 복잡한 작업에서만 Harness가 Claude Code 팀 실행을 담당하는 조합이 가능하다. Harness는 Claude Code 전용 공식 런타임이며, Agentic이 이를 다른 에이전트에서 실행해 주는 것은 아니다. |
+| [revfactory/harness](https://github.com/revfactory/harness) | Claude Code에서 에이전트 팀 패턴을 쉽게 구성 | 도메인 설명과 코드베이스 탐색 결과로 팀 아키텍처를 고르고 `.claude/agents/` 에이전트 정의와 `.claude/skills/` 스킬을 생성한다. 코드베이스 탐색은 팀·스킬 설계의 재료로만 쓰며, `CLAUDE.md`에는 트리거 포인터와 변경 이력만 기록하고 디렉터리 구조 같은 프로젝트 설명은 넣지 않는다. | 복잡하거나 병렬화 가능한 작업의 역할 분담·오케스트레이션 | 두 도구의 "멀티 에이전트"는 뜻이 다르다. harness는 Claude Code 한 도구 안에서 협업하는 에이전트 팀을 설계한다. Agentic은 Claude Code·Codex·Cursor 같은 여러 에이전트 도구에 같은 공통 지침을 배포한다. 위아래 계층이 아니라 서로 다른 축이며, harness는 프로젝트 지침을 작성하는 도구도 아니다. | Agentic이 공통 작업·안전·문서 지침을 제공하고 복잡한 작업에서만 harness가 Claude Code 팀 구성을 담당하는 조합이 가능하다. harness는 Claude Code 전용 커뮤니티 플러그인이며 Agentic이 이를 다른 에이전트에서 실행해 주지 않는다. 두 도구 모두 `CLAUDE.md`를 수정하므로 harness 포인터는 Agentic 관리 블록 밖에 있어야 한다. |
 
 ### 함께 사용하기 전 확인할 규칙
 
@@ -45,7 +54,7 @@
 
 다음 요구가 있으면 Agentic의 책임 범위와 직접 맞는다.
 
-1. Claude Code, Codex, Gemini, Cursor, Copilot 등 여러 에이전트를 같은 프로젝트에서 사용하고, 도구가 바뀌어도 공통 개발 지침을 유지해야 한다.
+1. Claude Code, Codex, Antigravity, Cursor, Copilot 등 여러 에이전트를 같은 프로젝트에서 사용하고, 도구가 바뀌어도 공통 개발 지침을 유지해야 한다.
 2. 개인·회사·팀·workspace처럼 서로 다른 범위의 공통 지침을 여러 개 만들고, 프로젝트별로 적용할 프로필을 선택해야 한다.
 3. 공통 지침과 프로젝트 도메인 지침을 분리하고, 공통 지침은 한 곳에서 관리하면서 프로젝트에는 필요한 형태로 적용해야 한다.
 4. TDD, 리뷰, 검증, 문서화, 보안 등 지침을 한 번에 고정하지 않고 프로필 생성 후 선택적으로 구성해야 한다.

@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-14
+
 ### Added
 
 - 로케일(ko/en) 국제화: `--lang`·`AGENTIC_LANG`·저장된 선택·첫 실행 대화형 선택으로 TUI와 생성 지침 언어를 고르는 `config lang` 명령. 기본은 한국어, 영어는 opt-in
@@ -12,7 +14,8 @@
 - 공개 저장소 운영 문서와 기여·보안·행동규범 안내
 - Node.js 24 LTS·26 Current CI, npm tarball 검사, Dependabot 설정, provenance 배포 workflow
 - OpenSSF Scorecard workflow와 README의 자동 계산 점수 뱃지
-- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/architecture/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 워크플로 문서에 명시
+- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/architecture/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 사용 가이드와 지침 카탈로그에 명시
+- `setup` 산출물에 `recommended`/`strict`의 뜻을 정의하는 "적용 수준 정의" 범례를 추가하고 setup TUI 힌트와 같은 문구를 공유. 배포되는 6개 지침을 근거 기반으로 다시 씀(하네스는 "작게 유지·선택적 확장" 반영). 근거는 [ADR 0005](docs/adr/0005-guidance-level-semantics.md)
 
 ### Changed
 
@@ -20,6 +23,7 @@
 - 패키지 소개를 “사람과 AI 에이전트가 함께 따르는 개발 기준”으로 정렬하고, 프로필의 공통 지침과 프로젝트 도메인 지침의 소유 경계를 명확히 설명
 - 실행 영수증을 테스트 실행 사실로 한정하고, 규칙 준수·제품 품질 평가와 구분
 - 문서 정본·제품 범위·프로필 소유권을 명확히 정리
+- 코드베이스를 분석해 프로젝트 지침을 자동 작성하는 기능은 지원하지 않는다는 점과 그 근거를 README·제품 방향에 명시. 초안은 각 에이전트의 `/init`으로 만들고 `AGENTS.md` 확장 영역이나 `CLAUDE.md` 관리 블록 밖에 두도록 안내. 근거는 [ADR 0006](docs/adr/0006-no-codebase-analysis-guidance.md)
 - 저장소 개발·CI 패키지 관리자를 고정된 pnpm 환경으로 전환하고 npm 배포·사용 호환성은 유지
 - 지원 런타임을 Node.js 24 LTS 이상으로 상향하고 CI·배포 workflow·기여 문서를 동일하게 정렬
 - Windows 경로 구분자·`npm.cmd`·설치된 `.cmd` shim 차이를 평가에서 처리하고, GitHub Actions를 Node 24 호환 버전으로 갱신
@@ -38,6 +42,11 @@
 ### Removed
 
 - 대상 프로젝트에 검증 실행기·`doctor`·콜드 스타트 테스트를 주입하던 이전 하네스 기능
+
+### Fixed
+
+- 영어 로케일(`--lang en`·`AGENTIC_LANG=en`)로 적용한 프로젝트에서 `AGENTS.md`의 `## 4. Project rule extensions (SSOT)` 아래에 도메인 규칙을 추가하면 다음 `profile sync`·`profile apply`가 `Managed file changed outside Agentic`으로 멈추던 문제를 고침. 확장 섹션 제목을 한국어로만 인식하던 탓이며 이제 두 로케일의 제목과 안내 문구를 모두 인식한다.
+- 사용 가이드의 관리 영역 충돌 복구 안내를 실제로 동작하는 절차로 정정. 같은 프로필로 `apply`를 다시 실행하는 것으로는 풀리지 않으며 관리 영역 수정을 되돌리거나 `agentic.project.json`을 치운 뒤 `apply`해야 한다.
 
 ## [0.1.0] - 2026-09-12
 

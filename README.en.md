@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI development guidance
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: a828d5986d2cab8fc8bf6c24a09da2198729f9d18d0697cfb2954d9384e487a4 -->
+<!-- agentic-doc-sources-sha256: cec9f192ac205d6e21fcef6f284502ed810956f2ab157e5627fce5c5da9828fa -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -93,7 +93,7 @@ The commands above follow this flow.
 >
 > Passing options directly is useful for automation or repeated runs.
 
-Personal Profiles are stored under `~/.agentic-profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
+Personal Profiles are stored under `~/.agentic/profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
 
 Agentic provides commands to create, set up, apply, and synchronize Profiles. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/).
 

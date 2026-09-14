@@ -3,7 +3,7 @@
 * **상태:** 채택됨 (Accepted)
 * **일자:** 2026-09-14
 * **결정자:** 제품 소유자·개발자
-* **관련:** [관리 산출물의 안전한 동기화](../discussion/architecture/topics/managed-artifact-safety.md) 논의의 충돌 시각화·복구를 구현으로 확정한다. 모델 호출과 에이전트 런타임을 범위 밖에 둔 [ADR 0001](0001-product-scope.md) 안에서 동작한다.
+* **관련:** [관리 산출물의 안전한 동기화](../discussion/architecture/topics/managed-artifact-safety.md) 논의의 충돌 시각화·복구를 구현으로 확정한다. 모델 호출과 에이전트 런타임을 범위 밖에 둔 [ADR 0001](0001-product-scope.md) 안에서 동작한다. `--edit`의 적용 조건은 [ADR 0010](0010-edit-merge-regenerates-managed-area.md)이 대체한다.
 
 ## 배경 (Context)
 

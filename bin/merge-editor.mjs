@@ -5,23 +5,27 @@ import { spawnSync } from 'node:child_process';
 
 /**
  * Open VS Code's three-way merge editor (`code --wait --merge`) for one file and
- * return what the user saved. The temporary directory is kept until `cleanup()`
- * so a rejected result can still be inspected.
- * @param {{ name: string, current: string, incoming: string, base: string }} input
+ * return what the user saved. The result pane starts from `result`. The temporary
+ * directory is kept until `cleanup()` so a rejected result can still be inspected.
+ * @param {{ name: string, current: string, incoming: string, base: string, result: string }} input
  */
-export function mergeInVsCode({ name, current, incoming, base }) {
+/** The file name VS Code shows for one merge input, e.g. `current-CLAUDE.md`. */
+export function mergeFileName(role, name) {
+  return `${role}-${name.replaceAll(/[\\/]/g, '__')}`;
+}
+
+export function mergeInVsCode({ name, current, incoming, base, result }) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-merge-'));
-  const safeName = name.replaceAll(/[\\/]/g, '__');
   const paths = {
-    current: path.join(dir, `current-${safeName}`),
-    incoming: path.join(dir, `agentic-${safeName}`),
-    base: path.join(dir, `base-${safeName}`),
-    result: path.join(dir, `result-${safeName}`)
+    current: path.join(dir, mergeFileName('current', name)),
+    incoming: path.join(dir, mergeFileName('agentic', name)),
+    base: path.join(dir, mergeFileName('base', name)),
+    result: path.join(dir, mergeFileName('result', name))
   };
   fs.writeFileSync(paths.current, current);
   fs.writeFileSync(paths.incoming, incoming);
   fs.writeFileSync(paths.base, base);
-  fs.writeFileSync(paths.result, incoming);
+  fs.writeFileSync(paths.result, result);
 
   const args = ['--wait', '--merge', paths.current, paths.incoming, paths.base, paths.result];
   const outcome = process.platform === 'win32'

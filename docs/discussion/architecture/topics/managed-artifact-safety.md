@@ -215,7 +215,7 @@ flowchart TD
   K -->|"예"| AUTO["추가·수정한 줄을 관리 영역 밖으로 이동<br/>관리 영역은 현재 프로필로 재생성"]
   K -->|"아니오"| HALT["diff 표시 후 exit 1<br/>어떤 파일도 쓰지 않음"]
   HALT -->|"--discard"| BACKUP[".agentic/backups/시각/에 백업한 뒤 재생성"]
-  K -->|"예 + --edit"| EDIT["VS Code 3-way merge<br/>결과의 관리 영역이 재생성본과 같을 때만 적용"]
+  K -->|"예 + --edit"| EDIT["VS Code 3-way merge<br/>결과에서 관리 영역 밖만 적용 · 관리 영역은 재생성"]
   AUTO --> WRITE["hash와 .agentic/base 갱신"]
   BACKUP --> WRITE
   EDIT --> WRITE
@@ -227,4 +227,5 @@ flowchart TD
 * **구현:** `bin/project-plan.mjs`가 충돌을 throw하지 않고 모으고, `bin/conflicts.mjs`가 편집 추출·재배치·diff를, `bin/merge-editor.mjs`가 VS Code 3-way merge를 맡는다. `profile resolve`를 CLI·`profile list` 관리 메뉴·TUI 충돌 흐름에 등록했다.
 * **평가:** `evals/conflicts.test.mjs`, `evals/conflict-resolve.test.mjs`.
 * **제약:** 템플릿 줄을 고친 편집은 비슷한 문장이 두 번 남을 수 있다. base가 없는 기존 프로젝트는 다음 성공한 적용부터 base가 생긴다. 실제 VS Code 창, Windows `code.cmd`, 대화형 TUI 조작은 자동 평가하지 않는다.
+* **정정:** 실제 VS Code 확인에서 저장 시 포매터(Prettier)가 관리 블록을 바꿔 `--edit` 결과가 항상 거부되는 문제가 드러났다. `--edit`은 결과에서 관리 영역 밖만 가져오고 관리 영역은 다시 만들도록 바꿨다. 근거는 [ADR 0010](../../../adr/0010-edit-merge-regenerates-managed-area.md)이다.
 * **다음 단계:** 마커 없는 파일 정책, 마커 손상 진단, 여러 파일 전체 롤백, 관리 파일 manifest.

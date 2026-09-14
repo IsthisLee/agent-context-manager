@@ -176,6 +176,9 @@ const messages = {
     'resolve.mode.discard.hint': '현재 파일을 .agentic/backups/에 복사한 뒤 관리 영역을 새로 만든다',
     'resolve.nothing': '해결할 충돌이 없습니다.',
     'resolve.outro': '충돌 해결 완료',
+    'resolve.edit.guide': '{file}: VS Code 병합 편집기를 엽니다. 다음 순서로 확인하세요.\n  1. 위쪽 `{pane}` 창에서 강조된 영역은 관리 영역 안에서 고쳤던 원래 위치입니다. 이 창의 수락 버튼은 누르지 않습니다.\n  2. 아래쪽 결과 창에는 그 줄이 {boundary} 이미 옮겨져 있습니다. 남길 내용이 모두 관리 영역 밖에 있는지 확인하고, 필요하면 고친 뒤 저장합니다.\n  3. 탭을 닫을 때 "파일에 처리되지 않은 충돌이 포함되어 있습니다" 경고가 뜨면, 결과 창을 확인했는지 다시 보고 \'충돌과 함께 닫기\'(Close with Conflicts)를 누릅니다. 저장한 결과가 적용됩니다.\n  4. 결과 창에서 관리 영역 안에 남긴 변경은 적용되지 않으며, 닫은 뒤 diff로 보여 줍니다.',
+    'resolve.edit.boundary.pointer': '`<!-- agentic:managed:end -->` 아래로',
+    'resolve.edit.boundary.agents': '확장 섹션 끝으로',
 
     'main.intro': 'Agentic',
     'main.message': '무엇을 할까요?',
@@ -276,6 +279,9 @@ const messages = {
     'resolve.mode.discard.hint': 'Copy current files to .agentic/backups/ and regenerate managed areas',
     'resolve.nothing': 'Nothing to resolve.',
     'resolve.outro': 'Conflicts resolved',
+    'resolve.edit.guide': '{file}: opening the VS Code merge editor. Check it in this order.\n  1. The highlighted area in the upper `{pane}` pane is where you edited inside the managed area. Do not press its accept buttons.\n  2. The Result pane below already has those lines moved {boundary}. Check that everything you want to keep is outside the managed area, edit if needed, and save.\n  3. If closing the tab warns "The file contains unhandled conflicts.", confirm the Result pane once more and press \'Close with Conflicts\'. The saved result is applied.\n  4. Changes left inside the managed area in the Result pane are not applied; a diff shows them after you close.',
+    'resolve.edit.boundary.pointer': 'below `<!-- agentic:managed:end -->`',
+    'resolve.edit.boundary.agents': 'to the end of the extension section',
 
     'main.intro': 'Agentic',
     'main.message': 'What would you like to do?',

@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 에이전트 개발 지침 관리
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/conflicts.mjs, bin/project-plan.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 078fcf3de1a8d4530b6f1a9f279743ae935028f661a566887f9e830ff0dc2cfb -->
+<!-- agentic-doc-sources-sha256: 8d5eba5fb6ab21380bfc4065f38da64a53be106af4af58f0cdda2b031f33cc2a -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)

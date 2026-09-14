@@ -6,8 +6,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { fileURLToPath } from 'node:url';
-import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, hashManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
-import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
+import { formatDiff } from './conflicts.mjs';
+import { writeTextAtomic } from './fs-utils.mjs';
+import { planProject, writePlan } from './project-plan.mjs';
 import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceLevelDefinitions, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -423,16 +424,68 @@ function boundProfile(projectConfig) {
   return projectConfig.profile || projectConfig.core || null;
 }
 
-function renderAdapter(template, target, projectName) {
-  const generated = fs.readFileSync(template, 'utf8').replaceAll('{{PROJECT_NAME}}', projectName);
-  const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
-  return mergeManagedDocument(generated, existing);
-}
-
 /** Positional arguments for `profile apply`: `<name> [<project>]`. */
 function applyArgs(values) {
   const positional = values.filter(value => !value.startsWith('--'));
   return { name: positional[0] || null, targetPath: positional[1] || '.' };
+}
+
+const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md#관리-영역을-고쳐서-멈췄을-때';
+
+/** Raised when managed areas were edited outside Agentic; carries the conflicting files. */
+class ConflictError extends Error {
+  constructor(message, conflicts) {
+    super(message);
+    this.conflicts = conflicts;
+  }
+}
+
+function cliName() {
+  return invokedAs === 'agt' ? 'agt' : 'agentic';
+}
+
+function conflictError(conflicts, targetDir) {
+  return new ConflictError([
+    `Managed file changed outside Agentic: ${conflicts.map(file => file.rel).join(', ')}`,
+    `  See the difference:  ${cliName()} profile sync --dry-run ${targetDir}`,
+    `  Guide: ${CONFLICT_GUIDE}`
+  ].join('\n'), conflicts);
+}
+
+function planFor(name, targetDir, overrides) {
+  const profile = readProfile(name);
+  const projectConfig = readProjectConfig(path.join(targetDir, 'agentic.project.json'));
+  const projectName = getProjectName(targetDir);
+  return planProject({
+    packageRoot: PACKAGE_ROOT,
+    targetDir,
+    projectName,
+    profileName: name,
+    renderedAgents: renderProfileAgents(profile, projectName),
+    projectConfig
+  }, overrides);
+}
+
+function printPlan(plan, label) {
+  const conflicted = new Set(plan.conflicts.map(file => file.rel));
+  const changed = plan.changes.filter(change => change.status !== 'unchanged' && !conflicted.has(change.relativePath));
+  console.log(`${label}: ${changed.length} file(s) to change.`);
+  for (const change of plan.changes) {
+    const status = conflicted.has(change.relativePath) ? 'conflict' : change.status;
+    console.log(`  ${status.padEnd(9)} ${change.relativePath}`);
+  }
+}
+
+function printConflicts(conflicts) {
+  for (const file of conflicts) {
+    console.log(`\nConflict: ${file.rel}`);
+    if (file.conflict.kind === 'missing') {
+      console.log(`${file.rel} is missing.`);
+    } else {
+      console.log('Current managed area compared with what Agentic will write:');
+      console.log(formatDiff(`current/${file.rel}`, `next/${file.rel}`, file.currentRegion ?? '', file.nextRegion ?? ''));
+    }
+  }
 }
 
 function applyProfile(values) {
@@ -440,57 +493,17 @@ function applyProfile(values) {
   if (!name) throw new Error('profile apply requires <name> <project>.');
   const targetDir = path.resolve(process.cwd(), targetPath);
   assertProjectDirectory(targetDir);
-  const profile = readProfile(name);
-  const projectName = getProjectName(targetDir);
-  const agentsPath = path.join(targetDir, 'AGENTS.md');
-  const projectConfigPath = path.join(targetDir, 'agentic.project.json');
-  const projectConfig = readProjectConfig(projectConfigPath);
-  const changes = [];
-  const planFile = (target, content) => {
-    const relativePath = path.relative(targetDir, target) || path.basename(target);
-    const existing = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
-    changes.push({ target, relativePath, content, status: existing === null ? 'create' : existing === content ? 'unchanged' : 'update' });
-  };
-  const existingAgents = fs.existsSync(agentsPath) ? fs.readFileSync(agentsPath, 'utf8') : null;
-  const previousAgentsHash = projectConfig.managedHashes?.['AGENTS.md'];
-  if (previousAgentsHash && hashAgentsManagedDocument(existingAgents) !== previousAgentsHash) {
-    throw new Error('Managed file changed outside Agentic: AGENTS.md');
-  }
-  const agents = mergeAgentsMd(renderProfileAgents(profile, projectName), existingAgents);
-  planFile(agentsPath, agents);
-  for (const [source, target] of [
-    ['templates/CLAUDE.md', 'CLAUDE.md'],
-    ['templates/antigravity-rules/agentic.md', '.agents/rules/agentic.md'],
-    ['templates/cursor-rules/agentic.mdc', '.cursor/rules/agentic.mdc'],
-    ['templates/copilot-instructions.md', '.github/copilot-instructions.md']
-  ]) {
-    const targetPath = path.join(targetDir, target);
-    const existing = fs.existsSync(targetPath) ? fs.readFileSync(targetPath, 'utf8') : null;
-    const previousHash = projectConfig.managedHashes?.[target];
-    if (previousHash && hashManagedDocument(existing) !== previousHash) {
-      throw new Error(`Managed file changed outside Agentic: ${target}`);
-    }
-    planFile(targetPath, renderAdapter(path.join(PACKAGE_ROOT, source), targetPath, projectName));
-  }
-  const managedHashes = {};
-  if (extractAgentsManagedDocument(agents)) managedHashes['AGENTS.md'] = hashAgentsManagedDocument(agents);
-  for (const change of changes.filter(change => change.relativePath !== 'AGENTS.md' && change.relativePath !== 'agentic.project.json')) {
-    const managed = extractManagedDocument(change.content);
-    if (managed) managedHashes[change.relativePath] = hashManagedDocument(change.content);
-  }
-  const { core: _legacyCore, ...restConfig } = projectConfig;
-  planFile(projectConfigPath, JSON.stringify({ ...restConfig, schemaVersion: 1, profile: name, managedHashes }, null, 2) + '\n');
-  const changed = changes.filter(change => change.status !== 'unchanged');
-  console.log(`${hasFlag(values, 'dry-run') ? 'Dry-run' : 'Plan'}: ${changed.length} file(s) to change.`);
-  for (const change of changes) console.log(`  ${change.status.padEnd(9)} ${change.relativePath}`);
-  if (hasFlag(values, 'dry-run')) {
+  const plan = planFor(name, targetDir);
+  const dryRun = hasFlag(values, 'dry-run');
+  if (plan.conflicts.length && !dryRun) throw conflictError(plan.conflicts, targetDir);
+  printPlan(plan, dryRun ? 'Dry-run' : 'Plan');
+  if (dryRun) {
+    printConflicts(plan.conflicts);
     console.log('Dry-run: no files were changed.');
+    if (plan.conflicts.length) throw conflictError(plan.conflicts, targetDir);
     return;
   }
-  for (const change of changed) assertSafeTextTarget(change.target, targetDir);
-  for (const change of changed) {
-    writeTextAtomic(change.target, change.content);
-  }
+  writePlan(plan.changes, targetDir);
   console.log(`Applied profile ${name} to ${targetDir}`);
 }
 
@@ -515,6 +528,7 @@ function syncProject(values) {
   if (!selected) throw new Error('profile sync requires a project already applied with `agentic profile apply <name> <project>`.');
   applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 }
+
 
 async function promptLocale() {
   const selected = await select({

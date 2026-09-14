@@ -221,18 +221,38 @@ function docSourceSpec(content) {
   return { listMatch, hashMatch, sources };
 }
 
-/** sha256 over each source's relative path and bytes, in listed order. */
+/** All files under a directory, absolute paths, collected recursively. */
+function walkFiles(dir, files = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.name === '.git' || entry.name === 'node_modules') continue;
+    const entryPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) walkFiles(entryPath, files);
+    else if (entry.isFile()) files.push(entryPath);
+  }
+  return files;
+}
+
+/**
+ * sha256 over each pinned source's relative path and bytes. A source may be a
+ * file or a directory; a directory hashes every file beneath it in sorted order,
+ * so files added, removed, or edited inside it trip the gate without a list edit.
+ */
 function computeDocSourcesHash(sources) {
   const hash = createHash('sha256');
   for (const source of sources) {
     const sourcePath = path.join(root, source);
-    if (!fs.existsSync(sourcePath) || !fs.statSync(sourcePath).isFile()) {
-      return { error: `doc-source file not found: ${source}` };
+    if (!fs.existsSync(sourcePath)) {
+      return { error: `doc-source not found: ${source}` };
     }
-    hash.update(source);
-    hash.update('\0');
-    hash.update(fs.readFileSync(sourcePath));
-    hash.update('\0');
+    const files = fs.statSync(sourcePath).isDirectory()
+      ? walkFiles(sourcePath).sort()
+      : [sourcePath];
+    for (const filePath of files) {
+      hash.update(path.relative(root, filePath));
+      hash.update('\0');
+      hash.update(fs.readFileSync(filePath));
+      hash.update('\0');
+    }
   }
   return { digest: hash.digest('hex') };
 }

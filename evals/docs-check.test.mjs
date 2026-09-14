@@ -23,6 +23,13 @@ test('documentation checker validates architecture discussion topics beneath the
   assert.match(checker, /path\.join\(discussionDir, 'topics'\)/);
 });
 
+test('documentation checker hashes a pinned directory so files inside it are covered without list edits', () => {
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
+
+  assert.match(checker, /walkFiles/);
+  assert.match(checker, /isDirectory\(\)/);
+});
+
 test('documentation checker requires complete proposal summaries', () => {
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.mjs'), 'utf8');
 

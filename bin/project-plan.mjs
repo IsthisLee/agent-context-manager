@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.mjs';
+import { baseFilePath, parseBase, serializeBase } from './conflicts.mjs';
 import { assertSafeTextTarget, writeTextAtomic } from './fs-utils.mjs';
 
 /**
@@ -41,6 +42,17 @@ function recordedHashFor(projectConfig, relativePath) {
 }
 
 /**
+ * The managed area as Agentic last wrote it, when it can be known: a base file
+ * matching the recorded hash, or a regenerated area that still hashes the same.
+ */
+function knownBase(targetDir, relativePath, recordedHash, nextRegion) {
+  const stored = readIfExists(path.join(targetDir, baseFilePath(relativePath)));
+  if (stored !== null && sha256(parseBase(stored)) === recordedHash) return parseBase(stored);
+  if (nextRegion && sha256(nextRegion) === recordedHash) return nextRegion;
+  return null;
+}
+
+/**
  * @param {object} input
  * @param {string} input.packageRoot
  * @param {string} input.targetDir
@@ -58,7 +70,7 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     const nextRegion = managedRegion(kind, regenerated);
     const recordedHash = recordedHashFor(projectConfig, relativePath);
     const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
-      ? { kind: existing === null ? 'missing' : 'edited' }
+      ? { kind: existing === null ? 'missing' : 'edited', base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
       : null;
     files.push({ rel: relativePath, kind, target: path.join(targetDir, relativePath), existing, regenerated, currentRegion, nextRegion, conflict });
   };
@@ -79,6 +91,9 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   for (const file of files) {
     planFile(file.rel, file.regenerated);
     if (file.nextRegion) managedHashes[file.rel] = sha256(file.nextRegion);
+  }
+  for (const file of files) {
+    if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
   const { core: _legacyCore, ...restConfig } = projectConfig;
   planFile('agentic.project.json', JSON.stringify({ ...restConfig, schemaVersion: 1, profile: profileName, managedHashes }, null, 2) + '\n');

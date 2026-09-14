@@ -4,10 +4,10 @@
 
 **작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-14 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:438-495`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:535-552`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 7827db1920af340f3d0e9abe768eee0e2eb4ae6832dff40183eb6b87a5c237aa -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
+<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
 
 ## 읽는 법
 
@@ -21,10 +21,16 @@
 
 ```mermaid
 flowchart LR
-  agt["bin/agt.mjs<br/>별칭 진입점"] --> core["bin/agentic.mjs<br/>명령 분기·프로필·프로젝트 적용"]
-  core --> analyzer["bin/analyzer.mjs<br/>관리 영역 병합·hash"]
+  agt["bin/agt.mjs<br/>별칭 진입점"] --> core["bin/agentic.mjs<br/>명령 분기·프로필·적용·resolve"]
+  core --> plan["bin/project-plan.mjs<br/>변경 계획·충돌 수집·쓰기"]
+  core --> conflicts["bin/conflicts.mjs<br/>편집 추출·재배치·diff·base 경로"]
+  core --> merge["bin/merge-editor.mjs<br/>VS Code 3-way merge"]
   core --> fsutils["bin/fs-utils.mjs<br/>안전한 원자적 쓰기"]
   core --> i18n["bin/i18n.mjs<br/>로케일·프로필 홈·메시지"]
+  plan --> analyzer["bin/analyzer.mjs<br/>관리 영역 병합·hash"]
+  plan --> conflicts
+  plan --> fsutils
+  conflicts --> jsdiff["diff 패키지<br/>diffLines · createTwoFilesPatch"]
   analyzer --> i18n
   i18n --> fsutils
   contracts["bin/contracts.mjs<br/>세 경로 동등성 계약"] -.->|"evals가 강제"| core
@@ -34,7 +40,7 @@ flowchart LR
 
 두 진입점 `bin/agentic.mjs`와 `bin/agt.mjs` 중 `agt`는 본체를 불러오는 한 줄이다: `import './agentic.mjs';`(`bin/agt.mjs:3`).
 
-인자를 읽고 `command`를 정하는 부분은 다음과 같다(`bin/agentic.mjs:15-19`).
+인자를 읽고 `command`를 정하는 부분은 다음과 같다(`bin/agentic.mjs:17-21`).
 
 ```js
 const rawArgs = process.argv.slice(2);
@@ -44,10 +50,10 @@ const command = args[0] || 'help';
 const invokedAs = path.basename(process.argv[1] || 'agentic').replace(/\.mjs$/, '');
 ```
 
-- **플래그 헬퍼**: 값 읽기 `parseFlag`(`:38-41`), 존재 여부 `hasFlag`(`:43-45`), 제거 `stripFlag`(`:47-53`). `--dry-run`·`--scope`·`--yes` 등이 모두 이 헬퍼를 거친다.
-- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:19`). 도움말의 명령 이름·제목을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:544-547`).
+- **플래그 헬퍼**: 값 읽기 `parseFlag`(`:40-43`), 존재 여부 `hasFlag`(`:45-47`), 제거 `stripFlag`(`:49-55`). `--dry-run`·`--discard`·`--edit`·`--scope`·`--yes` 등이 모두 이 헬퍼를 거친다.
+- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:21`). 도움말의 명령 이름·제목과 충돌 오류가 안내하는 명령 이름을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:684-688`).
 
-`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:596-604`).
+`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:738-746`).
 
 ```js
 if ((!args.length || command === '--tui') && process.stdin.isTTY) {
@@ -69,18 +75,18 @@ flowchart TD
   D -->|"예"| TUI["mainTui() 대화형 루프"]
   D -->|"아니오"| E{"command"}
   E -->|"config lang"| LANG["configLang()"]
-  E -->|"profile"| PROF["runProfileCommand()<br/>create·list·view·setup·apply·sync·remove"]
+  E -->|"profile"| PROF["runProfileCommand()<br/>create·list·view·setup·apply·sync·resolve·remove"]
   E -->|"그 외"| HELP["help()"]
   TUI --> Z["결과는 stdout"]
   LANG --> Z
   PROF --> Z
   HELP --> Z
-  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:607-610"]
+  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:749-752"]
 ```
 
 ## 2. 로케일 해석과 저장
 
-우선순위는 `resolveLocale`에 고정돼 있다(`bin/i18n.mjs:91-97`).
+우선순위는 `resolveLocale`에 고정돼 있다(`bin/i18n.mjs:114-120`).
 
 ```js
 export function resolveLocale({ flag = null, env = null, saved = null, isTTY = false } = {}) {
@@ -93,13 +99,13 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 ```
 
 - `--lang`·`AGENTIC_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
-- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:592-595`).
-- **저장 위치**: `profileHome()/config.json`(`configPath`, `bin/i18n.mjs:53-55`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:538-542`).
-- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`bin/i18n.mjs:272-279`).
+- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:734-737`).
+- **저장 위치**: `.agentic/config.json`(`configPath`, `bin/i18n.mjs:75`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:678-682`).
+- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`bin/i18n.mjs:325-332`).
 
 ## 3. 프로필 저장소 모델
 
-`profileHome()`(`bin/i18n.mjs:61-73`)이 기준 위치를 정한다: `AGENTIC_HOME`이 있으면 그 아래, 없으면 `os.homedir()` 아래의 `.agentic/profiles`. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. `AGENTIC_HOME`으로 저장 위치를 바꿀 수 있고 테스트·스모크가 이를 쓴다. `.agentic/profiles`가 없고 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 한 번 폴더를 `.agentic/profiles`로 옮기고 `config.json`을 `.agentic/`로 올린다. Core 시절 홈은 각 메타데이터도 `agentic-profile.json`으로 바꾼다(`migrateFlatHome`, `:32-59`). best-effort이며 실패하면 크래시하지 않고 새 홈으로 진행한다.
+`profileHome()`(`bin/i18n.mjs:61-72`)이 기준 위치를 정한다: `AGENTIC_HOME`이 있으면 그 아래, 없으면 `os.homedir()` 아래의 `.agentic/profiles`. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. `AGENTIC_HOME`으로 저장 위치를 바꿀 수 있고 테스트·스모크가 이를 쓴다. `.agentic/profiles`가 없고 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 한 번 폴더를 `.agentic/profiles`로 옮기고 `config.json`을 `.agentic/`로 올린다. Core 시절 홈은 각 메타데이터도 `agentic-profile.json`으로 바꾼다(`migrateFlatHome`, `:32-55`). best-effort이며 실패하면 크래시하지 않고 새 홈으로 진행한다.
 
 프로필 저장소와 적용 결과물의 온디스크 배치는 다음과 같다.
 
@@ -110,7 +116,8 @@ $AGENTIC_HOME 또는 ~/            대상 프로젝트/
     └── profiles/               ├── CLAUDE.md              (관리 블록)
         └── <name>/             ├── .agents/rules/agentic.md
             ├── agentic-profile.json├── .cursor/rules/agentic.mdc
-            └── AGENTS.md       └── .github/copilot-instructions.md
+            └── AGENTS.md       ├── .github/copilot-instructions.md
+                                └── .agentic/              (base/*.base · backups/ · .gitignore)
 ```
 
 메타데이터 스키마와 프로젝트 설정의 관계를 ERD로 보면 이렇다.
@@ -123,6 +130,7 @@ erDiagram
   PROJECT ||--|| PROJECT_CONFIG : "agentic.project.json"
   PROJECT ||--|| PROJECT_AGENTS : "AGENTS.md"
   PROJECT ||--o{ POINTER_FILE : "관리 블록"
+  PROJECT ||--o{ BASE_FILE : ".agentic/base"
   PROFILE_METADATA {
     int schemaVersion "항상 1"
     string name "정규식 검증"
@@ -140,14 +148,18 @@ erDiagram
     string path "CLAUDE.md 등 4종"
     string managedBlock "agentic:managed 블록"
   }
+  BASE_FILE {
+    string path ".agentic/base/경로.base"
+    string managedText "마지막으로 쓴 관리 영역 원문, sha256 == managedHashes"
+  }
 ```
 
-- **이름 규칙**: `validateProfileName`의 정규식 `^[a-z0-9][a-z0-9-]{0,63}$`(`bin/agentic.mjs:23-27`).
-- **읽기·목록**: `readProfile`(`:55-69`)이 메타데이터·`AGENTS.md` 존재와 `isValidProfileMetadata`(`:29-36`)를 검사한다. `getProfiles`(`:112-125`)는 `scope:name`으로 정렬해 돌려준다.
+- **이름 규칙**: `validateProfileName`의 정규식 `^[a-z0-9][a-z0-9-]{0,63}$`(`bin/agentic.mjs:25-29`).
+- **읽기·목록**: `readProfile`(`:57-71`)이 메타데이터·`AGENTS.md` 존재와 `isValidProfileMetadata`(`:31-38`)를 검사한다. `getProfiles`(`:114-127`)는 `scope:name`으로 정렬해 돌려준다.
 
 ## 4. profile create
 
-`createProfile`(`bin/agentic.mjs:71-81`)은 이름·scope를 검증하고 폴더를 만든 뒤 메타데이터와 지침 템플릿을 기록한다.
+`createProfile`(`bin/agentic.mjs:73-83`)은 이름·scope를 검증하고 폴더를 만든 뒤 메타데이터와 지침 템플릿을 기록한다.
 
 ```js
 fs.mkdirSync(profileDir, { recursive: true });
@@ -158,11 +170,11 @@ const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT,
 writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
 ```
 
-대화형 경로는 `createProfileTui`(`:83-110`)가 이름·scope·확인을 물은 뒤 같은 `createProfile`을 부른다.
+대화형 경로는 `createProfileTui`(`:85-112`)가 이름·scope·확인을 물은 뒤 같은 `createProfile`을 부른다.
 
 ## 5. profile setup: 지침 블록 기록
 
-기본값은 6개 항목 모두 `recommended`다(`guidanceDefaults`, `bin/agentic.mjs:285`): `harness`·`tdd`·`review`·`verification`·`documentation`·`security`. `setupProfile`(`:287-313`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고, `off`가 아닌 항목만 블록으로 만든다. 항목이 하나라도 있으면 맨 앞에 적용 수준 정의 범례를 붙인 뒤 마커로 감싼다(`:302-307`). 범례 문구는 `guidanceLevelDefinitions`가 돌려주는 상수이며 setup TUI 힌트와 같다. 모든 항목이 `off`면 블록 안은 비어 있다.
+기본값은 6개 항목 모두 `recommended`다(`guidanceDefaults`, `bin/agentic.mjs:322`): `harness`·`tdd`·`review`·`verification`·`documentation`·`security`. `setupProfile`(`:324-350`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고, `off`가 아닌 항목만 블록으로 만든다. 항목이 하나라도 있으면 맨 앞에 적용 수준 정의 범례를 붙인 뒤 마커로 감싼다(`:339-344`). 범례 문구는 `guidanceLevelDefinitions`가 돌려주는 상수이며 setup TUI 힌트와 같다. 모든 항목이 `off`면 블록 안은 비어 있다.
 
 ```js
 const definitions = guidanceLevelDefinitions(locale);
@@ -176,39 +188,42 @@ writeTextAtomic(profile.instructionsPath,
   pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`);
 ```
 
-기존 블록이 있으면 정규식으로 교체하고 없으면 프로필 `AGENTS.md` 끝에 덧붙인다. 선택 결과는 메타데이터의 `settings`와 `updatedAt`에도 기록한다(`:311`). 이 `guidance` 마커는 **프로필** `AGENTS.md` 안의 것으로, 프로젝트 산출물의 `managed` 마커([7절](#7-관리-영역-병합과-hash))와 다른 계층이다.
+기존 블록이 있으면 정규식으로 교체하고 없으면 프로필 `AGENTS.md` 끝에 덧붙인다. 선택 결과는 메타데이터의 `settings`와 `updatedAt`에도 기록한다(`:348`). 이 `guidance` 마커는 **프로필** `AGENTS.md` 안의 것으로, 프로젝트 산출물의 `managed` 마커([7절](#7-관리-영역-병합과-hash))와 다른 계층이다.
 
 ## 6. profile apply: 변경 계획과 적용
 
-`applyProfile`(`bin/agentic.mjs:438-495`)이 핵심이다. `applyArgs`(`:433-436`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑는다. 전체 파이프라인은 다음과 같다.
+`applyProfile`(`bin/agentic.mjs:535-552`)이 핵심이다. `applyArgs`(`:464-467`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑고, `planFor`(`:492-504`)가 프로필·프로젝트 설정·프로젝트 이름을 모아 `planProject`(`bin/project-plan.mjs:65-105`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다. 전체 파이프라인은 다음과 같다.
 
 ```mermaid
 flowchart TD
   A["applyArgs: name, project 추출"] --> B["assertProjectDirectory<br/>대상이 폴더인지"]
-  B --> D{"파일마다 managedHashes에 기록된 hash가<br/>현재 관리 영역과 같은가?"}
-  D -->|"다름"| STOP["throw: Managed file changed outside Agentic<br/>:455-458, :469-472"]
-  D -->|"같음·기록 없음"| E["mergeAgentsMd·mergeManagedDocument로 새 내용 계산<br/>planFile: create·update·unchanged"]
-  E --> F["managedHashes 재계산<br/>agentic.project.json도 계획에 추가<br/>:475-482"]
-  F --> G{"--dry-run?"}
-  G -->|"예"| PLAN["계획만 출력, 파일을 쓰지 않음<br/>:486-489"]
-  G -->|"아니오"| H["변경 대상마다 assertSafeTextTarget<br/>:490"]
-  H --> I["writeTextAtomic으로 원자적 교체<br/>:491-493"]
+  B --> P["planProject<br/>파일마다 새 내용 계산 · 충돌 수집"]
+  P --> D{"충돌이 있는가?"}
+  D -->|"있음 · 실제 실행"| STOP["throw ConflictError<br/>충돌 파일 목록 + dry-run·resolve 안내"]
+  D -->|"있음 · --dry-run"| DRY["계획·conflict 상태·diff 출력<br/>파일을 쓰지 않고 exit 1"]
+  D -->|"없음"| G{"--dry-run?"}
+  G -->|"예"| PLAN["계획만 출력, 파일을 쓰지 않음"]
+  G -->|"아니오"| W["writePlan<br/>모든 대상 assertSafeTextTarget 후 writeTextAtomic"]
 ```
 
-hash 검사는 파일마다 계획을 세우기 직전에 실행되므로 한 파일이라도 다르면 어떤 파일도 쓰지 않는다. dry-run에서는 `agentic.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 검사를 거치므로 같은 프로필로 다시 적용해도 중단이 풀리지 않는다. 사용자용 복구 절차는 [사용 가이드](../usage-guide.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
-
-수동 변경 감지의 핵심은 이 검사다(`AGENTS.md`는 `:454-458`, 포인터 파일은 `:468-472`이 같은 형태).
+`planProject`는 `AGENTS.md`와 포인터 4종마다 새 내용과 충돌 여부를 계산한다(`bin/project-plan.mjs:67-78`).
 
 ```js
-const previousAgentsHash = projectConfig.managedHashes?.['AGENTS.md'];
-if (previousAgentsHash && hashAgentsManagedDocument(existingAgents) !== previousAgentsHash) {
-  throw new Error('Managed file changed outside Agentic: AGENTS.md');
-}
+const existing = overridden ? overrides.get(relativePath) : readIfExists(path.join(targetDir, relativePath));
+const regenerated = regenerate(existing);            // mergeAgentsMd 또는 mergeManagedDocument
+const currentRegion = managedRegion(kind, existing); // 지금 파일의 관리 영역
+const nextRegion = managedRegion(kind, regenerated); // Agentic이 쓸 관리 영역
+const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
+const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
+  ? { kind: existing === null ? 'missing' : 'edited', base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
+  : null;
 ```
 
-- **포인터 파일 4종**(`:461-466`): `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`. 각각 `renderAdapter`(`:426-430`) → `mergeManagedDocument`로 관리 블록만 병합한다.
-- **`agentic.project.json`**: 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다(`:481-482`).
-- **출력**: 계획 요약과 파일별 상태를 한 줄씩 출력한다(`:484-485`).
+한 파일이라도 충돌이면 쓰기 전에 멈추므로 어떤 파일도 바뀌지 않는다. dry-run에서는 `agentic.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 계산을 거치므로 같은 프로필로 다시 적용해도 충돌은 풀리지 않는다. 충돌 표시와 복구는 [14절](#14-관리-영역-충돌-표시와-profile-resolve)에 있다.
+
+- **포인터 파일 4종**(`POINTER_TEMPLATES`, `bin/project-plan.mjs:14-19`): `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`. 템플릿의 `{{PROJECT_NAME}}`을 채운 뒤 `mergeManagedDocument`로 관리 블록만 병합한다(`:81-84`).
+- **계획 파일 순서**(`:86-102`): 관리 파일 5개, 각 관리 영역의 base 파일 `.agentic/base/<경로>.base`, `.agentic/.gitignore`(`backups/`), 마지막으로 `agentic.project.json`이다. `agentic.project.json`은 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다.
+- **출력**: `printPlan`(`bin/agentic.mjs:506-514`)이 계획 요약과 파일별 상태를 한 줄씩 출력한다.
 
 ## 7. 관리 영역 병합과 hash
 
@@ -248,7 +263,7 @@ return `${existingContent.trimEnd()}\n\n${managedBlock}\n`;
 
 ## 8. profile sync
 
-`syncProject`(`bin/agentic.mjs:502-517`)은 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.**
+`syncProject`(`bin/agentic.mjs:559-574`)은 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.**
 
 ```js
 if (parseFlag(values, 'profile') || parseFlag(values, 'core')) {
@@ -308,40 +323,42 @@ try {
 
 ## 10. dry-run · 로그 · 종료 코드
 
-- **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:486-489`). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`:219-224`).
-- **로그**: 계획 요약과 파일별 `create`/`update`/`unchanged` 상태를 한 줄씩 출력한다(`:484-485`).
-- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:607-610`). 성공하면 기본 0이다.
+- **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:543-549`). 충돌이 있으면 계획 뒤에 diff를 출력하고 종료 코드 1로 끝난다([14절](#14-관리-영역-충돌-표시와-profile-resolve)). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`profileActions`, `:198-239`).
+- **로그**: `printPlan`(`:506-514`)이 계획 요약과 파일별 `create`/`update`/`unchanged`/`conflict` 상태를 한 줄씩 출력한다.
+- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:749-752`). 성공하면 기본 0이다.
 
 ## 11. TUI 흐름 배선
 
-화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`bin/agentic.mjs:7`). 인자가 없고 TTY이면 `mainTui`(`:228-250`) 루프가 열린다.
+화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`bin/agentic.mjs:7`). 인자가 없고 TTY이면 `mainTui`(`:265-287`) 루프가 열린다.
 
 ```mermaid
 flowchart TD
-  M["mainTui 루프<br/>:228-250"] --> C1["새 프로필 생성"]
+  M["mainTui 루프<br/>:265-287"] --> C1["새 프로필 생성"]
   M --> C2["프로필 지침 설정"]
   M --> C3["언어 변경"]
   M --> C4["도움말"]
-  M --> MG["프로필 관리 → listProfiles<br/>:127-179"]
+  M --> MG["프로필 관리 → listProfiles<br/>:129-181"]
   MG --> SC["scope 선택"]
   SC --> SEL["프로필 선택"]
-  SEL --> ACT["profileActions<br/>:196-226"]
+  SEL --> ACT["profileActions<br/>:198-239"]
   ACT --> A1["setup / view / remove"]
   ACT --> A2["apply / sync<br/>계획만 확인? → --dry-run"]
+  ACT --> A3["resolve → resolveProjectTui<br/>:242-263"]
+  A2 -.->|"ConflictError"| A3
 ```
 
-비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`:175-178`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`:85`, `:317`). 파이프·CI·스모크 테스트 경로다.
+비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`:177-180`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`:87`, `:354`). 파이프·CI·스모크 테스트 경로다.
 
 ## 12. 기능 인터페이스 동등성 계약
 
-`bin/contracts.mjs`의 `PROFILE_OPERATION_CONTRACT`(`:5-13`)가 7개 작업마다 세 실행 경로를 선언한다.
+`bin/contracts.mjs`의 `PROFILE_OPERATION_CONTRACT`(`:5-14`)가 8개 작업마다 세 실행 경로를 선언한다.
 
 ```js
 export const PROFILE_OPERATION_CONTRACT = [
   { id: 'create', cli: 'profile create', tui: 'profile list → 새 프로필 생성', profileList: true },
   { id: 'list',   cli: 'profile list',   tui: 'profile list',                 profileList: true },
   { id: 'view',   cli: 'profile view <name>', tui: 'profile list → 상세 보기', profileList: true },
-  // setup·apply·sync·remove 동일한 형태로 이어짐
+  // setup·apply·sync·resolve·remove 동일한 형태로 이어짐
 ];
 ```
 
@@ -357,9 +374,51 @@ export const PROFILE_OPERATION_CONTRACT = [
 | 관리 영역 병합·hash([7절](#7-관리-영역-병합과-hash)) | `evals/sync-merge.test.mjs` |
 | 세 경로 동등성([12절](#12-기능-인터페이스-동등성-계약)) | `evals/interface-parity.test.mjs` |
 | 프로필 생성·설정·apply/sync | `evals/profile.test.mjs` |
+| 충돌 표시·base·resolve([14절](#14-관리-영역-충돌-표시와-profile-resolve)) | `evals/conflict-resolve.test.mjs`, `evals/conflicts.test.mjs` |
 | 로케일 해석([2절](#2-로케일-해석과-저장)) | `evals/i18n.test.mjs` |
 | 배포 파일 경계 | `evals/package-contents.test.mjs` |
 | 문서 계약·저장소 운영 | `evals/docs-check.test.mjs`, `evals/repository-operations.test.mjs` |
+
+## 14. 관리 영역 충돌: 표시와 profile resolve
+
+충돌 판정과 복구는 세 모듈이 나눠 맡는다. `bin/project-plan.mjs`가 충돌을 모으고, `bin/conflicts.mjs`가 편집을 추출·재배치하며, `bin/merge-editor.mjs`가 VS Code를 연다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이다.
+
+- **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agentic/base/<경로>.base`(`baseFilePath`, `bin/conflicts.mjs:15-17`)와 `.agentic/.gitignore`를 계획에 넣는다(`bin/project-plan.mjs:97-100`). 충돌이 나면 `knownBase`(`:48-53`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 `/` 경로이며 `recordedHashFor`(`:39-42`)가 이전 Windows 기록의 `\` 키도 읽는다.
+- **표시:** 실제 `apply`·`sync`는 `conflictError`(`bin/agentic.mjs:483-490`)가 만든 `ConflictError`(`:472-477`)를 던진다. 메시지에는 충돌 파일 목록과 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`:516-533`)가 diff를 출력한 뒤 같은 오류를 던져 종료 코드 1로 끝난다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`bin/conflicts.mjs:78-80`)가 만든다.
+- **resolve:** `resolveProject`(`bin/agentic.mjs:596-657`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
+
+```mermaid
+flowchart TD
+  R["resolveProject"] --> P["planFor: 충돌 수집"]
+  P --> N{"충돌 없음?"}
+  N -->|"예"| NOTHING["Nothing to resolve"]
+  N -->|"아니오"| M{"충돌 파일마다 종류"}
+  M -->|"missing"| RECREATE["override = null<br/>새로 생성"]
+  M -->|"base 모름"| DISC{"--discard?"}
+  DISC -->|"아니오"| UNRES["unresolved에 모음"]
+  DISC -->|"예"| BK["백업 계획 추가<br/>override = 재생성본"]
+  M -->|"base 앎 · --edit"| ED["mergeWithEditor<br/>결과 관리 영역 == 재생성본일 때만"]
+  M -->|"base 앎"| AUTO["collectUserEdits(base, 현재)<br/>relocateUserEdits(재생성본, 추가 줄)"]
+  UNRES --> THROW["printConflicts 후 throw<br/>--discard 안내 · 파일을 쓰지 않음"]
+  RECREATE --> WRITE["planFor(overrides) → writePlan<br/>백업을 먼저 쓰고 hash·base 갱신"]
+  BK --> WRITE
+  ED --> WRITE
+  AUTO --> WRITE
+```
+
+사용자 편집은 base와 현재 관리 영역의 줄 단위 diff로 구하고(`collectUserEdits`, `bin/conflicts.mjs:51-59`), 추가·수정한 줄을 관리 영역 밖으로 옮긴다(`relocateUserEdits`, `:68-76`). 추가된 줄의 앞뒤 빈 줄은 버리고, 지운 줄은 빈 줄을 뺀 개수만 보고한다.
+
+```js
+for (const part of diffLines(withTrailingNewline(base), withTrailingNewline(current))) {
+  if (part.added) addedLines.push(...splitLines(part.value));
+  else if (part.removed) removedLines.push(...splitLines(part.value));
+}
+// relocateUserEdits: AGENTS.md는 확장 섹션 끝, 포인터 파일은 관리 블록 바로 아래
+if (kind === 'agents' || index === -1) return `${content.trimEnd()}\n\n${block}\n`;
+```
+
+- **`--edit`:** `mergeWithEditor`(`bin/agentic.mjs:582-589`)는 `withBaseRegion`(`:577-580`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`bin/merge-editor.mjs:12-39`)를 부른다. `mergeInVsCode`는 임시 폴더에 현재·Agentic·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`). 결과 파일의 관리 영역 hash가 재생성본과 다르면 결과 경로를 담아 throw하고 임시 폴더를 남긴다.
+- **TUI:** `profileActions`(`:198-239`)는 `resolve` 메뉴를 `resolveProjectTui`(`:242-263`)로 보낸다. `apply`·`sync`가 `ConflictError`로 멈추면 오류를 보여 주고 해결로 이어갈지 묻는다. `resolveProjectTui`는 먼저 `--dry-run`으로 계획을 보여 준 뒤 자동 해결·`--edit`·`--discard` 중 하나를 고르게 한다.
 
 ## 관련 문서
 

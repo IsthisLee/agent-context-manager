@@ -23,6 +23,7 @@
     - [ADR 0005: 지침 적용 수준의 뜻을 정의로 노출](adr/0005-guidance-level-semantics.md)
     - [ADR 0006: 코드베이스 분석 기반 지침 생성을 구현하지 않음](adr/0006-no-codebase-analysis-guidance.md)
     - [ADR 0007: 프로필 저장소를 `~/.agentic/` 아래로 모음](adr/0007-profile-home-layout.md)
+    - [ADR 0008: 관리 영역 충돌을 보여 주고 마지막 적용본으로 복구](adr/0008-managed-conflict-recovery.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

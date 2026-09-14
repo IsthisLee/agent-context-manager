@@ -4,11 +4,22 @@
 
 ## [Unreleased]
 
+### Added
+
+- `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agentic/backups/`에 백업한 뒤 다시 만들고, `--edit`은 VS Code 3-way merge 편집기를 연다. `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
+- `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agentic/base/`에 기록하고 `.agentic/.gitignore`로 백업 폴더를 커밋에서 제외
+
 ### Changed
 
 - 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
 
 - **호환성 파괴:** 프로필 저장 위치를 `~/.agentic/profiles/<name>`로, 언어 설정을 `~/.agentic/config.json`으로 옮김. 이전 `~/.agentic-cores`·`~/.agentic-profiles`는 최초 실행 때 새 위치로 자동 이관하고 `config.json`을 `~/.agentic/`로 올린다. 근거는 [ADR 0007](docs/adr/0007-profile-home-layout.md)
+- 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
+- 런타임 의존성 `diff`(jsdiff) 추가
+
+### Fixed
+
+- Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록하고 이전 `\` 키도 읽는다
 
 ## [0.2.0] - 2026-09-14
 

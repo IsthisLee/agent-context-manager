@@ -6,8 +6,8 @@
 
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs -->
-<!-- agentic-doc-sources-sha256: 7827db1920af340f3d0e9abe768eee0e2eb4ae6832dff40183eb6b87a5c237aa -->
+<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
+<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -90,6 +90,8 @@ agt profile apply company /path/to/project
 대상 프로젝트/
 ├── AGENTS.md                        # 공통 지침 + 프로젝트 도메인 지침
 ├── agentic.project.json             # 적용한 프로필과 관리 hash 기록
+├── .agentic/base/                   # 마지막으로 적용한 관리 영역 원문(충돌 해결 기준, 커밋)
+├── .agentic/.gitignore              # 충돌 해결 백업 폴더 backups/를 커밋에서 제외
 ├── CLAUDE.md                        # Claude Code 포인터
 ├── .agents/rules/agentic.md         # Antigravity 포인터
 ├── .cursor/rules/agentic.mdc        # Cursor 포인터
@@ -124,7 +126,7 @@ Agentic이 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 한국어 로케일에서 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어 로케일에서 `## 4. Project rule extensions (SSOT)`이며 Agentic은 두 제목을 모두 인식한다.
 
-Agentic은 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤 사람이 다듬어 이 확장 섹션으로 옮긴다. 여러 에이전트가 공통으로 읽는 표준은 `AGENTS.md`이므로 함께 따를 규칙은 여기에 둔다. `CLAUDE.md`에 남기려면 `<!-- agentic:managed:start -->`와 `<!-- agentic:managed:end -->` 사이의 관리 블록 밖에 둔다. 관리 영역 안을 고치면 다음 `apply`·`sync`가 `Managed file changed outside Agentic`으로 멈추고 어떤 파일도 쓰지 않는다. 푸는 방법은 [문제 해결](#관리-영역을-고쳐서-멈췄을-때)에 있다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](adr/0006-no-codebase-analysis-guidance.md)에 있다.
+Agentic은 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤 사람이 다듬어 이 확장 섹션으로 옮긴다. 여러 에이전트가 공통으로 읽는 표준은 `AGENTS.md`이므로 함께 따를 규칙은 여기에 둔다. `CLAUDE.md`에 남기려면 `<!-- agentic:managed:start -->`와 `<!-- agentic:managed:end -->` 사이의 관리 블록 밖에 둔다. 관리 영역 안을 고치면 다음 `apply`·`sync`가 `Managed file changed outside Agentic`으로 멈추고 어떤 파일도 쓰지 않는다. `agt profile resolve <project>`가 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 [문제 해결](#관리-영역을-고쳐서-멈췄을-때)에 있다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](adr/0006-no-codebase-analysis-guidance.md)에 있다.
 
 ## 4. 에이전트로 개발
 
@@ -166,24 +168,26 @@ agt profile apply company /path/to/project
 
 ### 관리 영역을 고쳐서 멈췄을 때
 
-`apply`·`sync`가 `Managed file changed outside Agentic: <파일>`로 멈추면, Agentic이 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 같은 프로필로 `apply`를 다시 실행하거나 해당 파일을 지워도 같은 검사를 거치므로 풀리지 않는다.
+`apply`·`sync`가 `Managed file changed outside Agentic: <파일>`로 멈추면, Agentic이 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다.
 
 ```mermaid
 flowchart TD
-  STOP["apply·sync 중단<br/>Managed file changed outside Agentic"] --> KEEP["1. 남길 내용을 확장 섹션 아래나<br/>관리 블록 밖으로 옮긴다"]
-  KEEP --> Q{"관리 영역을 마지막 적용 상태로<br/>되돌릴 수 있는가?"}
-  Q -->|"예"| REVERT["2. 관리 영역의 수정만 되돌린다"]
-  REVERT --> OK["profile sync 통과"]
-  Q -->|"아니오"| RESET["3. agentic.project.json을 치우고<br/>profile apply 이름 프로젝트"]
-  RESET --> REGEN["관리 영역을 새로 생성<br/>관리 영역 안의 수정은 사라짐"]
-  REGEN --> OK
+  STOP["apply·sync 중단<br/>Managed file changed outside Agentic"] --> SEE["1. profile sync --dry-run<br/>conflict 파일과 diff 확인"]
+  SEE --> RESOLVE["2. profile resolve"]
+  RESOLVE --> Q{"마지막 적용본을<br/>알 수 있는가?"}
+  Q -->|"예"| MOVE["편집한 줄을 관리 영역 밖으로 옮기고<br/>관리 영역을 새로 생성"]
+  Q -->|"아니오"| HALT["diff를 보여 주고 멈춤"]
+  HALT --> DISCARD["3. profile resolve --discard<br/>.agentic/backups/에 백업한 뒤 새로 생성"]
+  MOVE --> OK["profile sync 통과"]
+  DISCARD --> OK
 ```
 
-1. 관리 영역 안에 남기고 싶은 내용이 있으면 먼저 `AGENTS.md`의 확장 섹션 아래나 포인터 파일의 관리 블록 밖으로 옮긴다.
-2. 관리 영역을 마지막 적용 상태로 되돌린다. Git으로 관리하는 프로젝트라면 `git diff`로 관리 영역의 변경만 확인해 되돌린다. 비교는 hash로 하므로 공백 하나가 달라도 계속 멈춘다. 되돌리면 `agt profile sync <project>`가 통과한다.
-3. 되돌릴 원본이 없으면 `agentic.project.json`의 `profile` 값을 확인한 뒤 이 파일을 지우거나 다른 이름으로 옮기고 `agt profile apply <name> <project>`를 실행한다. 관리 영역을 새로 만들며 관리 영역 안에서 고친 내용은 경고 없이 사라진다. 확장 섹션 아래와 관리 블록 밖의 내용은 남는다. 실행 전에 `--dry-run`으로 바뀔 파일을 확인한다.
+1. `agt profile sync --dry-run <project>`로 무엇이 달라졌는지 본다. 충돌 파일은 `conflict`로 표시되고 diff가 함께 나오며 종료 코드는 1이다.
+2. `agt profile resolve <project>`를 실행한다. 관리 영역 안에서 추가·수정한 줄은 포인터 파일이면 관리 블록 바로 아래로, `AGENTS.md`면 확장 섹션 끝으로 옮겨진다. 관리 영역은 현재 프로필로 새로 만들어진다. 관리 영역 안에서 지운 줄은 되살아나며 몇 줄인지 알려 준다. `--dry-run`을 붙이면 옮길 줄만 보여 주고 파일을 바꾸지 않는다.
+3. 마지막 적용본을 알 수 없으면 resolve가 멈춘다. `.agentic/base/`가 없는 상태에서 프로필까지 바뀐 경우다. 남길 내용을 직접 관리 영역 밖으로 옮긴 뒤 `agt profile resolve --discard <project>`를 실행한다. 현재 파일을 `.agentic/backups/<시각>/`에 복사한 뒤 관리 영역을 새로 만든다.
+4. 줄 단위로 직접 고르고 싶으면 `agt profile resolve --edit <project>`로 VS Code 3-way merge 편집기를 연다. 남길 줄은 관리 영역 밖으로 옮겨 저장한다. 편집기를 닫았을 때 관리 영역이 Agentic이 새로 만든 내용과 같아야 적용된다. `code` 명령이 PATH에 있어야 한다.
 
-충돌 내용을 비교해 보여 주거나 자동으로 복구하는 명령은 아직 없다. 이 후속 계약은 [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md#충돌-중단과-복구)에서 다룬다.
+`.agentic/base/`는 마지막으로 적용한 관리 영역 원문이다. git에 커밋해 두면 팀원도 같은 기준으로 충돌을 푼다. 지워도 다음 `apply`·`sync`가 다시 만들지만, 그 전에 프로필까지 바뀐 충돌은 `--discard`로만 풀 수 있다. TUI에서는 `profile list`의 `프로젝트 충돌 해결` 메뉴에서 같은 선택지를 고른다. 결정 근거는 [ADR 0008](adr/0008-managed-conflict-recovery.md)에 있다.
 
 ### 그 밖의 오류
 

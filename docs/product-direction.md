@@ -75,4 +75,4 @@ CLI와 생성 지침은 한국어(ko)·영어(en)를 지원한다. 기본은 `ko
 
 단계가 완료되기 전에는 해당 기능을 README나 현재 아키텍처에서 제공 기능으로 표현하지 않는다.
 
-문서 변경과 단계 완료 기록은 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다. 이 저장소의 개발 명령은 고정된 pnpm 환경에서 실행한다.
+문서 변경과 논의 문서의 구현 기록은 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다. 이 저장소의 개발 명령은 고정된 pnpm 환경에서 실행한다.

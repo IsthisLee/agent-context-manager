@@ -5,6 +5,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.mjs';
+import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors = [];
@@ -118,6 +119,10 @@ function checkDiscussionStatuses() {
     if (!match || !allowed.has(match[1].trim())) {
       errors.push(`docs/discussion/architecture/topics/${name}: use an allowed **상태:** value`);
       continue;
+    }
+
+    if (requiresImplementationRecord(match[1].trim()) && !hasImplementationRecord(content)) {
+      errors.push(`docs/discussion/architecture/topics/${name}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
     }
 
     if (['Proposed', 'Implementing'].includes(match[1].trim())) {

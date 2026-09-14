@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI Agent development guidance
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 9d92f753985504ca134fe2d8bb254200cfe6880195240c25990347df6024caa2 -->
+<!-- agentic-doc-sources-sha256: 9d6c2acf594a55068e9bddb163347e2846fcf055e5c907a7c97b467947401cca -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)

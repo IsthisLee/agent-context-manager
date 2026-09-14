@@ -3,7 +3,7 @@
 `@isthis/agentic`은 `agentic`과 짧은 별칭 `agt`로 실행할 수 있다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
-<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
+<!-- agentic-doc-sources-sha256: 720aa740e348b9fa5b67935591063d52cd0363ab7701563acd4efb0b1a190b67 -->
 
 ## 설치와 실행
 
@@ -198,7 +198,7 @@ agt profile resolve [--dry-run] [--discard] [--edit] <project>
 - **마지막 적용본을 아는 경우:** `.agentic/base/`의 원문 hash가 기록과 같거나 지금 다시 만든 관리 영역의 hash가 기록과 같은 경우다. 관리 영역 안에서 추가·수정한 줄을 관리 영역 밖으로 옮긴다. 포인터 파일은 관리 블록 바로 아래, `AGENTS.md`는 확장 섹션 끝이다. 관리 영역은 현재 프로필로 새로 만들며 그 사이 프로필이 바뀌었어도 같다. 관리 영역 안에서 지운 줄은 되살아나고 파일별 개수를 알린다. 줄을 고친 경우에는 고친 줄이 밖으로 옮겨지고 원래 줄이 되살아나므로 비슷한 문장이 두 번 남을 수 있다.
 - **파일이 없는 경우:** 다시 만든다.
 - **마지막 적용본을 모르는 경우:** base가 없는 상태에서 프로필까지 바뀐 경우다. 사용자 편집과 프로필 변경을 가려낼 수 없으므로 diff를 보여 주고 종료 코드 1로 멈춘다. `--discard`를 주면 백업한 뒤 새로 만든다.
-- **`--edit`:** 편집기를 닫은 뒤 결과 파일의 관리 영역이 Agentic이 새로 만든 관리 영역과 같을 때만 적용한다. 다르면 결과 파일 경로를 알려 주고 종료 코드 1로 멈춘다. `code` 명령이 PATH에 없어도 안내 후 멈춘다.
+- **`--edit`:** 아래쪽 Result 창은 자동 해결과 같은 내용, 곧 관리 영역 안에서 추가·수정한 줄을 밖으로 옮긴 파일로 열린다. 위쪽 창에서 변경을 받아들이지 않아도 되며, Result 창을 확인하고 고친 뒤 저장한다. 편집기를 열기 전에 터미널이 확인 순서를 안내한다. 위쪽 `current-<파일>` 창의 강조 영역은 원래 고친 위치이므로 수락하지 않는다. 탭을 닫을 때 VS Code가 처리되지 않은 충돌 경고를 띄우면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 편집기를 닫으면 결과 파일에서 관리 영역 **밖**의 내용만 가져오고 관리 영역은 Agentic이 새로 만든다. 저장할 때 포매터가 관리 영역을 바꿔도 적용된다. 결과의 관리 영역 안에 남은 변경은 적용하지 않고 diff와 보존한 결과 파일 경로로 알린다. 결과 파일에서 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 사라졌으면 결과 파일 경로를 알려 주고 종료 코드 1로 멈춘다. `code` 명령이 PATH에 없어도 안내 후 멈춘다. 근거는 [ADR 0010](adr/0010-edit-merge-regenerates-managed-area.md)이다.
 - 풀 수 없는 충돌이 하나라도 남으면 어떤 파일도 쓰지 않는다. 쓸 때는 관리 hash와 `.agentic/base/`를 함께 갱신한다.
 
 `profile list`의 관리 메뉴에서는 `프로젝트 충돌 해결`을 고른다. 경로를 고르면 계획을 먼저 보여 주고 자동 해결·VS Code에서 병합·백업 후 다시 생성 중 하나를 선택한다. 결정 근거는 [ADR 0008](adr/0008-managed-conflict-recovery.md)에 있다.

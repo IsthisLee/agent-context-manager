@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:535-552`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
-<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
+<!-- agentic-doc-sources-sha256: 720aa740e348b9fa5b67935591063d52cd0363ab7701563acd4efb0b1a190b67 -->
 
 ## 읽는 법
 
@@ -51,9 +51,9 @@ const invokedAs = path.basename(process.argv[1] || 'agentic').replace(/\.mjs$/, 
 ```
 
 - **플래그 헬퍼**: 값 읽기 `parseFlag`(`:40-43`), 존재 여부 `hasFlag`(`:45-47`), 제거 `stripFlag`(`:49-55`). `--dry-run`·`--discard`·`--edit`·`--scope`·`--yes` 등이 모두 이 헬퍼를 거친다.
-- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:21`). 도움말의 명령 이름·제목과 충돌 오류가 안내하는 명령 이름을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:684-688`).
+- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 `.mjs`를 뗀 값이다(`:21`). 도움말의 명령 이름·제목과 충돌 오류가 안내하는 명령 이름을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `:713-717`).
 
-`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:738-746`).
+`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`bin/agentic.mjs:767-775`).
 
 ```js
 if ((!args.length || command === '--tui') && process.stdin.isTTY) {
@@ -81,7 +81,7 @@ flowchart TD
   LANG --> Z
   PROF --> Z
   HELP --> Z
-  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:749-752"]
+  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>:778-781"]
 ```
 
 ## 2. 로케일 해석과 저장
@@ -99,9 +99,9 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 ```
 
 - `--lang`·`AGENTIC_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
-- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:734-737`).
-- **저장 위치**: `.agentic/config.json`(`configPath`, `bin/i18n.mjs:75`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:678-682`).
-- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`bin/i18n.mjs:325-332`).
+- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`bin/agentic.mjs:763-766`).
+- **저장 위치**: `.agentic/config.json`(`configPath`, `bin/i18n.mjs:75`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`bin/agentic.mjs:707-711`).
+- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`bin/i18n.mjs:331-338`).
 
 ## 3. 프로필 저장소 모델
 
@@ -325,7 +325,7 @@ try {
 
 - **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:543-549`). 충돌이 있으면 계획 뒤에 diff를 출력하고 종료 코드 1로 끝난다([14절](#14-관리-영역-충돌-표시와-profile-resolve)). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`profileActions`, `:198-239`).
 - **로그**: `printPlan`(`:506-514`)이 계획 요약과 파일별 `create`/`update`/`unchanged`/`conflict` 상태를 한 줄씩 출력한다.
-- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:749-752`). 성공하면 기본 0이다.
+- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`:778-781`). 성공하면 기본 0이다.
 
 ## 11. TUI 흐름 배선
 
@@ -385,7 +385,7 @@ export const PROFILE_OPERATION_CONTRACT = [
 
 - **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agentic/base/<경로>.base`(`baseFilePath`, `bin/conflicts.mjs:15-17`)와 `.agentic/.gitignore`를 계획에 넣는다(`bin/project-plan.mjs:97-100`). 충돌이 나면 `knownBase`(`:48-53`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 `/` 경로이며 `recordedHashFor`(`:39-42`)가 이전 Windows 기록의 `\` 키도 읽는다.
 - **표시:** 실제 `apply`·`sync`는 `conflictError`(`bin/agentic.mjs:483-490`)가 만든 `ConflictError`(`:472-477`)를 던진다. 메시지에는 충돌 파일 목록과 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`:516-533`)가 diff를 출력한 뒤 같은 오류를 던져 종료 코드 1로 끝난다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`bin/conflicts.mjs:78-80`)가 만든다.
-- **resolve:** `resolveProject`(`bin/agentic.mjs:596-657`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
+- **resolve:** `resolveProject`(`bin/agentic.mjs:626-686`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
 
 ```mermaid
 flowchart TD
@@ -397,7 +397,7 @@ flowchart TD
   M -->|"base 모름"| DISC{"--discard?"}
   DISC -->|"아니오"| UNRES["unresolved에 모음"]
   DISC -->|"예"| BK["백업 계획 추가<br/>override = 재생성본"]
-  M -->|"base 앎 · --edit"| ED["mergeWithEditor<br/>결과 관리 영역 == 재생성본일 때만"]
+  M -->|"base 앎 · --edit"| ED["mergeWithEditor<br/>결과에서 관리 영역 밖만 적용"]
   M -->|"base 앎"| AUTO["collectUserEdits(base, 현재)<br/>relocateUserEdits(재생성본, 추가 줄)"]
   UNRES --> THROW["printConflicts 후 throw<br/>--discard 안내 · 파일을 쓰지 않음"]
   RECREATE --> WRITE["planFor(overrides) → writePlan<br/>백업을 먼저 쓰고 hash·base 갱신"]
@@ -417,7 +417,7 @@ for (const part of diffLines(withTrailingNewline(base), withTrailingNewline(curr
 if (kind === 'agents' || index === -1) return `${content.trimEnd()}\n\n${block}\n`;
 ```
 
-- **`--edit`:** `mergeWithEditor`(`bin/agentic.mjs:582-589`)는 `withBaseRegion`(`:577-580`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`bin/merge-editor.mjs:12-39`)를 부른다. `mergeInVsCode`는 임시 폴더에 현재·Agentic·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`). 결과 파일의 관리 영역 hash가 재생성본과 다르면 결과 경로를 담아 throw하고 임시 폴더를 남긴다.
+- **`--edit`:** `mergeWithEditor`(`bin/agentic.mjs:593-619`)는 `withBaseRegion`(`:583-586`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`bin/merge-editor.mjs:17-43`)를 부른다. 편집기를 열기 전에 `resolve.edit.guide` 문구로 확인 순서를 출력한다(ko·en, `bin/i18n.mjs`). 결과 파일은 자동 해결과 같은 내용(`automaticResolution`, `:577-580`)으로 채워 두므로 Result 창은 사용자 줄이 이미 관리 영역 밖으로 옮겨진 상태로 열린다. `mergeInVsCode`는 임시 폴더에 현재·Agentic·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`). 편집기를 닫으면 결과 파일을 새 내용으로 삼아 계획을 다시 세우므로 관리 영역은 다시 만들어지고 밖의 내용만 남는다. 결과의 관리 영역이 재생성본과 다르면 적용하지 않은 변경을 diff로 출력하고 임시 폴더를 남기며, 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 없으면 throw한다([ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)).
 - **TUI:** `profileActions`(`:198-239`)는 `resolve` 메뉴를 `resolveProjectTui`(`:242-263`)로 보낸다. `apply`·`sync`가 `ConflictError`로 멈추면 오류를 보여 주고 해결로 이어갈지 묻는다. `resolveProjectTui`는 먼저 `--dry-run`으로 계획을 보여 준 뒤 자동 해결·`--edit`·`--discard` 중 하나를 고르게 한다.
 
 ## 관련 문서

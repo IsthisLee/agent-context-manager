@@ -7,7 +7,7 @@
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
-<!-- agentic-doc-sources-sha256: 3a2f0ee80a81b7ee925f900740279a9f8fbab77edd706bd7b89a09311815a53b -->
+<!-- agentic-doc-sources-sha256: 720aa740e348b9fa5b67935591063d52cd0363ab7701563acd4efb0b1a190b67 -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -185,7 +185,12 @@ flowchart TD
 1. `agt profile sync --dry-run <project>`로 무엇이 달라졌는지 본다. 충돌 파일은 `conflict`로 표시되고 diff가 함께 나오며 종료 코드는 1이다.
 2. `agt profile resolve <project>`를 실행한다. 관리 영역 안에서 추가·수정한 줄은 포인터 파일이면 관리 블록 바로 아래로, `AGENTS.md`면 확장 섹션 끝으로 옮겨진다. 관리 영역은 현재 프로필로 새로 만들어진다. 관리 영역 안에서 지운 줄은 되살아나며 몇 줄인지 알려 준다. `--dry-run`을 붙이면 옮길 줄만 보여 주고 파일을 바꾸지 않는다.
 3. 마지막 적용본을 알 수 없으면 resolve가 멈춘다. `.agentic/base/`가 없는 상태에서 프로필까지 바뀐 경우다. 남길 내용을 직접 관리 영역 밖으로 옮긴 뒤 `agt profile resolve --discard <project>`를 실행한다. 현재 파일을 `.agentic/backups/<시각>/`에 복사한 뒤 관리 영역을 새로 만든다.
-4. 줄 단위로 직접 고르고 싶으면 `agt profile resolve --edit <project>`로 VS Code 3-way merge 편집기를 연다. 남길 줄은 관리 영역 밖으로 옮겨 저장한다. 편집기를 닫았을 때 관리 영역이 Agentic이 새로 만든 내용과 같아야 적용된다. `code` 명령이 PATH에 있어야 한다.
+4. 줄 단위로 직접 고르고 싶으면 `agt profile resolve --edit <project>`로 VS Code 3-way merge 편집기를 연다. 편집기를 열기 전에 터미널이 아래 확인 순서를 출력한다.
+   1. 위쪽 `current-<파일>` 창에서 강조된 영역은 관리 영역 안에서 고쳤던 원래 위치다. 위쪽 두 창은 읽기 전용이고, 수락 버튼은 누르지 않는다.
+   2. 아래쪽 Result 창에는 그 줄이 관리 영역 밖(포인터 파일은 `<!-- agentic:managed:end -->` 아래, `AGENTS.md`는 확장 섹션 끝)으로 이미 옮겨져 있다. 남길 내용이 모두 관리 영역 밖에 있는지 확인하고 필요하면 고친 뒤 저장한다.
+   3. 탭을 닫을 때 "파일에 처리되지 않은 충돌이 포함되어 있습니다" 경고가 뜨면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 저장한 결과가 적용된다.
+
+   Agentic은 결과에서 관리 영역 밖의 내용만 가져오고 관리 영역은 다시 만들므로, 저장할 때 포매터가 관리 영역을 바꿔도 된다. 관리 영역 안에 남긴 변경은 적용되지 않으며 diff와 merge 결과 파일 경로로 알려 준다. `code` 명령이 PATH에 있어야 한다.
 
 `.agentic/base/`는 마지막으로 적용한 관리 영역 원문이다. git에 커밋해 두면 팀원도 같은 기준으로 충돌을 푼다. 지워도 다음 `apply`·`sync`가 다시 만들지만, 그 전에 프로필까지 바뀐 충돌은 `--discard`로만 풀 수 있다. TUI에서는 `profile list`의 `프로젝트 충돌 해결` 메뉴에서 같은 선택지를 고른다. 결정 근거는 [ADR 0008](adr/0008-managed-conflict-recovery.md)에 있다.
 

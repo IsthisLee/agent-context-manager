@@ -4,10 +4,10 @@
 
 **작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-14 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:727-747`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `bin/agentic.mjs:756-776`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs, package.json, tools/package-smoke.mjs, tools/check-syntax.mjs, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.mjs -->
-<!-- agentic-doc-sources-sha256: 821bb675f2038a09f508f72eee15881de3e96311e9452b1656d7ef52be5e1369 -->
+<!-- agentic-doc-sources-sha256: 34d680ad9a1ea840541bb5ad51f68fe36970ad1eacafdeabe6e29b1c3b8976ef -->
 
 이 문서는 `@isthis/agentic`이 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -109,7 +109,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
   }
   ```
 - `agt`는 `agentic`의 짧은 별칭이다. `bin/agt.mjs`는 한 줄로 본체를 불러올 뿐이다: `import './agentic.mjs';`(`bin/agt.mjs:3`).
-- 두 이름 중 무엇으로 실행했는지는 코드가 스스로 판별한다. `bin/agentic.mjs:21`이 `process.argv[1]`의 파일 이름으로 `invokedAs`를 정하고, 도움말 출력의 명령어 이름을 그에 맞춰 바꾼다(`bin/agentic.mjs:685-686`).
+- 두 이름 중 무엇으로 실행했는지는 코드가 스스로 판별한다. `bin/agentic.mjs:21`이 `process.argv[1]`의 파일 이름으로 `invokedAs`를 정하고, 도움말 출력의 명령어 이름을 그에 맞춰 바꾼다(`bin/agentic.mjs:714-715`).
 - 설치된 실행 진입점이 실제로 만들어지는지는 `tools/package-smoke.mjs:38`이 `node_modules/.bin/agt`(Windows에서는 `agt.cmd`)를 호출해 확인한다.
 
 ### 사용자가 알아야 할 주의점
@@ -156,7 +156,7 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 1. **터미널/셸**: `agt`를 PATH에서 찾아 실행하고, 나머지 토큰(`profile`, `create`)을 인자로 넘긴다.
 2. **OS**: 진입점(심볼릭 링크 또는 shim)을 따라 실제 스크립트를 Node로 실행한다.
 3. **Node.js**: `bin/agt.mjs`를 로드하고, 그것이 `bin/agentic.mjs`를 불러온다.
-4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:17-20`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:727-747`).
+4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`bin/agentic.mjs:17-20`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`bin/agentic.mjs:756-776`).
 
 ```mermaid
 flowchart TD
@@ -170,9 +170,9 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:738-739`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-61`, `bin/agentic.mjs:7`).
+- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`bin/agentic.mjs:767-768`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:58-61`, `bin/agentic.mjs:7`).
 - 명령별 분기: `profile` 하위 명령(`create/list/view/remove/setup/apply/sync/resolve`)과 `config lang`, 그 외에는 도움말. `profile`은 `runProfileCommand()`가 다시 하위 명령으로 분기한다.
-- 오류가 나면 `main().catch`가 메시지를 출력하고 종료 코드 1로 끝낸다(`bin/agentic.mjs:749-752`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
+- 오류가 나면 `main().catch`가 메시지를 출력하고 종료 코드 1로 끝낸다(`bin/agentic.mjs:778-781`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -230,7 +230,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **배포되는 CLI(`bin/`)**는 `fs`·`os`·`path`를 쓴다(`bin/agentic.mjs:5-6`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`bin/i18n.mjs:62`).
 - 이 밖에 `bin/fs-utils.mjs`, `bin/analyzer.mjs`, `bin/project-plan.mjs`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`bin/fs-utils.mjs:3,52`), 관리 영역 무결성 확인에 `createHash`(`bin/analyzer.mjs:1,56-58`, `bin/project-plan.mjs:3,21-23`)를 사용한다.
-- **배포되는 `bin/`에서 `child_process`를 쓰는 곳은 하나다.** 사용자가 `profile resolve --edit`을 명시했을 때 `bin/merge-editor.mjs`가 `spawnSync`로 VS Code CLI `code --wait --merge`를 실행한다(`bin/merge-editor.mjs:4`, `28-29`). 셸 없이 인자 배열로 실행하며 Windows에서만 `code.cmd` 실행을 위해 셸을 거친다. 저장소 개발 도구도 쓴다: 문법 검사가 `node --check`를 자식 프로세스로 실행하고(`tools/check-syntax.mjs:5,21`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.mjs:7,24-29`).
+- **배포되는 `bin/`에서 `child_process`를 쓰는 곳은 하나다.** 사용자가 `profile resolve --edit`을 명시했을 때 `bin/merge-editor.mjs`가 `spawnSync`로 VS Code CLI `code --wait --merge`를 실행한다(`bin/merge-editor.mjs:4`, `32-33`). 셸 없이 인자 배열로 실행하며 Windows에서만 `code.cmd` 실행을 위해 셸을 거친다. 저장소 개발 도구도 쓴다: 문법 검사가 `node --check`를 자식 프로세스로 실행하고(`tools/check-syntax.mjs:5,21`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.mjs:7,24-29`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -253,7 +253,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`bin/agentic.mjs:17`), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`bin/agentic.mjs:87`, `354`).
-- 출력은 화면 DOM이 아니라 표준 출력/오류다: `console.log`로 결과를, `console.error`로 오류를 낸다(`bin/agentic.mjs:82`, `750`).
+- 출력은 화면 DOM이 아니라 표준 출력/오류다: `console.log`로 결과를, `console.error`로 오류를 낸다(`bin/agentic.mjs:82`, `762`).
 - “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`bin/agentic.mjs:7`, `91-111`).
 
 ### 사용자가 알아야 할 주의점
@@ -437,7 +437,7 @@ flowchart TD
 
 - **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`bin/agentic.mjs:543-549`). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 0이 아닌 종료 코드로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`profileActions`, `bin/agentic.mjs:198-239`).
 - **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `bin/agentic.mjs:506-514`).
-- **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`bin/agentic.mjs:749-752`). 성공하면 기본 종료 코드 0이다.
+- **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`bin/agentic.mjs:778-781`). 성공하면 기본 종료 코드 0이다.
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 문법 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:29`). 문법 검사는 `bin`·`tools`·`evals`의 `.mjs`를 `node --check`로 검사하고(`tools/check-syntax.mjs`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하며(`tools/check-docs.mjs`), 테스트는 `evals/**/*.test.mjs`를 `node --test`로 돌린다(`package.json:26`).
 
 ### 사용자가 알아야 할 주의점
@@ -531,11 +531,11 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 명령을 실행하는 **사용자**와 처리하는 **Agentic 내부**를 구분해 적는다.
 
 1. **(사용자)** `npm install -g @isthis/agentic` → **(npm)** tarball을 받아 전역 설치하고 `agentic`·`agt` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
-2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:738-739`).
+2. **(사용자)** `agt` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `bin/agentic.mjs` 실행 → **(Agentic)** TTY면 메인 TUI를 연다(`bin/agentic.mjs:767-768`).
 3. **(사용자)** 프로필 생성·설정 선택 → **(Agentic)** `~/.agentic/profiles/<name>/`(기본 위치이며 `AGENTIC_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `agentic-profile.json`과 `AGENTS.md`를 만들고(`bin/agentic.mjs:73-83`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`bin/agentic.mjs:324-350`).
 4. **(사용자)** `agt profile apply <name> <project>` → **(Agentic)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`bin/agentic.mjs:535-552`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. Agentic은 에이전트 런타임을 실행하지 않는다([사용 가이드 4절](usage-guide.md#4-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
-6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:559-574`). 관리 영역을 밖에서 고쳐 멈추면 `agt profile resolve <project>`로 푼다(`bin/agentic.mjs:596-657`).
+6. **(사용자)** 프로필을 바꾼 뒤 `agt profile sync <project>` → **(Agentic)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`bin/agentic.mjs:559-574`). 관리 영역을 밖에서 고쳐 멈추면 `agt profile resolve <project>`로 푼다(`bin/agentic.mjs:626-686`).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
 

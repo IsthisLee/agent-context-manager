@@ -6,7 +6,7 @@
 
 ### Added
 
-- `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agentic/backups/`에 백업한 뒤 다시 만들고, `--edit`은 VS Code 3-way merge 편집기를 연다. `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
+- `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agentic/backups/`에 백업한 뒤 다시 만들고, `--edit`은 자동 해결 결과로 채운 VS Code 3-way merge 편집기를 열고 결과에서 관리 영역 밖의 내용을 가져온다(관리 영역은 다시 만들므로 저장 시 포매터가 바꿔도 된다). `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
 - `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agentic/base/`에 기록하고 `.agentic/.gitignore`로 백업 폴더를 커밋에서 제외
 
 ### Changed

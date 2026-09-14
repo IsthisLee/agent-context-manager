@@ -75,7 +75,14 @@ function fakeCode(t, mode) {
 const args = process.argv.slice(2);
 const at = args.indexOf('--merge');
 const [current, agentic, , result] = args.slice(at + 1, at + 5);
-if (${JSON.stringify(mode)} === 'current') fs.writeFileSync(result, fs.readFileSync(current, 'utf8'));
+const START = '<!-- agentic:managed:start -->';
+const END = '<!-- agentic:managed:end -->';
+const mine = fs.readFileSync(current, 'utf8');
+const mode = ${JSON.stringify(mode)};
+if (mode === 'current') fs.writeFileSync(result, mine);
+else if (mode === 'formatted') fs.writeFileSync(result, mine.replace('## Commands\\n- Test: \`pnpm test\`\\n', '').replace(START + '\\n', START + '\\n\\n').replaceAll('\\n* ', '\\n- ').replace(END, END + '\\n\\n* Test: \`pnpm test\`'));
+else if (mode === 'nomarkers') fs.writeFileSync(result, mine.replace(START, '').replace(END, ''));
+else if (mode === 'untouched') {}
 else fs.writeFileSync(result, fs.readFileSync(agentic, 'utf8') + '\\n## Kept by merge\\n');
 `);
   if (process.platform === 'win32') {
@@ -273,15 +280,66 @@ test('resolve --edit applies a VS Code merge result whose managed area matches A
   assertCleanSync(fixture);
 });
 
-test('resolve --edit rejects a merge result that still changes the managed area', t => {
+test('resolve --edit starts the merge result from the automatic resolution', t => {
+  const automatic = makeFixture(t);
+  editPointerBlock(automatic);
+  automatic.ok(['profile', 'resolve', automatic.project]);
+  const fixture = makeFixture(t);
+  editPointerBlock(fixture);
+
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project], { ...fakeCode(t, 'untouched'), AGENTIC_LANG: 'ko' });
+
+  assert.match(result.stdout, /CLAUDE\.md: VS Code 병합 편집기를 엽니다/);
+  assert.match(result.stdout, /`current-CLAUDE\.md` 창/);
+  assert.match(result.stdout, /`<!-- agentic:managed:end -->` 아래로 이미 옮겨져/);
+  assert.match(result.stdout, /'충돌과 함께 닫기'\(Close with Conflicts\)/);
+  assert.match(result.stdout, /applied the VS Code merge result/);
+  assert.equal(fixture.read('CLAUDE.md'), automatic.read('CLAUDE.md'));
+  assert.ok(fixture.read('CLAUDE.md').indexOf(ADDED) > fixture.read('CLAUDE.md').indexOf(END));
+  assertCleanSync(fixture);
+});
+
+test('resolve --edit keeps content moved outside the managed area even when a formatter rewrote the block', t => {
+  const fixture = makeFixture(t);
+  const original = fixture.read('CLAUDE.md');
+  editPointerBlock(fixture);
+
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project], fakeCode(t, 'formatted'));
+
+  assert.match(result.stdout, /changes inside it were not applied/);
+  const resolved = fixture.read('CLAUDE.md');
+  assert.ok(resolved.startsWith(original.slice(0, original.indexOf(END) + END.length)));
+  assert.ok(resolved.indexOf('* Test: `pnpm test`') > resolved.indexOf(END));
+  assertCleanSync(fixture);
+});
+
+test('resolve --edit regenerates the managed area and reports edits left inside it', t => {
+  const fixture = makeFixture(t);
+  const original = fixture.read('CLAUDE.md');
+  editPointerBlock(fixture);
+
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project], { ...fakeCode(t, 'current'), AGENTIC_LANG: 'en' });
+
+  assert.match(result.stdout, /CLAUDE\.md: opening the VS Code merge editor/);
+  assert.match(result.stdout, /'Close with Conflicts'/);
+  assert.match(result.stdout, /changes inside it were not applied/);
+  assert.match(result.stdout, /^-- Test: `pnpm test`$/m);
+  const kept = result.stdout.match(/Merge result kept at (.+)$/m);
+  assert.ok(kept && fs.existsSync(kept[1].trim()), 'the merge result file is kept for recovery');
+  t.after(() => fs.rmSync(path.dirname(kept[1].trim()), { recursive: true, force: true }));
+  assert.equal(fixture.read('CLAUDE.md'), original);
+  assertCleanSync(fixture);
+});
+
+test('resolve --edit refuses a merge result without the managed markers', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   const before = snapshot(fixture.project);
 
-  const result = fixture.run(['profile', 'resolve', '--edit', fixture.project], fakeCode(t, 'current'));
+  const result = fixture.run(['profile', 'resolve', '--edit', fixture.project], fakeCode(t, 'nomarkers'));
 
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /still changes the managed area/);
+  assert.match(result.stderr, /no Agentic managed area/);
   assert.deepEqual(snapshot(fixture.project), before);
 });
 

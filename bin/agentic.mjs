@@ -8,7 +8,7 @@ import { cancel, confirm, intro, isCancel, note, outro, path as pathPrompt, sele
 import { fileURLToPath } from 'node:url';
 import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from './conflicts.mjs';
 import { writeTextAtomic } from './fs-utils.mjs';
-import { mergeInVsCode } from './merge-editor.mjs';
+import { mergeFileName, mergeInVsCode } from './merge-editor.mjs';
 import { managedRegion, planProject, regionHash, writePlan } from './project-plan.mjs';
 import { DEFAULT_LOCALE, getSavedLocale, guidanceDescriptions, guidanceLabels, guidanceLevelDefinitions, guidanceSections, levelOptions, PROFILE_METADATA_FILE, profileHome, resolveLocale, saveLocale, scopeOptions, SUPPORTED_LOCALES, t } from './i18n.mjs';
 
@@ -573,18 +573,48 @@ function syncProject(values) {
   applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 }
 
+/** The file as automatic resolve writes it: lines added inside the managed area move outside it. */
+function automaticResolution(file) {
+  const edits = collectUserEdits(file.conflict.base, file.currentRegion ?? '');
+  return { edits, content: relocateUserEdits(file.regenerated, edits.addedLines, file.kind) };
+}
+
 /** The current file with its managed area swapped back to the base, for a three-way merge. */
 function withBaseRegion(file) {
   if (file.kind === 'agents') return `${file.conflict.base}${file.existing.slice(file.currentRegion.length)}`;
   return file.existing.replace(file.currentRegion, () => file.conflict.base);
 }
 
+/**
+ * Use the VS Code merge result as the file's new content. Only what lies outside
+ * the managed area survives, because the managed area is regenerated; a formatter
+ * that rewrote the area on save therefore does not block the merge (ADR 0010).
+ */
 function mergeWithEditor(file) {
-  const merged = mergeInVsCode({ name: file.rel, current: file.existing, incoming: file.regenerated, base: withBaseRegion(file) });
-  if (regionHash(managedRegion(file.kind, merged.content)) !== regionHash(file.nextRegion)) {
-    throw new Error(`Merge result for ${file.rel} still changes the managed area. Move your lines outside it and run resolve again. Result kept at ${merged.resultPath}`);
+  console.log(_('resolve.edit.guide', {
+    file: file.rel,
+    pane: mergeFileName('current', file.rel),
+    boundary: _(`resolve.edit.boundary.${file.kind === 'agents' ? 'agents' : 'pointer'}`)
+  }));
+  const merged = mergeInVsCode({
+    name: file.rel,
+    current: file.existing,
+    incoming: file.regenerated,
+    base: withBaseRegion(file),
+    result: automaticResolution(file).content
+  });
+  const mergedRegion = managedRegion(file.kind, merged.content);
+  const hasBoundary = file.kind === 'agents' ? mergedRegion !== merged.content.trimEnd() : mergedRegion !== null;
+  if (!mergedRegion || !hasBoundary) {
+    throw new Error(`Merge result for ${file.rel} has no Agentic managed area. Keep the managed markers (the extension heading in AGENTS.md) and run resolve again. Result kept at ${merged.resultPath}`);
   }
-  merged.cleanup();
+  if (regionHash(mergedRegion) === regionHash(file.nextRegion)) {
+    merged.cleanup();
+    console.log(`${file.rel}: applied the VS Code merge result.`);
+  } else {
+    console.log(`${file.rel}: applied content outside the managed area from the VS Code merge result; changes inside it were not applied. Merge result kept at ${merged.resultPath}`);
+    console.log(formatDiff(`merge-result/${file.rel}`, `next/${file.rel}`, mergedRegion, file.nextRegion ?? ''));
+  }
   return merged.content;
 }
 
@@ -627,10 +657,9 @@ function resolveProject(values) {
       console.log(`${file.rel}: ${will('backed up', 'would back up')} to ${backup} and ${will('regenerated', 'would regenerate')} the managed area.`);
     } else if (hasFlag(values, 'edit') && !dryRun && file.currentRegion) {
       overrides.set(file.rel, mergeWithEditor(file));
-      console.log(`${file.rel}: applied the VS Code merge result.`);
     } else {
-      const edits = collectUserEdits(file.conflict.base, file.currentRegion ?? '');
-      overrides.set(file.rel, relocateUserEdits(file.regenerated, edits.addedLines, file.kind));
+      const { edits, content } = automaticResolution(file);
+      overrides.set(file.rel, content);
       console.log(`${file.rel}: ${will('moved', 'would move')} ${edits.addedLines.length} line(s) outside the managed area; ${will('restored', 'would restore')} ${edits.removedLines.length} line(s) removed inside it.`);
       if (edits.addedLines.length && edits.removedLines.length) {
         console.log(`  Some lines were changed rather than added. Check ${file.rel} for near-duplicate lines below the managed area.`);

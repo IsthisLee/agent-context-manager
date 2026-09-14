@@ -3,14 +3,14 @@
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/conflicts.mjs, bin/project-plan.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
 <!-- agentic-doc-sources-sha256: 8d5eba5fb6ab21380bfc4065f38da64a53be106af4af58f0cdda2b031f33cc2a -->
 
-[![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
-[![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agentic/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agentic)
-[![npm](https://img.shields.io/npm/v/@isthis/agentic?logo=npm&color=cb3837)](https://www.npmjs.com/package/@isthis/agentic)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
-[![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
-[![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#지원-에이전트)
+![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)
+![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)
+![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agentic/badge)
+![npm](https://img.shields.io/npm/v/@isthis/agentic?logo=npm&color=cb3837)
+![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
+![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)
+![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)
+![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)
 
 **한국어** · [English](README.en.md)
 
@@ -22,7 +22,7 @@
 
 
 
-> (⚙️ 지침 -> 환경(Skills, Hooks 등)으로 적용 범위를 넓혀가는 중입니다. Git 기능 반영도 작업 중입니다.)
+> (⚙️ 지침 -&gt; 환경(Skills, Hooks 등)으로 적용 범위를 넓혀가는 중입니다. Git 기능 반영도 작업 중입니다.)
 
 <p align="center">
 
@@ -94,7 +94,9 @@ agt profile apply company /path/to/project
 위 명령은 다음 흐름으로 동작합니다.
 
 <p align="center">
+
   <img src="https://raw.githubusercontent.com/IsthisLee/agentic/main/docs/assets/agentic.gif" alt="Agentic 사용 흐름: profile create → setup → apply·sync로 프로필을 만들어 프로젝트에 적용하고 여러 AI 에이전트가 같은 기준으로 작업" width="800">
+
 </p>
 
 > [!Tip]

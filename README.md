@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 개발 지침 관리
 
 <!-- agentic-doc-sources: bin/agentic.mjs, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: a828d5986d2cab8fc8bf6c24a09da2198729f9d18d0697cfb2954d9384e487a4 -->
+<!-- agentic-doc-sources-sha256: cec9f192ac205d6e21fcef6f284502ed810956f2ab157e5627fce5c5da9828fa -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -94,7 +94,7 @@ agt profile apply company /path/to/project
 >
 > 옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
 
-개인 프로필은 `~/.agentic-profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
+개인 프로필은 `~/.agentic/profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
 프로필 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agentic/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agentic/tree/main/docs/discussion/architecture/)에서 확인합니다.
 

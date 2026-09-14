@@ -34,12 +34,14 @@
 
 프로필은 사용자 또는 조직이 소유하는 공통 지침 저장소다. `Personal`, `Company`, `Team`, `Workspace`는 고정된 시스템 종류가 아니라 프로필의 용도 또는 metadata다.
 
-권장 기본 경로는 `~/.agentic-profiles/<name>`이며, 조직 프로필은 사용자가 관리하는 별도 Git 저장소도 선택할 수 있어야 한다. 패키지 설치·업데이트는 프로필 파일을 자동 변경하지 않는다.
+권장 기본 경로는 `~/.agentic/profiles/<name>`이며([ADR 0007](../../../adr/0007-profile-home-layout.md)), 조직 프로필은 사용자가 관리하는 별도 Git 저장소도 선택할 수 있어야 한다. 패키지 설치·업데이트는 프로필 파일을 자동 변경하지 않는다.
 
 ```text
-~/.agentic-profiles/<name>/
-├── AGENTS.md          # 프로필 공통 지침 정본
-└── agentic-profile.json  # 이름·용도·schema metadata
+~/.agentic/
+├── config.json               # 언어 설정
+└── profiles/<name>/
+    ├── AGENTS.md             # 프로필 공통 지침 정본
+    └── agentic-profile.json  # 이름·용도·schema metadata
 ```
 
 ```mermaid
@@ -72,7 +74,7 @@ erDiagram
 
 #### 구현 기록: 프로필 생성·목록
 
-* **결정:** 사용자 홈의 `.agentic-profiles/<name>`에 프로필을 저장하고 `personal`, `company`, `team`, `workspace` scope를 metadata로 기록한다.
+* **결정:** 사용자 홈의 `.agentic-profiles/<name>`에 프로필을 저장하고 `personal`, `company`, `team`, `workspace` scope를 metadata로 기록한다. 저장 위치는 이후 [ADR 0007](../../../adr/0007-profile-home-layout.md)에 따라 `~/.agentic/profiles/<name>`으로 옮겼다.
 * **구현:** `agentic profile create`, scope별 `agentic profile list`와 프로필 관리 메뉴, TUI 프로필 선택·삭제, `agentic profile remove`, `agentic-profile.json`, 프로필 `AGENTS.md` 생성.
 * **평가:** `evals/core.test.mjs`에서 생성·목록·이름·scope·metadata를 확인.
 * **제약:** 조직 원격 Git 등록·동기화는 아직 지원하지 않는다.

@@ -29,6 +29,39 @@
 - **Claude Code는 지침 파일 분량의 목표치와 한도를 밝힌다.** "target under 200 lines per CLAUDE.md file. Longer files consume more context and reduce adherence." 4 MiB를 넘는 CLAUDE.md는 읽지 않는다. `@path` import는 정리에는 도움이 되지만 "doesn't reduce context, since imported files load at launch"이다. 자동 메모리의 200줄·25KB 한도는 "applies only to `MEMORY.md`"이다. [Claude Code memory](https://code.claude.com/docs/en/memory)
 - **Codex는 지침 파일의 합산 크기에 한도를 둔다.** "Codex skips empty files and stops adding files once the combined size reaches the limit defined by `project_doc_max_bytes` (32 KiB by default)." 한도에 닿으면 "Raise the limit or split instructions across nested directories when you hit the cap."라고 안내한다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
 
+## 에이전트 규칙 파일 로드 근거
+
+[ADR 0009](adr/0009-agent-rule-frontmatter.md)의 근거다. 아래 내용은 모두 2026-09-14에 확인했다. 에이전트 도구가 갱신되면 결과가 달라질 수 있다.
+
+- **Antigravity 공식 문서는 규칙 위치와 켜지는 방식의 종류만 적는다.** 전역 규칙은 `~/.gemini/GEMINI.md`, 워크스페이스 규칙은 워크스페이스나 git 루트의 `.agents/rules` 폴더에 둔다. 켜지는 방식(activation)은 Manual·Always On·Model Decision·Glob 네 가지다. 켜지는 방식의 기본값과 frontmatter 문법은 적혀 있지 않고, 루트 `AGENTS.md`도 언급하지 않는다. [Google Antigravity Rules](https://antigravity.google/docs/rules-workflows/) (확인일: 2026-09-14)
+
+  > "Workspace rules live in the `.agents/rules` folder of your workspace or git root."
+  >
+  > 번역: 워크스페이스 규칙은 워크스페이스나 git 루트의 `.agents/rules` 폴더에 있습니다.
+
+- **Antigravity frontmatter 키는 비공식 자료에서 가져왔다.** Rulesync는 Antigravity 규칙 frontmatter의 `trigger` 값으로 `always_on`·`glob`·`manual`·`model_decision`을 적는다. 공식 문서가 아니므로 아래 실험으로 효과를 확인했다. [Rulesync File Formats](https://rulesync.dyoshikawa.com/reference/file-formats) (확인일: 2026-09-14)
+- **Claude Code는 `AGENTS.md`를 직접 읽지 않는다.** 대신 `CLAUDE.md`에서 `@AGENTS.md`로 불러오라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-14)
+
+  > "Claude Code reads `CLAUDE.md`, not `AGENTS.md`."
+  >
+  > 번역: Claude Code는 `AGENTS.md`가 아니라 `CLAUDE.md`를 읽습니다.
+
+- **Codex는 `AGENTS.md`를 직접 읽는다.** [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-14)
+- **실험: 에이전트 CLI가 실제로 불러온 지침.** 빈 git 프로젝트에 `profile apply personal`을 실행하고, `AGENTS.md`의 프로젝트 확장 영역에 전역 규칙과 겹치지 않는 마커 문자열을 넣었다. 각 에이전트 CLI에 도구를 쓰지 말고 컨텍스트에 이미 들어온 지침만 보고 마커와 포인터 파일 제목이 보이는지 답하게 했다. 모든 응답이 도구를 쓰지 않았다고 답했지만, 이는 에이전트의 자기 보고다.
+
+  | 에이전트 (실행 명령) | 루트 `AGENTS.md` 마커 | 에이전트별 파일 |
+  | --- | --- | --- |
+  | Claude Code (`claude -p`) | 보임 | `CLAUDE.md` 보임 |
+  | Codex (`codex exec --sandbox read-only`) | 보임 | 해당 없음 |
+  | GitHub Copilot CLI (`copilot -p`) | 보임 | `.github/copilot-instructions.md`와 `CLAUDE.md` 보임 |
+  | Antigravity CLI (`agy --add-dir <project> -p`) | 보임 | frontmatter 없는 `.agents/rules/agentic.md` 보이지 않음 |
+  | Cursor CLI (`cursor-agent -p --trust`) | 보임 | 첫 줄이 관리 마커인 `.cursor/rules/agentic.mdc` 보이지 않음, `CLAUDE.md` 보임 |
+
+  - Antigravity CLI는 `--add-dir`로 워크스페이스를 주지 않으면 루트 `AGENTS.md`도 보지 못했다. 폴더를 열고 쓰는 IDE와는 실행 조건이 다르다.
+  - 같은 프로젝트에서 `.agents/rules/agentic.md` 맨 앞에 `trigger: always_on` frontmatter만 추가하자 Antigravity CLI가 규칙 파일 제목을 보았다. ADR 0009를 반영한 코드로 새 프로젝트에 적용했을 때도 같은 결과였다.
+  - 수정 전 코드가 만든 `.cursor/rules/agentic.mdc`는 첫 줄이 관리 마커이고 `alwaysApply: true` frontmatter가 둘째 줄부터 시작했다. Cursor CLI는 이 파일을 로드하지 않았다. ADR 0009를 반영한 코드로 frontmatter가 첫 줄에 오게 적용한 프로젝트에서는 규칙 파일 제목을 보았다.
+  - Cursor CLI는 신뢰하지 않은 폴더에서 확인 화면을 띄우고 멈추므로, 실험에서는 실행마다 `--trust`를 붙였다.
+
 ## 공개 npm·GitHub 저장소 운영 근거
 
 - npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/)

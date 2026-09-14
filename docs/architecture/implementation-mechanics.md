@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `bin/agentic.mjs:535-552`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
-<!-- agentic-doc-sources-sha256: 720aa740e348b9fa5b67935591063d52cd0363ab7701563acd4efb0b1a190b67 -->
+<!-- agentic-doc-sources-sha256: cf301c9524f070d1279ef5b6554a649a82594c46c955d5a95cc338d5f75eb5ea -->
 
 ## 읽는 법
 
@@ -249,17 +249,22 @@ flowchart TD
 포인터 파일은 마커 블록만 바꾼다.
 
 ```js
-// analyzer.mjs:68-78 — 관리 블록만 교체하거나 없으면 덧붙인다
-const start = '<!-- agentic:managed:start -->';
-const end = '<!-- agentic:managed:end -->';
-const managedBlock = `${start}\n${managedContent.trim()}\n${end}`;
-if (!existingContent || typeof existingContent !== 'string') return `${managedBlock}\n`;
+// analyzer.mjs:73-87 — 관리 블록만 교체하거나 없으면 덧붙이고, 템플릿 frontmatter는 블록 밖 맨 앞에 둔다
+const template = managedContent.trim();
+const frontmatter = template.match(LEADING_FRONTMATTER)?.[0] || '';
+const managedBlock = `${start}\n${template.slice(frontmatter.length).trim()}\n${end}`;
+const withFrontmatter = content => (frontmatter ? `${frontmatter}\n${content}` : content);
+if (!existingContent || typeof existingContent !== 'string') return withFrontmatter(`${managedBlock}\n`);
 const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
-if (pattern.test(existingContent)) return `${existingContent.replace(pattern, managedBlock).trimEnd()}\n`;
-return `${existingContent.trimEnd()}\n\n${managedBlock}\n`;
+const merged = pattern.test(existingContent)
+  ? `${existingContent.replace(pattern, managedBlock).trimEnd()}\n`
+  : `${existingContent.trimEnd()}\n\n${managedBlock}\n`;
+return LEADING_FRONTMATTER.test(existingContent) ? merged : withFrontmatter(merged);
 ```
 
-`hashAgentsManagedDocument`(`:56-59`)와 `hashManagedDocument`(`:87-90`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `bin/analyzer.mjs:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
+- **frontmatter 위치**: Cursor `.mdc`와 Antigravity 규칙은 파일 첫 줄의 frontmatter(`alwaysApply`, `trigger`)로 로드 방식을 정한다. 그래서 템플릿 frontmatter(`LEADING_FRONTMATTER`, `:61`)는 관리 블록과 관리 hash 밖, 파일 맨 앞에 둔다. 파일 맨 앞에 frontmatter가 이미 있으면 사용자의 것으로 보고 보존한다. 결정 근거는 [ADR 0009](../adr/0009-agent-rule-frontmatter.md)에 있다.
+
+`hashAgentsManagedDocument`(`:56-59`)와 `hashManagedDocument`(`:96-99`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `bin/analyzer.mjs:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
 
 ## 8. profile sync
 

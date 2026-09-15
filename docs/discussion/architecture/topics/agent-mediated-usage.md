@@ -153,14 +153,14 @@ flowchart TD
 - 배포된 npm 패키지를 별도 임시 프로젝트에서 실행하는 에이전트 시나리오 평가
 - TUI·CLI·`agctx profile list`의 기능 동등성 및 비대화형 예외를 검사하는 registry 평가
 
-이 논의가 채택되면 `docs/cli-reference.md`, `docs/workflow.md`, `docs/architecture/`, 관련 ADR을 같은 변경에서 갱신한다. 현재 문서는 “자연어만으로도 agctx가 자동으로 모든 결정을 대신한다”는 기능을 선언하지 않는다.
+이 논의가 채택되면 `docs/reference/cli.md`, `docs/README.md`, `docs/contributing/architecture.md`, 관련 ADR을 같은 변경에서 갱신한다. 현재 문서는 “자연어만으로도 agctx가 자동으로 모든 결정을 대신한다”는 기능을 선언하지 않는다.
 
 ## 구현 기록
 
 #### 구현 기록: 비대화형 명령 계약 (2026-09-15)
 
 * **결정:** [ADR 0016](../../../adr/0016-command-contract.md). 모든 명령이 같은 종료 코드와 `--json` 결과 문서를 쓴다. 파일을 바꾸거나 원격으로 보내는 명령은 터미널이 아니면 `--yes`를 요구하고, 오류는 다음에 실행할 명령을 함께 출력한다.
-* **구현:** `src/commands/registry.ts`(명령 등록부), `src/commands/options.ts`(옵션 검사·확인), `src/commands/output.ts`(stdout·stderr 분리와 결과 문서), `src/commands/cli.ts`(알 수 없는 명령 제안·오류 출력), `src/shared/errors.ts`(종료 코드). 사용법은 [CLI Reference](../../../cli-reference.md#공통-규칙)에 있다.
+* **구현:** `src/commands/registry.ts`(명령 등록부), `src/commands/options.ts`(옵션 검사·확인), `src/commands/output.ts`(stdout·stderr 분리와 결과 문서), `src/commands/cli.ts`(알 수 없는 명령 제안·오류 출력), `src/shared/errors.ts`(종료 코드). 사용법은 [CLI Reference](../../../reference/cli.md#공통-규칙)에 있다.
 * **평가:** `evals/command-contract.test.ts` 10개, `evals/interface-parity.test.ts` 4개, `evals/messages.test.ts` 2개.
 * **계획과 달라진 점:**
   - "결정·검증 항목"의 명령별 필수 인자와 프롬프트 금지 규칙은 명령마다 따로 정하지 않고 등록부의 위치 인자와 공통 확인 규칙으로 정했다.
@@ -172,7 +172,7 @@ flowchart TD
 #### 구현 기록: 에이전트용 스킬과 지침 전달 확인 (2026-09-16)
 
 * **결정:** [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md). 저장소에 스킬 두 개를 둔다. 진단·갱신용 `agctx`는 에이전트가 스스로 쓸 수 있고, 프로필 게시·PR용 `agctx-author`는 사용자가 이름으로 부를 때만 쓴다(Claude Code `disable-model-invocation: true`, Codex `allow_implicit_invocation: false`). 두 스킬은 쓰기 명령 앞에 `--dry-run` 결과를 보여 주고 사용자가 승인한 뒤에만 `--yes`를 붙이게 한다. 지침 파일이 에이전트에 닿는지는 `explain`(규칙 기반 판정)과 `verify`(세션 기록 판독, 요청하면 probe)로 확인하며, 받지 못한 파일이 있으면 종료 코드 4로 끝낸다.
-* **구현:** `skills/agctx/SKILL.md`, `skills/agctx-author/SKILL.md`, `skills/agctx-author/agents/openai.yaml`, `tools/generate-skills.ts`(등록부에서 명령 목록 생성), `tools/skills-smoke.ts`(skills CLI 설치 확인), `src/explain.ts`, `src/verify/`. 사용법은 [CLI Reference](../../../cli-reference.md#verify)와 [사용 가이드](../../../usage-guide.md#에이전트에게-agctx를-맡기기)에 있다.
+* **구현:** `skills/agctx/SKILL.md`, `skills/agctx-author/SKILL.md`, `skills/agctx-author/agents/openai.yaml`, `tools/generate-skills.ts`(등록부에서 명령 목록 생성), `tools/skills-smoke.ts`(skills CLI 설치 확인), `src/explain.ts`, `src/verify/`. 사용법은 [CLI Reference](../../../reference/cli.md#verify)와 [에이전트에게 agctx를 맡기기](../../../guides/agent-skills.md)에 있다.
 * **평가:** `evals/skills.test.ts` 3개, `evals/explain.test.ts` 4개, `evals/verify.test.ts` 6개. `node tools/skills-smoke.ts`로 skills CLI 1.5.26의 설치 위치를 확인했고, 설치된 Codex·Claude Code·Antigravity CLI로 `verify --probe`를 실행했다([외부 근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)).
 * **계획과 달라진 점:**
   - "런타임 결합 위험"은 에이전트 CLI를 실행·파싱·래핑하는 런타임을 경계했다. `verify --probe`는 에이전트 CLI를 실행하고 출력에서 표지 줄만 찾지만, 사용자가 요청할 때 도구를 끄고 임시 사본에서 한 번만 실행하며 대화에는 끼어들지 않는다. CLI 옵션이 바뀌면 probe만 69로 실패하고 다른 명령에는 영향이 없다.

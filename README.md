@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: f8a661ff763108b413f1dda03fe1e2ccc6289052cc326031a6be016d1997afc1 -->
+<!-- agctx-doc-sources-sha256: b282d848ec97be0667ee542896cd0a799c38c85536661fd9ecbfa765993c3f31 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -43,7 +43,7 @@
 
 agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 호환 에이전트들이 읽는 파일을 한 번에 적용합니다. 프로필에서 기준을 바꾸면 동기화로 프로젝트마다 다시 손대지 않아도 되고 각 프로젝트만의 도메인 규칙·세팅은 그대로 남습니다.
 
-> 팀·조직 프로필은 Git 원격으로 공유합니다. 구성원은 `profile clone`·`pull`로 받고, CI는 `agctx check`로 저장소가 최신 지침을 반영했는지 확인합니다. 절차는 [사용 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#팀과-git으로-공유하기)에 있습니다.
+> 팀·조직 프로필은 Git 원격으로 공유합니다. 구성원은 `profile clone`·`pull`로 받고, CI는 `agctx check`로 저장소가 최신 지침을 반영했는지 확인합니다. 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)에 있습니다.
 
 ## 핵심 목표
 
@@ -79,7 +79,7 @@ agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 �
 
 ## 시작하기
 
-> 전체 사용 흐름, 상세 기능은 [사용 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md)에서 설치부터 동기화까지 단계별로 확인할 수 있습니다.
+> 설치부터 첫 적용까지는 [빠른 시작](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md), 상황별 사용법은 [목적별 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드)에서 확인할 수 있습니다.
 
 > 실행 환경: Node.js 22 LTS 이상
 
@@ -114,7 +114,7 @@ Applied profile company to /path/to/project
 
 개인 프로필은 `~/.agctx/profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
-프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사, 에이전트 전달 확인, 여러 저장소 동기화·PR 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
+프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사, 에이전트 전달 확인, 여러 저장소 동기화·PR 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/contributing/architecture.md)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
 
 ### 에이전트에게 맡기기
 
@@ -124,7 +124,7 @@ Applied profile company to /path/to/project
 DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
 ```
 
-skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [사용 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#에이전트에게-agctx를-맡기기)에 있습니다.
+skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
 
 ### 검증의 범위
 
@@ -235,11 +235,12 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 
 ## 문서
 
-- [제품 방향](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/product-direction.md)
-- [구현 원리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/implementation-principles.md)
-- [사용자 워크플로](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/workflow.md)
-- [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/cli-reference.md)
-- [공개 저장소 운영](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/repository-operations.md)
+- [문서 안내](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md): 사용 흐름과 전체 목차
+- [빠른 시작](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md)
+- [목적별 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드)
+- [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md)
+- [제품 방향](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/contributing/product-direction.md)
+- [기여자 문서](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#기여자-문서)
 - [아키텍처 구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)
 - [외부 참고 문헌](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md)
 

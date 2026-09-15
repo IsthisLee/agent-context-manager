@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: cd5edcfe9bf6708d98ad3b755503551c17be3f81ba99c089b6a658a0615bf0d5 -->
+<!-- agctx-doc-sources-sha256: b50bb42fd6568c19443cad5443484ea3e7afc8d05123d97a1912325f9ae4d87b -->
 
 agctx는 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -91,16 +91,15 @@ agent-context-manager/
 │   ├── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행
 │   └── skills-smoke.ts          # skills CLI로 스킬을 임시 프로젝트에 설치해 위치 확인
 ├── docs/
-│   ├── README.md                # 문서 탐색 시작점
-│   ├── product-direction.md     # 제품 방향 정본
-│   ├── architecture/            # 현재 채택된 구조
+│   ├── README.md                # 문서 입구: 사용 흐름·사용자 문서·기여자 문서·ADR 색인
+│   ├── getting-started/         # 설치와 빠른 시작
+│   ├── guides/                  # 상황별 사용 절차
+│   ├── concepts/                # 동작 원리와 이유
+│   ├── reference/               # CLI·종료 코드·파일 형식·지원 에이전트·문제 해결
+│   ├── faq.md                   # 자주 묻는 질문
+│   ├── contributing/            # 제품 방향·아키텍처·테스트·릴리스·문서 게이트·에이전트 추가
 │   ├── discussion/              # 구현 계획·논의·계약
 │   ├── adr/                     # 장기 설계 결정 기록
-│   ├── usage-guide.md           # 설치부터 동기화까지의 사용 가이드
-│   ├── workflow.md              # 사용 절차 요약과 명령 소유권
-│   ├── cli-reference.md         # 명령·옵션·TUI·자동화 정본
-│   ├── implementation-principles.md # npm·Node.js·CLI 원리와 구현의 연결
-│   ├── repository-operations.md # 품질 게이트·릴리스·보안 운영
 │   └── references.md            # 외부 근거와 비교 자료
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본
 ├── README.md                    # npm 패키지 소개(영어는 README.en.md)

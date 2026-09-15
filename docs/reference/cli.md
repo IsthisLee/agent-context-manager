@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: a34dd87c3b88027774a5a16fb14ef7013303fc7a35c18d0b5af74120be462534 -->
+<!-- agctx-doc-sources-sha256: 7f9c9f8557a2bb474f88b9cea47bb275ee4f8338c911be238a7c4e2f109ce92d -->
 
 ## 설치와 실행
 
@@ -64,18 +64,7 @@ Next: Did you mean agctx profile list?
 
 ### 종료 코드
 
-| 코드 | 뜻 | 대표 상황 |
-| --- | --- | --- |
-| 0 | 성공 | 계획만 출력했거나 이미 최신인 경우도 포함 |
-| 1 | 뒤처짐 | `check`·`repos status`: 이 컴퓨터의 프로필이나 원천 저장소에 기록보다 새 버전이 있음, 커밋하지 않은 프로필 수정으로 적용함. `repos sync`가 관리 파일의 커밋하지 않은 변경 때문에 건너뛴 저장소 |
-| 2 | 관리 영역 충돌 | `apply`·`sync`·`resolve`가 밖에서 고친 관리 영역을 만남, APM 기본 모드가 만든 `AGENTS.md`·`CLAUDE.md`에 쓰려 함, `check`의 관리 영역 불일치, `pull`·`push`에서 커밋하지 않은 변경·갈라짐·원격보다 뒤처짐 |
-| 3 | 숨은 문자 | 받을 프로필, 적용할 프로필, 관리 파일에 사람에게 보이지 않는 문자가 있음 |
-| 4 | 전달 누락 | `explain`: 어느 에이전트에도 닿지 않는 프로젝트 지침 파일이 있음. `verify`: 받아야 할 파일이 세션 기록이나 probe에서 확인되지 않음 |
-| 64 | 사용법 오류 | 알 수 없는 명령·옵션, 인자 누락, 없는 프로필, 적용하지 않은 프로젝트, 확인할 수 없는 환경에서 `--yes` 없음 |
-| 69 | 외부 도구·네트워크·인증 불가 | `git`이 없음, 원격 접근·인증 실패, VS Code CLI `code`가 없음, 고정한 커밋이 로컬에 없음, `verify --probe`의 에이전트 CLI가 없거나 실패함 |
-| 70 | 그 밖의 오류 | 심볼릭 링크 대상 거부 같은 파일 시스템 오류 |
-
-결과가 여러 개 겹치면 3 > 2 > 1 순서로 가장 심각한 코드를 돌려준다. 명령마다 돌려줄 수 있는 코드는 `--help`의 마지막 줄에 있다. 결정 근거는 [ADR 0016](adr/0016-command-contract.md)이다.
+명령이 돌려주는 코드와 뜻은 [종료 코드](exit-codes.md)에 있다. 명령 하나가 돌려줄 수 있는 코드는 `agctx <명령> --help`의 마지막 줄에 있다. 결과가 여러 개 겹치면 3 > 2 > 1 순서로 가장 심각한 코드를 돌려준다.
 
 ### `--json` 출력
 
@@ -288,7 +277,7 @@ Claude Code reads CLAUDE.md, not AGENTS.md, so this file brings in the AGENTS.md
 <!-- agctx:managed:end -->
 ```
 
-**APM이 만든 파일:** Microsoft APM의 기본 모드가 만든 `AGENTS.md`나 `CLAUDE.md`(처음 다섯 줄에 APM 생성 표시)에는 쓰지 않고 종료 코드 2로 멈춘다. 다음 `apm compile`이 agctx가 쓴 내용을 덮어쓰기 때문이다. `AGENTS.md`의 프로젝트 영역에 둔 APM `managed_section` 블록(`<!-- apm:start -->`~`<!-- apm:end -->`)은 그대로 둔다. 함께 쓰는 절차는 [사용 가이드](usage-guide.md#apm과-함께-쓰기)에 있다.
+**APM이 만든 파일:** Microsoft APM의 기본 모드가 만든 `AGENTS.md`나 `CLAUDE.md`(처음 다섯 줄에 APM 생성 표시)에는 쓰지 않고 종료 코드 2로 멈춘다. 다음 `apm compile`이 agctx가 쓴 내용을 덮어쓰기 때문이다. `AGENTS.md`의 프로젝트 영역에 둔 APM `managed_section` 블록(`<!-- apm:start -->`~`<!-- apm:end -->`)은 그대로 둔다. 함께 쓰는 절차는 [APM과 함께 쓰기](../guides/apm-coexistence.md)에 있다.
 
 ```bash
 $ agctx profile apply team-backend . --dry-run
@@ -298,24 +287,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 
 적용한 프로필 버전은 `agctx.project.json`에 기록한다. 프로필 폴더가 Git 저장소이면 `source`에 원격 URL·브랜치·커밋을 적는다(URL의 사용자 정보와 토큰은 지운다). 프로필의 `AGENTS.md`·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`, `--pin`이면 `pin: true`를 더한다. 로컬 프로필은 `source`를 기록하지 않는다. `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)도 기록해, 다른 이름의 폴더로 clone한 저장소나 임시 worktree에서도 같은 파일이 나온다(`package.json`에 `name`이 있으면 그 이름이 먼저다). 적용한 저장소는 이 컴퓨터의 저장소 목록에도 기록된다([`repos list`](#repos-list)).
 
-```json
-{
-  "schemaVersion": 2,
-  "profile": "team-backend",
-  "projectName": "orders-api",
-  "source": {
-    "git": "/work/team-backend.git",
-    "branch": "main",
-    "commit": "39ca6e115f85ffa4178c86326f24c313253a4c9e"
-  },
-  "pin": true,
-  "managedHashes": {
-    "AGENTS.md": "e60685b9…",
-    "CLAUDE.md": "b4a3d190…",
-    ".agents/rules/agctx.md": "df4f0e9c…"
-  }
-}
-```
+기록하는 필드와 예시는 [파일 형식과 저장 위치](file-formats.md#agctxprojectjson)에 있다.
 
 - **`--pin`:** Git 프로필이고 커밋하지 않은 수정이 없어야 한다. 아니면 종료 코드 64로 멈추고 연결하거나 커밋할 명령을 안내한다. 고정한 프로젝트의 `sync`는 기록한 커밋을 유지하므로, 새 커밋으로 옮기려면 `apply --pin`을 다시 실행한다.
 - **고정 해제:** 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.
@@ -331,7 +303,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 - 적용할 프로필 내용에 숨은 문자가 있으면 파일을 쓰지 않고 종료 코드 3으로 멈춘다.
 - 확장 섹션 제목은 `## 4. 프로젝트 규칙 확장 (SSOT)`(ko) 또는 `## 4. Project rule extensions (SSOT)`(en)이며 두 로케일을 모두 인식한다.
 - 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 `## Existing project guidance` 아래로 옮겨 보존한다.
-- 기록된 관리 영역을 밖에서 고친 프로젝트에서는 `apply`도 `sync`와 같이 파일을 쓰지 않고 `Managed file changed outside agctx: <파일 목록>`과 종료 코드 2로 멈춘다. 다음 단계로 차이를 볼 명령(`profile sync --dry-run`)과 푸는 명령(`profile resolve`)을 알려 준다. 푸는 절차는 [사용 가이드](usage-guide.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
+- 기록된 관리 영역을 밖에서 고친 프로젝트에서는 `apply`도 `sync`와 같이 파일을 쓰지 않고 `Managed file changed outside agctx: <파일 목록>`과 종료 코드 2로 멈춘다. 다음 단계로 차이를 볼 명령(`profile sync --dry-run`)과 푸는 명령(`profile resolve`)을 알려 준다. 푸는 절차는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ### `profile sync`
 
@@ -375,10 +347,10 @@ agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]
 - **마지막 적용본을 아는 경우:** `.agctx/base/`의 원문 hash가 기록과 같거나 지금 다시 만든 관리 영역의 hash가 기록과 같은 경우다. 관리 영역 안에서 추가·수정한 줄을 관리 영역 밖으로 옮긴다. 포인터 파일은 관리 블록 바로 아래, `AGENTS.md`는 확장 섹션 끝이다. 관리 영역은 현재 프로필로 새로 만들며 그 사이 프로필이 바뀌었어도 같다. 관리 영역 안에서 지운 줄은 되살아나고 파일별 개수를 알린다. 줄을 고친 경우에는 고친 줄이 밖으로 옮겨지고 원래 줄이 되살아나므로 비슷한 문장이 두 번 남을 수 있다.
 - **파일이 없는 경우:** 다시 만든다.
 - **마지막 적용본을 모르는 경우:** base가 없는 상태에서 프로필까지 바뀐 경우다. 사용자 편집과 프로필 변경을 가려낼 수 없으므로 diff를 보여 주고 종료 코드 2로 멈춘다. `--discard`를 주면 백업한 뒤 새로 만든다.
-- **`--edit`:** 아래쪽 Result 창은 자동 해결과 같은 내용, 곧 관리 영역 안에서 추가·수정한 줄을 밖으로 옮긴 파일로 열린다. 위쪽 창에서 변경을 받아들이지 않아도 되며, Result 창을 확인하고 고친 뒤 저장한다. 편집기를 열기 전에 터미널이 확인 순서를 안내한다. 위쪽 `current-<파일>` 창의 강조 영역은 원래 고친 위치이므로 수락하지 않는다. 탭을 닫을 때 VS Code가 처리되지 않은 충돌 경고를 띄우면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 편집기를 닫으면 결과 파일에서 관리 영역 **밖**의 내용만 가져오고 관리 영역은 agctx가 새로 만든다. 저장할 때 포매터가 관리 영역을 바꿔도 적용된다. 결과의 관리 영역 안에 남은 변경은 적용하지 않고 diff와 보존한 결과 파일 경로로 알린다. 결과 파일에서 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 사라졌으면 결과 파일 경로를 알려 주고 종료 코드 2로 멈춘다. `code` 명령을 실행할 수 없으면 설치 방법을 안내하고 종료 코드 69로 멈춘다. 근거는 [ADR 0010](adr/0010-edit-merge-regenerates-managed-area.md)이다.
+- **`--edit`:** 아래쪽 Result 창은 자동 해결과 같은 내용, 곧 관리 영역 안에서 추가·수정한 줄을 밖으로 옮긴 파일로 열린다. 위쪽 창에서 변경을 받아들이지 않아도 되며, Result 창을 확인하고 고친 뒤 저장한다. 편집기를 열기 전에 터미널이 확인 순서를 안내한다. 위쪽 `current-<파일>` 창의 강조 영역은 원래 고친 위치이므로 수락하지 않는다. 탭을 닫을 때 VS Code가 처리되지 않은 충돌 경고를 띄우면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 편집기를 닫으면 결과 파일에서 관리 영역 **밖**의 내용만 가져오고 관리 영역은 agctx가 새로 만든다. 저장할 때 포매터가 관리 영역을 바꿔도 적용된다. 결과의 관리 영역 안에 남은 변경은 적용하지 않고 diff와 보존한 결과 파일 경로로 알린다. 결과 파일에서 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 사라졌으면 결과 파일 경로를 알려 주고 종료 코드 2로 멈춘다. `code` 명령을 실행할 수 없으면 설치 방법을 안내하고 종료 코드 69로 멈춘다. 근거는 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)이다.
 - 풀 수 없는 충돌이 하나라도 남으면 어떤 파일도 쓰지 않는다. 쓸 때는 관리 hash와 `.agctx/base/`를 함께 갱신한다.
 
-`profile list`의 관리 메뉴에서는 `프로젝트 충돌 해결`을 고른다. 경로를 고르면 계획을 먼저 보여 주고 자동 해결·VS Code에서 병합·백업 후 다시 생성 중 하나를 선택한다. 결정 근거는 [ADR 0008](adr/0008-managed-conflict-recovery.md)에 있다.
+`profile list`의 관리 메뉴에서는 `프로젝트 충돌 해결`을 고른다. 경로를 고르면 계획을 먼저 보여 주고 자동 해결·VS Code에서 병합·백업 후 다시 생성 중 하나를 선택한다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)에 있다.
 
 ### `profile clone`
 
@@ -535,7 +507,7 @@ agctx check [--refresh] [<project>]
 - 이 컴퓨터에 프로필이 있으면 기록한 버전(고정했으면 기록한 커밋)으로 다시 만든 결과와 비교한다.
 - CI처럼 프로필이 없으면 그 비교를 건너뛰고 경고한다. Git 프로필로 적용한 저장소라면 `--refresh`로 원격과 비교한다. 원격 접근이 실패하면 69다.
 - 아직 적용하지 않은 프로젝트는 64로 끝나고 `profile apply`를 안내한다.
-- CI 설정 예시는 [사용 가이드](usage-guide.md#ci에서-확인하기)에 있다.
+- CI 설정 예시는 [CI와 자동화에서 쓰기](../guides/ci.md#ci에서-확인하기)에 있다.
 
 ```bash
 $ agctx check /work/orders-api          # 프로필이 없는 CI
@@ -575,7 +547,7 @@ agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
 - `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`, 규칙으로 보이는 줄을 3줄 이상 함께 담은 두 파일(하나는 세션 시작에 읽는 파일)이 같은 에이전트에 들어가는 중복이 여기에 해당한다.
 - Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 파일(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`)은 마지막에 목록으로 보여 준다.
 - 사용자 수준 파일(`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md` 등)도 함께 보여 주지만 `missing`으로 판정하지 않는다. `CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 설정했으면 그 폴더를 본다.
-- 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다.
+- 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](../references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다.
 
 아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`, `trigger: glob` 규칙 `.agents/rules/payments.md`, `.cursorrules`를 더한 뒤 실행한 결과다.
 
@@ -733,7 +705,7 @@ claude       pass         session log /Users/me/.claude/projects/-work-shop/0f1c
   delivered  AGENTS.md
 ```
 
-`--json`이면 `data.agents[]`에 `agent`·`status`·`evidence`(`session-log`·`probe`·`none`)·`source`(기록 파일이나 실행한 명령)·`exitCode`·`expected`·`delivered`·`missing`·`stale`·`error`가 들어간다. 결정 근거는 [ADR 0019](adr/0019-explain-verify-and-agent-skills.md)다.
+`--json`이면 `data.agents[]`에 `agent`·`status`·`evidence`(`session-log`·`probe`·`none`)·`source`(기록 파일이나 실행한 명령)·`exitCode`·`expected`·`delivered`·`missing`·`stale`·`error`가 들어간다. 결정 근거는 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)다.
 
 ### `repos list`
 
@@ -896,9 +868,7 @@ agctx config lang <ko|en>
 
 ## 저장 위치
 
-프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 지침 `AGENTS.md`로 저장된다. Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다. `verify`는 `CODEX_HOME`(기본 `~/.codex`)과 `CLAUDE_CONFIG_DIR`(기본 `~/.claude`) 아래의 세션 기록을 읽기만 한다.
-
-프로젝트에는 `AGENTS.md`, `CLAUDE.md`, `.agents/rules/agctx.md`, `agctx.project.json`(바인딩한 프로필·프로젝트 이름·적용 버전·관리 영역 hash), `.agctx/`(base·backups)가 생긴다.
+프로필·언어 설정·저장소 목록·프로젝트에 생기는 파일의 위치와 형식은 [파일 형식과 저장 위치](file-formats.md)에 있다.
 
 ## TUI와 자동화 선택
 
@@ -924,7 +894,7 @@ agctx profile remove company --yes
 
 ## 관련 문서
 
-- [사용 가이드](usage-guide.md)
-- [사용자 워크플로](workflow.md)
-- [현재 아키텍처](architecture/)
-- [제품 방향](product-direction.md)
+- [빠른 시작](../getting-started/quick-start.md)
+- [사용 흐름](../README.md#사용-흐름)
+- [현재 아키텍처](../contributing/architecture.md)
+- [제품 방향](../contributing/product-direction.md)

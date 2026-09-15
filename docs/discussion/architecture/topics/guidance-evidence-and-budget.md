@@ -24,7 +24,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 선행 작업 | [지침 카탈로그](../../../architecture/guidance-catalog.md)로 배포 문구의 정본을 한 곳에 모은 작업, [ADR 0005](../../../adr/0005-guidance-level-semantics.md)의 적용 수준 정의 |
+| 선행 작업 | [지침 카탈로그](../../../contributing/guidance-catalog.md)로 배포 문구의 정본을 한 곳에 모은 작업, [ADR 0005](../../../adr/0005-guidance-level-semantics.md)의 적용 수준 정의 |
 | 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) (Implemented), [지침 적용 수준의 의미 정의](guidance-level-semantics.md) (Implemented) |
 | 후속 제안 | 항목별 문구 구체화(6개 항목마다), 필요할 때만 읽히는 지침 형태로의 분리([프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다) |
 | 연관 제안 | [스코프 확장과 지침 합성](scope-composition.md)(여러 계층을 합치면 분량도 합산된다), [문서 정확성 자동 리뷰](doc-accuracy-review.md) |
@@ -60,7 +60,7 @@ agctx가 배포하는 기본 지침은 사용자가 에이전트 지침을 처�
 
 ## 현재 동작과 빈 곳
 
-`profile setup`은 6개 항목의 문구를 프로필 `AGENTS.md`의 guidance 블록으로 생성한다. 배포 문구의 정본은 [지침 카탈로그](../../../architecture/guidance-catalog.md)이고 실제 문자열은 `bin/i18n.mjs`에 있다.
+`profile setup`은 6개 항목의 문구를 프로필 `AGENTS.md`의 guidance 블록으로 생성한다. 배포 문구의 정본은 [지침 카탈로그](../../../contributing/guidance-catalog.md)이고 실제 문자열은 `bin/i18n.mjs`에 있다.
 
 2026-09-14 main `73d03c2`에서 측정한 분량은 다음과 같다.
 
@@ -116,7 +116,7 @@ flowchart TD
 | --- | --- | --- |
 | 기본 행동과 다름 | 이 문장을 지우면 에이전트가 실수하는가? | Anthropic best practices: "Would removing this cause Claude to make mistakes?" |
 | 구체성 | 지켰는지 확인할 수 있는가? | Claude Code memory 문서의 "Use 2-space indentation" 예시 |
-| 공통성 | 어떤 프로젝트에도 성립하는가? | 프로필의 공통 지침과 프로젝트 도메인 지침을 나누는 [제품 방향](../../../product-direction.md), 코드를 읽어 알 수 있는 내용은 빼라는 Anthropic 권고 |
+| 공통성 | 어떤 프로젝트에도 성립하는가? | 프로필의 공통 지침과 프로젝트 도메인 지침을 나누는 [제품 방향](../../../contributing/product-direction.md), 코드를 읽어 알 수 있는 내용은 빼라는 Anthropic 권고 |
 | 근거 | 아래 등급의 근거가 있는가? | 이 제안의 원칙 |
 
 ### 근거 등급
@@ -240,6 +240,6 @@ $ agctx profile sync /path/to/project
 ## 영향과 문서 정합화
 
 - 확정되면 ADR을 추가하고, `docs/product-direction.md`에 "기본 지침은 확실한 근거에 기반한다"는 원칙을 반영한다.
-- 문구를 바꾸면 [지침 카탈로그](../../../architecture/guidance-catalog.md)와 `bin/i18n.mjs`를 같은 변경에서 고치고, 인용 원문은 `references.md`에 둔다.
-- 경고를 구현하면 [CLI Reference](../../../cli-reference.md), [사용 가이드](../../../usage-guide.md), `CHANGELOG.md`를 갱신한다.
+- 문구를 바꾸면 [지침 카탈로그](../../../contributing/guidance-catalog.md)와 `bin/i18n.mjs`를 같은 변경에서 고치고, 인용 원문은 `references.md`에 둔다.
+- 경고를 구현하면 [CLI Reference](../../../reference/cli.md), [빠른 시작](../../../getting-started/quick-start.md), `CHANGELOG.md`를 갱신한다.
 - 기존 사용자: 문구가 바뀌어도 기존 프로필은 자동으로 바뀌지 않는다. `profile setup`을 다시 실행하면 guidance 블록이 바뀌고 `profile sync`로 프로젝트에 반영된다. guidance 블록 밖에 쓴 내용은 그대로 남는다.

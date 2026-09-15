@@ -1,18 +1,18 @@
 # 기능 구현 메커니즘
 
-**문서 유형:** 내부 동작 메커니즘 (유지보수자용). 현재 구현된 각 기능이 코드 안에서 어떻게 동작하는지를 기능 단위로 설명한다. npm·Node.js·CLI가 왜 그렇게 도는지의 일반 원리는 [구현 원리](../implementation-principles.md)에, 현재 구조·소유권의 정본은 [현재 아키텍처](README.md)에 있다. 이 문서는 그 사이, 이 패키지 고유의 로직을 기능별로 채운다.
+**문서 유형:** 내부 동작 메커니즘 (유지보수자용). 현재 구현된 각 기능이 코드 안에서 어떻게 동작하는지를 기능 단위로 설명한다. npm·Node.js·CLI가 왜 그렇게 도는지의 일반 원리는 [구현 원리](implementation-principles.md)에, 현재 구조·소유권의 정본은 [현재 아키텍처](architecture.md)에 있다. 이 문서는 그 사이, 이 패키지 고유의 로직을 기능별로 채운다.
 
 **작성·검증 기준:** `agent-context-manager`(게시 전) · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: a34dd87c3b88027774a5a16fb14ef7013303fc7a35c18d0b5af74120be462534 -->
+<!-- agctx-doc-sources-sha256: 7f9c9f8557a2bb474f88b9cea47bb275ee4f8338c911be238a7c4e2f109ce92d -->
 
 ## 읽는 법
 
 - 다루는 것은 **CLI 소스(`src/`)의 로직**이다. 배포본 `dist/`는 이 소스를 컴파일한 것이라 동작이 같다. 각 절은 하나의 기능·메커니즘을 맡고 `src/` 모듈의 실제 함수에 대응한다. 다이어그램은 흐름을, 코드블록은 그 흐름을 만드는 실제 구현을 보여 준다.
-- 다루지 않는 것: 생태계 일반 원리([구현 원리](../implementation-principles.md)), 현재 구조·파일 트리·소유권 표([현재 아키텍처](README.md)), 사용자 관점 명령·옵션·종료 코드 표([CLI Reference](../cli-reference.md)), 사용 흐름([사용자 워크플로](../workflow.md)). 여기서는 이 계약들을 다시 정의하지 않고 원리 설명에 필요한 만큼만 인용한다.
+- 다루지 않는 것: 생태계 일반 원리([구현 원리](implementation-principles.md)), 현재 구조·파일 트리·소유권 표([현재 아키텍처](architecture.md)), 사용자 관점 명령·옵션·종료 코드 표([CLI Reference](../reference/cli.md)), 사용 흐름([사용 흐름](../README.md#사용-흐름)). 여기서는 이 계약들을 다시 정의하지 않고 원리 설명에 필요한 만큼만 인용한다.
 - 마커: 프로필 지침용 `<!-- agctx:guidance:* -->`와 프로젝트 산출물용 `<!-- agctx:managed:* -->`는 서로 다른 계층이다. 아래에서 구분해 적는다.
 
 ## 모듈 지도
@@ -402,7 +402,7 @@ return {
 };
 ```
 
-- **종료 코드:** 번호는 `EXIT`(`src/shared/errors.ts:2-11`)에 있고 뜻은 [CLI Reference](../cli-reference.md#종료-코드)가 정본이다. 결과 상태(1·2·3)는 처리기가 `outcome.exitCode`로 돌려주거나(`check`) 오류로 던지고(충돌·숨은 문자), 호출 실패(64·69·70)는 `CliError`로 던진다. 여러 결과가 겹치면 `worstExitCode`(`src/shared/errors.ts:16-19`)가 3 > 2 > 1 순서로 고른다. 성공하면 0이다.
+- **종료 코드:** 번호는 `EXIT`(`src/shared/errors.ts:2-11`)에 있고 뜻은 [종료 코드](../reference/exit-codes.md)가 정본이다. 결과 상태(1·2·3)는 처리기가 `outcome.exitCode`로 돌려주거나(`check`) 오류로 던지고(충돌·숨은 문자), 호출 실패(64·69·70)는 `CliError`로 던진다. 여러 결과가 겹치면 `worstExitCode`(`src/shared/errors.ts:16-19`)가 3 > 2 > 1 순서로 고른다. 성공하면 0이다.
 
 ## 11. TUI 흐름 배선
 
@@ -463,7 +463,7 @@ export async function confirmChange(parsed: ParsedArguments, question: string, r
 
 ## 13. 검증 하네스와의 대응
 
-각 메커니즘은 대응하는 eval로 강제된다(파일명 기준). 검증의 목적·증거 범위·한계 정본은 [현재 아키텍처](README.md)와 [공개 저장소 운영](../repository-operations.md)이다.
+각 메커니즘은 대응하는 eval로 강제된다(파일명 기준). 검증의 목적·증거 범위·한계 정본은 [현재 아키텍처](architecture.md)와 [문서 게이트](doc-gate.md)이다.
 
 | 메커니즘 | 대응 eval |
 | --- | --- |
@@ -886,9 +886,9 @@ flowchart TD
 
 ## 관련 문서
 
-- [구현 원리](../implementation-principles.md): npm·Node.js·CLI 일반 원리와 이 패키지의 연결(생태계 관점)
-- [현재 아키텍처](README.md): 현재 구현된 구조·소유권·검증 경계의 정본
-- [제품 방향](../product-direction.md): 목표·범위·단계별 완료 기준
-- [사용자 워크플로](../workflow.md): 프로필 생성부터 프로젝트 적용까지의 사용 흐름
-- [CLI Reference](../cli-reference.md): 명령어·옵션·종료 코드·TUI·자동화 방식
-- [공개 저장소 운영](../repository-operations.md): 품질 게이트·릴리스·보안 정책, 문서 소스 해시 게이트
+- [구현 원리](implementation-principles.md): npm·Node.js·CLI 일반 원리와 이 패키지의 연결(생태계 관점)
+- [현재 아키텍처](architecture.md): 현재 구현된 구조·소유권·검증 경계의 정본
+- [제품 방향](product-direction.md): 목표·범위·단계별 완료 기준
+- [사용 흐름](../README.md#사용-흐름): 프로필 생성부터 프로젝트 적용까지의 사용 흐름
+- [CLI Reference](../reference/cli.md): 명령어·옵션·종료 코드·TUI·자동화 방식
+- [문서 게이트](doc-gate.md): 품질 게이트·릴리스·보안 정책, 문서 소스 해시 게이트

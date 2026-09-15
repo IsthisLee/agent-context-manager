@@ -1,13 +1,13 @@
 # 구현 원리
 
-**문서 유형:** 생태계 원리 해설 (입문자·기여자용). npm·Node.js·CLI 일반 원리를 이 패키지 구현에 연결해 전체 그림을 설명한다. 현재 구현된 각 기능의 내부 로직은 [기능 구현 메커니즘](architecture/implementation-mechanics.md)이 정본이다. 이 문서는 원리와의 연결에 필요한 만큼만 인용한다.
+**문서 유형:** 생태계 원리 해설 (입문자·기여자용). npm·Node.js·CLI 일반 원리를 이 패키지 구현에 연결해 전체 그림을 설명한다. 현재 구현된 각 기능의 내부 로직은 [기능 구현 메커니즘](implementation-mechanics.md)이 정본이다. 이 문서는 원리와의 연결에 필요한 만큼만 인용한다.
 
 **작성·검증 기준:** `agent-context-manager`(게시 전) · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 24745820880c8e1ccb23fcc52279ec6c8f33f43f936ac061d3f7ab83b9854a30 -->
+<!-- agctx-doc-sources-sha256: 8f94c038ab92c9ed237115f2826c86f8f9f61b1998d0c9325cbe94d9a809c610 -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -16,7 +16,7 @@
 - **일반 원리**와 **agctx의 실제 구현**을 각 항목에서 명확히 구분한다. 일반 원리는 Node.js·npm 생태계 전반의 이야기이고, `이 패키지에서의 적용 예시`만 이 저장소의 실제 코드를 근거로 한다.
 - 코드로 확인되지 않는 값(설치 경로 등 환경마다 달라지는 것)은 **“현재 저장소에서 확인되지 않음”**으로 표시한다.
 - 명령을 실행하는 주체가 **사용자**인지, 처리하는 주체가 **agctx 내부 코드**인지 구분해서 적는다.
-- 사용자·워크플로·아키텍처의 정본은 [사용자 워크플로](workflow.md), [CLI Reference](cli-reference.md), [현재 아키텍처](architecture/), [제품 방향](product-direction.md)이다. 이 문서는 그 계약을 다시 정의하지 않고, 원리 설명에 필요한 만큼만 인용한다.
+- 사용 흐름·명령·아키텍처의 정본은 [문서 안내](../README.md#사용-흐름), [CLI Reference](../reference/cli.md), [현재 아키텍처](architecture.md), [제품 방향](product-direction.md)이다. 이 문서는 그 계약을 다시 정의하지 않고, 원리 설명에 필요한 만큼만 인용한다.
 
 배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm tarball에 담기는 것은 `package.json`의 `files`에 적힌 `dist/`, `templates/`, `README.md`, `LICENSE`와 npm이 메타데이터로 항상 넣는 `package.json`이다(`package.json:18-23`). `dist/`는 `src/`의 TypeScript를 게시 직전에 컴파일한 JavaScript다([4번](#4-shebang과-nodejs-실행-원리) 참고). 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 파일이 아니라 설치 시 별도로 내려받아 구성된다. `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
 
@@ -75,8 +75,8 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 권장 설치는 전역 설치다. [README](../README.md)의 시작하기와 [CLI Reference](cli-reference.md#설치와-실행) 모두 `npm install -g agent-context-manager`를 안내한다.
-- 이 저장소 자체를 개발할 때는 설치와 컴파일 없이 `node src/agctx.ts`로 직접 실행한다([CLI Reference](cli-reference.md#설치와-실행), 원리는 [4번](#4-shebang과-nodejs-실행-원리)).
+- 권장 설치는 전역 설치다. [README](../../README.md)의 시작하기와 [CLI Reference](../reference/cli.md#설치와-실행) 모두 `npm install -g agent-context-manager`를 안내한다.
+- 이 저장소 자체를 개발할 때는 설치와 컴파일 없이 `node src/agctx.ts`로 직접 실행한다([CLI Reference](../reference/cli.md#설치와-실행), 원리는 [4번](#4-shebang과-nodejs-실행-원리)).
 - 설치와 실행을 실제로 재현하는 근거는 `tools/package-smoke.ts`다. 이 스크립트는 tarball을 임시 소비자 디렉터리에 **로컬 설치**하고(`tools/package-smoke.ts:39`), `node_modules/.bin/`에 생긴 실행 파일을 직접 호출해 동작을 확인한다(`tools/package-smoke.ts:40-49`).
 
 ### 사용자가 알아야 할 주의점
@@ -133,7 +133,7 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 - 진입점 `src/agctx.ts`의 첫 줄은 `#!/usr/bin/env node`다(`src/agctx.ts:1`). TypeScript 컴파일러는 이 줄을 그대로 두므로 `dist/agctx.js`의 첫 줄도 같다.
 - `package.json:14`의 `"type": "module"` 때문에 Node는 `.js` 파일을 ES 모듈로 해석한다. 그래서 컴파일한 `dist/`에서 `import` 문법이 그대로 동작한다(`src/commands/cli.ts:3-12`). Node는 `.ts` 파일의 모듈 방식도 `.js`와 같은 규칙으로 정한다.
 
-**TypeScript 소스와 배포 JavaScript.** 소스는 `src/`의 TypeScript이고, 사용자가 설치하는 것은 이를 컴파일한 `dist/`의 JavaScript다. 두 실행 경로가 나뉘는 이유는 Node의 타입 제거 실행에 조건이 있기 때문이다([외부 근거](references.md#typescript-실행과-배포-근거)).
+**TypeScript 소스와 배포 JavaScript.** 소스는 `src/`의 TypeScript이고, 사용자가 설치하는 것은 이를 컴파일한 `dist/`의 JavaScript다. 두 실행 경로가 나뉘는 이유는 Node의 타입 제거 실행에 조건이 있기 때문이다([외부 근거](../references.md#typescript-실행과-배포-근거)).
 
 ```mermaid
 flowchart LR
@@ -188,7 +188,7 @@ flowchart TD
 ### 사용자가 알아야 할 주의점
 
 - 같은 명령이라도 TTY 여부에 따라 동작이 달라진다. 터미널에서는 TUI가, 파이프·CI에서는 비대화형 경로가 쓰인다(예: `src/tui/profile.ts:34-38`의 stdin 입력 처리). 파일을 바꾸는 명령은 터미널에서는 확인을 묻고, 파이프·CI에서는 `--yes`가 있어야 진행한다(`src/commands/options.ts:64-71`).
-- 인자를 잘못 주면 도움말이나 오류로 빠진다. 자동화 시에는 CLI Reference의 옵션 규칙을 따른다([CLI Reference](cli-reference.md)).
+- 인자를 잘못 주면 도움말이나 오류로 빠진다. 자동화 시에는 CLI Reference의 옵션 규칙을 따른다([CLI Reference](../reference/cli.md)).
 
 ---
 
@@ -208,12 +208,12 @@ flowchart TD
 
 - 프로필 데이터의 기준 위치는 `agctxHome()`(`src/shared/home.ts:11-13`)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `src/profile/store.ts:35-53`, `createProfile` `src/profile/store.ts:55-67`).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`applyOrSync` `src/commands/handlers.ts:63-94`, `planProject` `src/project/plan.ts:72-143`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`applyOrSync` `src/commands/handlers.ts:63-94`, `planProject` `src/project/plan.ts:72-143`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - `AGCTX_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.ts:41`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts:11-18`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`src/profile/store.ts:84-88`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
+- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts:11-18`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`src/profile/store.ts:84-88`, [프로필 삭제](../concepts/profiles.md#프로필-삭제)).
 
 ---
 
@@ -318,9 +318,9 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 이 도구는 여러 프로젝트에 지침을 적용하는 성격이라 **전역 설치**를 기본으로 안내한다([CLI Reference](cli-reference.md#설치와-실행)).
+- 이 도구는 여러 프로젝트에 지침을 적용하는 성격이라 **전역 설치**를 기본으로 안내한다([CLI Reference](../reference/cli.md#설치와-실행)).
 - 로컬 설치도 가능함은 스모크 테스트가 보여 준다. tarball을 소비자 폴더에 로컬 설치하고 `node_modules/.bin/agctx`로 실행한다(`tools/package-smoke.ts:39-40`).
-- 저장소 개발 시에는 아예 설치하지 않고 `node src/agctx.ts`로 실행한다([CLI Reference](cli-reference.md#설치와-실행)).
+- 저장소 개발 시에는 아예 설치하지 않고 `node src/agctx.ts`로 실행한다([CLI Reference](../reference/cli.md#설치와-실행)).
 
 ### 사용자가 알아야 할 주의점
 
@@ -350,7 +350,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:24-36`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:39-42`, `.github/workflows/publish.yml:19-22`).
-- **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다([CLI Reference](cli-reference.md#설치와-실행)). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
+- **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다([CLI Reference](../reference/cli.md#설치와-실행)). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
 - `npx`를 이 저장소가 요구하는 흐름은 **현재 저장소에서 확인되지 않는다.** README·CLI Reference의 사용 예시는 전역 설치 후 `agctx` 실행을 전제로 한다.
 
 ### 사용자가 알아야 할 주의점
@@ -379,7 +379,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
   ```json
   "files": ["dist", "templates", "README.md", "LICENSE"]
   ```
-- 따라서 TypeScript 소스 `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** [현재 아키텍처](architecture/README.md#저장소-파일-구조)도 같은 사실을 명시한다.
+- 따라서 TypeScript 소스 `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** [현재 아키텍처](architecture.md#저장소-파일-구조)도 같은 사실을 명시한다.
 - 이 경계는 테스트로 강제된다. `evals/package-contents.test.ts`는 tarball에 `README.md`·`dist/agctx.js`·`dist/profile/`·`templates/`가 있고 `src/`·`docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.ts:23-29`).
 
 ### 사용자가 알아야 할 주의점
@@ -403,7 +403,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-각 관문이 코드에서 어떻게 도는지는 [기능 구현 메커니즘](architecture/implementation-mechanics.md)의 6·7·9절이 정본이다. 여기서는 일반 원리와 연결되는 지점만 요약한다.
+각 관문이 코드에서 어떻게 도는지는 [기능 구현 메커니즘](implementation-mechanics.md)의 6·7·9절이 정본이다. 여기서는 일반 원리와 연결되는 지점만 요약한다.
 
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts:13-20`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts:23-40`).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts:43-62`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
@@ -425,8 +425,8 @@ flowchart TD
 
 ### 사용자가 알아야 할 주의점
 
-- **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 충돌 diff 표시와 `profile resolve`(명시적 `--discard` 백업 포함)는 구현됐지만 여러 파일에 걸친 전체 롤백은 아직 구현되지 않았다. 진행 상태의 정본은 [관리 산출물의 안전한 동기화 논의](discussion/architecture/topics/managed-artifact-safety.md)다.
-- 관리 영역을 손으로 고치면 동기화가 중단된다. 프로젝트 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 두어야 보존된다([사용 가이드 3절](usage-guide.md#3-프로젝트에-적용)). 중단을 푸는 절차도 [사용 가이드](usage-guide.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
+- **백업·롤백 관련**: 파일 단위 원자적 교체는 “한 파일이 반쯤 쓰이는 상태”를 막는다. 충돌 diff 표시와 `profile resolve`(명시적 `--discard` 백업 포함)는 구현됐지만 여러 파일에 걸친 전체 롤백은 아직 구현되지 않았다. 진행 상태의 정본은 [관리 산출물의 안전한 동기화 논의](../discussion/architecture/topics/managed-artifact-safety.md)다.
+- 관리 영역을 손으로 고치면 동기화가 중단된다. 프로젝트 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 두어야 보존된다([빠른 시작 3절](../getting-started/quick-start.md#3-프로젝트에-적용)). 중단을 푸는 절차도 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
 - 권한: 대상 파일에 쓰기 권한이 없으면 교체가 실패한다. 프로필 데이터와 프로젝트 파일은 각자 위치의 파일 권한을 따른다.
 
 ---
@@ -448,13 +448,13 @@ flowchart TD
 
 - **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts:77-80`). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts:151-160`).
 - **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts:139-147`).
-- **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts:2-11`). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts:67-86`), 성공하면 0이다. 번호의 뜻은 [CLI Reference](cli-reference.md#종료-코드)에 있다.
+- **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts:2-11`). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts:67-86`), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts:64-71`).
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:30`). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json:26`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json:25`).
 
 ### 사용자가 알아야 할 주의점
 
-- `pnpm run check`는 **agctx 자체**의 형식·문서·CLI 평가를 확인하는 것이지, 대상 프로젝트의 품질이나 에이전트가 생성한 코드의 정확성을 보증하는 명령이 아니다. 이 경계는 README의 "검증의 범위"와 [현재 아키텍처](architecture/README.md#패키지-내부-검증)에 명시돼 있다.
+- `pnpm run check`는 **agctx 자체**의 형식·문서·CLI 평가를 확인하는 것이지, 대상 프로젝트의 품질이나 에이전트가 생성한 코드의 정확성을 보증하는 명령이 아니다. 이 경계는 README의 "검증의 범위"와 [현재 아키텍처](architecture.md#패키지-내부-검증)에 명시돼 있다.
 - 자동화에서는 되돌리기 어려운 작업 전에 `--dry-run`으로 계획을 먼저 확인하는 것이 안전하다.
 
 ---
@@ -527,7 +527,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 
 ### 사용자가 알아야 할 주의점
 
-- OIDC Trusted Publishing이 실제로 동작하려면 npm 쪽 패키지 설정에 이 저장소·워크플로를 신뢰 게시자로 등록해 두어야 한다. **그 등록 상태는 저장소 파일만으로는 보장되지 않으며 현재 저장소에서 확인되지 않는다.** npm 프로젝트 설정에서 별도로 확인해야 한다(공개 저장소 운영 정본: [repository-operations.md](repository-operations.md)).
+- OIDC Trusted Publishing이 실제로 동작하려면 npm 쪽 패키지 설정에 이 저장소·워크플로를 신뢰 게시자로 등록해 두어야 한다. **그 등록 상태는 저장소 파일만으로는 보장되지 않으며 현재 저장소에서 확인되지 않는다.** npm 프로젝트 설정에서 별도로 확인해야 한다(운영 정본: [릴리스와 저장소 운영](releasing.md)).
 - 일반 사용자에게는 인증 방식이 보이지 않는다. 다만 provenance가 붙은 패키지는 어느 저장소·워크플로에서 나왔는지 출처를 확인할 수 있다는 이점이 있다.
 
 ---
@@ -546,7 +546,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 2. **(사용자)** `agctx` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `dist/agctx.js` 실행 → **(agctx)** TTY면 메인 TUI를 연다(`src/commands/cli.ts:41-43`).
 3. **(사용자)** 프로필 생성·설정 선택 → **(agctx)** `~/.agctx/profiles/<name>/`(기본 위치이며 `AGCTX_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `profile.json`과 `AGENTS.md`를 만들고(`src/profile/store.ts:55-67`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`src/profile/setup.ts:19-46`).
 4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts:63-94`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
-5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. agctx는 에이전트 런타임을 실행하지 않는다([사용 가이드 4절](usage-guide.md#4-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
+5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. agctx는 에이전트 런타임을 실행하지 않는다([빠른 시작 6절](../getting-started/quick-start.md#6-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
 6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/commands/handlers.ts:133-137`). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts:68-126`).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
@@ -574,20 +574,20 @@ sequenceDiagram
 ### 이 패키지에서의 적용 예시
 
 - 이 전체 여정이 실제로 이어지는지는 스모크 테스트가 한 번에 재현한다: help 출력 확인 → `profile create` → `profile setup` → `profile apply` → `profile sync` → 결과 파일 존재 확인(`tools/package-smoke.ts:42-54`).
-- 사용자·agctx·에이전트·대상 프로젝트의 책임 구분 정본은 [사용자 워크플로의 “명령의 소유권” 표](workflow.md)와 [제품 방향의 범위·경계](product-direction.md)에 있다.
+- 사용자·agctx·에이전트·대상 프로젝트의 책임 구분 정본은 [“명령의 소유권” 표](../concepts/why-agctx.md#명령의-소유권)와 [제품 방향의 범위·경계](product-direction.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - agctx는 **지침을 만들고 적용·동기화하는 도구**이지, 코드를 대신 작성하거나 에이전트를 실행하는 도구가 아니다([제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
-- 어떤 단계가 실제로 구현됐고 무엇이 후속 작업인지는 [제품 방향의 단계표](product-direction.md)와 [아키텍처 구현 계획](discussion/architecture/)이 정본이다. 이 문서는 이미 구현된 동작만 “현재 동작”으로 설명하고, 미확정 항목은 그렇게 표시한다.
+- 어떤 단계가 실제로 구현됐고 무엇이 후속 작업인지는 [제품 방향의 단계표](product-direction.md)와 [아키텍처 구현 계획](../discussion/architecture/)이 정본이다. 이 문서는 이미 구현된 동작만 “현재 동작”으로 설명하고, 미확정 항목은 그렇게 표시한다.
 
 ---
 
 ## 관련 문서
 
 - [제품 방향](product-direction.md) — 목표·범위·단계별 완료 기준의 정본
-- [현재 아키텍처](architecture/) — 현재 구현된 구조와 소유권
-- [사용자 워크플로](workflow.md) — 프로필 생성부터 프로젝트 적용까지의 사용 흐름
-- [CLI Reference](cli-reference.md) — 명령어·옵션·TUI·자동화 방식
-- [공개 저장소 운영](repository-operations.md) — 품질 게이트·릴리스·보안 정책
-- [아키텍처 구현 계획](discussion/architecture/) — 단계별 계약과 미구현 기능
+- [현재 아키텍처](architecture.md) — 현재 구현된 구조와 소유권
+- [사용 흐름](../README.md#사용-흐름) — 프로필 생성부터 프로젝트 적용까지의 사용 흐름
+- [CLI Reference](../reference/cli.md) — 명령어·옵션·TUI·자동화 방식
+- [문서 게이트](doc-gate.md) — 품질 게이트·릴리스·보안 정책
+- [아키텍처 구현 계획](../discussion/architecture/) — 단계별 계약과 미구현 기능

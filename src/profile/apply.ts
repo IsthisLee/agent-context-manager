@@ -53,7 +53,7 @@ export function readProjectConfig(configPath: string): ProjectConfig {
   }
 }
 
-export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#관리-영역을-고쳐서-멈췄을-때';
+export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때';
 
 export function conflictError(conflicts: readonly ConflictedFile[], targetDir: string): CliError {
   return new CliError('project.conflict', _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }), {

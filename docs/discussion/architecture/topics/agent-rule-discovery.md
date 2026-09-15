@@ -131,7 +131,7 @@ flowchart TD
 #### 구현 기록: explain의 읽기 전용 규칙 위치 보고 (2026-09-16)
 
 * **결정:** [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md). 스캔은 `apply`의 한 단계가 아니라 별도 명령 `agctx explain`으로 둔다. 에이전트마다 실제로 읽는 위치와 함께, Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 위치를 보고한다. 모델링되지 않은 경로에는 쓰지 않는다.
-* **구현:** `src/explain.ts`의 에이전트별 판정과 `UNSUPPORTED` 목록(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`). 사람용 출력의 `Not read by Codex, Claude Code, or Antigravity:` 목록과 `--json`의 `data.unsupported`로 보고한다. 사용법은 [CLI Reference](../../../cli-reference.md#explain)에 있다.
+* **구현:** `src/explain.ts`의 에이전트별 판정과 `UNSUPPORTED` 목록(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`). 사람용 출력의 `Not read by Codex, Claude Code, or Antigravity:` 목록과 `--json`의 `data.unsupported`로 보고한다. 사용법은 [CLI Reference](../../../reference/cli.md#explain)에 있다.
 * **평가:** `evals/explain.test.ts`가 `.cursorrules`와 `trigger: glob` 규칙이 있는 모노레포에서 보고 내용과 종료 코드를 검사한다.
 * **계획과 달라진 점:**
   - "결정·검증 항목"의 `--dry-run` 통합 여부는 별도 명령으로 정했다. 적용하기 전뿐 아니라 적용한 뒤와 CI에서도 같은 보고가 필요하기 때문이다.

@@ -28,7 +28,7 @@
 | 후속 제안 | 원격 업데이트 알림·프로젝트 업데이트 PR 자동화(별도 제안), profile revision pinning·release 정책 |
 | 연관 제안 | [프로젝트 적용](project-application.md), [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md), [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md) |
 | 후속 작업 | CLI·TUI·프로필 목록 메뉴 동등성, 원격 변경 비교 UI, 적용 revision 기록, Git host별 선택적 자동화 검토 |
-| 권장 다음 작업 | 여러 저장소의 상태를 한 번에 확인하고 동기화·PR을 만드는 기능에서 이 문서의 적용 버전 기록(`source`·`pin`)을 재사용한다. |
+| 권장 다음 작업 | 에이전트가 지침 파일을 실제로 읽었는지 확인하는 기능에서 적용 버전 기록을 기대값으로 쓴다. |
 
 ## 목차
 
@@ -221,3 +221,16 @@ GitHub·GitLab 등 특정 호스트의 CI가 Profile 변경을 감지해 프로�
   - clone·pull로 받는 `profile.json`·`AGENTS.md`의 숨은 문자 검사를 더했다(종료 코드 3).
 * **제약:** 잠금 파일이 없어 같은 프로필에 Git 명령을 동시에 실행하면 Git의 오류가 그대로 나온다. 네트워크 제한 시간이 없다. 프로필 metadata에는 아직 안정적인 `id`가 없다. 프로필 저장소에 둔 다른 문서·템플릿은 전달하지도 검사하지도 않는다.
 * **다음 단계:** 여러 저장소의 상태를 한 번에 보고 동기화·PR을 만드는 기능에서 이 기록을 재사용한다.
+
+#### 구현 기록: 여러 저장소 동기화와 프로필 갱신 PR (2026-09-15)
+
+* **결정:** [ADR 0018](../../../adr/0018-multi-repository-sync.md). `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록하고, `repos status`·`sync`·`pr`이 한 번에 다룬다. `repos pr`은 사람이나 예약 봇이 명시적으로 실행하며, 임시 worktree에서 커밋·push한 뒤 `gh`로 PR을 연다.
+* **구현:** `src/repos/registry.ts`·`status.ts`·`sync.ts`·`pr.ts`, `src/check.ts`의 보관함 커밋 비교와 원격 조회 공유, `src/profile/apply.ts`·`src/project/plan.ts`의 `projectName` 기록, `src/tui/main.ts`의 `저장소 상태` 메뉴.
+* **평가:** `evals/repos.test.ts` 5개, `evals/command-contract.test.ts`의 다른 폴더 이름 복사본 1개. gh는 PATH의 가짜 명령으로 대신했다.
+* **계획과 달라진 점:**
+  - 이 문서의 비범위 "Profile 변경을 감지한 자동 project sync 또는 자동 PR 생성" 중 감지와 자동 실행은 여전히 하지 않는다. 대신 사용자가 실행하는 `repos pr`과 예약 워크플로 예시를 제공한다.
+  - 고정한 프로젝트의 `check`는 보관함에 기록보다 새 커밋이 있으면 뒤처짐으로 판정하게 바꿨다. `profile pull` 직후 뒤처짐을 알 수 있어야 하기 때문이다.
+  - 폴더 이름으로 정하던 프로젝트 이름을 `agctx.project.json`에 기록하게 했다. 다른 이름의 폴더로 clone한 팀원과 임시 worktree에서도 결과가 같아야 하기 때문이다.
+* **제약:** 목록은 컴퓨터마다 따로 있고 잠금이 없다. GitHub가 아닌 호스트에서는 push까지만 한다. 실제 GitHub PR 생성은 가짜 gh 평가와 로컬 원격 실행으로만 확인했다.
+* **다음 단계:** 적용 버전 기록을 에이전트 전달 확인의 기대값으로 쓴다.
+

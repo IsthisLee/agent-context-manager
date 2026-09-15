@@ -179,3 +179,18 @@ test('commands that would prompt for a missing argument name it instead when the
     assert.match(args.includes('--json') ? JSON.parse(result.stdout).errors[0].message : result.stderr, usage);
   }
 });
+
+test('a copy in a folder with another name keeps the recorded project name, so check and sync see no change', t => {
+  const { root, project, ok } = sandbox(t);
+  ok(['profile', 'create', 'demo']);
+  ok(['profile', 'apply', 'demo', project, '--yes']);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8')).projectName, 'project');
+
+  // A teammate clones the repository into a folder with another name.
+  const copy = path.join(root, 'teammate-copy');
+  fs.cpSync(project, copy, { recursive: true });
+  ok(['check', copy]);
+  assert.match(ok(['profile', 'sync', copy, '--yes']).stdout, /already up to date/);
+  assert.match(fs.readFileSync(path.join(copy, 'AGENTS.md'), 'utf8'), /\*\*Project:\*\* project/);
+});
+

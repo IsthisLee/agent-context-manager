@@ -51,6 +51,15 @@ export function isGitRoot(dir: string): boolean {
   }
 }
 
+/**
+ * A remote given on the command line: an existing local path becomes absolute, so
+ * git does not read it relative to the profile folder it runs in; URLs stay as typed.
+ */
+export function resolveRemoteLocation(location: string): string {
+  const local = path.resolve(location);
+  return fs.existsSync(local) ? local : location;
+}
+
 /** A remote URL safe to record: user names, passwords, and tokens are removed from URL-style addresses. */
 export function sanitizeRemoteUrl(url: string): string {
   if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(url)) return url;

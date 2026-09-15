@@ -10,6 +10,7 @@
 - 적용 버전 기록과 고정: `apply`·`sync`가 `agctx.project.json`에 `source { git, branch, commit }`와 `uncommitted`를 기록한다. `profile apply --pin`은 현재 커밋에 고정하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 지침으로 다시 만든다. 고정한 프로젝트에 `--pin` 없이 적용하면 경고한다
 - `agctx check [--refresh] [<project>]`: 파일을 바꾸지 않고 관리 영역 충돌(2)·숨은 문자(3)·뒤처짐(1)을 종료 코드로 알린다. 프로필 보관함이 없는 CI에서는 `--refresh`로 원천 브랜치의 최신 커밋과 비교한다
 - 숨은 문자 검사: 양방향 제어 문자·폭 없는 문자·태그 문자·변형 선택자 보충을 `파일:줄:열 U+XXXX 종류`로 보고한다. 받을 프로필, 적용할 프로필, `check`의 관리 파일에 적용한다
+- 여러 저장소: `repos list [--profile <name>] [--prune]`, `repos status [--profile <name>] [--refresh]`, `repos sync [--profile <name>] [--dry-run] [--yes]`, `repos pr [--profile <name>] [--targets <file>] [--base <branch>] [--draft] [--message <text>] [--dry-run] [--yes]`. `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록한다. `repos sync`는 고정한 저장소·관리 파일에 커밋하지 않은 변경이 있는 저장소·충돌한 저장소를 건너뛴다. `repos pr`은 임시 worktree에서 커밋해 `agctx/<프로필>-<커밋>` 브랜치로 push하고 `gh`로 PR을 열며, 열린 PR이나 같은 브랜치가 있으면 만들지 않는다. TUI 메인 메뉴에 `저장소 상태`를 더했다. 근거는 [ADR 0018](docs/adr/0018-multi-repository-sync.md)
 - 모든 명령의 `--json` 결과 문서(stdout에 문서 하나, 안내는 stderr), `agctx <명령> --help`, 잘못 입력한 명령의 제안, `Error:`·`Next:` 형식의 로케일별 오류 문구. 근거는 [ADR 0016](docs/adr/0016-command-contract.md)
 - `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agctx/backups/`에 백업한 뒤 다시 만들고, `--edit`은 자동 해결 결과로 채운 VS Code 3-way merge 편집기를 열고 결과에서 관리 영역 밖의 내용을 가져온다(관리 영역은 다시 만들므로 저장 시 포매터가 바꿔도 된다). `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
 - `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agctx/base/`에 기록하고 `.agctx/.gitignore`로 백업 폴더를 커밋에서 제외
@@ -19,6 +20,8 @@
 - **호환성 파괴:** 종료 코드를 나눴다. 관리 영역 충돌은 1에서 2로, 사용법 오류는 1에서 64로 바뀌고, 외부 도구·네트워크·인증 실패는 69, 그 밖의 오류는 70이다. 알 수 없는 명령은 도움말을 출력하고 0으로 끝나던 것을 비슷한 명령을 제안하고 64로 끝낸다. 근거는 [ADR 0016](docs/adr/0016-command-contract.md)
 - **호환성 파괴:** 터미널이 아닌 환경이나 `--json`에서 `profile apply`·`sync`·`resolve`는 `--yes`가 있어야 파일을 쓴다. 없으면 64로 멈추고 `--yes`를 붙인 명령을 안내한다. 터미널에서는 계획을 출력한 뒤 확인을 받는다. `--dry-run`은 확인 없이 실행한다
 - `agctx.project.json`을 `schemaVersion` 2로 기록한다. 1로 기록된 프로젝트도 그대로 읽는다
+- `agctx.project.json`에 `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)을 기록한다. `package.json`의 `name`이 없으면 폴더 이름보다 이 값을 먼저 써서, 다른 이름의 폴더로 clone한 저장소에서도 `sync`·`check`가 변경을 만들지 않는다
+- 고정한 프로젝트라도 이 컴퓨터의 프로필 보관함에 기록보다 새 커밋이 있으면 `check`가 뒤처짐(1)으로 판정한다
 - 기능 인터페이스 동등성 기준을 나눴다. 특정 프로필을 다루는 명령은 CLI·TUI·프로필 관리 메뉴가 모두 필요하고, 저장소를 검사하는 `check`와 전역 명령은 CLI만 필요하다
 - 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
 
@@ -35,6 +38,8 @@
 
 ### Fixed
 
+- 프로필이 보관함에 있어도 관리 영역 충돌이 있으면 `check`가 "보관함에 프로필이 없다"고 잘못 경고하던 문제를 고침
+- `profile connect`·`profile clone`에 현재 폴더 기준 상대 경로를 주면 프로필 폴더 기준으로 해석해 원격을 찾지 못하던 문제를 고침
 - Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록한다
 - 에이전트 규칙 파일의 frontmatter가 관리 마커 뒤에 놓여 파일 첫 줄에서 시작하지 않던 문제를 고침. 이제 템플릿 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다. 이전 버전이 만든 파일은 다음 `sync`에서 충돌 없이 고쳐진다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
 - Antigravity가 규칙 파일(`.agents/rules/agctx.md`)을 로드하지 않던 문제를 고침. 템플릿에 `trigger: always_on` frontmatter를 추가했다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)

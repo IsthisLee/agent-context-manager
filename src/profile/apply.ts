@@ -18,7 +18,12 @@ export function renderProfileAgents(content: string, profileName: string, projec
   return `${content.trimEnd()}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
-export function getProjectName(targetDir: string): string {
+/**
+ * The project name shown in AGENTS.md: package.json's name, then the name recorded
+ * at the last apply, then the folder name. Recording it keeps a clone in a folder
+ * with another name (a teammate's copy, a temporary worktree) rendering the same files.
+ */
+export function getProjectName(targetDir: string, recorded: string | null = null): string {
   const packagePath = path.join(targetDir, 'package.json');
   if (fs.existsSync(packagePath)) {
     try {
@@ -26,7 +31,7 @@ export function getProjectName(targetDir: string): string {
       if (packageJson.name) return String(packageJson.name);
     } catch {}
   }
-  return path.basename(targetDir);
+  return recorded || path.basename(targetDir);
 }
 
 export function assertProjectDirectory(targetDir: string): void {
@@ -118,7 +123,7 @@ export function planFor(name: string, targetDir: string, pin: boolean | 'keep', 
   const projectConfig = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE));
   const version = profileVersion(profile, projectConfig, pin);
   assertNoHiddenCharacters([{ file: `${name}/AGENTS.md`, content: version.content }]);
-  const projectName = getProjectName(targetDir);
+  const projectName = getProjectName(targetDir, typeof projectConfig.projectName === 'string' ? projectConfig.projectName : null);
   const plan = planProject({
     packageRoot: PACKAGE_ROOT,
     targetDir,

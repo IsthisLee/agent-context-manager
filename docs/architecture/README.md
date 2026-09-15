@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 3ba99ec5a3117ac5699a1fa0b7bc3e698ad91a4fb6fee358511e72ec415348a5 -->
+<!-- agctx-doc-sources-sha256: 184cb6755135c5ccf73ad53b7f0ce9ce714d11eb23af45a2f6325c1c26842492 -->
 
 agctx는 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -31,6 +31,7 @@ flowchart LR
   CLI -->|"base 기록 · resolve 기준"| JBASE
   REMOTE <-->|"profile clone · pull ⇄ push"| PGIT
   CI["CI · agctx check"] -->|"hash · 숨은 문자 · 원천 커밋 비교"| JCONFIG
+  CLI -->|"apply·sync가 기록 · repos 명령이 읽음"| REPOLIST["~/.agctx/repos.json<br/>적용한 저장소 목록"]
   AGENT["AI 에이전트"] -->|"읽고 작업"| JAGENTS
   AGENT --> CODE
 ```
@@ -46,6 +47,7 @@ flowchart LR
 
 - **Git 공유와 적용 버전:** 프로필 폴더가 Git 작업 트리이면 `profile clone`·`status`·`pull`·`push`·`connect`로 원격과 주고받는다. 이 명령들은 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`·`AGENTS.md`를 검증하고 숨은 문자를 검사한 뒤에만 반영하며, pull은 fast-forward만 한다. `apply`·`sync`는 적용한 프로필의 `source { git, branch, commit }`와 고정 여부(`pin`)를 `agctx.project.json`에 기록하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 `AGENTS.md`로 다시 만든다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)이다.
 - **저장소 검사:** `agctx check`는 파일을 바꾸지 않고 관리 영역 hash(충돌 2), 관리 파일의 숨은 문자(3), 프로필이나 원천 저장소보다 뒤처졌는지(1)를 판정한다. 보관함이 없는 CI에서는 `--refresh`가 `git ls-remote`로 원천 브랜치의 최신 커밋과 비교한다.
+- **여러 저장소:** `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록하고, `repos status`·`sync`·`pr`이 이 목록이나 `--targets` 파일의 저장소를 한 번에 다룬다. `repos pr`은 사용자 작업 폴더 대신 임시 worktree(URL은 임시 clone)에서 커밋해 push하고 `gh`로 PR을 연다. 렌더링이 폴더 이름에 흔들리지 않도록 프로젝트 이름을 `agctx.project.json`에 기록한다. 결정은 [ADR 0018](../adr/0018-multi-repository-sync.md)이다.
 
 프로필은 로컬 파일 시스템의 `~/.agctx/profiles/<name>`에 보관하며, 이 폴더가 Git 저장소이면 원격과 공유할 수 있다. 원격 저장소의 권한·리뷰·보호 규칙은 Git 호스트가 맡는다.
 
@@ -63,6 +65,7 @@ agent-context-manager/
 │   ├── profile/                 # 프로필 명령: store(create·list·view·remove)·setup·apply(버전 결정·계획)·resolve·git-profile(clone·status·pull·push·connect)
 │   ├── project/                 # 적용 엔진: 변경 계획·관리 영역 병합과 hash·충돌 편집·VS Code merge
 │   ├── check.ts                 # 저장소 검사(check): 관리 영역 hash·숨은 문자·뒤처짐
+│   ├── repos/                   # 여러 저장소: 목록(repos.json)·상태·동기화·임시 worktree PR
 │   ├── i18n/                    # 로케일 해석·ko/en 메시지·배포 지침 문구
 │   ├── tui/                     # 메인·프로필 관리 화면
 │   └── shared/                  # 프로필 홈·원자적 파일 쓰기·git 실행·숨은 문자 검사·종료 코드·실행 정보·공용 타입
@@ -113,7 +116,8 @@ agent-context-manager/
 | 프로필 `AGENTS.md` | 사용자·조직 | 선택된 공통 지침 정본 |
 | 프로필 Git 원격 | 사용자·조직(Git 호스트) | 권한·리뷰·변경 이력. agctx는 사용자의 Git 인증으로 clone·pull·push만 실행 |
 | 프로젝트 `AGENTS.md` | 대상 프로젝트 | 적용된 공통 지침과 프로젝트 도메인 지침을 담는 최종 지침 파일 |
-| 프로젝트 `agctx.project.json` | agctx가 쓰고 대상 프로젝트가 커밋 | 바인딩한 프로필, 적용 버전(`source`·`pin`·`uncommitted`), 관리 영역 hash |
+| 프로젝트 `agctx.project.json` | agctx가 쓰고 대상 프로젝트가 커밋 | 바인딩한 프로필, 프로젝트 이름, 적용 버전(`source`·`pin`·`uncommitted`), 관리 영역 hash |
+| `~/.agctx/repos.json` | 사용자(이 컴퓨터) | agctx가 쓰는 적용한 저장소 목록. 어떤 저장소에도 커밋하지 않는다 |
 | 프로젝트 `.agctx/` | agctx가 쓰고 대상 프로젝트가 커밋 | `base/`는 마지막 적용 관리 영역 원문, `backups/`는 `resolve --discard` 백업이며 `.gitignore`로 커밋에서 제외 |
 | 프로젝트 코드·테스트 | 대상 프로젝트 | 제품 동작과 도메인 검증 |
 

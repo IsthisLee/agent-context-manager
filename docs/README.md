@@ -33,6 +33,7 @@
     - [ADR 0015: 지원 Node.js 하한을 22로 낮춤](adr/0015-node-22-support.md)
     - [ADR 0016: 명령 등록부와 종료 코드·JSON 출력·변경 확인 계약](adr/0016-command-contract.md)
     - [ADR 0017: 프로필을 Git 원격으로 공유하고 적용한 버전을 기록](adr/0017-git-profile-sharing.md)
+    - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

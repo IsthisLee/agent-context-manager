@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: b50bb42fd6568c19443cad5443484ea3e7afc8d05123d97a1912325f9ae4d87b -->
+<!-- agctx-doc-sources-sha256: 559b4f6b9c8e9a3d83427a443de76109bd9049eebbad6a0fc37fde3462cbbd2d -->
 
 agctx는 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -87,6 +87,7 @@ agent-context-manager/
 │   ├── discussion-record.ts     # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
+│   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
 │   ├── generate-skills.ts       # 명령 등록부에서 스킬의 명령 목록 생성(--check로 검사)
 │   ├── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행
 │   └── skills-smoke.ts          # skills CLI로 스킬을 임시 프로젝트에 설치해 위치 확인

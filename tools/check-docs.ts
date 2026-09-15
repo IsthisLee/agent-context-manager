@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
+import { SOURCE_ROOTS, unpinnedSources, wholeRootPins } from './doc-sources.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors: string[] = [];
@@ -275,6 +276,7 @@ function computeDocSourcesHash(sources: string[]) {
 }
 
 function checkDocSources() {
+  const pins: string[] = [];
   for (const markdownFile of walkMarkdown(root)) {
     const spec = docSourceSpec(fs.readFileSync(markdownFile, 'utf8'));
     if (!spec) continue;
@@ -287,6 +289,10 @@ function checkDocSources() {
       errors.push(`${relative}: agctx-doc-sources list is empty`);
       continue;
     }
+    for (const pin of wholeRootPins(spec.sources)) {
+      errors.push(`${relative}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
+    }
+    pins.push(...spec.sources);
     const computed = computeDocSourcesHash(spec.sources);
     if (computed.error) {
       errors.push(`${relative}: ${computed.error}`);
@@ -300,6 +306,14 @@ function checkDocSources() {
     if (recorded !== computed.digest) {
       errors.push(`${relative}: doc sources changed since last verified. Re-read the doc against ${spec.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
     }
+  }
+  const sourceFiles = SOURCE_ROOTS
+    .filter(sourceRoot => fs.existsSync(path.join(root, sourceRoot)))
+    .flatMap(sourceRoot => walkFiles(path.join(root, sourceRoot)))
+    .map(file => docSourceHashPath(root, file))
+    .sort();
+  for (const file of unpinnedSources(sourceFiles, pins)) {
+    errors.push(`${file}: no document pins this source; add it, or the module folder holding it, to the agctx-doc-sources marker of the document that describes it`);
   }
 }
 

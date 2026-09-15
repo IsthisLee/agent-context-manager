@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/commands, src/profile, src/project, src/shared, src/tui, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 995a0baf1da1241e204e407c0f10b360244547bb290f0fcf28c7a7a8eb46e933 -->
+<!-- agctx-doc-sources-sha256: 0b35db0273d0c7a4c449ac0d9bac4226cd83aeb3649f579bd49994a400d4fa03 -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -384,7 +384,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 사용자가 알아야 할 주의점
 
-- 같은 테스트가 **README의 링크 형태**까지 강제한다. README에서 `docs/` 등으로 시작하는 상대 링크를 금지하고(`evals/package-contents.test.ts:34`), 대신 `https://github.com/IsthisLee/agent-context-manager/blob/main/docs/...` 형태의 절대 링크를 요구한다(`evals/package-contents.test.ts:35`). 이는 배포된 README에는 저장소 문서 파일이 함께 있지 않기 때문이다. 그래서 이 문서로 향하는 README 링크도 GitHub 절대 URL로 추가한다.
+- 같은 테스트가 **README의 링크 형태**까지 강제한다. README에서 `docs/` 등으로 시작하는 상대 링크를 금지하고(`evals/package-contents.test.ts:33`), 대신 `https://github.com/IsthisLee/agent-context-manager/blob/main/docs/...` 형태의 절대 링크를 요구한다(`evals/package-contents.test.ts:36`). 이는 배포된 README에는 저장소 문서 파일이 함께 있지 않기 때문이다. 그래서 이 문서로 향하는 README 링크도 GitHub 절대 URL로 추가한다.
 - 배포 파일을 바꾸려면 `files`를 수정하고 `npm pack --dry-run`(`package.json:32`의 `pack:check`)으로 결과를 확인한다.
 
 ---

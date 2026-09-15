@@ -13,6 +13,9 @@ interface ListedRepo {
 
 const names = (repos: { path: string }[]) => repos.map(repo => path.basename(repo.path)).sort();
 
+/** The row `repos pr` prints for a result state: `<state> <target>  <detail>`. */
+const resultRow = (stdout: string, state: string) => stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
+
 test('apply records repositories; repos list marks a moved one missing and --prune forgets it', t => {
   const { root, person, folder } = makeWorkspace(t, 'agctx-repos-list-');
   const me = person('me');
@@ -158,7 +161,9 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   assert.equal(refused.status, 64);
 
   const opened = member.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
-  assert.match(opened.stdout, /opened\s+\S*orders-api\s+.*https:\/\/github\.com\/acme\/orders-api\/pull\/1/);
+  const openedRow = resultRow(opened.stdout, 'opened');
+  assert.match(openedRow, /\S*orders-api\s/, opened.stdout);
+  assert.equal(openedRow.split(' ').at(-1), 'https://github.com/acme/orders-api/pull/1');
   assert.match(remoteHeads(), new RegExp(`refs/heads/${branch}`));
 
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
@@ -183,7 +188,9 @@ test('repos pr opens a pull request from a separate worktree only when the profi
 
   gh.setMode('existing');
   const again = member.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
-  assert.match(again.stdout, /pr-exists\s+\S*orders-api\s+.*https:\/\/github\.com\/acme\/orders-api\/pull\/7/);
+  const existingRow = resultRow(again.stdout, 'pr-exists');
+  assert.match(existingRow, /\S*orders-api\s/, again.stdout);
+  assert.equal(existingRow.split(' ').at(-1), 'https://github.com/acme/orders-api/pull/7');
   assert.equal(creates().length, 1);
 });
 

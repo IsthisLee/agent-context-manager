@@ -109,3 +109,18 @@ test('documents pin source modules rather than the whole src folder, and every s
   assert.match(checker, /wholeRootPins/);
   assert.match(checker, /unpinnedSources/);
 });
+
+test('a document pinned as a source is hashed without its recorded hash, so the two READMEs can pin each other', async () => {
+  const { withoutRecordedHash } = await import('../tools/doc-sources.ts');
+  const doc = (hash: string, body: string) => `# Title\n\n<!-- agctx-doc-sources: README.en.md -->\n<!-- agctx-doc-sources-sha256: ${hash} -->\n\n${body}\n`;
+  assert.equal(withoutRecordedHash(doc('a'.repeat(64), 'body')), withoutRecordedHash(doc('b'.repeat(64), 'body')), 'restamping a pinned document does not change what pins it');
+  assert.notEqual(withoutRecordedHash(doc('a'.repeat(64), 'body')), withoutRecordedHash(doc('a'.repeat(64), 'edited body')), 'editing a pinned document still trips the gate');
+
+  for (const [readme, translation] of [['README.md', 'README.en.md'], ['README.en.md', 'README.md']]) {
+    const content = fs.readFileSync(path.join(repoRoot, readme), 'utf8');
+    const pins = content.match(/<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/)?.[1].split(',').map(value => value.trim()) ?? [];
+    assert.ok(pins.includes(translation), `${readme} pins ${translation}, so changing one language asks for the other`);
+  }
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
+  assert.match(checker, /withoutRecordedHash/);
+});

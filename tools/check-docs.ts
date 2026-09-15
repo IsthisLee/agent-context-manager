@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
-import { SOURCE_ROOTS, unpinnedSources, wholeRootPins } from './doc-sources.ts';
+import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutRecordedHash } from './doc-sources.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors: string[] = [];
@@ -268,7 +268,8 @@ function computeDocSourcesHash(sources: string[]) {
     for (const filePath of files) {
       hash.update(docSourceHashPath(root, filePath));
       hash.update('\0');
-      hash.update(fs.readFileSync(filePath));
+      const bytes = fs.readFileSync(filePath);
+      hash.update(filePath.endsWith('.md') ? withoutRecordedHash(bytes.toString('utf8')) : bytes);
       hash.update('\0');
     }
   }

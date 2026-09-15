@@ -22,3 +22,15 @@ export function unpinnedSources(sourceFiles: readonly string[], pins: readonly s
   const covering = pins.map(trimSlash).filter(pin => !SOURCE_ROOTS.includes(pin));
   return sourceFiles.filter(file => !covering.some(pin => file === pin || file.startsWith(`${pin}/`)));
 }
+
+/** The recorded-hash marker line of a document that pins sources. */
+const RECORDED_HASH = /<!--\s*agctx-doc-sources-sha256:\s*(?:[0-9a-f]{64}|PENDING)\s*-->/;
+
+/**
+ * A pinned document as the gate hashes it: its own recorded hash is left out, so
+ * restamping it does not change the hash of a document that pins it, and two
+ * documents such as the README translations can pin each other.
+ */
+export function withoutRecordedHash(text: string): string {
+  return text.replace(RECORDED_HASH, '<!-- agctx-doc-sources-sha256 -->');
+}

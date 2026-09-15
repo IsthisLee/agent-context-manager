@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 07a710e694d7968809da59eee21959c8085f24e27fc836f5f454d1d26b4a2aaa -->
+<!-- agctx-doc-sources-sha256: bcea8b02df89f3b026779c78038a932c9103f34d7f9a1f2ebf2da822acfe8b16 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -189,7 +189,7 @@ agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 
 
 - **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 적용 수준의 의미 정의, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
 - **구현 중:** 자연어 요청을 통한 agctx 사용(스킬·`--json`·`explain`·`verify`는 동작하고, 배포 패키지로 에이전트 시나리오를 평가하는 일이 남음), agctx 관리 산출물의 안전한 동기화(관리 영역 hash·dry-run·충돌 복구는 동작하고, 파일별 소유권 기록과 마커 없는 파일 정책을 정하는 일이 남음)
-- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents·hooks), 적용할 에이전트와 대상 종류 고르기, 스코프 확장과 지침 합성, 기본 지침의 근거 기준과 분량 예산, 문서 정확성 자동 리뷰. 아직 현재 동작으로 보장하지 않습니다.
+- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents·hooks), 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기, 스코프 확장과 지침 합성, 기본 지침의 근거 기준과 분량 예산, 문서 정확성 자동 리뷰. 아직 현재 동작으로 보장하지 않습니다.
 
 ## 문서
 

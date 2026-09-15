@@ -10,7 +10,7 @@
 
 ## 프로젝트 지침 자동 생성에 관한 근거
 
-코드베이스를 분석해 프로젝트 지침을 작성하는 기능을 agctx에 두지 않는 결정([ADR 0006](adr/0006-no-codebase-analysis-guidance.md))의 외부 근거다.
+코드베이스를 분석해 프로젝트 지침을 작성하는 기능을 agctx에 두지 않는 결정([ADR 0006](adr/0006-no-codebase-analysis-guidance.md))과, 프로필 초안을 사용자의 에이전트가 만들 때 그 범위를 정한 결정([ADR 0023](adr/0023-profile-drafting-through-agent-skill.md))의 외부 근거다.
 
 - **각 에이전트가 초안 생성 기능을 기본으로 제공한다.** Claude Code의 `/init`은 코드베이스를 분석해 빌드 명령·테스트 방법·프로젝트 관례를 담은 `CLAUDE.md` 초안을 만든다. 기존 `CLAUDE.md`가 있으면 덮어쓰지 않고 개선안을 제안한다. Codex의 `/init`은 `AGENTS.md` 초안을 만들며 생성 결과를 검토한 뒤 저장소 관례에 맞게 고치라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory), [Codex developer commands](https://learn.chatgpt.com/docs/developer-commands?surface=cli) (확인일: 2026-09-14)
 - **공식 가이드는 에이전트가 코드를 읽어 알아낼 수 있는 내용을 지침에서 빼라고 권한다.** Anthropic은 넣을 내용으로 추측할 수 없는 Bash 명령, 기본값과 다른 코드 스타일, 테스트 방법, 프로젝트 고유의 아키텍처 결정, 흔한 함정을 든다. 뺄 내용으로는 "코드를 읽으면 알 수 있는 모든 것", 파일별 코드베이스 설명, 자주 바뀌는 정보를 든다. `/doctor`는 디렉터리 구조·의존성 목록·아키텍처 개요처럼 코드에서 도출할 수 있는 내용을 잘라내자고 제안한다. [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-14)

@@ -87,6 +87,7 @@
     - [ADR 0020: APM이 다시 만드는 파일에는 쓰지 않고, 하위 AGENTS.md마다 Claude Code 연결 파일을 만듦](adr/0020-apm-coexistence-and-monorepo-links.md)
     - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md)
     - [ADR 0022: 프로필이 담을 대상에 hooks를 더함](adr/0022-profile-scope-hooks.md)
+    - [ADR 0023: 기존 저장소에서 프로필을 만들 때 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦](adr/0023-profile-drafting-through-agent-skill.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

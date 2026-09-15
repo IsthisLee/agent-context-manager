@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { guidanceLevelDefinitions } from '../bin/i18n.mjs';
-import { hashManagedDocument } from '../bin/analyzer.mjs';
+import { guidanceLevelDefinitions } from '../lib/i18n/index.mjs';
+import { hashManagedDocument } from '../lib/project/analyzer.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'bin', 'agentic.mjs');

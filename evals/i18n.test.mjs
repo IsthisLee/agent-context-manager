@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { resolveLocale, SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../bin/i18n.mjs';
+import { resolveLocale, SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../lib/i18n/index.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'bin', 'agentic.mjs');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { assertSafeTextTarget, writeTextAtomic } from '../bin/fs-utils.mjs';
+import { assertSafeTextTarget, writeTextAtomic } from '../lib/fs-utils.mjs';
 
 test('writeTextAtomic replaces a file without leaving a temporary artifact', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-file-safety-test-'));

@@ -6,8 +6,8 @@
 
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs -->
-<!-- agentic-doc-sources-sha256: cf301c9524f070d1279ef5b6554a649a82594c46c955d5a95cc338d5f75eb5ea -->
+<!-- agentic-doc-sources: bin, lib -->
+<!-- agentic-doc-sources-sha256: fb6edfea1ae49231ef9d117682505203c66b7d27aa9c8ecad1dc659820e1a8b1 -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.

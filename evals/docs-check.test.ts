@@ -96,3 +96,16 @@ test('Implemented discussion topics must carry an implementation record heading 
   assert.match(checker, /hasImplementationRecord/);
   assert.match(checker, /requiresImplementationRecord/);
 });
+
+test('documents pin source modules rather than the whole src folder, and every source file is pinned by some document', async () => {
+  const { unpinnedSources, wholeRootPins } = await import('../tools/doc-sources.ts');
+
+  assert.deepEqual(wholeRootPins(['src', 'src/commands', 'package.json']), ['src']);
+  assert.deepEqual(wholeRootPins(['src/', 'templates']), ['src/']);
+  assert.deepEqual(unpinnedSources(['src/agctx.ts', 'src/commands/cli.ts', 'src/repos/pr.ts', 'src/repos-extra.ts'], ['src/commands', 'src/repos', 'src/agctx.ts']), ['src/repos-extra.ts'], 'a folder pin covers only files inside that folder');
+  assert.deepEqual(unpinnedSources(['src/check.ts'], ['src']), ['src/check.ts'], 'a whole-src pin covers nothing');
+
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
+  assert.match(checker, /wholeRootPins/);
+  assert.match(checker, /unpinnedSources/);
+});

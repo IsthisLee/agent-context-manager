@@ -46,6 +46,19 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 
 배포 workflow에는 장기 npm 토큰을 저장하지 않는다. npm trusted publishing을 사용할 수 없는 환경에서는 별도 보안 검토 없이 토큰 방식을 추가하지 않는다.
 
+### 새 패키지 이름의 첫 게시
+
+신뢰된 게시는 레지스트리에 이미 있는 패키지에만 연결할 수 있어서, 새 이름의 첫 버전은 위 workflow로 게시할 수 없다([외부 근거](../references.md#공개-npmgithub-저장소-운영-근거)). 첫 버전은 한 번만 아래 순서로 게시한다. Release를 먼저 만들면 workflow가 인증 없이 게시하려다 실패하므로 순서를 지킨다.
+
+1. 버전·변경 이력 커밋을 main에 병합한다.
+2. 패키지 소유자가 `npm login`으로 로그인한 컴퓨터에서 병합된 main을 체크아웃하고 `npm publish`를 실행한다. `prepublishOnly`가 `check`와 `pack:check`를 먼저 실행한다. 이 버전에는 provenance가 없다.
+3. npmjs.com 패키지 설정의 Trusted Publisher에 `IsthisLee/agent-context-manager` 저장소와 `publish.yml`을 연결한다. 명령줄로는 `npm trust github --repo IsthisLee/agent-context-manager --file publish.yml --allow-publish`이며 계정 2단계 인증이 필요하다.
+4. 같은 패키지 설정의 Publishing access에서 "Require two-factor authentication and disallow tokens"를 골라 토큰 게시를 막는다.
+5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml:35-47`).
+6. 앞 절차의 5번처럼 임시 디렉터리에서 설치와 `agctx help`를 확인한다.
+
+그다음 버전부터는 앞 절차의 1~5번대로 GitHub Release만 게시한다.
+
 ## 의존성과 보안
 
 - Dependabot은 npm 의존성과 GitHub Actions 참조를 주기적으로 확인한다.

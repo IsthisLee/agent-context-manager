@@ -213,6 +213,31 @@ function checkDocumentationGovernance() {
   }
 }
 
+/**
+ * Every deployed guidance sentence must be traceable to an external source, so
+ * the catalog carries an evidence column whose links point at references.md.
+ * A row without one means a sentence ships without recorded evidence.
+ */
+function checkGuidanceCatalog() {
+  const catalog = path.join(root, 'docs', 'contributing', 'guidance-catalog.md');
+  if (!fs.existsSync(catalog)) {
+    errors.push('docs/contributing/guidance-catalog.md: guidance catalog must exist');
+    return;
+  }
+  const content = fs.readFileSync(catalog, 'utf8');
+  const rows = content.split('\n').filter(line => line.startsWith('| `--'));
+  if (rows.length !== 6) {
+    errors.push(`docs/contributing/guidance-catalog.md: expected one row per guidance option, found ${rows.length}`);
+    return;
+  }
+  for (const row of rows) {
+    const option = row.split('|')[1].trim();
+    if (!/\.\.\/references\.md#/.test(row)) {
+      errors.push(`docs/contributing/guidance-catalog.md: ${option} has no evidence link into references.md`);
+    }
+  }
+}
+
 function checkChangelog() {
   const changelog = path.join(root, 'CHANGELOG.md');
   if (!fs.existsSync(changelog) || !/^## \[Unreleased\]/m.test(fs.readFileSync(changelog, 'utf8'))) {
@@ -357,6 +382,7 @@ checkReferenceDates();
 checkDiscussionStatuses();
 checkDocumentationGovernance();
 checkChangelog();
+checkGuidanceCatalog();
 checkReadme();
 checkDocSources();
 

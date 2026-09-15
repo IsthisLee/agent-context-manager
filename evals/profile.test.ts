@@ -143,25 +143,25 @@ test('setup applies selected guidance to the profile and preserves its project-i
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [
       cli, 'profile', 'setup', 'team',
-      '--harness', 'recommended', '--tdd', 'strict', '--review', 'off',
-      '--verification', 'recommended', '--documentation', 'off', '--security', 'strict'
+      '--workflow', 'recommended', '--tdd', 'strict', '--review', 'off',
+      '--verification', 'recommended', '--instructions', 'off', '--security', 'strict'
     ], { cwd: repoRoot, env, encoding: 'utf8' });
 
     const profileDir = path.join(home, 'profiles', 'team');
     const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
-      harness: 'recommended',
+      workflow: 'recommended',
       tdd: 'strict',
       review: 'off',
       verification: 'recommended',
-      documentation: 'off',
+      instructions: 'off',
       security: 'strict'
     });
     const instructions = fs.readFileSync(path.join(profileDir, 'AGENTS.md'), 'utf8');
     assert.match(instructions, /## TDD/);
     assert.match(instructions, /strict/);
     assert.doesNotMatch(instructions, /## 변경 검토/);
-    assert.doesNotMatch(instructions, /## 문서화/);
+    assert.doesNotMatch(instructions, /## 지침 파일/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -537,11 +537,11 @@ test('profile create and setup support interactive TUI input when options are om
 
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
-      harness: 'recommended',
+      workflow: 'recommended',
       tdd: 'strict',
       review: 'off',
       verification: 'recommended',
-      documentation: 'off',
+      instructions: 'off',
       security: 'strict'
     });
   } finally {
@@ -566,7 +566,7 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
 
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.equal(metadata.settings.verification, 'strict');
-    assert.equal(metadata.settings.documentation, 'off');
+    assert.equal(metadata.settings.instructions, 'off');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

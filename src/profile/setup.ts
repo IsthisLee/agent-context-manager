@@ -7,7 +7,7 @@ import { toLf, writeTextAtomic } from '../shared/fs-utils.ts';
 import type { GuidanceKey, GuidanceLevel } from '../shared/types.ts';
 import { readProfile } from './store.ts';
 
-export const guidanceDefaults: Record<GuidanceKey, GuidanceLevel> = { harness: 'recommended', tdd: 'recommended', review: 'recommended', verification: 'recommended', documentation: 'recommended', security: 'recommended' };
+export const guidanceDefaults: Record<GuidanceKey, GuidanceLevel> = { workflow: 'recommended', tdd: 'recommended', review: 'recommended', verification: 'recommended', instructions: 'recommended', security: 'recommended' };
 
 /** Guidance items in their fixed order. */
 export const GUIDANCE_KEYS = Object.keys(guidanceDefaults) as GuidanceKey[];

@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: bcea8b02df89f3b026779c78038a932c9103f34d7f9a1f2ebf2da822acfe8b16 -->
+<!-- agctx-doc-sources-sha256: df579d92b459d033fdff4cb2f04e4ebbc4eac51ec56b5a1c66bdc0060e61289a -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -136,7 +136,7 @@ skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`
 
 - `agctx profile create [<name>] [--scope <scope>]` — `personal`, `company`, `team`, `workspace` 용도별 프로필 생성; 이름을 생략하면 TUI 입력
 - `agctx profile list [--scope <scope>]` — scope별 프로필 목록·선택·관리; TUI에서는 scope를 먼저 선택
-- `agctx profile setup [<name>]` — scope별 프로필 선택 후 하네스 동작·TDD·변경 검토·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
+- `agctx profile setup [<name>]` — scope별 프로필 선택 후 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 지침 설정; 생략하면 전체 TUI
 - `agctx profile remove [<name>]` — 확인 후 선택한 프로필 삭제; 적용된 프로젝트 파일은 유지
 - `agctx profile apply <name> <project> [--pin]` — 선택한 프로필을 프로젝트에 적용하고 적용한 프로필 버전을 기록; `--pin`이면 그 커밋에 고정
 - `agctx profile sync <project>` — 프로젝트에 기록된 프로필로 관리 영역만 다시 적용

@@ -27,7 +27,7 @@ This skill changes what many repositories and teammates receive, so every push a
 
 <!-- agctx:commands:start -->
 - `agctx profile view <name>`: Print a profile's scope and AGENTS.md.
-- `agctx profile setup [--harness <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--documentation <level>] [--security <level>] [<name>]`: Choose the guidance levels written into a profile.
+- `agctx profile setup [--workflow <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--instructions <level>] [--security <level>] [<name>]`: Choose the guidance levels written into a profile.
 - `agctx profile status [--refresh] [<name>]`: Show a profile's remote, branch, commit, local edits, and position against the remote. --refresh fetches first.
 - `agctx profile pull [--dry-run] <name>`: Fast-forward a profile to its remote. Repository files do not change.
 - `agctx profile push [--dry-run] [--yes] <name>`: Push commits you already made to the profile's remote.

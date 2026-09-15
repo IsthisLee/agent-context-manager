@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-09-16
+
 ### Fixed
 
 - `repos pr`: GitHub CLI(`gh`)가 설치돼 있지 않아 PR을 열지 못하면, 안내 끝에 내부 오류(`spawnSync gh ENOENT`) 대신 "GitHub CLI (gh) is not installed; install it to open pull requests automatically."를 보여 준다.

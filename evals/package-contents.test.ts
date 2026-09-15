@@ -30,9 +30,10 @@ test('npm package contains only runtime assets and the package README', () => {
 
   const readme = fs.readFileSync(path.join(repoRoot, 'README.md'), 'utf8');
   assert.doesNotMatch(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
-  assert.match(readme, /img\.shields\.io\/badge\/Node\.js-22/);
   assert.doesNotMatch(readme, /\]\((?:docs\/|CONTRIBUTING\.md|SECURITY\.md|CODE_OF_CONDUCT\.md)/);
-  assert.match(readme, /https:\/\/github\.com\/IsthisLee\/agent-context-manager\/blob\/main\/docs\//);
+  const links = [...readme.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match => new URL(match[1]));
+  assert.ok(links.some(link => link.hostname === 'img.shields.io' && link.pathname.startsWith('/badge/Node.js-22')), 'README shows the Node.js 22 badge');
+  assert.ok(links.some(link => link.hostname === 'github.com' && link.pathname.startsWith('/IsthisLee/agent-context-manager/blob/main/docs/')), 'README links documents by absolute GitHub URL');
 });
 
 test('repository exposes an installed-package smoke test', () => {

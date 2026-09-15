@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: a5d73537aaae6ce270e63443c8e0cdf970f034775920254632aeed790be93111 -->
+<!-- agctx-doc-sources-sha256: c702082c2a643f78d697c2552c2302660e8c68bb002479481815d197f84816c6 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -183,7 +183,7 @@ agctx's implementation is managed in stages around where the shared context live
 
 - **Implemented:** Profile model and store, setup and guidance options, guidance level semantics, project application, agent artifact synchronization, agent rule discovery, Git-based Profile management
 - **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording per-file ownership and a policy for files without markers remain)
-- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), choosing agents and context types per repository, scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
+- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), choosing agents and context types per repository, creating a Profile from an existing repository, scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
 
 ## Documentation
 

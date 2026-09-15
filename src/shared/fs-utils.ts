@@ -40,13 +40,24 @@ export function assertSafeTextTarget(target: string, boundary: string | null = n
   }
 }
 
-/** Replace a UTF-8 text file through a same-directory temporary file, keeping its mode. */
+/**
+ * Text with CRLF line endings as LF, the form agctx compares and hashes guidance in.
+ * Git for Windows checks files out with CRLF (core.autocrlf).
+ */
+export function toLf(text: string): string {
+  return text.replaceAll('\r\n', '\n');
+}
+
+/** Replace a UTF-8 text file through a same-directory temporary file, keeping its mode and CRLF line endings. */
 export function writeTextAtomic(target: string, content: string): void {
   assertSafeTextTarget(target);
   let mode = 0o666;
+  let crlf = false;
   try {
     const stat = fs.lstatSync(target);
     mode = stat.mode & 0o777;
+    // A file checked out with CRLF keeps them, so rewriting it does not turn every line into a diff.
+    crlf = fs.readFileSync(target, 'utf8').includes('\r\n');
   } catch (error) {
     if (errorCode(error) !== 'ENOENT') throw error;
   }
@@ -54,7 +65,7 @@ export function writeTextAtomic(target: string, content: string): void {
   fs.mkdirSync(path.dirname(target), { recursive: true });
   const temporary = path.join(path.dirname(target), `.${path.basename(target)}.agctx-${randomUUID()}.tmp`);
   try {
-    fs.writeFileSync(temporary, content, { encoding: 'utf8', mode });
+    fs.writeFileSync(temporary, crlf ? toLf(content).replaceAll('\n', '\r\n') : content, { encoding: 'utf8', mode });
     fs.renameSync(temporary, target);
   } finally {
     if (fs.existsSync(temporary)) fs.unlinkSync(temporary);

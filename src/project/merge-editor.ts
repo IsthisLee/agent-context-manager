@@ -4,6 +4,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { _ } from '../i18n/index.ts';
 import { CliError, EXIT } from '../shared/errors.ts';
+import { toLf } from '../shared/fs-utils.ts';
 
 /** The file name VS Code shows for one merge input, e.g. `current-CLAUDE.md`. */
 export function mergeFileName(role: string, name: string): string {
@@ -51,7 +52,7 @@ export function mergeInVsCode({ name, current, incoming, base, result }: MergeIn
     throw new CliError('vscode.unavailable', _('error.vscode.unavailable'), { exitCode: EXIT.unavailable, hint: _('hint.vscode.install') });
   }
   return {
-    content: fs.readFileSync(paths.result, 'utf8'),
+    content: toLf(fs.readFileSync(paths.result, 'utf8')),
     resultPath: paths.result,
     cleanup: () => fs.rmSync(dir, { recursive: true, force: true })
   };

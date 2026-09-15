@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/commands, src/profile, src/project, src/shared, src/tui, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 0b35db0273d0c7a4c449ac0d9bac4226cd83aeb3649f579bd49994a400d4fa03 -->
+<!-- agctx-doc-sources-sha256: 0bda994bec3d899a56c8f9252bf7a12340bf309078cd64aa25135557bf8c28ff -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -241,7 +241,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **배포되는 CLI(`src/`를 컴파일한 `dist/`)**는 `fs`·`os`·`path`를 쓴다(`src/profile/store.ts:1-2`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`src/shared/home.ts:12`).
 - 이 밖에 `src/shared/fs-utils.ts`, `src/project/analyzer.ts`, `src/project/plan.ts`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`src/shared/fs-utils.ts:3,55`), 관리 영역 무결성 확인에 `createHash`(`src/project/analyzer.ts:1,55,92`, `src/project/plan.ts:3,20-22`)를 사용한다.
-- **배포 코드에서 `child_process`를 쓰는 곳은 둘이다.** Git 프로필 명령과 적용 버전 기록은 `src/shared/git.ts`의 `git()`이 `spawnSync('git', args)`로 인자를 나눠 실행한다(`src/shared/git.ts:19-38`). 사용자가 `profile resolve --edit`을 명시하면 `src/project/merge-editor.ts`가 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `45-48`). 둘 다 셸 없이 인자 배열로 실행하며, Windows에서 `code.cmd`를 실행할 때만 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
+- **배포 코드에서 `child_process`를 쓰는 곳은 둘이다.** Git 프로필 명령과 적용 버전 기록은 `src/shared/git.ts`의 `git()`이 `spawnSync('git', args)`로 인자를 나눠 실행한다(`src/shared/git.ts:19-38`). 사용자가 `profile resolve --edit`을 명시하면 `src/project/merge-editor.ts`가 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `46-49`). 둘 다 셸 없이 인자 배열로 실행하며, Windows에서 `code.cmd`를 실행할 때만 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -406,7 +406,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 각 관문이 코드에서 어떻게 도는지는 [기능 구현 메커니즘](implementation-mechanics.md)의 6·7·9절이 정본이다. 여기서는 일반 원리와 연결되는 지점만 요약한다.
 
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts:13-20`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts:23-40`).
-- **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts:43-62`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
+- **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts:51-73`). 교체할 파일이 CRLF 줄 끝을 쓰고 있으면 새 내용도 CRLF로 쓴다. 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts:148`).
 - **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts:119-140`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 “Managed file changed outside agctx” 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts:84-87`). `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.ts`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.ts`의 관련 케이스).
@@ -447,7 +447,7 @@ flowchart TD
 ### 이 패키지에서의 적용 예시
 
 - **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts:77-80`). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts:151-160`).
-- **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts:139-147`).
+- **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts:140-148`).
 - **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts:2-11`). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts:67-86`), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts:64-71`).
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:30`). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json:26`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json:25`).

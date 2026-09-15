@@ -3,7 +3,7 @@ import { parseFlag } from '../commands/args.ts';
 import { say } from '../commands/output.ts';
 import { _, getLocale, guidanceLevelDefinitions, guidanceSections } from '../i18n/index.ts';
 import { usageError } from '../shared/errors.ts';
-import { writeTextAtomic } from '../shared/fs-utils.ts';
+import { toLf, writeTextAtomic } from '../shared/fs-utils.ts';
 import type { GuidanceKey, GuidanceLevel } from '../shared/types.ts';
 import { readProfile } from './store.ts';
 
@@ -37,7 +37,7 @@ export function setupProfile(name: string, values: readonly string[]): { profile
   const end = '<!-- agctx:guidance:end -->';
   const body = blocks.length ? [legend, ...blocks].join('\n\n') : '';
   const block = `${start}\n\n${body}\n\n${end}`;
-  const current = fs.readFileSync(profile.instructionsPath, 'utf8');
+  const current = toLf(fs.readFileSync(profile.instructionsPath, 'utf8'));
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
   writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
   writeTextAtomic(profile.metadataPath, JSON.stringify({ ...profile.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');

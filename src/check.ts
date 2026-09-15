@@ -4,6 +4,7 @@ import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, planFor, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
 import { managedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
+import { toLf } from './shared/fs-utils.ts';
 import { git, isGitRoot } from './shared/git.ts';
 import { profileHome } from './shared/home.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-chars.ts';
@@ -71,7 +72,7 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   for (const [rel, recorded] of Object.entries(config.managedHashes ?? {})) {
     const file = path.join(targetDir, rel);
     const kind: ManagedKind = rel === 'AGENTS.md' ? 'agents' : 'pointer';
-    const content = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : null;
+    const content = fs.existsSync(file) ? toLf(fs.readFileSync(file, 'utf8')) : null;
     if (content === null) {
       findings.push({ kind: 'conflict', file: rel, detail: _('check.missing') });
       continue;

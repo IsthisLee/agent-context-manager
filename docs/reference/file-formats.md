@@ -1,7 +1,7 @@
 # 파일 형식과 저장 위치
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/shared/types.ts, src/project/plan.ts, src/repos/registry.ts, src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 75ad8bc655142af06ff9698ebcb6ca22d6c0fe53d10c8f7a4e6afd8a1dc91eba -->
+<!-- agctx-doc-sources-sha256: 9c1a00b7319c251511e169f1a6a411e9a87ff6839e5f489bf7492c22a2564513 -->
 
 ## 저장 위치
 
@@ -21,7 +21,7 @@
 | `source` | Git 프로필이면 `{ git, branch, commit }`. URL의 사용자 정보와 토큰은 지운다 |
 | `pin` | `--pin`으로 고정했으면 `true` |
 | `uncommitted` | 커밋하지 않은 프로필 수정으로 적용했으면 `true` |
-| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 하위 폴더 연결 파일도 들어간다 |
+| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일도 들어간다 |
 
 ```json
 {

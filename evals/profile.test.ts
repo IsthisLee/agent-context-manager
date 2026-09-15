@@ -7,6 +7,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { guidanceLevelDefinitions } from '../src/i18n/index.ts';
 import { hashManagedDocument } from '../src/project/analyzer.ts';
+import { makeWorkspace } from './support/git-workspace.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
@@ -619,4 +620,26 @@ test('profile remove requires a name when confirmation is supplied non-interacti
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
+});
+
+test('check and sync read a guidance file with CRLF line endings as unchanged, and sync keeps CRLF when it rewrites the file', t => {
+  const { person, folder } = makeWorkspace(t, 'agctx-profile-crlf-');
+  const me = person('me');
+  const project = folder('app');
+  me.ok(['profile', 'create', 'personal']);
+  me.ok(['profile', 'apply', 'personal', project, '--yes']);
+  // What a checkout with core.autocrlf leaves: every text file, base files included, with CRLF line endings.
+  const managed = ['AGENTS.md', 'CLAUDE.md', '.agents/rules/agctx.md'];
+  for (const rel of [...managed, ...managed.map(file => `.agctx/base/${file}.base`)]) {
+    const file = path.join(project, rel);
+    fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replaceAll('\n', '\r\n'));
+  }
+  assert.equal(me.run(['check', project]).status, 0, 'CRLF line endings are not an edit to the managed area');
+
+  fs.appendFileSync(path.join(me.profileDir('personal'), 'AGENTS.md'), '\n- Keep functions small.\n');
+  me.ok(['profile', 'sync', project, '--yes']);
+  const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
+  assert.match(agents, /Keep functions small\./);
+  assert.doesNotMatch(agents, /[^\r]\n/, 'every line still ends with CRLF');
+  assert.equal(me.run(['check', project]).status, 0);
 });

@@ -1,7 +1,7 @@
 # CI와 자동화에서 쓰기
 
 <!-- agctx-doc-sources: src/check.ts, src/explain.ts, src/commands/options.ts, src/commands/output.ts -->
-<!-- agctx-doc-sources-sha256: fd9c376bc72a3437b14049772e27cffa390e2da2536ce89a70c15bf40a3166d4 -->
+<!-- agctx-doc-sources-sha256: 7acd32cf6a0608f869ce771fbaf9183ae92e89896c7026a0d2c03eb223a14582 -->
 
 ## CI에서 확인하기
 

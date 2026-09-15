@@ -286,3 +286,33 @@ test('repos pr updates a project that lives in a repository subfolder', t => {
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'), /Document every public endpoint/);
   assert.equal(gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'), '', 'nothing is written at the repository top');
 });
+
+/** Git as Git for Windows installs it: files are checked out with CRLF line endings (core.autocrlf). */
+const CRLF_CHECKOUT = { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'core.autocrlf', GIT_CONFIG_VALUE_0: 'true' };
+
+test('check and repos pr read files git checks out with CRLF line endings as the ones agctx wrote', t => {
+  const { root, person } = makeWorkspace(t, 'agctx-repos-crlf-');
+  const admin = person('admin');
+  const bot = person('bot');
+  const profile = publishProfile(root, admin, 'team-backend');
+  bot.ok(['profile', 'clone', profile.remote], CRLF_CHECKOUT);
+  const service = serviceRepo(root, 'orders-api');
+  bot.ok(['profile', 'apply', 'team-backend', service.work, '--pin', '--yes'], CRLF_CHECKOUT);
+  commitAndPush(service.work, 'Apply team-backend profile');
+  assert.equal(bot.run(['check', service.work], CRLF_CHECKOUT).status, 0, 'a profile cloned with CRLF line endings renders what the pinned commit holds');
+  const gh = fakeGh(t);
+  gh.setMode('not-github');
+
+  const quiet = bot.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], { ...gh.env, ...CRLF_CHECKOUT });
+  assert.match(quiet.stdout, /up-to-date\s+\S*orders-api/, 'a worktree checked out with CRLF line endings has no edited managed area');
+
+  fs.appendFileSync(path.join(profile.dir, 'AGENTS.md'), '\n- Document every public endpoint.\n');
+  gitIn(profile.dir, 'commit', '--quiet', '-am', 'Document endpoints');
+  admin.ok(['profile', 'push', 'team-backend', '--yes']);
+  bot.ok(['profile', 'pull', 'team-backend'], CRLF_CHECKOUT);
+  const branch = `agctx/team-backend-${gitIn(bot.profileDir('team-backend'), 'rev-parse', 'HEAD').slice(0, 7)}`;
+  const result = bot.run(['repos', 'pr', '--profile', 'team-backend', '--yes'], { ...gh.env, ...CRLF_CHECKOUT });
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
+  assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Document every public endpoint/);
+});

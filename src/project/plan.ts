@@ -7,7 +7,7 @@ import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './confl
 import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
 import { _ } from '../i18n/index.ts';
 import { CliError, EXIT } from '../shared/errors.ts';
-import { assertSafeTextTarget, writeTextAtomic } from '../shared/fs-utils.ts';
+import { assertSafeTextTarget, toLf, writeTextAtomic } from '../shared/fs-utils.ts';
 import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan, VersionRecord } from '../shared/types.ts';
 
 /**
@@ -26,7 +26,7 @@ function sha256(text: string): string {
 }
 
 function readIfExists(target: string): string | null {
-  return fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : null;
+  return fs.existsSync(target) ? toLf(fs.readFileSync(target, 'utf8')) : null;
 }
 
 export function managedRegion(kind: ManagedKind, content: string | null | undefined): string | null {
@@ -90,13 +90,13 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
 
   describe('AGENTS.md', 'agents', existing => mergeAgentsMd(renderedAgents, existing));
   for (const [source, relativePath] of POINTER_TEMPLATES) {
-    const template = fs.readFileSync(path.join(packageRoot, source), 'utf8').replaceAll('{{PROJECT_NAME}}', projectName);
+    const template = toLf(fs.readFileSync(path.join(packageRoot, source), 'utf8')).replaceAll('{{PROJECT_NAME}}', projectName);
     describe(relativePath, 'pointer', existing => mergeManagedDocument(template, existing));
   }
 
   // Link every nested AGENTS.md for Claude Code, leaving CLAUDE.md files people wrote alone.
   const warnings: string[] = [];
-  const linkTemplate = fs.readFileSync(path.join(packageRoot, LINK_TEMPLATE), 'utf8');
+  const linkTemplate = toLf(fs.readFileSync(path.join(packageRoot, LINK_TEMPLATE), 'utf8'));
   const linked = new Set<string>();
   for (const agentsRel of nestedAgentsFiles(targetDir)) {
     const folder = agentsRel.slice(0, -'/AGENTS.md'.length);

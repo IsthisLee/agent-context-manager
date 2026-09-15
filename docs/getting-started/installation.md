@@ -1,7 +1,7 @@
 # 설치
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: c24bdfbff815d5e4c822f43cfd27d25553fc1052b1d1f5864c76252513a4da27 -->
+<!-- agctx-doc-sources-sha256: 203d6aa31e39bf4fc03c6b07f0fa332ccca83c14713d47300f34f9d77ebd57dc -->
 
 agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
 

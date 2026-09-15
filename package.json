@@ -5,7 +5,7 @@
   "description": "A profile-based context manager for AI coding agents: keep rules in profiles, apply one per repository, and keep Codex, Claude Code, and Antigravity in sync",
   "repository": {
     "type": "git",
-    "url": "https://github.com/IsthisLee/agent-context-manager.git"
+    "url": "git+https://github.com/IsthisLee/agent-context-manager.git"
   },
   "homepage": "https://github.com/IsthisLee/agent-context-manager#readme",
   "bugs": {
@@ -13,7 +13,7 @@
   },
   "type": "module",
   "bin": {
-    "agctx": "./dist/agctx.js"
+    "agctx": "dist/agctx.js"
   },
   "files": [
     "dist",

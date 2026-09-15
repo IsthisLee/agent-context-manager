@@ -3,7 +3,7 @@
 이 문서는 agctx 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture.md`](architecture.md), 외부 근거는 [`references.md`](../references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](../discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: ab9932b89e8aa05d0c9e1ae3283c34719f9ad39378b60fe9468a233f767f235f -->
+<!-- agctx-doc-sources-sha256: 1ba6ec9120d5ba439264e7fd47a94cffb17eb0071d92c38b054d52b0c3eca98c -->
 
 `agent-context-manager`는 공개 GitHub 저장소와 npm registry로 배포하는 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
@@ -51,7 +51,7 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 신뢰된 게시는 레지스트리에 이미 있는 패키지에만 연결할 수 있어서, 새 이름의 첫 버전은 위 workflow로 게시할 수 없다([외부 근거](../references.md#공개-npmgithub-저장소-운영-근거)). 첫 버전은 한 번만 아래 순서로 게시한다. Release를 먼저 만들면 workflow가 인증 없이 게시하려다 실패하므로 순서를 지킨다.
 
 1. 버전·변경 이력 커밋을 main에 병합한다.
-2. 패키지 소유자가 `npm login`으로 로그인한 컴퓨터에서 병합된 main을 체크아웃하고 `npm publish`를 실행한다. `prepublishOnly`가 `check`와 `pack:check`를 먼저 실행한다. 이 버전에는 provenance가 없다.
+2. 패키지 소유자가 `npm login`으로 로그인한 컴퓨터에서 병합된 main을 체크아웃하고 `npm publish`를 실행한다. `prepublishOnly`가 `check`와 `pack:check`를 먼저 실행한다. 이 버전에는 provenance가 없다. 계정이 쓰기 작업에 2단계 인증을 요구하면 레지스트리에 올리기 직전에 브라우저 인증이나 일회용 비밀번호를 묻으므로 대화형 터미널에서 실행한다. 대화형이 아닌 셸에서는 인증 주소만 출력하고 `EOTP`로 멈춘다(npm 11.19.0에서 2026-09-16 실측, 아무것도 게시되지 않음).
 3. npmjs.com 패키지 설정의 Trusted Publisher에 `IsthisLee/agent-context-manager` 저장소와 `publish.yml`을 연결한다. 명령줄로는 `npm trust github --repo IsthisLee/agent-context-manager --file publish.yml --allow-publish`이며 계정 2단계 인증이 필요하다.
 4. 같은 패키지 설정의 Publishing access에서 "Require two-factor authentication and disallow tokens"를 골라 토큰 게시를 막는다.
 5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml:35-47`).

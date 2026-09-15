@@ -26,8 +26,8 @@
 
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic-overview.en.dark.png">
-    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic-overview.en.png" alt="agctx structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, Antigravity, Cursor, and Copilot read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.en.dark.png">
+    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.en.png" alt="agctx structure: Personal, Company, and Team Profiles are applied and synced to many projects, and Codex, Claude Code, and Antigravity read the AGENTS.md, CLAUDE.md, and other files generated in each project. Sharing Profiles through a Git repository is planned." width="880">
   </picture>
 </p>
 
@@ -89,11 +89,21 @@ agctx profile setup company --tdd recommended --security strict
 agctx profile apply company /path/to/project
 ```
 
-The commands above follow this flow.
+Applying creates the per-agent guidance files and the managed-area records in one pass. Below is the real output of the last command.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic.gif" alt="agctx flow: profile create → setup → apply·sync builds a Profile, applies it to project files, and multiple AI agents work to the same standard" width="800">
-</p>
+```text
+$ agctx profile apply company /path/to/project
+Plan: 8 file(s) to change.
+  create    AGENTS.md
+  create    CLAUDE.md
+  create    .agents/rules/agctx.md
+  create    .agctx/base/AGENTS.md.base
+  create    .agctx/base/CLAUDE.md.base
+  create    .agctx/base/.agents/rules/agctx.md.base
+  create    .agctx/.gitignore
+  create    agctx.project.json
+Applied profile company to /path/to/project
+```
 
 > [!Tip]
 > Type `agctx` in your terminal to use every feature through the TUI.

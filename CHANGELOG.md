@@ -8,6 +8,7 @@
 
 - `repos pr`: GitHub CLI(`gh`)가 설치돼 있지 않아 PR을 열지 못하면, 안내 끝에 내부 오류(`spawnSync gh ENOENT`) 대신 "GitHub CLI (gh) is not installed; install it to open pull requests automatically."를 보여 준다.
 - `verify`: 세션 기록이 없거나 오래됐을 때의 영어 다음 단계 안내가 에이전트 목록을 "an agent (Codex, Claude Code)"처럼 묶어 보여 준다.
+- README: 뱃지를 누르면 이미지 파일 대신 해당 페이지(CI·CodeQL 워크플로, Scorecard, npm 패키지, 라이선스, Node.js 릴리스 일정, 커밋 기록, 지원 에이전트 절)로 이동한다. npm 패키지 페이지에서도 열리도록 모든 뱃지 링크를 절대 주소로 둔다.
 
 ## [0.3.0] - 2026-09-16
 

@@ -183,55 +183,11 @@ skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`
 
 ## 🧭 아키텍처 방향과 진행 상태
 
-agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 아래 표는 각 논의 문서의 제안 요약을 사용자 관점에서 압축한 것입니다. `Proposed` 항목은 아직 현재 동작으로 보장하지 않는 후속 작업입니다.
+agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표·중요도·구현 전에 정할 계약·구현 기록을 논의 문서에 두며, 주제 목록과 상태의 정본은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)입니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
-
-| 주제                                                                                                                               | 대상과 목표                                             | 중요도·상태                  | 다음 작업               |
-| -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ----------------------- | ------------------- |
-| [프로필 모델과 저장소](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md)               | 사용자·조직의 Personal·Company·Team·Workspace별 공통 컨텍스트 저장소 | Critical · Implemented  | 조직 공유 계약 검토         |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)         | 사용자·CLI가 프로필의 TDD·변경 검토·검증·문서화·보안 지침을 선택 구성           | High · Implemented      | preset·설정 diff 고도화  |
-| [프로젝트 적용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md)             | 선택한 프로필을 프로젝트에 적용하고 도메인 규칙을 분리 보존                  | Critical · Implemented  | 충돌·복구 확정            |
-| [에이전트 산출물 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화                   | High · Implemented      | manifest·drift 고도화  |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Implementing     | 배포 패키지 기준 에이전트 시나리오 평가 |
-| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장                    | Critical · Implementing | 마커 없는 루트 파일 정책·여러 파일 롤백 |
-| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 팀·조직이 표준 Git 원격으로 프로필을 공유하고 적용한 버전을 기록·확인 | Critical · Implemented | 없음 |
-| [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md)         | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합               | Medium · Proposed       | 검증 후 합성 최소 프로토타입    |
-
-
-### 제안 요약
-
-각 문서는 코드 기능만이 아니라 대상 계층, 도입 이유, 중요도, 선행·후속·연관 작업, 구현 전에 결정할 계약을 함께 관리합니다. 아래는 그 정보를 영역별로 압축한 지도이며, 상세한 현재 상태와 구현 기록은 각 문서에서 확인할 수 있습니다.
-
-#### 1. 프로필과 공통 컨텍스트 구성
-
-
-| 주제                                                                                                                       | 목적·대상 계층                                                                 | 중요도·상태                 | 결정할 것과 관계                                    |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------- | -------------------------------------------- |
-| [프로필 모델과 저장소](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md)       | Personal·Company·Team·Workspace별 공통 컨텍스트를 분리·재사용 · 사용자·조직 ↔ CLI ↔ 프로필      | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행              |
-| [setup과 지침 옵션](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·변경 검토·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ 프로필 `AGENTS.md`            | High · Implemented     | preset·기본값·재실행·대화형/비대화형; 프로필 모델 후, 프로젝트 적용 전 |
-| [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | scope를 공유·재사용하는 지침 계층으로 확장하고 다계층 상속·병합 · 사용자·조직 ↔ CLI ↔ 프로필·scope ↔ 프로젝트 | Medium · Proposed      | 병합·충돌 규칙과 scope 공유 형식; 검증 게이트 후 착수           |
-| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 공통 컨텍스트 프로필을 Git 원격으로 공유·갱신 · 관리자·구성원 ↔ CLI ↔ Git 원격 ↔ 프로필 | Critical · Implemented | 원격 연결·적용 버전 기록·고정·check; 프로필 모델 후 |
-
-
-#### 2. 프로젝트 적용과 에이전트 전달
-
-
-| 주제                                                                                                                               | 목적·대상 계층                                               | 중요도·상태                  | 결정할 것과 관계                                      |
-| -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------------------- | ---------------------------------------------- |
-| [프로젝트 적용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md)             | 공통 컨텍스트와 프로젝트 도메인 규칙을 분리해 함께 사용 · 사용자 ↔ CLI ↔ 프로필 ↔ 프로젝트 | Critical · Implemented  | 대상·병합·승인·적용 기록; setup 후, 동기화 전                 |
-| [에이전트 산출물 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 에이전트별 파일 형식에 같은 공통 기준 전달 · 프로필 ↔ CLI ↔ 프로젝트 산출물        | High · Implemented      | 어댑터·포인터·파일 소유권·drift; 프로젝트 적용 후                |
-| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 재적용·업데이트 때 사용자 내용과 수동 변경을 보호 · CLI/TUI ↔ 프로필 ↔ 프로젝트 파일 | Critical · Implementing | 관리 블록·hash·dry-run·충돌·백업·복구; 적용·동기화의 안전성 후속 작업 |
-
-
-#### 3. 사용자·에이전트 자동화 경계
-
-
-| 주제                                                                                                                          | 목적·대상 계층                                                             | 중요도·상태          | 결정할 것과 관계                                     |
-| --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------- | --------------------------------------------- |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Implementing | 명시적 대상·기계 판독 결과·승인·종료 코드, 에이전트용 스킬과 전달 확인 구현; 배포 패키지 기준 에이전트 시나리오 평가가 다음 작업 |
-
-
-현재의 선행 구조는 프로필 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 적용 수준의 의미 정의, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
+- **구현 중:** 자연어 요청을 통한 agctx 사용(스킬·`--json`·`explain`·`verify`는 동작하고, 배포 패키지로 에이전트 시나리오를 평가하는 일이 남음), agctx 관리 산출물의 안전한 동기화(관리 영역 hash·dry-run·충돌 복구는 동작하고, 파일별 소유권 기록과 마커 없는 파일 정책을 정하는 일이 남음)
+- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents), 스코프 확장과 지침 합성, 기본 지침의 근거 기준과 분량 예산, 문서 정확성 자동 리뷰. 아직 현재 동작으로 보장하지 않습니다.
 
 ## 문서
 

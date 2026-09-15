@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/commands, src/profile, src/project, src/shared, src/tui, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 175772f204b99e48f3342987e36692d7d1e8be906f59f036e50e06144ae13d63 -->
+<!-- agctx-doc-sources-sha256: 1af36a4a4f50e999a09fc8b30b3f9b06fdd0079dde2951743dfccdbec4a74085 -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -100,11 +100,11 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 이 패키지는 명령 하나를 노출한다: `agctx → ./dist/agctx.js`(`package.json:15-17`). 이 파일은 `src/agctx.ts`를 컴파일한 결과다.
+- 이 패키지는 명령 하나를 노출한다: `agctx → dist/agctx.js`(`package.json:15-17`). 이 파일은 `src/agctx.ts`를 컴파일한 결과다.
 
   ```json
   "bin": {
-    "agctx": "./dist/agctx.js"
+    "agctx": "dist/agctx.js"
   }
   ```
 - 설치된 실행 진입점이 실제로 만들어지는지는 `tools/package-smoke.ts:40`이 `node_modules/.bin/agctx`(Windows에서는 `agctx.cmd`)를 호출해 확인한다.

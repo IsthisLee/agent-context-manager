@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 02a8ba8b2a3c396f0a47be6bc2613437e698ca6dc1feb5837843ff02b125b310 -->
+<!-- agctx-doc-sources-sha256: ae8cd2f985978e83565d1332afa67d4ee2db14acda914856aff7557beca526eb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -117,7 +117,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 - `agctx profile apply <name> <project>` — apply the selected Profile to a project.
 - `agctx profile resolve <project>` — move edits made inside a managed area outside it and regenerate the area; when the last applied version is unknown, `--discard` backs up and regenerates, and `--edit` opens a VS Code three-way merge.
 - Generate and synchronize per-agent guidance files.
-- `agctx config lang <ko|en>` — set the display and generation language; the default is Korean, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
+- `agctx config lang <ko|en>` — set the display and generation language; the default is English, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
 
 ## Supported agents
 

@@ -1,9 +1,9 @@
 /**
  * Locale resolution and message catalog for the agctx CLI.
  *
- * The default locale is `ko`, so with no flag, environment variable, saved
- * choice, or interactive prompt the CLI behaves exactly as before. English is
- * opt-in.
+ * The default locale is `en`: with no flag, environment variable, saved choice,
+ * or interactive answer, output and generated guidance are English. Korean is
+ * chosen with --lang ko, AGCTX_LANG=ko, or config lang ko.
  */
 
 import type { GuidanceKey, GuidanceLevel, Locale, Scope } from '../shared/types.ts';
@@ -13,8 +13,8 @@ import ko from './messages-ko.ts';
 export type { Locale } from '../shared/types.ts';
 export type MessageVars = Record<string, string | number>;
 
-export const SUPPORTED_LOCALES: readonly Locale[] = ['ko', 'en'];
-export const DEFAULT_LOCALE: Locale = 'ko';
+export const SUPPORTED_LOCALES: readonly Locale[] = ['en', 'ko'];
+export const DEFAULT_LOCALE: Locale = 'en';
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === 'string' && (SUPPORTED_LOCALES as readonly string[]).includes(value);
@@ -38,7 +38,7 @@ export interface LocaleInputs {
  *   2. AGCTX_LANG env    (invalid value throws)
  *   3. saved user choice   (invalid value ignored)
  *   4. interactive (TTY) → null, meaning the caller must prompt and save
- *      non-interactive     → DEFAULT_LOCALE (ko), the pre-i18n behavior
+ *      non-interactive     → DEFAULT_LOCALE (en)
  */
 export function resolveLocale({ flag = null, env = null, saved = null, isTTY = false }: LocaleInputs = {}): Locale | null {
   if (flag != null) return validated('--lang', flag);

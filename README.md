@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 02a8ba8b2a3c396f0a47be6bc2613437e698ca6dc1feb5837843ff02b125b310 -->
+<!-- agctx-doc-sources-sha256: ae8cd2f985978e83565d1332afa67d4ee2db14acda914856aff7557beca526eb -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -123,7 +123,7 @@ agctx profile apply company /path/to/project
 - `agctx profile apply <name> <project>` — 선택한 프로필을 프로젝트에 적용
 - `agctx profile resolve <project>` — 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 생성; 마지막 적용본을 모르면 `--discard`로 백업 후 재생성, `--edit`로 VS Code 3-way merge
 - 에이전트별 지침 파일 생성·동기화
-- `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 한국어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
+- `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 영어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
 ## 지원 에이전트
 

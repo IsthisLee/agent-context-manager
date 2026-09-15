@@ -1,6 +1,6 @@
 # 0002. CLI·생성 지침의 로케일(ko/en) 국제화
 
-* **상태:** 채택됨 (Accepted)
+* **상태:** 채택됨 (Accepted), 일부 대체됨: 기본 로케일 `ko`는 [ADR 0014](0014-default-locale-english.md)가 `en`으로 바꾼다
 * **일자:** 2026-09-13
 * **결정자:** 제품 소유자·개발자
 * **관련:** [0003](0003-rename-core-to-guidance-profile.md)이 이 ADR의 저장 경로 `~/.agentic-cores`를 `~/.agentic-profiles`로 개명한다.

@@ -34,21 +34,21 @@ test('resolveLocale follows the fixed precedence order', () => {
   assert.equal(resolveLocale({ flag: 'en', env: 'ko', saved: 'ko', isTTY: true }), 'en');
   assert.equal(resolveLocale({ env: 'en', saved: 'ko', isTTY: true }), 'en');
   assert.equal(resolveLocale({ saved: 'en', isTTY: true }), 'en');
-  assert.equal(resolveLocale({ saved: 'bad', isTTY: false }), 'ko');
+  assert.equal(resolveLocale({ saved: 'bad', isTTY: false }), 'en');
   assert.equal(resolveLocale({ isTTY: false }), DEFAULT_LOCALE);
   assert.equal(resolveLocale({ isTTY: true }), null);
 });
 
 test('resolveLocale rejects an unsupported flag or env value', () => {
-  assert.throws(() => resolveLocale({ flag: 'fr' }), /--lang must be one of: ko, en/);
-  assert.throws(() => resolveLocale({ env: 'jp' }), /AGCTX_LANG must be one of: ko, en/);
+  assert.throws(() => resolveLocale({ flag: 'fr' }), /--lang must be one of: en, ko/);
+  assert.throws(() => resolveLocale({ env: 'jp' }), /AGCTX_LANG must be one of: en, ko/);
 });
 
-test('default (non-interactive) locale keeps Korean generated guidance', () => {
+test('AGCTX_LANG=ko generates Korean guidance', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-ko-'));
   try {
-    const agents = buildProject(home);
-    assert.ok(hasHangul(agents), 'ko AGENTS.md should still contain Korean guidance');
+    const agents = buildProject(home, { AGCTX_LANG: 'ko' });
+    assert.ok(hasHangul(agents), 'ko AGENTS.md should contain Korean guidance');
     assert.match(agents, /프로젝트 규칙 확장/);
     assert.match(agents, /^## 변경 검토$/m);
     assert.doesNotMatch(agents, /^## 리뷰$/m);
@@ -57,11 +57,11 @@ test('default (non-interactive) locale keeps Korean generated guidance', () => {
   }
 });
 
-test('AGCTX_LANG=en generates guidance with no Korean characters', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-'));
+test('the default (non-interactive) locale generates English guidance', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-default-'));
   try {
-    const agents = buildProject(home, { AGCTX_LANG: 'en' });
-    assert.equal(hasHangul(agents), false, 'en AGENTS.md must contain no Korean characters');
+    const agents = buildProject(home);
+    assert.equal(hasHangul(agents), false, 'the default AGENTS.md must contain no Korean characters');
     assert.match(agents, /Project rule extensions/);
     assert.match(agents, /^## Change review$/m);
     assert.doesNotMatch(agents, /^## Review$/m);
@@ -97,11 +97,11 @@ test('a saved config.json locale is honored with no flag or env', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfg-'));
   try {
     fs.mkdirSync(home, { recursive: true });
-    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ locale: 'ko' }, null, 2) + '\n');
     run(home, ['profile', 'create', 'demo', '--scope', 'team']);
     const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfgproj-'));
     run(home, ['profile', 'apply', 'demo', project]);
-    assert.equal(hasHangul(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8')), false);
+    assert.equal(hasHangul(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8')), true);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -127,7 +127,7 @@ test('an unsupported --lang value exits non-zero', () => {
       encoding: 'utf8'
     });
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /--lang must be one of: ko, en/);
+    assert.match(result.stderr, /--lang must be one of: en, ko/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

@@ -14,6 +14,7 @@
 - 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
 
 - **호환성 파괴:** 이름을 Agent Context Manager로 바꿈. 패키지는 `@isthis/agentic`에서 `agent-context-manager`로, 명령은 `agentic`·`agt`에서 `agctx` 하나로 바뀐다. 프로필은 `~/.agctx/profiles/<name>/`(`profile.json`, `AGENTS.md`), 언어 설정은 `~/.agctx/config.json`에 둔다. 환경 변수는 `AGCTX_HOME`(데이터 폴더 자체를 가리킴)과 `AGCTX_LANG`이다. 프로젝트 파일은 `agctx.project.json`, `.agctx/`, `.agents/rules/agctx.md`이고 관리 표지는 `agctx:managed`다. 이전 이름의 홈과 프로젝트 파일은 읽거나 옮기지 않으므로 프로필을 다시 만들고 프로젝트에 다시 적용한다. 근거는 [ADR 0013](docs/adr/0013-rename-agent-context-manager.md)
+- **호환성 파괴:** 기본 로케일을 영어(`en`)로 바꿈. 로케일을 지정하지 않은 비대화형 실행의 출력과 새 프로필·프로젝트의 지침이 영어로 나온다. 한국어는 `--lang ko`·`AGCTX_LANG=ko`·`agctx config lang ko`로 고르며, 첫 대화형 실행의 언어 선택 화면은 English를 먼저 보여 준다. 근거는 [ADR 0014](docs/adr/0014-default-locale-english.md)
 - 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
 - 런타임 의존성 `diff`(jsdiff) 추가
 - 소스를 TypeScript로 옮김. 설치본은 `src/`를 컴파일한 `dist/`의 JavaScript이며 설치·실행 방법은 그대로다. 저장소 개발에는 Node.js 22.18 이상이 필요하고, `pnpm run check`가 문법 검사 대신 TypeScript 형식 검사를 실행한다. 근거는 [ADR 0012](docs/adr/0012-typescript-source.md)

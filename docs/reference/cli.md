@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 6832b782a148d9d7c3f4bad8d745a8625df4cc02e0a72f95695f53ecfe603e23 -->
+<!-- agctx-doc-sources-sha256: a0f2805cc2501120a768057bf42cd5c8677ade04eb3581b2403b06fd0034292c -->
 
 ## 설치와 실행
 
@@ -770,7 +770,7 @@ $ agctx verify services/payments
 codex        no-evidence  no session log for this folder
 claude       no-evidence  no session log for this folder
 antigravity  no-evidence  agctx cannot read Antigravity session logs
-Next: start Codex, Claude Code in this folder once, or run agctx verify --probe to ask directly.
+Next: start an agent (Codex, Claude Code) in this folder once, or run agctx verify --probe to ask directly.
 Next: run agctx verify --probe to ask Antigravity directly.
 
 $ agctx verify services/payments --probe          # 터미널이 아닌 환경

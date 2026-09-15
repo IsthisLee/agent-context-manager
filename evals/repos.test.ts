@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { commitAndPush, fakeGh, gitIn, makeWorkspace, optionValue, publishProfile, serviceRepo } from './support/git-workspace.ts';
+import { ghFailureReason } from '../src/repos/pr.ts';
 
 interface ListedRepo {
   path: string;
@@ -315,4 +316,11 @@ test('check and repos pr read files git checks out with CRLF line endings as the
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Document every public endpoint/);
+});
+
+test('repos pr explains a missing GitHub CLI in words instead of the spawn error', () => {
+  const missing = Object.assign(new Error('spawnSync gh ENOENT'), { code: 'ENOENT' });
+  assert.equal(ghFailureReason(missing), 'GitHub CLI (gh) is not installed; install it to open pull requests automatically.');
+  const other = Object.assign(new Error('spawnSync gh EACCES'), { code: 'EACCES' });
+  assert.equal(ghFailureReason(other), 'spawnSync gh EACCES');
 });

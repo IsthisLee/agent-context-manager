@@ -1,7 +1,7 @@
 # APM과 함께 쓰기
 
 <!-- agctx-doc-sources: src/project/apm.ts, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 1e901dc8c8e792d2906aacc01e3555d6ff640737ee7ac3ed0adbcae0777fb724 -->
+<!-- agctx-doc-sources-sha256: 7df91caff7ed042c2d14f5e0ebb9e80c438aaabef501632d0676bc9739c64c6c -->
 
 Microsoft APM으로 지침 패키지를 설치하는 저장소에서도 agctx를 함께 쓸 수 있다. 두 도구가 `AGENTS.md`를 함께 쓰므로, APM이 `AGENTS.md`의 정해진 블록만 고치도록(`managed_section`) 설정한다. 근거와 실측은 [외부 근거](../references.md#apm과-함께-쓰기-근거)에 있다.
 

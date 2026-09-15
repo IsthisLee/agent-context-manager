@@ -226,6 +226,7 @@ export default {
     'repos.pr.would-open': '{branch} → {base}: 파일 {count}개',
     'repos.pr.opened': '{branch}: {url}',
     'repos.pr.pushed': '{branch}를 push했습니다. {branch}에서 {base}로 가는 PR을 직접 여세요.{link} {reason}',
+    'repos.pr.gh-missing': 'GitHub CLI(gh)가 설치돼 있지 않습니다. 설치하면 PR을 자동으로 엽니다.',
     'repos.pr.body.intro': '이 저장소에서 agctx가 관리하는 에이전트 지침을 갱신합니다.',
     'repos.pr.body.profile': '프로필: `{profile}`',
     'repos.pr.body.source': '원천: {source}',

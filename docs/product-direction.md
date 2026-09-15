@@ -61,7 +61,7 @@ agctx는 공통 지침을 프로젝트까지 전달하는 데서 멈춘다. 에�
 
 ## 로케일 정책
 
-CLI와 생성 지침은 한국어(ko)·영어(en)를 지원한다. 기본은 `ko`이고 영어는 사용자가 선택할 때만 쓴다. 로케일을 지정하지 않은 비대화형 실행은 국제화 이전과 같게 동작한다. 로케일을 정하는 순서와 명령은 [CLI Reference](cli-reference.md#config-lang)에, 근거와 대안은 [ADR 0002](adr/0002-locale-i18n.md)에 있다.
+CLI와 생성 지침은 영어(en)·한국어(ko)를 지원한다. 기본은 `en`이고 한국어는 `--lang ko`·`AGCTX_LANG=ko`·`agctx config lang ko`로 고른다. 로케일을 정하는 순서와 명령은 [CLI Reference](cli-reference.md#config-lang)에, 근거와 대안은 [ADR 0002](adr/0002-locale-i18n.md)와 [ADR 0014](adr/0014-default-locale-english.md)에 있다.
 
 ## 단계별 구현 목표
 

@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/profile/apply.ts:123-140`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 10508799fb799fd0a36a239db73ba55c1bf03ca70ed429fd76f323c511064596 -->
+<!-- agctx-doc-sources-sha256: 788d3f00292b98fe1e717afb6e1e56f10dff452fc03f682fae8e302511cb8f8d -->
 
 ## 읽는 법
 
@@ -101,7 +101,7 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
   if (flag != null) return validated('--lang', flag);                   // 1) --lang
   if (env != null && env !== '') return validated('AGCTX_LANG', env); // 2) 환경변수
   if (isLocale(saved)) return saved;                                    // 3) 저장된 선택
-  if (!isTTY) return DEFAULT_LOCALE;                                    // 4a) 비TTY면 기본값 ko
+  if (!isTTY) return DEFAULT_LOCALE;                                    // 4a) 비TTY면 기본값 en
   return null;                                                          // 4b) TTY면 물어봄
 }
 ```
@@ -109,7 +109,7 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 - `--lang`·`AGCTX_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
 - `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`src/commands/cli.ts:68-71`).
 - **저장 위치**: agctx 데이터 폴더의 `config.json`이다(`configPath`, `src/shared/home.ts:20-22`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`src/commands/cli.ts:14-18`).
-- `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`src/i18n/index.ts:57-64`).
+- `t()`는 키를 찾고 없으면 기본 로케일(`en`)로, 그것도 없으면 키 문자열을 그대로 돌려준다(`src/i18n/index.ts:57-64`).
 
 ## 3. 프로필 저장소 모델
 
@@ -172,7 +172,7 @@ fs.mkdirSync(profileDir, { recursive: true });
 writeTextAtomic(path.join(profileDir, PROFILE_METADATA_FILE),
   JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
 const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT,
-  getLocale() === 'en' ? 'templates/profile/AGENTS.en.md' : 'templates/profile/AGENTS.md'), 'utf8');
+  getLocale() === 'ko' ? 'templates/profile/AGENTS.ko.md' : 'templates/profile/AGENTS.md'), 'utf8');
 writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
 ```
 

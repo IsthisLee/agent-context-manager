@@ -11,6 +11,9 @@ import { hashManagedDocument } from '../src/project/analyzer.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
+// These tests assert Korean guidance and messages, so they pin the locale for every CLI run.
+process.env.AGCTX_LANG = 'ko';
+
 test('profile create creates a named scoped profile in the user profile directory', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-test-'));
 

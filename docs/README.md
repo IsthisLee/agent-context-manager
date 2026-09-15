@@ -17,7 +17,7 @@
 9. [외부 참고 문헌](references.md): 연구·사례·비교 도구
 10. [결정 기록](adr/): 확정된 장기 결정
     - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
-    - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md)
+    - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md) (일부 대체: ADR 0014)
     - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md) (일부 대체: ADR 0013)
     - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md) (일부 정정: ADR 0009, 일부 대체: ADR 0013)
     - [ADR 0005: 지침 적용 수준의 뜻을 정의로 노출](adr/0005-guidance-level-semantics.md)
@@ -29,6 +29,7 @@
     - [ADR 0011: 지원 에이전트를 Codex·Claude Code·Antigravity로 좁힘](adr/0011-supported-agents.md)
     - [ADR 0012: 소스를 TypeScript로 쓰고 컴파일한 JavaScript로 배포](adr/0012-typescript-source.md)
     - [ADR 0013: 이름을 Agent Context Manager(agctx)로 바꾸고 호환 계층을 두지 않음](adr/0013-rename-agent-context-manager.md)
+    - [ADR 0014: 패키지 기본 로케일을 영어로 바꿈](adr/0014-default-locale-english.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

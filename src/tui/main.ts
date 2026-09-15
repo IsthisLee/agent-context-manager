@@ -34,8 +34,8 @@ export async function promptLocale(): Promise<Locale | null> {
   const selected = await select<Locale>({
     message: t(getLocale(), 'lang.prompt.message'),
     options: [
-      { value: 'ko', label: '한국어 (Korean)' },
-      { value: 'en', label: 'English (영어)' }
+      { value: 'en', label: 'English (영어)' },
+      { value: 'ko', label: '한국어 (Korean)' }
     ]
   });
   if (cancelled(selected)) return null;

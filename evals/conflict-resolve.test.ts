@@ -9,6 +9,9 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
+
+// These tests assert Korean guidance and messages, so they pin the locale for every CLI run.
+process.env.AGCTX_LANG = 'ko';
 const END = '<!-- agctx:managed:end -->';
 const EXTENSION = '## 4. 프로젝트 규칙 확장 (SSOT)';
 const ADDED = '## Commands\n- Test: `pnpm test`\n';

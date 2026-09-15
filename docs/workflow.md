@@ -3,7 +3,7 @@
 이 문서는 `agent-context-manager` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 10508799fb799fd0a36a239db73ba55c1bf03ca70ed429fd76f323c511064596 -->
+<!-- agctx-doc-sources-sha256: 788d3f00292b98fe1e717afb6e1e56f10dff452fc03f682fae8e302511cb8f8d -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agctx`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.

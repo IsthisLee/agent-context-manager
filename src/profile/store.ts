@@ -53,7 +53,7 @@ export function createProfile(name: string, scope: string = 'personal'): void {
   if (fs.existsSync(profileDir)) throw new Error(`Profile already exists: ${name}`);
   fs.mkdirSync(profileDir, { recursive: true });
   writeTextAtomic(path.join(profileDir, PROFILE_METADATA_FILE), JSON.stringify({ schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }, null, 2) + '\n');
-  const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, getLocale() === 'en' ? 'templates/profile/AGENTS.en.md' : 'templates/profile/AGENTS.md'), 'utf8');
+  const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, getLocale() === 'ko' ? 'templates/profile/AGENTS.ko.md' : 'templates/profile/AGENTS.md'), 'utf8');
   writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
   console.log(`Created profile: ${name} (${scope})`);
 }

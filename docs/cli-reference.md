@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 10508799fb799fd0a36a239db73ba55c1bf03ca70ed429fd76f323c511064596 -->
+<!-- agctx-doc-sources-sha256: 788d3f00292b98fe1e717afb6e1e56f10dff452fc03f682fae8e302511cb8f8d -->
 
 ## 설치와 실행
 
@@ -211,7 +211,7 @@ CLI와 생성 지침의 언어를 저장한다.
 agctx config lang <ko|en>
 ```
 
-허용값은 `ko`, `en`이며 기본은 `ko`다. 로케일은 `--lang` → `AGCTX_LANG` → 저장된 선택 → (대화형이면 첫 실행에 한 번 물어 저장하고 비대화형이면 `ko`) 순서로 정한다. `--lang`과 `AGCTX_LANG`에 허용되지 않는 값을 주면 오류로 끝나고 저장된 값이 잘못됐으면 무시한다.
+허용값은 `en`, `ko`이며 기본은 `en`이다. 로케일은 `--lang` → `AGCTX_LANG` → 저장된 선택 → (대화형이면 첫 실행에 한 번 물어 저장하고 비대화형이면 `en`) 순서로 정한다. `--lang`과 `AGCTX_LANG`에 허용되지 않는 값을 주면 오류로 끝나고 저장된 값이 잘못됐으면 무시한다.
 
 ## 저장 위치
 

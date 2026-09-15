@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 7ac5e0c84daa08a0083e6124031ca4a1b04c37fdc4283f474833c6a3c11b3676 -->
+<!-- agctx-doc-sources-sha256: 8f9c8edbdb74bca33f012e6bd618be5aaa427968b52c6b9dd56a3f427dfb564f -->
 
 ## 읽는 법
 
@@ -543,9 +543,9 @@ if (result.error) {
 
 - 셸 문자열을 만들지 않고 인자 배열로 실행하므로 URL이나 브랜치 이름이 셸에서 해석되지 않는다. 사용자의 Git 설정·credential helper를 그대로 쓴다.
 - 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)).
-- `isGitRoot`(`src/shared/git.ts:41-52`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-toplevel`을 실행하고 실제 경로를 비교한다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
-- `resolveRemoteLocation`(`src/shared/git.ts:58-61`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
-- `sanitizeRemoteUrl`(`src/shared/git.ts:64-74`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
+- `isGitRoot`(`src/shared/git.ts:41-48`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-cdup`을 실행하고, 출력이 비어 있으면 그 폴더를 작업 트리의 최상위로 본다. 경로 문자열을 비교하지 않으므로 macOS 임시 폴더의 `/var`와 `/private/var`, Windows의 짧은 이름(`RUNNER~1`)이나 대소문자 차이가 판정을 바꾸지 않는다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
+- `resolveRemoteLocation`(`src/shared/git.ts:54-57`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
+- `sanitizeRemoteUrl`(`src/shared/git.ts:60-70`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
 
 **status.** `profileGitState`(`src/profile/git-profile.ts:43-72`)는 브랜치, HEAD 커밋, `git status --porcelain` 결과, 원격 URL을 읽는다. `--refresh`일 때만 `git fetch`로 네트워크에 접속한다. `branch.<브랜치>.remote`·`merge` 설정이 가리키는 원격 추적 ref가 있으면 `git rev-list --left-right --count HEAD...<ref>`로 앞섬·뒤처짐을 센다. 처리기(`src/commands/handlers.ts:161-170`)는 뒤처졌으면 `profile pull`을, 앞섰으면 `profile push`를 다음 명령으로 출력한다.
 
@@ -709,7 +709,7 @@ flowchart TD
 - `uncommittedManagedFiles`(`src/repos/sync.ts:42-47`)는 저장소가 Git 작업 트리 안에 있을 때만 `git status --porcelain --untracked-files=no`로 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`·`agctx.project.json`과 `managedHashes`에 기록한 연결 파일을 본다(`managedFiles`, `src/repos/sync.ts:30-32`). 추적하지 않는 파일은 막지 않고, Git 저장소가 아니면 `git`을 실행하지 않는다.
 - `applyReposSync`(`src/repos/sync.ts:92-103`)는 저장소마다 쓰기와 목록 기록을 하고, 한 저장소의 오류를 그 항목의 `error`로 남긴 채 다음 저장소로 넘어간다. 처리기(`src/commands/handlers.ts:294-318`)는 계획을 출력하고 한 번 확인한 뒤 결과가 바뀐 항목만 다시 출력한다. 저장소마다 계획의 경고는 경로를 붙여 경고로 돌려준다.
 
-**pr.** `prepareReposPrs`(`src/repos/pr.ts:232-266`)가 대상마다 임시 작업 공간을 만들어 계획하고, 확인을 받은 뒤 `openPullRequests`(`src/repos/pr.ts:289-312`)가 커밋·push·PR을 만든다.
+**pr.** `prepareReposPrs`(`src/repos/pr.ts:233-267`)가 대상마다 임시 작업 공간을 만들어 계획하고, 확인을 받은 뒤 `openPullRequests`(`src/repos/pr.ts:290-313`)가 커밋·push·PR을 만든다.
 
 ```mermaid
 sequenceDiagram
@@ -734,11 +734,11 @@ sequenceDiagram
   H->>W: git worktree remove --force · git worktree prune
 ```
 
-- `worktreeFor`(`src/repos/pr.ts:108-138`)는 사용자 작업 폴더에 연결된 분리 worktree를 임시 폴더에 만들고 원격 base 브랜치를 체크아웃한다. base는 `--base`, `origin/HEAD`, 현재 브랜치의 추적 브랜치, 현재 브랜치 순서로 정한다(`defaultBase`, `src/repos/pr.ts:97-105`). 커밋은 분리된 HEAD에서 만들고 `HEAD:refs/heads/<브랜치>`로 push하므로 사용자 저장소의 작업 폴더·체크아웃·로컬 브랜치는 바뀌지 않는다.
-- `--targets` 파일의 줄은 대상 파일이 있는 폴더 기준으로 경로를 푼다. 작업 폴더(`.git`이 있는 폴더)는 그대로 쓰고, bare 저장소 경로와 URL은 `cloneFor`(`src/repos/pr.ts:141-154`)가 임시 폴더에 clone한다(`targetsFrom`, `src/repos/pr.ts:76-91`). 임시 clone은 저장소 목록에 기록하지 않는다.
-- `planTarget`(`src/repos/pr.ts:194-223`)은 고정한 저장소를 `planFor(..., true)`로 프로필의 현재 커밋에 다시 고정하고, 고정하지 않은 저장소는 보관함 내용으로 동기화한다. 브랜치 이름은 `agctx/<프로필>-<커밋 7자리>`이고 Git에 연결하지 않은 프로필이면 내용 해시로 만든다. 같은 브랜치에 열린 PR이 있거나 원격에 같은 브랜치가 있으면 만들지 않으므로, 예약 봇이 매일 실행해도 PR이 쌓이지 않는다.
-- `gh`(`src/repos/pr.ts:163-170`)는 `GH_PROMPT_DISABLED=1`로 질문 없이 실행하고, Windows에서는 `gh.exe`와 `.cmd` 래퍼를 모두 찾도록 셸을 거친다. `gh`가 없거나 GitHub 저장소가 아니어서 PR을 만들지 못하면 push까지 한 상태를 `pushed`로 남기고, 원격이 GitHub이면 비교 페이지 주소를 함께 알려 준다.
-- PR 본문(`pullRequestBody`, `src/repos/pr.ts:274-286`)에는 프로필·원천·버전 범위·고정 여부·프로필 커밋 목록(`git log --oneline <기록>..<새 커밋>`)·바뀐 파일을 적는다.
+- `worktreeFor`(`src/repos/pr.ts:108-139`)는 사용자 작업 폴더에 연결된 분리 worktree를 임시 폴더에 만들고 원격 base 브랜치를 체크아웃한다. 프로젝트가 저장소 안 어디에 있는지는 `git rev-parse --show-toplevel --show-prefix`로 받으므로, 작업 폴더를 짧은 이름이나 다른 대소문자로 적어도 worktree 안의 같은 폴더에 적용한다. base는 `--base`, `origin/HEAD`, 현재 브랜치의 추적 브랜치, 현재 브랜치 순서로 정한다(`defaultBase`, `src/repos/pr.ts:97-105`). 커밋은 분리된 HEAD에서 만들고 `HEAD:refs/heads/<브랜치>`로 push하므로 사용자 저장소의 작업 폴더·체크아웃·로컬 브랜치는 바뀌지 않는다.
+- `--targets` 파일의 줄은 대상 파일이 있는 폴더 기준으로 경로를 푼다. 작업 폴더(`.git`이 있는 폴더)는 그대로 쓰고, bare 저장소 경로와 URL은 `cloneFor`(`src/repos/pr.ts:142-155`)가 임시 폴더에 clone한다(`targetsFrom`, `src/repos/pr.ts:76-91`). 임시 clone은 저장소 목록에 기록하지 않는다.
+- `planTarget`(`src/repos/pr.ts:195-224`)은 고정한 저장소를 `planFor(..., true)`로 프로필의 현재 커밋에 다시 고정하고, 고정하지 않은 저장소는 보관함 내용으로 동기화한다. 브랜치 이름은 `agctx/<프로필>-<커밋 7자리>`이고 Git에 연결하지 않은 프로필이면 내용 해시로 만든다. 같은 브랜치에 열린 PR이 있거나 원격에 같은 브랜치가 있으면 만들지 않으므로, 예약 봇이 매일 실행해도 PR이 쌓이지 않는다.
+- `gh`(`src/repos/pr.ts:164-171`)는 `GH_PROMPT_DISABLED=1`로 질문 없이 실행하고, Windows에서는 `gh.exe`와 `.cmd` 래퍼를 모두 찾도록 셸을 거친다. `gh`가 없거나 GitHub 저장소가 아니어서 PR을 만들지 못하면 push까지 한 상태를 `pushed`로 남기고, 원격이 GitHub이면 비교 페이지 주소를 함께 알려 준다.
+- PR 본문(`pullRequestBody`, `src/repos/pr.ts:275-287`)에는 프로필·원천·버전 범위·고정 여부·프로필 커밋 목록(`git log --oneline <기록>..<새 커밋>`)·바뀐 파일을 적는다.
 - 모든 임시 worktree와 clone은 처리기의 `finally`에서 지운다(`src/commands/handlers.ts:319-341`).
 
 ## 20. explain: 에이전트별 지침 로드 판정

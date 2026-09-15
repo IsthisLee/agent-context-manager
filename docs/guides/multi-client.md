@@ -1,7 +1,7 @@
 # 고객사 여러 곳의 규칙 따로 쓰기
 
 <!-- agctx-doc-sources: src/repos, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 3d197f7b9437af9bef3f57e60ba5edbc844a7553638f555a13d3ada69bfe7b55 -->
+<!-- agctx-doc-sources-sha256: bd4114551e02a484ded1c54db83d487264d625418d01dcfb8a1c96655b38406f -->
 
 고객사 A와 B가 각자 규칙을 Git 저장소로 관리하고, 고객사 A가 규칙을 바꾸면 A의 저장소들에만 반영해야 하는 경우다.
 

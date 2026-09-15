@@ -160,3 +160,26 @@ test('connect and clone read a local remote path relative to the current folder,
   assert.ok(fs.existsSync(path.join(member.profileDir('team-backend'), 'AGENTS.md')));
 });
 
+
+test('connect and push see a profile repository through a home folder spelled with another letter case', t => {
+  const team = makeTeam(t);
+  const { admin, remote } = team;
+  // Windows can name one folder RUNNER~1 or runneradmin, and git reports the spelling on disk.
+  const respelled = path.join(team.root, 'ADMIN');
+  if (!fs.existsSync(respelled)) {
+    t.skip('this file system tells folder names apart by letter case');
+    return;
+  }
+  admin.ok('profile', 'create', 'team-backend', '--scope', 'team');
+  const dir = admin.profileDir('team-backend');
+  gitIn(dir, 'init', '--initial-branch=main');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '-m', 'Add profile');
+  const runRespelled = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { cwd: team.root, env: { ...admin.env, AGCTX_HOME: respelled }, encoding: 'utf8' });
+
+  const connected = runRespelled('profile', 'connect', 'team-backend', remote);
+  assert.equal(connected.status, 0, `${connected.stdout}\n${connected.stderr}`);
+  const pushed = runRespelled('profile', 'push', 'team-backend', '--yes');
+  assert.equal(pushed.status, 0, `${pushed.stdout}\n${pushed.stderr}`);
+  assert.match(gitIn(team.root, 'ls-remote', '--heads', remote), /refs\/heads\/main/);
+});

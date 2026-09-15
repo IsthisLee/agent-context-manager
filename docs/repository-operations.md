@@ -67,6 +67,7 @@ GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·2
 - npm에서 패키지 이름·scope 소유권과 public package 게시 권한을 확인한다.
 - npm trusted publisher가 정확한 저장소와 `.github/workflows/publish.yml`에 연결되어 있는지 확인한다.
 - 배포 전에 `pnpm run check`, `pnpm run pack:check`, `pnpm run package:smoke`, `pnpm run audit`를 실행한다.
+- `skills/`의 파일 구성을 바꾸거나 스모크가 쓰는 skills CLI 버전을 올리면 `node tools/skills-smoke.ts`로 설치 위치를 확인한다. npm에서 skills CLI를 받아 실행하므로 `pnpm run check`에는 넣지 않는다.
 - `npm publish` 자체도 `prepublishOnly`에서 `pnpm run check`와 `pnpm run pack:check`를 실행하므로, 검증되지 않은 로컬 게시를 기본적으로 차단한다.
 - Release tag가 `package.json` 버전 및 `CHANGELOG.md` 항목과 일치하는지 `pnpm run check:release -- v<version>`으로 확인한다.
 

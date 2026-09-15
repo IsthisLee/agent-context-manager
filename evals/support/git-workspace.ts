@@ -144,6 +144,42 @@ process.exit(0);
   };
 }
 
+export interface FakeCall {
+  command: string;
+  args: string[];
+  cwd: string;
+}
+
+/**
+ * Fake commands on PATH. Each entry is the body of an ES module that receives
+ * `args` (process.argv after the script) and may use `fs` and `path`; every call is logged.
+ */
+export function fakeCommands(t: TestContext, commands: Record<string, string>) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-fake-commands-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const log = path.join(dir, 'calls.jsonl');
+  for (const [name, body] of Object.entries(commands)) {
+    fs.writeFileSync(path.join(dir, `${name}.mjs`), `import fs from 'node:fs';
+import path from 'node:path';
+const args = process.argv.slice(2);
+fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({ command: ${JSON.stringify(name)}, args, cwd: process.cwd() }) + '\\n');
+${body}
+`);
+    if (process.platform === 'win32') {
+      fs.writeFileSync(path.join(dir, `${name}.cmd`), `@"${process.execPath}" "%~dp0${name}.mjs" %*\r\n`);
+    } else {
+      fs.writeFileSync(path.join(dir, name), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/${name}.mjs" "$@"\n`);
+      fs.chmodSync(path.join(dir, name), 0o755);
+    }
+  }
+  return {
+    env: { [PATH_KEY]: `${dir}${path.delimiter}${process.env[PATH_KEY]}` },
+    calls(): FakeCall[] {
+      return fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
+    }
+  };
+}
+
 export function optionValue(args: readonly string[], name: string): string | undefined {
   const at = args.indexOf(name);
   return at >= 0 ? args[at + 1] : undefined;

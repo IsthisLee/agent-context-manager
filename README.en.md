@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: b6df9710a0b4f893fdb11260192dd8c407363fa2e6d42c34d03f93cb090de777 -->
+<!-- agctx-doc-sources-sha256: 14226c93005e15f73378623e75039e4e0027bd110a0bf6da5d132ffc613babe0 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -110,7 +110,17 @@ Applied profile company to /path/to/project
 
 Personal Profiles are stored under `~/.agctx/profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
 
-agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, to check that agents receive the guidance, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+
+### Hand it to an agent
+
+Install the agent skills and you can hand agctx to an agent in plain language, such as "check that this repository's guidance is up to date". The skills make the agent show `--dry-run` output and ask for approval before any write command. The `agctx-author` skill for publishing Profiles and opening PRs is used only when you call it by name.
+
+```bash
+DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+```
+
+The skills CLI sends anonymous usage data; with `DISABLE_TELEMETRY=1` as above it sends none. Details are in the [usage guide](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#에이전트에게-agctx를-맡기기).
 
 ### Scope of verification
 
@@ -129,6 +139,9 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 - `agctx profile clone|status|pull|push|connect` — share Profiles through a standard Git remote; project files are never touched, and incoming guidance with hidden characters is refused.
 - `agctx check [--refresh] <project>` — report managed-area conflicts, hidden characters, and a project behind its Profile through exit codes, without changing files (for CI).
 - `agctx repos list|status|sync|pr` — check and sync every repository that uses a Profile at once, and update pinned repositories through one pull request each; a scheduled bot runs `repos pr --targets <file> --yes`.
+- `agctx explain [<path>]` — show which instruction files Codex, Claude Code, and Antigravity read when started in a folder, and why; exits with 4 when a file reaches no agent.
+- `agctx verify [--probe] [<path>]` — check from agent session logs that the instruction files actually arrived; `--probe` runs each agent once in a scratch copy after approval.
+- Agent skills `agctx` and `agctx-author` — tell an agent the commands and approval rules when you hand agctx over in plain language.
 - Every command — a `--json` result document, exit codes that separate behind, conflict, and hidden characters, `--yes` confirmation outside a terminal, and `agctx <command> --help`.
 - `agctx config lang <ko|en>` — set the display and generation language; the default is English, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
 
@@ -143,6 +156,8 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Antigravity | `.agents/rules/agctx.md` |
 
 Applying also records the managed areas as last written under `.agctx/base/`. Commit it, because it is the reference for resolving managed-area conflicts.
+
+Whether an agent actually reads a file depends on the folder it starts in. Codex reads a subfolder `AGENTS.md` only when started in that folder, and Claude Code does not read an `AGENTS.md` that no `CLAUDE.md` imports. In a monorepo, check with `agctx explain <folder>`.
 
 ## Not supported
 
@@ -167,9 +182,9 @@ agctx's implementation is managed in stages around the questions of where the sh
 | [setup and guidance options](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Users and the CLI selectively configure a Profile's TDD, change review, verification, documentation, and security guidance | High · Implemented | Advance presets and configuration diffs |
 | [Project application](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md) | Apply the chosen Profile to a project while keeping domain guidance separate | Critical · Implemented | Finalize conflict and recovery handling |
 | [Agent artifact synchronization](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
-| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Implementing | Agent skills and guidance-delivery checks |
+| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Implementing | Agent scenario evaluations against the published package |
 | [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Conflict visualization and recovery |
-| [Git-based Profile management](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | Teams and organizations share Profiles through a standard Git remote and record and check the applied version | Critical · Implemented | Sync and open PRs across many repositories |
+| [Git-based Profile management](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | Teams and organizations share Profiles through a standard Git remote and record and check the applied version | Critical · Implemented | None |
 | [Scope expansion and guidance composition](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | User-definable, shareable guidance layers and multi-layer inheritance and merging for a project | Medium · Proposed | Prototype the minimal composition after validation |
 
 ### Proposal summaries
@@ -197,7 +212,7 @@ Each document manages not only the code feature but also the target layer, the r
 
 | Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
 | --- | --- | --- | --- |
-| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Keep AI agents from changing the wrong target on an ambiguous request · user ↔ AI agent ↔ CLI/TUI ↔ project | High · Implementing | Explicit target, machine-readable result, approval, and exit codes implemented; agent skills and delivery checks come next |
+| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Keep AI agents from changing the wrong target on an ambiguous request · user ↔ AI agent ↔ CLI/TUI ↔ project | High · Implementing | Explicit target, machine-readable result, approval, exit codes, agent skills, and delivery checks implemented; agent scenario evaluations against the published package come next |
 
 The current sequence is profile creation → guidance setup → project application → agent artifact synchronization. Each proposal's status, its preceding/following/related proposals, follow-up work, recommended next steps, and the decisions to make are in the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
 

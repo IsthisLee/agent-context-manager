@@ -1,0 +1,6 @@
+interface:
+  display_name: "agctx author"
+  short_description: "Publish a shared agctx profile change and roll it out with pull requests"
+
+policy:
+  allow_implicit_invocation: false

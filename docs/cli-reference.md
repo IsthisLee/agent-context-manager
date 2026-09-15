@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 0150abd1bcd86d8cd8cc0f7d14c8bd01df7175e62bfcdf537c5db20eef6ac2cd -->
+<!-- agctx-doc-sources-sha256: 71b1341279d847f31e8382eb5c026acf94d5d5cc1918e8adc72836bd6146b8d7 -->
 
 ## 설치와 실행
 
@@ -19,7 +19,7 @@ agctx help
 ## 공통 규칙
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
-- 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
+- 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
 - 모든 명령은 전역 옵션 `--json`, `--lang <en|ko>`, `--help`를 받는다. 명령이 받지 않는 옵션을 주거나 위치 인자가 많으면 종료 코드 64로 멈춘다.
 - `off`, `recommended`, `strict`는 지침 수준이며 대소문자를 구분한다.
 
@@ -38,7 +38,7 @@ Exit codes: 0 success, 64 usage error, 70 other error, 2 conflict, 3 hidden char
 
 ### 확인과 `--yes`
 
-프로젝트 파일을 바꾸거나 원격으로 보내는 명령(`profile apply`·`sync`·`resolve`·`remove`·`push`, `repos sync`·`pr`)은 계획을 출력한 뒤 확인을 받는다.
+프로젝트 파일을 바꾸거나 원격으로 보내는 명령(`profile apply`·`sync`·`resolve`·`remove`·`push`, `repos sync`·`pr`)은 계획을 출력한 뒤 확인을 받는다. 에이전트 CLI를 실행해 요금제·API 사용량을 쓰는 `verify --probe`도 같은 규칙으로 확인을 받는다. `verify`에는 `--dry-run`이 없으므로 터미널이 아니면 `--yes`를 붙인다.
 
 - 터미널에서는 질문에 답한다.
 - 터미널이 아니거나(CI·스크립트·에이전트) `--json`을 주면 묻지 않는다. `--yes`가 없으면 아무것도 쓰지 않고 종료 코드 64로 멈추며 `--yes`를 붙인 명령을 알려 준다.
@@ -70,9 +70,9 @@ Next: Did you mean agctx profile list?
 | 1 | 뒤처짐 | `check`·`repos status`: 이 컴퓨터의 프로필이나 원천 저장소에 기록보다 새 버전이 있음, 커밋하지 않은 프로필 수정으로 적용함. `repos sync`가 관리 파일의 커밋하지 않은 변경 때문에 건너뛴 저장소 |
 | 2 | 관리 영역 충돌 | `apply`·`sync`·`resolve`가 밖에서 고친 관리 영역을 만남, `check`의 관리 영역 불일치, `pull`·`push`에서 커밋하지 않은 변경·갈라짐·원격보다 뒤처짐 |
 | 3 | 숨은 문자 | 받을 프로필, 적용할 프로필, 관리 파일에 사람에게 보이지 않는 문자가 있음 |
-| 4 | 전달 누락 | 예약된 코드. 이 코드를 돌려주는 명령은 아직 없다 |
+| 4 | 전달 누락 | `explain`: 어느 에이전트에도 닿지 않는 프로젝트 지침 파일이 있음. `verify`: 받아야 할 파일이 세션 기록이나 probe에서 확인되지 않음 |
 | 64 | 사용법 오류 | 알 수 없는 명령·옵션, 인자 누락, 없는 프로필, 적용하지 않은 프로젝트, 확인할 수 없는 환경에서 `--yes` 없음 |
-| 69 | 외부 도구·네트워크·인증 불가 | `git`이 없음, 원격 접근·인증 실패, VS Code CLI `code`가 없음, 고정한 커밋이 로컬에 없음 |
+| 69 | 외부 도구·네트워크·인증 불가 | `git`이 없음, 원격 접근·인증 실패, VS Code CLI `code`가 없음, 고정한 커밋이 로컬에 없음, `verify --probe`의 에이전트 CLI가 없거나 실패함 |
 | 70 | 그 밖의 오류 | 심볼릭 링크 대상 거부 같은 파일 시스템 오류 |
 
 결과가 여러 개 겹치면 3 > 2 > 1 순서로 가장 심각한 코드를 돌려준다. 명령마다 돌려줄 수 있는 코드는 `--help`의 마지막 줄에 있다. 결정 근거는 [ADR 0016](adr/0016-command-contract.md)이다.
@@ -507,6 +507,195 @@ $ agctx check --refresh /work/orders-api
 behind            -  the source repository has a newer commit (ddf3742)
 ```
 
+### `explain`
+
+한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않으며, CLI로만 제공한다.
+
+```bash
+agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
+```
+
+| 옵션·인자 | 설명 |
+| --- | --- |
+| `<path>` | 에이전트를 시작할 폴더. 파일을 주면 그 파일이 있는 폴더, 생략하면 현재 폴더 |
+| `--agent` | 볼 에이전트. 쉼표로 여러 개를 주거나 `all`(기본) |
+
+시작 폴더가 속한 Git 저장소의 루트를 프로젝트 루트로 삼고, 파일마다 상태를 하나 붙인다.
+
+| 상태 | 뜻 |
+| --- | --- |
+| `read` | 세션을 시작할 때 읽는다 |
+| `on-demand` | 그 폴더의 파일을 읽을 때 읽는다(Claude Code의 시작 폴더 아래 `CLAUDE.md`) |
+| `conditional` | 조건이 맞을 때만 읽는다. Claude Code의 `paths` 규칙과 승인이 필요한 가져오기, Antigravity의 `always_on`·`glob`이 아닌 규칙과 하위 폴더 `AGENTS.md` |
+| `shadowed` | 같은 폴더의 `AGENTS.override.md`를 대신 읽는다 |
+| `not-read` | 이 폴더에서 시작하면 읽지 않는다 |
+
+파일 목록 아래에는 판정이 붙는다.
+
+- `missing`: 프로젝트 지침 파일이 이 에이전트에 닿지 않는다. 하나라도 있으면 종료 코드 4다. 가져오는 `CLAUDE.md`가 없는 `AGENTS.md`(Claude Code), `trigger: glob`이거나 `trigger` frontmatter가 없는 규칙(Antigravity)이 여기에 해당한다.
+- `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`가 여기에 해당한다.
+- Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 파일(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`)은 마지막에 목록으로 보여 준다.
+- 사용자 수준 파일(`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md` 등)도 함께 보여 주지만 `missing`으로 판정하지 않는다. `CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 설정했으면 그 폴더를 본다.
+- 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다.
+
+아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`, `trigger: glob` 규칙 `.agents/rules/payments.md`, `.cursorrules`를 더한 뒤 실행한 결과다.
+
+```bash
+$ agctx explain services/payments
+Codex · started in services/payments
+  read         AGENTS.md  one file per folder from the project root to the start folder
+  read         services/payments/AGENTS.md  one file per folder from the project root to the start folder
+
+Claude Code · started in services/payments
+  read         CLAUDE.md  start folder or a folder above it, read at launch
+  conditional  AGENTS.md  imported by CLAUDE.md from outside the start folder; read only after external imports are approved
+  not-read     services/payments/AGENTS.md  Claude Code reads CLAUDE.md, not AGENTS.md, and no CLAUDE.md imports this file
+  warning      CLAUDE.md imports AGENTS.md from outside the start folder. Claude Code reads it only after someone approves external imports for this project once in an interactive session; starting at the project root needs no approval.
+  missing      Claude Code never reads services/payments/AGENTS.md. Add a CLAUDE.md with @AGENTS.md next to it.
+
+Antigravity · started in services/payments
+  read         AGENTS.md  workspace root file (measured)
+  read         .agents/rules/agctx.md  trigger: always_on
+  not-read     .agents/rules/payments.md  trigger: glob is not delivered at session start (measured)
+  conditional  services/payments/AGENTS.md  AGENTS.md in a subfolder; not delivered at session start (measured), and not verified whether Antigravity reads it later
+  missing      Antigravity does not load .agents/rules/payments.md at session start. Use trigger: always_on for rules every task needs.
+  warning      Antigravity did not receive services/payments/AGENTS.md at session start when measured. Put rules every task needs in the root AGENTS.md or a trigger: always_on rule.
+
+Not read by Codex, Claude Code, or Antigravity:
+  .cursorrules  rule file of another tool
+
+$ agctx explain --agent codex .
+Codex · started in the project root
+  read         AGENTS.md  one file per folder from the project root to the start folder
+  not-read     services/payments/AGENTS.md  below the start folder; read only when Codex starts there
+  warning      Codex reads services/payments/AGENTS.md only when started in services/payments.
+…
+```
+
+첫 명령은 `missing`이 있어 4로, 둘째 명령은 경고만 있어 0으로 끝난다. `services/payments/CLAUDE.md`에 `@AGENTS.md`를 두고 규칙을 `trigger: always_on`으로 바꾸면 첫 명령도 0으로 끝난다.
+
+`--json`이면 `data`에 `path`(시작 폴더)·`root`·`agents[]`·`unsupported[]`·`exitCode`가 들어간다. `agents[]`는 `agent`·`startDir`·`files[]`·`findings[]`를 담고, `files[]`의 `scope`는 `project`·`user`·`managed-policy`, `origin`은 agctx가 관리하는 파일이면 `agctx-managed`다.
+
+```bash
+$ agctx explain --json --agent claude services/payments
+{
+  "schemaVersion": 1,
+  "command": "explain",
+  "exitCode": 4,
+  "ok": false,
+  "data": {
+    "path": "/work/shop/services/payments",
+    "root": "/work/shop",
+    "agents": [
+      {
+        "agent": "claude",
+        "startDir": "services/payments",
+        "files": [
+          …
+          {
+            "path": "AGENTS.md",
+            "absolutePath": "/work/shop/AGENTS.md",
+            "status": "conditional",
+            "scope": "project",
+            "reason": "imported by CLAUDE.md from outside the start folder; read only after external imports are approved",
+            "origin": "agctx-managed"
+          },
+          …
+        ],
+        "findings": [
+          …
+          {
+            "kind": "missing",
+            "file": "services/payments/AGENTS.md",
+            "message": "Claude Code never reads services/payments/AGENTS.md. Add a CLAUDE.md with @AGENTS.md next to it."
+          }
+        ]
+      }
+    ],
+    "unsupported": [
+      …
+    ],
+    "exitCode": 4
+  },
+  "warnings": [],
+  "errors": []
+}
+```
+
+### `verify`
+
+`explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
+
+```bash
+agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]
+```
+
+| 옵션·인자 | 설명 |
+| --- | --- |
+| `<path>` | 에이전트를 시작한 폴더. 생략하면 현재 폴더 |
+| `--agent` | 확인할 에이전트. 쉼표로 여러 개를 주거나 `all`(기본) |
+| `--probe` | 세션 기록 대신 에이전트 CLI를 한 번씩 실행해 확인. 실행 전에 확인을 받는다 |
+| `--yes` | 터미널이 아닌 환경에서 probe를 승인 |
+
+- **기대 파일:** `explain`에서 상태가 `read`인 프로젝트 파일이다. `conditional`·`on-demand` 파일은 요구하지 않지만, 들어온 증거가 있으면 `delivered`에 함께 적는다.
+- **세션 기록(기본):**
+  - Codex는 `$CODEX_HOME/sessions`(기본 `~/.codex/sessions`)에서 시작 폴더가 같은 가장 새 기록을 찾고, 가장 최근에 넣은 지침 본문에 파일 내용이 들어 있는지 본다.
+  - Claude Code는 `$CLAUDE_CONFIG_DIR/projects`(기본 `~/.claude/projects`)에서 시작 폴더의 가장 새 기록을 찾고, 가장 최근에 불러온 지침 파일 목록과 그 뒤에 불러온 하위 폴더 지침에 파일 경로가 있는지 본다. 대화를 압축해 지침을 다시 불러온 세션은 다시 불러온 목록으로 판정한다.
+  - Antigravity는 agctx가 읽을 수 있는 기록이 없어 `no-evidence`다.
+  - 기록이 없거나, 지침을 불러온 뒤에 파일이 바뀌었으면(`stale`) `no-evidence`로 표시하고 종료 코드는 바꾸지 않는다. 기록은 가장 새 파일 300개 안에서 찾는다.
+- **probe(`--probe`):** 프로젝트 지침 파일을 임시 Git 저장소에 복사해 파일마다 `agctx probe marker: AGCTX-PROBE-…` 줄을 붙인다. 그런 다음 시작 폴더에 해당하는 사본 폴더에서 에이전트 CLI를 도구 없이 한 번씩 실행해, 컨텍스트에 있는 표지 줄을 그대로 출력하게 한다. 실제 저장소는 바꾸지 않고 임시 저장소는 끝나면 지운다.
+
+| 에이전트 | 실행 명령 |
+| --- | --- |
+| Codex | `codex exec --sandbox read-only --skip-git-repo-check --ephemeral -C <사본 시작 폴더> <질문>` |
+| Claude Code | `claude -p <질문> --tools "" --no-session-persistence` |
+| Antigravity | `agy -p <질문> --add-dir <사본 루트>` |
+
+- probe는 에이전트 요금제나 API 사용량을 쓰고, 에이전트마다 로그인돼 있어야 한다. 한 에이전트가 5분 안에 끝나지 않으면 실패로 처리한다. CLI가 PATH에 없거나 오류로 끝나면 그 에이전트는 `error`이고 종료 코드는 69다.
+
+| 결과 | 뜻 | 종료 코드 |
+| --- | --- | --- |
+| `pass` | 기대 파일이 모두 들어옴 | 0 |
+| `fail` | 들어오지 않은 파일(`missing`)이 있음 | 4 |
+| `no-evidence` | 판정할 기록이 없거나 오래됨 | 0 |
+| `error` | probe를 실행하지 못함 | 69 |
+
+아래는 `explain` 예시와 같은 저장소에서 실행한 결과다. 마지막 명령은 설치된 Codex·Claude Code·Antigravity CLI로 실제로 실행했다. Claude Code는 루트 `AGENTS.md`를 받지 않았지만 승인이 필요한 `conditional` 파일이라 `pass`다.
+
+```bash
+$ agctx verify services/payments
+codex        no-evidence  no session log for this folder
+claude       no-evidence  no session log for this folder
+antigravity  no-evidence  agctx cannot read Antigravity session logs
+Next: start Codex, Claude Code in this folder once, or run agctx verify --probe to ask directly.
+Next: run agctx verify --probe to ask Antigravity directly.
+
+$ agctx verify services/payments --probe          # 터미널이 아닌 환경
+Error: --probe runs Codex, Claude Code, Antigravity once each, which uses your agent plan or API credits, and it cannot ask for confirmation here.
+Next: Run it with --yes: agctx verify services/payments --probe --yes
+
+$ agctx verify services/payments --probe --yes
+codex        pass         asked codex with marker lines in a scratch copy
+  delivered  AGENTS.md
+  delivered  services/payments/AGENTS.md
+claude       pass         asked claude with marker lines in a scratch copy
+  delivered  CLAUDE.md
+antigravity  pass         asked agy with marker lines in a scratch copy
+  delivered  AGENTS.md
+  delivered  .agents/rules/agctx.md
+```
+
+Claude Code를 쓴 저장소에서는 세션 기록으로 판정한다. 아래 출력은 실제 결과에서 경로만 바꿨다.
+
+```bash
+$ agctx verify --agent claude /work/shop
+claude       pass         session log /Users/me/.claude/projects/-work-shop/0f1c2d3e-….jsonl
+  delivered  CLAUDE.md
+  delivered  AGENTS.md
+```
+
+`--json`이면 `data.agents[]`에 `agent`·`status`·`evidence`(`session-log`·`probe`·`none`)·`source`(기록 파일이나 실행한 명령)·`exitCode`·`expected`·`delivered`·`missing`·`stale`·`error`가 들어간다. 결정 근거는 [ADR 0019](adr/0019-explain-verify-and-agent-skills.md)다.
+
 ### `repos list`
 
 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 준다. `profile apply`·`profile sync`가 파일을 썼거나 이미 최신이면 저장소의 실제 경로·프로필·고정 여부를 `~/.agctx/repos.json`에 기록한다. dry-run과 확인 거절은 기록하지 않는다.
@@ -668,7 +857,7 @@ agctx config lang <ko|en>
 
 ## 저장 위치
 
-프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 지침 `AGENTS.md`로 저장된다. Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다.
+프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 지침 `AGENTS.md`로 저장된다. Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다. `verify`는 `CODEX_HOME`(기본 `~/.codex`)과 `CLAUDE_CONFIG_DIR`(기본 `~/.claude`) 아래의 세션 기록을 읽기만 한다.
 
 프로젝트에는 `AGENTS.md`, `CLAUDE.md`, `.agents/rules/agctx.md`, `agctx.project.json`(바인딩한 프로필·프로젝트 이름·적용 버전·관리 영역 hash), `.agctx/`(base·backups)가 생긴다.
 
@@ -690,6 +879,7 @@ agctx profile setup company --tdd recommended --security strict
 agctx profile apply company /path/to/project --dry-run
 agctx profile apply company /path/to/project --yes
 agctx check --refresh /path/to/project --json
+agctx explain /path/to/project --json
 agctx profile remove company --yes
 ```
 

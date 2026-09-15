@@ -28,7 +28,7 @@
 | 후속 제안 | 비대화형 실행 계약·기계 판독 결과 스키마·적용 및 동기화 복구 정책 |
 | 연관 제안 | [에이전트 산출물 동기화](agent-sync.md), [setup과 지침 옵션](setup-and-guidance.md) |
 | 후속 작업 | 실제 배포 패키지 기준으로 에이전트가 각 명령을 호출하는 평가 시나리오를 추가하고, 안전한 오류·승인 흐름을 확정한다. |
-| 권장 다음 작업 | 에이전트가 이 계약대로 agctx를 호출하도록 안내하는 스킬과, 에이전트가 지침 파일을 실제로 읽었는지 확인하는 명령을 설계한다. |
+| 권장 다음 작업 | 배포한 npm 패키지를 임시 프로젝트에 설치하고 에이전트가 스킬대로 agctx를 호출하는 시나리오 평가를 만들고, 명령별 `data` 필드의 스키마를 문서로 정한다. |
 
 ## 목차
 
@@ -168,3 +168,15 @@ flowchart TD
   - `profile create`·`setup`이 stdin 줄 입력을 받는 기존 동작은 `--json`이 없을 때만 유지했다.
 * **제약:** 명령별 `data` 필드의 스키마 문서는 아직 없다. `<project>`를 생략하면 현재 폴더를 쓰는 기존 동작은 그대로다. 배포 패키지를 에이전트가 호출하는 시나리오 평가는 아직 없다.
 * **다음 단계:** 에이전트용 스킬과 지침 전달 확인 명령(종료 코드 4)을 설계한다.
+
+#### 구현 기록: 에이전트용 스킬과 지침 전달 확인 (2026-09-16)
+
+* **결정:** [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md). 저장소에 스킬 두 개를 둔다. 진단·갱신용 `agctx`는 에이전트가 스스로 쓸 수 있고, 프로필 게시·PR용 `agctx-author`는 사용자가 이름으로 부를 때만 쓴다(Claude Code `disable-model-invocation: true`, Codex `allow_implicit_invocation: false`). 두 스킬은 쓰기 명령 앞에 `--dry-run` 결과를 보여 주고 사용자가 승인한 뒤에만 `--yes`를 붙이게 한다. 지침 파일이 에이전트에 닿는지는 `explain`(규칙 기반 판정)과 `verify`(세션 기록 판독, 요청하면 probe)로 확인하며, 받지 못한 파일이 있으면 종료 코드 4로 끝낸다.
+* **구현:** `skills/agctx/SKILL.md`, `skills/agctx-author/SKILL.md`, `skills/agctx-author/agents/openai.yaml`, `tools/generate-skills.ts`(등록부에서 명령 목록 생성), `tools/skills-smoke.ts`(skills CLI 설치 확인), `src/explain.ts`, `src/verify/`. 사용법은 [CLI Reference](../../../cli-reference.md#verify)와 [사용 가이드](../../../usage-guide.md#에이전트에게-agctx를-맡기기)에 있다.
+* **평가:** `evals/skills.test.ts` 3개, `evals/explain.test.ts` 4개, `evals/verify.test.ts` 6개. `node tools/skills-smoke.ts`로 skills CLI 1.5.26의 설치 위치를 확인했고, 설치된 Codex·Claude Code·Antigravity CLI로 `verify --probe`를 실행했다([외부 근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)).
+* **계획과 달라진 점:**
+  - "런타임 결합 위험"은 에이전트 CLI를 실행·파싱·래핑하는 런타임을 경계했다. `verify --probe`는 에이전트 CLI를 실행하고 출력에서 표지 줄만 찾지만, 사용자가 요청할 때 도구를 끄고 임시 사본에서 한 번만 실행하며 대화에는 끼어들지 않는다. CLI 옵션이 바뀌면 probe만 69로 실패하고 다른 명령에는 영향이 없다.
+  - 스킬 본문 가운데 명령 목록만 등록부에서 만들고, 절차와 안전 규칙은 사람이 쓴다. 전부 생성하면 안전 규칙이 명령마다 반복돼 스킬이 길어지기 때문이다.
+  - 실제 probe에서, 하위 폴더에서 시작한 Claude Code가 루트 `CLAUDE.md`의 `@AGENTS.md`를 승인 전에는 읽지 않았다. 그래서 `explain`이 이 파일을 `conditional`로 판정하고 경고하도록 바꿨다.
+* **제약:** 배포 패키지를 에이전트가 스킬로 호출하는 시나리오 평가는 아직 없다. Antigravity 세션 기록은 읽지 못해 probe로만 확인한다. 명령별 `data` 필드의 스키마 문서도 아직 없다.
+* **다음 단계:** 배포 패키지 기준 에이전트 시나리오 평가와 `data` 스키마 문서를 만든다.

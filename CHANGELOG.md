@@ -6,6 +6,9 @@
 
 ### Added
 
+- `agctx explain [--agent <codex|claude|antigravity|all>] [<path>]`: 그 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 이유를 보여 주고, 어느 에이전트에도 닿지 않는 프로젝트 지침 파일이 있으면 4로 끝난다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`와, 하위 폴더에서 시작한 Claude Code가 승인 전에는 읽지 않는 루트 `CLAUDE.md`의 `@AGENTS.md`는 경고로 알린다. 다른 도구의 규칙 파일(`.cursorrules` 등)도 목록으로 보여 준다. 근거는 [ADR 0019](docs/adr/0019-explain-verify-and-agent-skills.md)
+- `agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]`: Codex·Claude Code 세션 기록에서 `explain`이 기대한 파일이 실제로 들어갔는지 확인하고, 받지 못한 파일이 있으면 4로 끝난다. 기록이 없거나 지침을 읽은 뒤 파일이 바뀌었으면 `no-evidence`로 알린다. `--probe`는 확인을 받은 뒤 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행하며, 저장소 파일은 바꾸지 않는다
+- 에이전트용 스킬: 진단·갱신용 `agctx`와 프로필 게시·PR용 `agctx-author`(사용자가 이름으로 부를 때만 사용)를 저장소 `skills/`에 둔다. `npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity`로 설치한다. npm 패키지에는 들어가지 않는다
 - Git 프로필 공유: `profile clone [--branch <branch>] <git-url>`, `profile status [--refresh] [<name>]`, `profile pull [--dry-run] <name>`, `profile push [--dry-run] [--yes] <name>`, `profile connect [--branch <branch>] <name> <git-url>`. 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`·`AGENTS.md`를 검증하고 숨은 문자를 검사한 뒤에만 반영하며 pull은 fast-forward만 한다. push는 이미 만든 커밋만 보낸다. TUI 메인 화면과 `profile list` 관리 메뉴에서도 실행할 수 있다. 근거는 [ADR 0017](docs/adr/0017-git-profile-sharing.md)
 - 적용 버전 기록과 고정: `apply`·`sync`가 `agctx.project.json`에 `source { git, branch, commit }`와 `uncommitted`를 기록한다. `profile apply --pin`은 현재 커밋에 고정하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 지침으로 다시 만든다. 고정한 프로젝트에 `--pin` 없이 적용하면 경고한다
 - `agctx check [--refresh] [<project>]`: 파일을 바꾸지 않고 관리 영역 충돌(2)·숨은 문자(3)·뒤처짐(1)을 종료 코드로 알린다. 프로필 보관함이 없는 CI에서는 `--refresh`로 원천 브랜치의 최신 커밋과 비교한다

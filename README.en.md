@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: 789f03175a8d790c2d06a85fb2d67ebd6cc0fc18141e06d1e735b3248a70c702 -->
+<!-- agctx-doc-sources-sha256: ba027794538e18843fcea3f1ca46be5d32962c4474535be688c784370259cb15 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -22,9 +22,9 @@
 
 > agctx creates and configures agent context as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 >
-> Where agctx is headed: rules, skills, MCP, and subagents managed as Profiles — pick one per repository, and every agent follows the same setup and stays in sync.
+> Where agctx is headed: rules, skills, MCP, subagents, and hooks managed as Profiles — pick one per repository, and every agent follows the same setup and stays in sync.
 
-> (⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`); the scope is expanding to skills, MCP, and subagents.)
+> (⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`); the scope is expanding to skills, MCP, subagents, and hooks.)
 
 <p align="center">
   <picture>
@@ -183,7 +183,7 @@ agctx's implementation is managed in stages around where the shared context live
 
 - **Implemented:** Profile model and store, setup and guidance options, guidance level semantics, project application, agent artifact synchronization, agent rule discovery, Git-based Profile management
 - **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording per-file ownership and a policy for files without markers remain)
-- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents), scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
+- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
 
 ## Documentation
 

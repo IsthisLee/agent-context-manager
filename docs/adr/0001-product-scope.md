@@ -3,7 +3,7 @@
 * **상태:** 채택됨 (Accepted)
 * **일자:** 2026-09-13
 * **결정자:** 제품 소유자·개발자
-* **관련:** [0003](0003-rename-core-to-guidance-profile.md)이 이 결정의 "Core" 용어를 Guidance Profile로 대체한다. [0019](0019-explain-verify-and-agent-skills.md)가 에이전트 세션 기록을 읽고 사용자가 요청하면 에이전트를 한 번 실행해 지침 전달을 확인하도록 "평가 시스템·런타임 기능으로 확장하지 않는다"는 범위를 좁힌다. [0021](0021-profile-scope-skills-mcp-subagents.md)이 프로필이 담는 대상을 지침에서 규칙·스킬·MCP 서버 설정·subagent 정의로 넓힌다.
+* **관련:** [0003](0003-rename-core-to-guidance-profile.md)이 이 결정의 "Core" 용어를 Guidance Profile로 대체한다. [0019](0019-explain-verify-and-agent-skills.md)가 에이전트 세션 기록을 읽고 사용자가 요청하면 에이전트를 한 번 실행해 지침 전달을 확인하도록 "평가 시스템·런타임 기능으로 확장하지 않는다"는 범위를 좁힌다. [0021](0021-profile-scope-skills-mcp-subagents.md)이 프로필이 담는 대상을 지침에서 규칙·스킬·MCP 서버 설정·subagent 정의로 넓힌다. [0022](0022-profile-scope-hooks.md)가 그 대상에 hooks를 더한다.
 
 ## 배경
 

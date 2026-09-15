@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { baseFilePath, collectUserEdits, formatDiff, parseBase, relocateUserEdits, serializeBase } from '../bin/conflicts.mjs';
+import { baseFilePath, collectUserEdits, formatDiff, parseBase, relocateUserEdits, serializeBase } from '../lib/project/conflicts.mjs';
 
 const START = '<!-- agentic:managed:start -->';
 const END = '<!-- agentic:managed:end -->';

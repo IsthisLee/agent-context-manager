@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { PROFILE_OPERATION_CONTRACT } from '../bin/contracts.mjs';
+import { PROFILE_OPERATION_CONTRACT } from '../lib/contracts.mjs';
 
 test('every Guidance Profile capability has CLI, TUI, and profile-list interface contracts', () => {
   assert.ok(PROFILE_OPERATION_CONTRACT.length > 0);

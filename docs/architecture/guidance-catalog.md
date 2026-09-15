@@ -1,9 +1,9 @@
 # 지침 카탈로그 (배포되는 공통 지침)
 
-이 문서는 Agentic이 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `bin/i18n.mjs`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
+이 문서는 Agentic이 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `lib/i18n/index.mjs`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
-<!-- agentic-doc-sources: bin/i18n.mjs, bin/agentic.mjs -->
-<!-- agentic-doc-sources-sha256: 080963847bfe98de51daceb6d65bacc98e28dd6463a1d1cbd0f380cacec2ae31 -->
+<!-- agentic-doc-sources: lib/i18n/index.mjs, lib/profile/setup.mjs -->
+<!-- agentic-doc-sources-sha256: 07d7ca34bd711d6af458f67b0a507b530862bca42763a970ef47e453019a1eac -->
 
 ## 지침이 만들어지는 두 경로
 
@@ -51,4 +51,4 @@ flowchart TB
 - `recommended`: 기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다.
 - `strict`: 예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다.
 
-두 수준의 정의는 `bin/i18n.mjs`의 `levelDefinitions` 상수 한 곳에 있고 `setup` 산출물의 "## 적용 수준 정의" 범례와 setup TUI 힌트가 같은 문구를 공유한다. 규칙 문구는 항목마다 하나다. 그 항목을 얼마나 엄격히 지킬지를 이 수준이 정한다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. 근거와 대안은 [ADR 0005](../adr/0005-guidance-level-semantics.md)와 [지침 적용 수준의 의미 정의](../discussion/architecture/topics/guidance-level-semantics.md)에 있다.
+두 수준의 정의는 `lib/i18n/index.mjs`의 `levelDefinitions` 상수 한 곳에 있고 `setup` 산출물의 "## 적용 수준 정의" 범례와 setup TUI 힌트가 같은 문구를 공유한다. 규칙 문구는 항목마다 하나다. 그 항목을 얼마나 엄격히 지킬지를 이 수준이 정한다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. 근거와 대안은 [ADR 0005](../adr/0005-guidance-level-semantics.md)와 [지침 적용 수준의 의미 정의](../discussion/architecture/topics/guidance-level-semantics.md)에 있다.

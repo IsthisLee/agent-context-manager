@@ -2,8 +2,8 @@
 
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
-<!-- agentic-doc-sources: bin/agentic.mjs, bin/agt.mjs, bin/analyzer.mjs, bin/conflicts.mjs, bin/contracts.mjs, bin/fs-utils.mjs, bin/i18n.mjs, bin/merge-editor.mjs, bin/project-plan.mjs, package.json, templates, tools -->
-<!-- agentic-doc-sources-sha256: b9fa0a5784b3a34292032ef9ca957e3e3518854b592eaf5ff55ae7e53bf7efd3 -->
+<!-- agentic-doc-sources: bin, lib, package.json, templates, tools -->
+<!-- agentic-doc-sources-sha256: 5b5cbaefd3bd3f63c7903385bba92b36f4c4346b9ef223f568a13a0a24d150dd -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -50,15 +50,20 @@ agentic/
 ├── .gitattributes              # Git 줄바꿈·바이너리 판정 규칙
 ├── .nvmrc                      # 기여자 기본 Node.js 메이저 버전
 ├── bin/
-│   ├── agentic.mjs              # 메인 CLI와 프로필·프로젝트 적용 로직
-│   ├── agt.mjs                  # agentic CLI 별칭
-│   ├── analyzer.mjs             # AGENTS.md 확장 영역·포인터 관리 블록 병합과 hash
-│   ├── conflicts.mjs            # 관리 영역 안 편집 추출·재배치·diff·base 경로
+│   ├── agentic.mjs              # CLI 진입점: lib/cli.mjs의 run() 호출
+│   └── agt.mjs                  # agentic CLI 별칭
+├── lib/
+│   ├── cli.mjs                  # 인자·로케일 해석과 명령 분기, 오류 종료
+│   ├── args.mjs                 # 플래그 헬퍼
+│   ├── help.mjs                 # 도움말 출력
+│   ├── runtime.mjs              # 실행한 bin 이름과 패키지 루트
+│   ├── home.mjs                 # 프로필 홈·설정 파일 위치와 로케일 저장
 │   ├── contracts.mjs            # CLI·TUI·profile list 세 경로 동등성 계약
 │   ├── fs-utils.mjs             # 원자적 텍스트 파일 교체·심볼릭 링크 보호
-│   ├── i18n.mjs                 # 로케일 해석·프로필 홈·메시지·배포 지침 문구
-│   ├── merge-editor.mjs         # VS Code 3-way merge 편집기 실행
-│   └── project-plan.mjs         # apply·sync·resolve 변경 계획 계산과 충돌 수집·쓰기
+│   ├── i18n/                    # 로케일 해석·ko/en 메시지·배포 지침 문구
+│   ├── profile/                 # 프로필 저장소(store)·지침 설정(setup)
+│   ├── project/                 # apply·sync·resolve, 변경 계획·병합·충돌·VS Code merge
+│   └── tui/                     # 메인·프로필 관리 화면
 ├── templates/
 │   ├── profile/AGENTS.md        # 새 프로필의 초기 지침 템플릿(영어는 AGENTS.en.md)
 │   └── ...                      # 에이전트별 지침 포인터 템플릿
@@ -66,7 +71,7 @@ agentic/
 ├── tools/
 │   ├── check-docs.mjs           # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
 │   ├── check-release.mjs        # 릴리스 태그·버전·CHANGELOG 일치 검사
-│   ├── check-syntax.mjs         # bin·tools·evals 문법 검사
+│   ├── check-syntax.mjs         # bin·lib·tools·evals 문법 검사
 │   ├── discussion-record.mjs    # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
 │   ├── doc-evidence.mjs         # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.mjs      # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
@@ -94,7 +99,7 @@ agentic/
 └── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
 ```
 
-배포 패키지에는 `bin/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성만 포함된다. `docs/`, `evals/`, `tools/`와 저장소 개발 문서는 npm 사용자의 설치 대상에서 제외된다.
+배포 패키지에는 `bin/`, `lib/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성만 포함된다. `docs/`, `evals/`, `tools/`와 저장소 개발 문서는 npm 사용자의 설치 대상에서 제외된다.
 
 ## 소유권
 

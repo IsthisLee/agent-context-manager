@@ -6,7 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const checkedDirectories = ['bin', 'tools', 'evals'];
+const checkedDirectories = ['bin', 'lib', 'tools', 'evals'];
 
 function collectJavaScriptFiles(directory, result = []) {
   for (const entry of fs.readdirSync(path.join(repoRoot, directory), { withFileTypes: true })) {

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../bin/analyzer.mjs';
+import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../lib/project/analyzer.mjs';
 
 test('mergeAgentsMd preserves user custom rules under section 4', () => {
   const existingContent = `# Agent Guidelines for my-app

@@ -6,8 +6,8 @@
 
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
-<!-- agentic-doc-sources: bin, lib -->
-<!-- agentic-doc-sources-sha256: 7db9e2be89916c984cc569bd73e6128c4afb24d4c6fe872372896329af8cabef -->
+<!-- agentic-doc-sources: src -->
+<!-- agentic-doc-sources-sha256: 01e7b7606f0955f4b27a9f74e42a19458745ba142b7a03257808732d114107a2 -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -48,7 +48,7 @@ npm install -g @isthis/agentic
 agt help
 ```
 
-`agentic`과 짧은 별칭 `agt`를 모두 쓸 수 있다. 저장소를 직접 개발한다면 설치 없이 `node bin/agentic.mjs`로 실행한다.
+`agentic`과 짧은 별칭 `agt`를 모두 쓸 수 있다. 저장소를 직접 개발한다면 설치 없이 `node src/agentic.ts`로 실행한다.
 
 ## 1. 프로필 만들기
 

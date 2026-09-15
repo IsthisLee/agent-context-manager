@@ -13,25 +13,26 @@
   },
   "type": "module",
   "bin": {
-    "agentic": "./bin/agentic.mjs",
-    "agt": "./bin/agt.mjs"
+    "agentic": "./dist/agentic.js",
+    "agt": "./dist/agt.js"
   },
   "files": [
-    "bin",
-    "lib",
+    "dist",
     "templates",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test evals/**/*.test.mjs",
-    "check:docs": "node tools/check-docs.mjs",
-    "check:syntax": "node tools/check-syntax.mjs",
-    "check": "pnpm run check:syntax && pnpm run check:docs && pnpm test",
-    "check:release": "node tools/check-release.mjs",
+    "test": "node --test evals/**/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "node tools/build.ts",
+    "prepack": "node tools/build.ts",
+    "check:docs": "node tools/check-docs.ts",
+    "check": "pnpm run typecheck && pnpm run check:docs && pnpm test",
+    "check:release": "node tools/check-release.ts",
     "pack:check": "npm pack --dry-run",
     "audit": "pnpm audit --audit-level high",
-    "package:smoke": "node tools/package-smoke.mjs",
+    "package:smoke": "node tools/package-smoke.ts",
     "prepublishOnly": "pnpm run check && pnpm run pack:check"
   },
   "keywords": [
@@ -57,5 +58,9 @@
   "dependencies": {
     "@clack/prompts": "^1.8.0",
     "diff": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.2",
+    "typescript": "7.0.2"
   }
 }

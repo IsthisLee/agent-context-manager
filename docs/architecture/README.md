@@ -2,8 +2,8 @@
 
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
-<!-- agentic-doc-sources: bin, lib, package.json, templates, tools -->
-<!-- agentic-doc-sources-sha256: 4be841bdc32e228aabd20766bd8169cd2d17137c52b685bca71e035f8c8befba -->
+<!-- agentic-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
+<!-- agentic-doc-sources-sha256: 60cc2eb5093bb629cd4bb180cb293fae12b07e5510a69aa003a1180604765b13 -->
 
 Agentic은 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -49,33 +49,27 @@ agentic/
 ├── .editorconfig               # 편집기 공통 형식 규칙
 ├── .gitattributes              # Git 줄바꿈·바이너리 판정 규칙
 ├── .nvmrc                      # 기여자 기본 Node.js 메이저 버전
-├── bin/
-│   ├── agentic.mjs              # CLI 진입점: lib/cli.mjs의 run() 호출
-│   └── agt.mjs                  # agentic CLI 별칭
-├── lib/
-│   ├── cli.mjs                  # 인자·로케일 해석과 명령 분기, 오류 종료
-│   ├── args.mjs                 # 플래그 헬퍼
-│   ├── help.mjs                 # 도움말 출력
-│   ├── runtime.mjs              # 실행한 bin 이름과 패키지 루트
-│   ├── home.mjs                 # 프로필 홈·설정 파일 위치와 로케일 저장
-│   ├── contracts.mjs            # CLI·TUI·profile list 세 경로 동등성 계약
-│   ├── fs-utils.mjs             # 원자적 텍스트 파일 교체·심볼릭 링크 보호
+├── src/                         # TypeScript 소스. 배포할 때 dist/로 컴파일
+│   ├── agentic.ts               # CLI 진입점: commands/cli.ts의 run() 호출
+│   ├── agt.ts                   # agentic CLI 별칭
+│   ├── commands/                # 인자 해석·명령 분기(cli)·도움말·세 경로 동등성 계약
+│   ├── profile/                 # 프로필 명령: store(create·list·view·remove)·setup·apply(apply·sync)·resolve
+│   ├── project/                 # 적용 엔진: 변경 계획·관리 영역 병합과 hash·충돌 편집·VS Code merge
 │   ├── i18n/                    # 로케일 해석·ko/en 메시지·배포 지침 문구
-│   ├── profile/                 # 프로필 저장소(store)·지침 설정(setup)
-│   ├── project/                 # apply·sync·resolve, 변경 계획·병합·충돌·VS Code merge
-│   └── tui/                     # 메인·프로필 관리 화면
+│   ├── tui/                     # 메인·프로필 관리 화면
+│   └── shared/                  # 프로필 홈·원자적 파일 쓰기·실행 정보·공용 타입
 ├── templates/
 │   ├── profile/AGENTS.md        # 새 프로필의 초기 지침 템플릿(영어는 AGENTS.en.md)
 │   └── ...                      # 에이전트별 지침 포인터 템플릿
 ├── evals/                       # CLI·문서·패키지 산출물 평가
 ├── tools/
-│   ├── check-docs.mjs           # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
-│   ├── check-release.mjs        # 릴리스 태그·버전·CHANGELOG 일치 검사
-│   ├── check-syntax.mjs         # bin·lib·tools·evals 문법 검사
-│   ├── discussion-record.mjs    # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
-│   ├── doc-evidence.mjs         # references.md 확인일과 ADR 근거 필드 규칙
-│   ├── doc-source-path.mjs      # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
-│   └── package-smoke.mjs        # 실제 tarball 설치 후 핵심 명령 실행
+│   ├── build.ts                 # src/를 dist/로 컴파일(prepack에서 실행)
+│   ├── check-docs.ts            # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
+│   ├── check-release.ts         # 릴리스 태그·버전·CHANGELOG 일치 검사
+│   ├── discussion-record.ts     # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
+│   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
+│   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
+│   └── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행
 ├── docs/
 │   ├── README.md                # 문서 탐색 시작점
 │   ├── product-direction.md     # 제품 방향 정본
@@ -96,10 +90,12 @@ agentic/
 ├── CODE_OF_CONDUCT.md           # 커뮤니티 행동 규범
 ├── LICENSE                      # Apache-2.0 라이선스
 ├── package.json                 # npm 패키지·CLI·스크립트 정의
-└── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
+├── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
+├── tsconfig.json                # src·evals·tools 형식 검사 설정(파일을 만들지 않음)
+└── tsconfig.build.json          # src → dist 컴파일 설정
 ```
 
-배포 패키지에는 `bin/`, `lib/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성만 포함된다. `docs/`, `evals/`, `tools/`와 저장소 개발 문서는 npm 사용자의 설치 대상에서 제외된다.
+배포 패키지에는 `src/`를 컴파일한 `dist/`, `templates/`, `README.md`, `LICENSE`와 런타임 의존성만 포함된다. `dist/`는 커밋하지 않고 `npm pack`·`npm publish` 직전의 `prepack`이 만든다. `src/`, `docs/`, `evals/`, `tools/`와 저장소 개발 문서는 npm 사용자의 설치 대상에서 제외된다. 컴파일해서 배포하는 이유는 [ADR 0012](../adr/0012-typescript-source.md)에 있다.
 
 ## 소유권
 
@@ -113,4 +109,4 @@ agentic/
 
 ## 패키지 내부 검증
 
-이 저장소의 `pnpm run check`는 문법 검사, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.
+이 저장소의 `pnpm run check`는 TypeScript 형식 검사, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.

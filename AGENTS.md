@@ -29,14 +29,15 @@
 
 ## 2. 프로젝트 실행 및 검사 명령
 
-- **문법·문서 계약·저장소 평가:** `pnpm run check`
-- **CLI 직접 실행:** `node bin/agentic.mjs <command>`
+- **형식 검사·문서 계약·저장소 평가:** `pnpm run check`
+- **CLI 직접 실행:** `node src/agentic.ts <command>`
 
 ---
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약
 
-- **개발 언어:** JavaScript (Node.js 24 LTS 이상 환경)
+- **개발 언어:** TypeScript (Node.js 24 LTS 이상 환경). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다.
+- **TypeScript 제약:** Node가 타입만 지워 실행할 수 있는 문법만 쓴다(`erasableSyntaxOnly`: `enum`·`namespace`·생성자 매개변수 속성 금지). 상대 import에는 `.ts` 확장자를 붙이고, 타입만 가져올 때는 `import type`을 쓴다(`verbatimModuleSyntax`). 형식 검사는 `pnpm run typecheck`이며 `pnpm run check`에 포함된다.
 - **패키지 매니저:** pnpm — 저장소 의존성·스크립트·CI는 고정된 pnpm 버전을 사용하라. 사용자의 npm 설치 명령은 배포 호환성을 위해 README에 유지한다.
 
 ---
@@ -124,5 +125,5 @@
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
 - 공개 저장소 운영 계약을 변경할 때는 `docs/repository-operations.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.
-- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서(코드를 `파일:줄`로 인용하거나 특정 소스의 동작을 서술하는 문서)를 새로 만들거나 고칠 때는 문서 상단에 소스 해시 마커 두 줄을 두고 `node tools/check-docs.mjs --stamp`로 해시를 기록하라. 마커는 `<!-- agentic-doc-sources: <소스 경로들> -->`와 `<!-- agentic-doc-sources-sha256: <값> -->`이다. 핀한 소스가 바뀌면 `pnpm run check`의 `check:docs`가 실패하므로 문서를 다시 읽어 드리프트를 고친 뒤 다시 stamp하라. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다. 게이트 계약과 현재 대상 목록의 정본은 `docs/repository-operations.md`의 "문서 소스 해시 게이트" 절이다.
+- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서(코드를 `파일:줄`로 인용하거나 특정 소스의 동작을 서술하는 문서)를 새로 만들거나 고칠 때는 문서 상단에 소스 해시 마커 두 줄을 두고 `node tools/check-docs.ts --stamp`로 해시를 기록하라. 마커는 `<!-- agentic-doc-sources: <소스 경로들> -->`와 `<!-- agentic-doc-sources-sha256: <값> -->`이다. 핀한 소스가 바뀌면 `pnpm run check`의 `check:docs`가 실패하므로 문서를 다시 읽어 드리프트를 고친 뒤 다시 stamp하라. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다. 게이트 계약과 현재 대상 목록의 정본은 `docs/repository-operations.md`의 "문서 소스 해시 게이트" 절이다.
 

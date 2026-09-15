@@ -2,8 +2,8 @@
 
 `@isthis/agentic`은 `agentic`과 짧은 별칭 `agt`로 실행할 수 있다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다.
 
-<!-- agentic-doc-sources: bin, lib -->
-<!-- agentic-doc-sources-sha256: 7db9e2be89916c984cc569bd73e6128c4afb24d4c6fe872372896329af8cabef -->
+<!-- agentic-doc-sources: src -->
+<!-- agentic-doc-sources-sha256: 01e7b7606f0955f4b27a9f74e42a19458745ba142b7a03257808732d114107a2 -->
 
 ## 설치와 실행
 
@@ -12,7 +12,7 @@ npm install --global @isthis/agentic
 agt help
 ```
 
-저장소를 직접 개발할 때는 `pnpm install` 후 `node bin/agentic.mjs help`로 설치 없이 같은 CLI를 실행할 수 있다.
+저장소를 직접 개발할 때는 `pnpm install` 후 `node src/agentic.ts help`로 설치 없이 같은 CLI를 실행할 수 있다.
 
 저장소 개발 환경에서는 고정된 pnpm 버전을 사용한다. npm 설치 사용자는 별도 설정 없이 `agentic`과 `agt`를 모두 사용할 수 있다.
 

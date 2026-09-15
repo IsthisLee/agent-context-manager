@@ -227,3 +227,16 @@ flowchart TD
 * **제약:** 템플릿 줄을 고친 편집은 비슷한 문장이 두 번 남을 수 있다. base가 없는 기존 프로젝트는 다음 성공한 적용부터 base가 생긴다. 실제 VS Code 창, Windows `code.cmd`, 대화형 TUI 조작은 자동 평가하지 않는다.
 * **정정:** 실제 VS Code 확인에서 저장 시 포매터(Prettier)가 관리 블록을 바꿔 `--edit` 결과가 항상 거부되는 문제가 드러났다. `--edit`은 결과에서 관리 영역 밖만 가져오고 관리 영역은 다시 만들도록 바꿨다. 근거는 [ADR 0010](../../../adr/0010-edit-merge-regenerates-managed-area.md)이다.
 * **다음 단계:** 마커 없는 파일 정책, 마커 손상 진단, 여러 파일 전체 롤백, 관리 파일 manifest.
+
+#### 구현 기록: APM 생성 파일 보호와 모노레포 연결 파일 (2026-09-16)
+
+* **결정:** [ADR 0020](../../../adr/0020-apm-coexistence-and-monorepo-links.md). APM이 기본 모드에서 통째로 다시 만드는 `AGENTS.md`·`CLAUDE.md`에는 관리 영역을 더하지 않고 멈춘다. `AGENTS.md`의 APM `managed_section` 블록은 프로젝트 영역의 내용으로 보고 그대로 둔다. 하위 폴더의 `AGENTS.md`마다 옆에 관리 블록만 담은 `CLAUDE.md` 연결 파일을 만들고, 사람이 둔 `CLAUDE.md`는 건드리지 않는다.
+* **구현:** `src/project/apm.ts`(생성 표시 판정), `src/project/links.ts`(하위 `AGENTS.md` 찾기·사람이 둔 연결 확인), `src/project/plan.ts`(연결 파일 계획과 경고), `templates/CLAUDE.link.md`, `src/repos/sync.ts`(연결 파일도 커밋하지 않은 변경 검사에 포함). 사용법은 [CLI Reference](../../../cli-reference.md#profile-apply)에 있다.
+* **평가:** `evals/apm-coexistence.test.ts` 3개, `evals/monorepo-links.test.ts` 3개. 실제 apm-cli 0.30.0과 함께 두 적용 순서를 실행했다([외부 근거](../../../references.md#apm과-함께-쓰기-근거)).
+* **계획과 달라진 점:**
+  - "마커 없는 파일은 자동 덮어쓰지 않음"은 다른 도구가 통째로 다시 만드는 파일부터 적용했다. 사람이 쓴 루트 `CLAUDE.md`에 관리 블록을 덧붙이는 기존 동작은 그대로다.
+  - 연결 파일은 사람이 둔 `CLAUDE.md`·`.claude/CLAUDE.md`·심볼릭 링크를 사용자 소유로 보고 쓰지 않는다. 그 파일이 `AGENTS.md`를 가져오지 않으면 경고만 한다.
+  - 하위 `AGENTS.md`가 없어진 연결 파일은 지우지 않고 관리 기록에서만 뺀다.
+* **제약:** APM 말고 다른 도구의 생성 파일은 알아보지 않는다. 연결 파일은 Claude Code만을 위한 것이다. 하위 폴더에서 시작한 Claude Code가 루트 `CLAUDE.md`의 `@AGENTS.md`를 읽으려면 여전히 한 번 승인해야 하고, Antigravity는 하위 폴더 `AGENTS.md`를 세션 시작에 받지 않는다.
+* **다음 단계:** 사람이 쓴 마커 없는 루트 파일의 기본 처리, 마커 손상 진단, 여러 파일 전체 롤백, 관리 파일 manifest.
+

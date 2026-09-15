@@ -87,4 +87,6 @@ export interface ProjectPlan {
   files: PlannedFile[];
   conflicts: ConflictedFile[];
   changes: PlannedChange[];
+  /** Things the plan does not change but the user should know, such as a CLAUDE.md that does not import its AGENTS.md. */
+  warnings: string[];
 }

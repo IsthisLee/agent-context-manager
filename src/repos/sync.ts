@@ -24,8 +24,12 @@ export interface SyncItem {
   plan: ApplyPlan | null;
 }
 
-/** Files a sync rewrites; uncommitted edits to them would be mixed into the sync. */
+/** Files a sync rewrites; uncommitted edits to them would be mixed into the sync. Link files come from the recorded hashes. */
 const MANAGED_FILES = ['AGENTS.md', 'CLAUDE.md', '.agents/rules/agctx.md', PROJECT_CONFIG_FILE];
+
+function managedFiles(dir: string): string[] {
+  return [...new Set([...MANAGED_FILES, ...Object.keys(readProjectConfig(path.join(dir, PROJECT_CONFIG_FILE)).managedHashes ?? {})])];
+}
 
 function insideGitWorkTree(dir: string): boolean {
   for (let current = path.resolve(dir); ; current = path.dirname(current)) {
@@ -37,7 +41,7 @@ function insideGitWorkTree(dir: string): boolean {
 /** Tracked managed files with uncommitted changes. Untracked files never block a sync. */
 function uncommittedManagedFiles(dir: string): string[] {
   if (!insideGitWorkTree(dir)) return [];
-  const result = git(['status', '--porcelain', '--untracked-files=no', '--', ...MANAGED_FILES], { cwd: dir, allowFailure: true });
+  const result = git(['status', '--porcelain', '--untracked-files=no', '--', ...managedFiles(dir)], { cwd: dir, allowFailure: true });
   if (result.status !== 0) return [];
   return result.stdout.split('\n').filter(Boolean).map(line => line.slice(3).trim());
 }

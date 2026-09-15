@@ -35,6 +35,7 @@
     - [ADR 0017: 프로필을 Git 원격으로 공유하고 적용한 버전을 기록](adr/0017-git-profile-sharing.md)
     - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md)
     - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md)
+    - [ADR 0020: APM이 다시 만드는 파일에는 쓰지 않고, 하위 AGENTS.md마다 Claude Code 연결 파일을 만듦](adr/0020-apm-coexistence-and-monorepo-links.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

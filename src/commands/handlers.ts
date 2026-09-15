@@ -64,7 +64,7 @@ async function applyOrSync(parsed: ParsedArguments, name: string, targetDir: str
   const dryRun = flag(parsed, 'dry-run');
   const { plan, version, previousPin } = planFor(name, targetDir, pin);
   const data = { profile: name, project: targetDir, source: version.source, pin: version.pin, uncommitted: version.uncommitted, changes: plan.changes.map(({ relativePath, status }) => ({ file: relativePath, status })), conflicts: plan.conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind })) };
-  const warnings = pin === false && previousPin ? [_('apply.warn.unpin', { project: targetDir })] : [];
+  const warnings = [...(pin === false && previousPin ? [_('apply.warn.unpin', { project: targetDir })] : []), ...plan.warnings];
   if (!isJsonMode()) warnings.forEach(message => warn(message));
   // Human output already printed the warnings; the JSON document carries them instead.
   const done = (written: boolean): CommandOutcome => ({ exitCode: EXIT.ok, data: { ...data, written }, warnings: isJsonMode() ? warnings : [] });
@@ -295,9 +295,12 @@ export const HANDLERS: Record<string, Handler> = {
     const planned = planReposSync(text(parsed, 'profile'));
     if (!planned.length) say(_('repos.none'));
     printSyncItems(planned);
+    // Plan warnings, such as a CLAUDE.md that does not import its AGENTS.md, name the repository they belong to.
+    const planWarnings = planned.flatMap(item => (item.plan?.plan.warnings ?? []).map(message => `${item.path}: ${message}`));
     const summary = (items: readonly SyncItem[]) => ({
       exitCode: worstExitCode(items.map(item => item.exitCode)),
-      data: { repos: items.map(({ plan: _plan, ...item }) => item) }
+      data: { repos: items.map(({ plan: _plan, ...item }) => item) },
+      warnings: planWarnings
     });
     const updates = planned.filter(item => item.state === 'update');
     if (flag(parsed, 'dry-run')) {

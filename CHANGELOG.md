@@ -6,6 +6,9 @@
 
 ### Added
 
+- 모노레포 연결 파일: `profile apply`·`sync`가 프로젝트 안의 하위 폴더 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다. Git 저장소면 `.gitignore`로 무시한 파일을 빼고, `node_modules`·`dist` 같은 폴더와 중첩 저장소는 보지 않는다. 사람이 둔 `CLAUDE.md`와 심볼릭 링크는 건드리지 않고 `AGENTS.md`를 가져오지 않으면 경고한다. `AGENTS.md`가 없어진 연결 파일은 지우지 않고 관리만 멈춘다. `repos sync`는 연결 파일의 커밋하지 않은 변경도 확인한다. 근거는 [ADR 0020](docs/adr/0020-apm-coexistence-and-monorepo-links.md)
+- Microsoft APM과 함께 쓰기: APM 기본 모드가 만든 `AGENTS.md`·`CLAUDE.md`(처음 다섯 줄에 APM 생성 표시)에는 쓰지 않고 종료 코드 2로 멈추며 `managed_section`으로 전환하는 방법을 안내한다. 확장 영역에 둔 `<!-- apm:start -->`~`<!-- apm:end -->` 블록은 그대로 둔다
+- `explain` 중복 경고: 규칙으로 보이는 줄을 3줄 이상 함께 담은 두 파일이 한 에이전트에 들어가면 경고한다. 사람이 둔 `CLAUDE.md`가 옆의 `AGENTS.md`를 가져오지 않으면 그 파일을 고치라고 안내한다
 - `agctx explain [--agent <codex|claude|antigravity|all>] [<path>]`: 그 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 이유를 보여 주고, 어느 에이전트에도 닿지 않는 프로젝트 지침 파일이 있으면 4로 끝난다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`와, 하위 폴더에서 시작한 Claude Code가 승인 전에는 읽지 않는 루트 `CLAUDE.md`의 `@AGENTS.md`는 경고로 알린다. 다른 도구의 규칙 파일(`.cursorrules` 등)도 목록으로 보여 준다. 근거는 [ADR 0019](docs/adr/0019-explain-verify-and-agent-skills.md)
 - `agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]`: Codex·Claude Code 세션 기록에서 `explain`이 기대한 파일이 실제로 들어갔는지 확인하고, 받지 못한 파일이 있으면 4로 끝난다. 기록이 없거나 지침을 읽은 뒤 파일이 바뀌었으면 `no-evidence`로 알린다. `--probe`는 확인을 받은 뒤 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행하며, 저장소 파일은 바꾸지 않는다
 - 에이전트용 스킬: 진단·갱신용 `agctx`와 프로필 게시·PR용 `agctx-author`(사용자가 이름으로 부를 때만 사용)를 저장소 `skills/`에 둔다. `npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity`로 설치한다. npm 패키지에는 들어가지 않는다

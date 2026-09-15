@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 14226c93005e15f73378623e75039e4e0027bd110a0bf6da5d132ffc613babe0 -->
+<!-- agctx-doc-sources-sha256: f8a661ff763108b413f1dda03fe1e2ccc6289052cc326031a6be016d1997afc1 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -146,6 +146,7 @@ skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`
 - `agctx explain [<path>]` — 그 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 이유를 보여 주고, 어느 에이전트에도 닿지 않는 파일이 있으면 종료 코드 4
 - `agctx verify [--probe] [<path>]` — 에이전트 세션 기록으로 지침 파일이 실제로 들어갔는지 확인; `--probe`는 승인 뒤 임시 사본에서 에이전트를 한 번씩 실행
 - 에이전트용 스킬 `agctx`·`agctx-author` — 에이전트에게 말로 agctx를 맡길 때 명령과 승인 규칙을 알려 줌
+- 모노레포와 APM — 하위 폴더 `AGENTS.md`마다 Claude Code가 읽는 `CLAUDE.md` 연결 파일을 만들고, Microsoft APM의 `managed_section` 블록과 함께 쓰며, APM 기본 모드가 만든 파일에는 쓰지 않고 멈춤
 - 모든 명령 — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, 터미널이 아니면 `--yes` 확인, `agctx <명령> --help`
 - `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 영어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
@@ -162,7 +163,7 @@ skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`
 
 적용하면 마지막으로 쓴 관리 영역 원문도 `.agctx/base/`에 함께 기록합니다. 관리 영역 충돌을 풀 때 기준이 되므로 git에 커밋하세요.
 
-에이전트가 파일을 실제로 읽는지는 시작한 폴더에 따라 달라집니다. Codex는 하위 폴더의 `AGENTS.md`를 그 폴더에서 시작할 때만 읽고, Claude Code는 `CLAUDE.md`가 가져오지 않는 `AGENTS.md`를 읽지 않습니다. 모노레포라면 `agctx explain <폴더>`로 확인하세요.
+에이전트가 파일을 실제로 읽는지는 시작한 폴더에 따라 달라집니다. Codex는 하위 폴더의 `AGENTS.md`를 그 폴더에서 시작할 때만 읽고, Claude Code는 `CLAUDE.md`가 가져오지 않는 `AGENTS.md`를 읽지 않습니다. 모노레포에서는 하위 폴더 `AGENTS.md`마다 `@AGENTS.md`를 가져오는 `CLAUDE.md` 연결 파일을 만들고, 사람이 둔 `CLAUDE.md`는 건드리지 않습니다. 폴더마다 `agctx explain <폴더>`로 확인하세요.
 
 
 ## 지원하지 않는 기능
@@ -192,7 +193,7 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 | [프로젝트 적용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md)             | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존                  | Critical · Implemented  | 충돌·복구 확정            |
 | [에이전트 산출물 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화                   | High · Implemented      | manifest·drift 고도화  |
 | [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Implementing     | 배포 패키지 기준 에이전트 시나리오 평가 |
-| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장                    | Critical · Implementing | 충돌 시각화·복구           |
+| [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장                    | Critical · Implementing | 마커 없는 루트 파일 정책·여러 파일 롤백 |
 | [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 팀·조직이 표준 Git 원격으로 프로필을 공유하고 적용한 버전을 기록·확인 | Critical · Implemented | 없음 |
 | [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md)         | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합               | Medium · Proposed       | 검증 후 합성 최소 프로토타입    |
 

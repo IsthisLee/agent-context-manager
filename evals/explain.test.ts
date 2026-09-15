@@ -135,3 +135,30 @@ test('explain reports user-level files with their scope and an Antigravity rule 
   assert.deepEqual(claude.findings.filter(finding => finding.kind === 'warning'), []);
   assert.equal(statusOf(agentOf(document, 'antigravity'), '.agents/rules/notes.md'), 'not-read');
 });
+
+test('explain warns when the same rules reach an agent through two files', t => {
+  const { repo, explain } = monorepo(t);
+  const rules = '- Every API handler validates its input before touching the database.\n- Money is stored as integer minor units, never as floats.\n- Every refund writes an audit log entry with the operator id.\n';
+  fs.appendFileSync(path.join(repo, 'AGENTS.md'), `\n${rules}`);
+  fs.mkdirSync(path.join(repo, '.claude', 'rules'), { recursive: true });
+  fs.writeFileSync(path.join(repo, '.claude', 'rules', 'team.md'), `# Team rules\n\n${rules}`);
+
+  const claude = agentOf(parse(explain([repo, '--agent', 'claude', '--json']).stdout), 'claude');
+  const duplicate = claude.findings.find(finding => finding.kind === 'warning' && /team\.md/.test(finding.message) && /AGENTS\.md/.test(finding.message));
+  assert.ok(duplicate, JSON.stringify(claude.findings));
+  assert.match(duplicate.message, /\b3\b/);
+
+  const clean = agentOf(parse(explain([repo, '--agent', 'claude', '--json']).stdout), 'claude');
+  fs.rmSync(path.join(repo, '.claude', 'rules', 'team.md'));
+  const without = agentOf(parse(explain([repo, '--json']).stdout), 'claude');
+  assert.ok(clean.findings.length > without.findings.length);
+  // APM writes the copy as a path-scoped rule; it still reaches Claude Code once a matching file is read.
+  fs.writeFileSync(path.join(repo, '.claude', 'rules', 'team.md'), `---\npaths:\n  - "**"\n---\n\n${rules}`);
+  const scoped = agentOf(parse(explain([repo, '--agent', 'claude', '--json']).stdout), 'claude');
+  assert.ok(scoped.findings.some(finding => finding.kind === 'warning' && /team\.md/.test(finding.message) && /AGENTS\.md/.test(finding.message)), JSON.stringify(scoped.findings));
+  fs.rmSync(path.join(repo, '.claude', 'rules', 'team.md'));
+  for (const agent of parse(explain([repo, '--json']).stdout).data.agents) {
+    assert.deepEqual(agent.findings.filter(finding => /share \d+ lines/.test(finding.message)), [], `${agent.agent}: files agctx generates do not repeat each other`);
+  }
+});
+

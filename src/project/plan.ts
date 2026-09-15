@@ -2,7 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
+import { apmRegenerates } from './apm.ts';
 import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
+import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
+import { _ } from '../i18n/index.ts';
+import { CliError, EXIT } from '../shared/errors.ts';
 import { assertSafeTextTarget, writeTextAtomic } from '../shared/fs-utils.ts';
 import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan, VersionRecord } from '../shared/types.ts';
 
@@ -70,6 +74,10 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   const describe = (relativePath: string, kind: ManagedKind, regenerate: (existing: string | null) => string) => {
     const overridden = overrides.has(relativePath);
     const existing = overridden ? overrides.get(relativePath) ?? null : readIfExists(path.join(targetDir, relativePath));
+    if (apmRegenerates(relativePath, existing)) {
+      const hint = relativePath === 'AGENTS.md' ? 'hint.project.apm-generated.agents' : 'hint.project.apm-generated.claude';
+      throw new CliError('project.apm-generated', _('error.project.apm-generated', { file: relativePath }), { exitCode: EXIT.conflict, hint: _(hint, { file: relativePath }) });
+    }
     const regenerated = regenerate(existing);
     const currentRegion = managedRegion(kind, existing);
     const nextRegion = managedRegion(kind, regenerated);
@@ -84,6 +92,28 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   for (const [source, relativePath] of POINTER_TEMPLATES) {
     const template = fs.readFileSync(path.join(packageRoot, source), 'utf8').replaceAll('{{PROJECT_NAME}}', projectName);
     describe(relativePath, 'pointer', existing => mergeManagedDocument(template, existing));
+  }
+
+  // Link every nested AGENTS.md for Claude Code, leaving CLAUDE.md files people wrote alone.
+  const warnings: string[] = [];
+  const linkTemplate = fs.readFileSync(path.join(packageRoot, LINK_TEMPLATE), 'utf8');
+  const linked = new Set<string>();
+  for (const agentsRel of nestedAgentsFiles(targetDir)) {
+    const folder = agentsRel.slice(0, -'/AGENTS.md'.length);
+    const linkRel = `${folder}/CLAUDE.md`;
+    const owned = recordedHashFor(projectConfig, linkRel) !== null || overrides.has(linkRel);
+    const person = owned ? null : personLink(targetDir, folder);
+    if (!person) {
+      describe(linkRel, 'pointer', existing => mergeManagedDocument(linkTemplate, existing));
+      linked.add(linkRel);
+    } else if (!linksTo(path.join(targetDir, person), path.join(targetDir, agentsRel))) {
+      warnings.push(_('plan.warn.link-no-import', { file: person, agents: agentsRel }));
+    }
+  }
+  for (const rel of Object.keys(projectConfig.managedHashes ?? {})) {
+    if (rel.endsWith('/CLAUDE.md') && !linked.has(rel)) {
+      warnings.push(_('plan.warn.link-dropped', { file: rel, agents: `${rel.slice(0, -'CLAUDE.md'.length)}AGENTS.md` }));
+    }
   }
 
   const changes: PlannedChange[] = [];
@@ -109,7 +139,7 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   };
   planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, projectName, ...version, managedHashes }, null, 2) + '\n');
 
-  return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes };
+  return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes, warnings };
 }
 
 /** Write every changed file, refusing unsafe targets before anything is written. */

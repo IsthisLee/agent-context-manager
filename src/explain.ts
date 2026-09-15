@@ -4,6 +4,7 @@ import path from 'node:path';
 import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
 import { EXIT, usageError } from './shared/errors.ts';
+import { filesBelow } from './shared/scan.ts';
 
 /**
  * `agctx explain`: which instruction files each agent reads when started in a
@@ -53,9 +54,8 @@ export interface Explanation {
 const CODEX_MAX_BYTES = 32 * 1024;
 /** Claude Code follows imports at most this many hops. */
 const CLAUDE_IMPORT_DEPTH = 4;
-/** Folders never searched for nested instruction files. */
-const SKIPPED_FOLDERS = new Set(['.git', 'node_modules', '.agctx', 'dist', 'build', 'vendor', '.venv', 'target', 'coverage']);
-const MAX_SCANNED_FOLDERS = 5000;
+/** Lines two files must share before the same rules count as delivered twice. */
+const DUPLICATE_LINES = 3;
 const UNSUPPORTED = ['.cursorrules', '.cursor/rules', '.github/copilot-instructions.md', '.windsurfrules', '.clinerules', '.agent/rules'];
 
 const isFile = (file: string) => {
@@ -89,32 +89,6 @@ function ancestors(target: string): string[] {
     folders.unshift(current);
     if (path.dirname(current) === current) return folders;
   }
-}
-
-/** Files with one of `names` in folders below `start`, skipping dependency and build folders. */
-function filesBelow(start: string, names: readonly string[]): string[] {
-  const found: string[] = [];
-  const queue = [start];
-  let scanned = 0;
-  while (queue.length && scanned < MAX_SCANNED_FOLDERS) {
-    const dir = queue.shift() as string;
-    scanned += 1;
-    let entries: fs.Dirent[];
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      continue;
-    }
-    for (const entry of entries) {
-      const full = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        if (!SKIPPED_FOLDERS.has(entry.name)) queue.push(full);
-      } else if (dir !== start && names.includes(entry.name)) {
-        found.push(full);
-      }
-    }
-  }
-  return found.sort();
 }
 
 function markdownFiles(dir: string, recursive: boolean): string[] {
@@ -291,7 +265,12 @@ function explainClaude(collector: Collector, target: string): void {
   for (const file of agentsFiles) {
     if (collector.files.some(entry => entry.absolutePath === file)) continue;
     const entry = add(collector, file, 'not-read', 'project', _('explain.reason.claude.agents-not-imported'));
-    collector.findings.push({ kind: 'missing', file: entry.path, message: _('explain.missing.claude', { file: entry.path }) });
+    const folder = path.dirname(file);
+    const personFile = [path.join(folder, 'CLAUDE.md'), path.join(folder, '.claude', 'CLAUDE.md')].find(isFile);
+    const message = personFile
+      ? _('explain.missing.claude-no-import', { file: entry.path, claude: display(collector.root, personFile) })
+      : _('explain.missing.claude', { file: entry.path });
+    collector.findings.push({ kind: 'missing', file: entry.path, message });
   }
 }
 
@@ -324,6 +303,39 @@ function explainAntigravity(collector: Collector): void {
   }
 }
 
+/** Lines long enough to be a rule, without list bullets, headings, comments, or imports. */
+function ruleLines(file: string): Set<string> {
+  let text: string;
+  try {
+    text = read(file);
+  } catch {
+    return new Set();
+  }
+  return new Set(text.split(/\r?\n/)
+    .map(line => line.replace(/^\s*(?:[-*+]|\d+\.)\s+/, '').trim())
+    .filter(line => line.length >= 24 && !/^(?:#|<!--|@)/.test(line)));
+}
+
+/**
+ * The same rules reaching one agent through two files, such as AGENTS.md imported
+ * by CLAUDE.md and a copy in .claude/rules. One of the two is read at launch; the
+ * other may load later, like a path-scoped rule.
+ */
+function duplicateFindings(collector: Collector): void {
+  const reaching = collector.files
+    .filter(file => file.status === 'read' || file.status === 'conditional' || file.status === 'on-demand')
+    .map(file => ({ file, lines: ruleLines(file.absolutePath) }));
+  reaching.forEach((later, index) => {
+    for (const earlier of reaching.slice(0, index)) {
+      if (earlier.file.status !== 'read' && later.file.status !== 'read') continue;
+      const count = [...later.lines].filter(line => earlier.lines.has(line)).length;
+      if (count >= DUPLICATE_LINES) {
+        collector.findings.push({ kind: 'warning', file: later.file.path, message: _('explain.warning.duplicate', { file: later.file.path, other: earlier.file.path, count }) });
+      }
+    }
+  });
+}
+
 export function parseAgents(value: string | null): AgentId[] {
   if (!value || value === 'all') return [...AGENT_IDS];
   const agents = value.split(',').map(item => item.trim()).filter(Boolean);
@@ -347,6 +359,7 @@ export function explainPath(requested: string, agents: readonly AgentId[]): Expl
     if (agent === 'codex') explainCodex(collector, start);
     else if (agent === 'claude') explainClaude(collector, start);
     else explainAntigravity(collector);
+    duplicateFindings(collector);
     return { agent, startDir: path.relative(root, start).split(path.sep).join('/') || '.', files: collector.files, findings: collector.findings };
   });
 

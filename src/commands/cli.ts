@@ -35,7 +35,7 @@ export async function main(argv: readonly string[] = process.argv): Promise<Invo
   const rawArgs = argv.slice(2);
   setJsonMode(hasFlag(rawArgs, 'json'));
   const langFlag = parseFlag(rawArgs, 'lang');
-  const args = stripFlag(stripFlag(rawArgs, 'lang'), 'json').filter(value => value !== '--json');
+  const args = stripFlag(rawArgs, 'lang').filter(value => value !== '--json');
   await resolveActiveLocale(langFlag);
 
   if (!args.length || args[0] === '--tui') {

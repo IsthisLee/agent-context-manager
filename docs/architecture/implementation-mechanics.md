@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:55-86`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 988d015a473929416297feb4663b1063edf92e39a3b6314394e78a25ff8b406b -->
+<!-- agctx-doc-sources-sha256: 0150abd1bcd86d8cd8cc0f7d14c8bd01df7175e62bfcdf537c5db20eef6ac2cd -->
 
 ## 읽는 법
 
@@ -65,7 +65,7 @@ flowchart LR
 const rawArgs = argv.slice(2);
 setJsonMode(hasFlag(rawArgs, 'json'));
 const langFlag = parseFlag(rawArgs, 'lang');
-const args = stripFlag(stripFlag(rawArgs, 'lang'), 'json').filter(value => value !== '--json');
+const args = stripFlag(rawArgs, 'lang').filter(value => value !== '--json');
 await resolveActiveLocale(langFlag);
 // … 인자가 없거나 --tui면 TTY이고 --json이 아닐 때 mainTui(), 아니면 help()
 const command = findCommand(args);
@@ -78,7 +78,7 @@ const outcome = await HANDLERS[command.id](parsed);
 
 - **명령 찾기:** `findCommand`(`src/commands/registry.ts:80-86`)는 입력 앞부분과 단어가 가장 많이 맞는 명령을 고른다. 맞는 명령이 없으면 `unknownCommand`(`src/commands/cli.ts:23-27`)가 `suggestCommands`(`src/commands/registry.ts:89-97`)의 편집 거리 결과로 비슷한 명령을 붙여 사용법 오류(64)를 던진다.
 - **도움말:** `help()`(`src/commands/help.ts:7-18`)와 `commandHelp()`(`src/commands/help.ts:21-29`)는 등록부의 `usageLine`(`src/commands/registry.ts:74-77`)과 명령별 종료 코드 목록으로 출력한다.
-- **플래그 헬퍼:** `parseFlag`·`hasFlag`·`stripFlag`(`src/commands/args.ts:1-18`)는 전역 옵션을 떼어 낼 때와 `profile setup`의 수준 옵션을 읽을 때 쓴다. 명령 옵션은 `checkArguments`가 등록부를 기준으로 해석한다([12절](#12-기능-인터페이스-동등성-계약)).
+- **플래그 헬퍼:** `parseFlag`·`hasFlag`·`stripFlag`(`src/commands/args.ts:1-18`)는 전역 옵션을 떼어 낼 때와 `profile setup`의 수준 옵션을 읽을 때 쓴다. `stripFlag`는 옵션과 바로 뒤의 값을 함께 떼어 내므로 값을 받는 `--lang`에만 쓰고, 값이 없는 `--json`은 그 토큰만 걸러 낸다. 명령 옵션은 `checkArguments`가 등록부를 기준으로 해석한다([12절](#12-기능-인터페이스-동등성-계약)).
 - **결과 출력:** `run()`(`src/commands/cli.ts:67-86`)은 `--json`이면 결과 문서를 stdout에 쓰고, 아니면 처리기가 돌려준 경고를 stderr에 쓴다. 오류는 `CliError`가 지닌 종료 코드를 `process.exitCode`에 넣고 `Error:`·`Next:` 두 줄(또는 JSON 문서)로 출력한다. `CliError`가 아닌 예외는 `internal` 코드와 종료 코드 70으로 바꾼다.
 
 ```mermaid

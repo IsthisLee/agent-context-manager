@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 59e85af4fdeada44ab0f2f342420ff9ab661287f462f437fd1bdd42dbf5f21aa -->
+<!-- agctx-doc-sources-sha256: b6df9710a0b4f893fdb11260192dd8c407363fa2e6d42c34d03f93cb090de777 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)

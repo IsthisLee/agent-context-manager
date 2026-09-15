@@ -3,7 +3,7 @@
 이 문서는 `agent-context-manager` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 71b1341279d847f31e8382eb5c026acf94d5d5cc1918e8adc72836bd6146b8d7 -->
+<!-- agctx-doc-sources-sha256: a34dd87c3b88027774a5a16fb14ef7013303fc7a35c18d0b5af74120be462534 -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agctx`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.
@@ -12,7 +12,7 @@
 
 1. **생성**: `agctx profile create [<name>] [--scope <scope>]`
 2. **설정**: `agctx profile setup [<name>] [--tdd <level> ...]`
-3. **적용**: `agctx profile apply <name> <project>` (먼저 `--dry-run`으로 계획 확인. 터미널이 아닌 환경에서는 `--yes`를 붙여야 파일을 쓴다)
+3. **적용**: `agctx profile apply <name> <project>` (먼저 `--dry-run`으로 계획 확인. 터미널이 아닌 환경에서는 `--yes`를 붙여야 파일을 쓴다). 하위 폴더 `AGENTS.md`마다 Claude Code 연결 파일도 만든다. APM을 함께 쓰면 [APM과 함께 쓰기](usage-guide.md#apm과-함께-쓰기)대로 `managed_section`을 켠다
 4. **개발**: 평소 쓰는 에이전트에 작업 의뢰. 에이전트가 프로젝트 `AGENTS.md`를 읽고 작업한다
 5. **동기화**: 프로필을 고친 뒤 `agctx profile sync <project>`로 관리 영역만 재적용
 6. **충돌 해결**: 관리 영역을 밖에서 고쳐 `apply`·`sync`가 멈추면 `agctx profile sync --dry-run <project>`로 차이를 보고 `agctx profile resolve <project>`로 푼다

@@ -7,7 +7,7 @@
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 71b1341279d847f31e8382eb5c026acf94d5d5cc1918e8adc72836bd6146b8d7 -->
+<!-- agctx-doc-sources-sha256: a34dd87c3b88027774a5a16fb14ef7013303fc7a35c18d0b5af74120be462534 -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -96,7 +96,8 @@ agctx profile apply company /path/to/project
 ├── .agctx/base/                   # 마지막으로 적용한 관리 영역 원문(충돌 해결 기준, 커밋)
 ├── .agctx/.gitignore              # 충돌 해결 백업 폴더 backups/를 커밋에서 제외
 ├── CLAUDE.md                        # Claude Code 포인터
-└── .agents/rules/agctx.md         # Antigravity 포인터
+├── .agents/rules/agctx.md         # Antigravity 포인터
+└── services/payments/CLAUDE.md      # 하위 AGENTS.md가 있는 폴더마다 Claude Code 연결 파일
 ```
 
 바꾸기 전에 계획만 보려면 `--dry-run`을 붙인다.
@@ -347,6 +348,90 @@ jobs:
 - 커밋 작성자는 실행 환경의 Git 설정을 따르므로 봇 이름과 메일을 설정한다.
 - 봇이 연 PR은 각 저장소의 CI에서 `agctx check`로 검사한 뒤 리뷰해 병합한다([CI에서 확인하기](#ci에서-확인하기)).
 
+## 모노레포에서 쓰기
+
+모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일을 챙긴다. 결정과 근거는 [ADR 0020](adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
+
+```mermaid
+flowchart TB
+  RC["루트 CLAUDE.md<br/>agctx 포인터 · @AGENTS.md"] -->|"가져오기"| RA["루트 AGENTS.md<br/>프로필 영역 + 프로젝트 확장"]
+  subgraph PAY["services/payments/"]
+    PC["CLAUDE.md 연결 파일<br/>agctx 관리 블록 · @AGENTS.md"] -->|"가져오기"| PA["AGENTS.md<br/>사람이 씀"]
+  end
+  subgraph WEB["packages/web/"]
+    WC["CLAUDE.md<br/>사람이 씀 · agctx가 쓰지 않음"] -.->|"가져오기가 없으면 경고"| WA["AGENTS.md<br/>사람이 씀"]
+  end
+```
+
+agctx는 사람이 쓴 `CLAUDE.md`가 없는 폴더에만 연결 파일을 만든다. 사람이 쓴 파일은 그대로 두고 `AGENTS.md`를 가져오지 않을 때만 알려 준다.
+
+```bash
+$ agctx profile apply team-backend . --dry-run
+packages/web/CLAUDE.md does not import AGENTS.md, so Claude Code never reads packages/web/AGENTS.md. Add an import of it, such as @AGENTS.md.
+Dry-run: 12 file(s) to change.
+  create    AGENTS.md
+  create    CLAUDE.md
+  create    .agents/rules/agctx.md
+  create    services/orders/CLAUDE.md
+  create    services/payments/CLAUDE.md
+  …
+Dry-run: no files were changed.
+```
+
+- 적용한 뒤에 만든 하위 `AGENTS.md`는 다음 `agctx profile sync`에서 연결된다. 하위 `AGENTS.md`를 지우면 연결 파일은 남기고 관리 기록에서만 빼며 알려 준다.
+- Git 저장소면 `.gitignore`로 무시한 폴더는 보지 않는다. `node_modules`·`dist`·`build`·`vendor` 같은 폴더와 그 안의 다른 Git 저장소도 건너뛴다.
+- 연결 파일도 관리 블록이므로 블록 안을 고치면 다른 관리 파일처럼 `sync`가 충돌로 멈춘다. 그 폴더만의 Claude Code 지침은 블록 밖에 쓴다.
+- 에이전트마다 하위 `AGENTS.md`를 받는 조건이 다르다. Codex는 그 폴더에서 시작할 때, Claude Code는 연결 파일이 있을 때 받는다. 하위 폴더에서 시작한 Claude Code가 루트 `AGENTS.md`를 받으려면 프로젝트마다 한 번 승인해야 하고, Antigravity는 실측에서 하위 `AGENTS.md`를 세션 시작에 받지 않았다. 폴더마다 `agctx explain <폴더>`로 확인한다.
+
+## APM과 함께 쓰기
+
+Microsoft APM으로 지침 패키지를 설치하는 저장소에서도 agctx를 함께 쓸 수 있다. 두 도구가 `AGENTS.md`를 함께 쓰므로, APM이 `AGENTS.md`의 정해진 블록만 고치도록(`managed_section`) 설정한다. 근거와 실측은 [외부 근거](references.md#apm과-함께-쓰기-근거)에 있다.
+
+```mermaid
+flowchart TB
+  subgraph FILE["AGENTS.md"]
+    P["프로필 영역<br/>agctx apply·sync가 다시 만듦"] --- E["프로젝트 규칙 확장<br/>사람이 쓴 도메인 규칙"] --- A["apm:start ~ apm:end<br/>apm compile이 다시 만듦"]
+  end
+```
+
+agctx는 프로필 영역만, APM은 표지 사이만 다시 만든다. 두 영역이 겹치지 않으므로 어느 쪽을 먼저 갱신해도 서로의 내용이 남는다.
+
+1. agctx를 먼저 적용한다: `agctx profile apply <프로필> <프로젝트>`
+2. `apm.yml`에 아래 설정을 둔다.
+
+   ```yaml
+   compilation:
+     agents_md:
+       mode: managed_section
+   ```
+
+3. `AGENTS.md`의 프로젝트 규칙 확장 아래, 파일 끝에 표지 두 줄을 넣고 `apm compile`을 실행한다.
+
+   ```md
+   <!-- apm:start -->
+   <!-- apm:end -->
+   ```
+
+APM 기본 모드가 이미 `AGENTS.md`를 만든 저장소에서는 agctx가 파일을 쓰지 않고 멈춘다. `Next:` 줄의 순서대로 `managed_section`으로 바꾸고 APM이 만든 파일을 옮긴 뒤 다시 적용한다.
+
+```bash
+$ agctx profile apply team-backend . --dry-run
+Error: APM generated AGENTS.md in its default mode, so the next apm compile would overwrite what agctx writes there.
+Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md aside, and run agctx profile apply again. Then put <!-- apm:start --> and <!-- apm:end --> below the project rule extensions heading and run apm compile.
+```
+
+APM은 같은 규칙을 `.claude/rules/`에도 넣을 수 있어 Claude Code에는 두 경로로 들어간다. `agctx explain`이 이런 중복을 경고한다. 아래는 규칙 세 줄을 `AGENTS.md`와 `.claude/rules/team.md`에 함께 둔 저장소의 결과이며, 줄인 곳은 `…`로 표시했다.
+
+```bash
+$ agctx explain --agent claude .
+Claude Code · started in the project root
+  read         CLAUDE.md  start folder or a folder above it, read at launch
+  read         .claude/rules/team.md  rule without paths, read at launch
+  read         AGENTS.md  imported by CLAUDE.md
+  …
+  warning      AGENTS.md and .claude/rules/team.md share 3 lines, so the same rules reach this agent twice. Keep them in one file.
+```
+
 ## 에이전트가 지침을 받는지 확인하기
 
 파일을 만들었다고 해서 에이전트가 그 파일을 읽는 것은 아니다. 에이전트마다 지침 파일을 찾는 규칙이 다르고, 같은 에이전트도 시작한 폴더에 따라 읽는 파일이 달라진다. 하위 폴더마다 `AGENTS.md`를 두는 모노레포에서 특히 차이가 크다. 결정과 근거는 [ADR 0019](adr/0019-explain-verify-and-agent-skills.md)에 있다.
@@ -377,7 +462,7 @@ Claude Code · started in services/payments
   conditional  AGENTS.md  imported by CLAUDE.md from outside the start folder; read only after external imports are approved
   not-read     services/payments/AGENTS.md  Claude Code reads CLAUDE.md, not AGENTS.md, and no CLAUDE.md imports this file
   warning      CLAUDE.md imports AGENTS.md from outside the start folder. …
-  missing      Claude Code never reads services/payments/AGENTS.md. Add a CLAUDE.md with @AGENTS.md next to it.
+  missing      Claude Code never reads services/payments/AGENTS.md. Run agctx profile sync to add a CLAUDE.md that imports it, or add one with @AGENTS.md yourself.
 
 Antigravity · started in services/payments
   read         AGENTS.md  workspace root file (measured)
@@ -390,7 +475,7 @@ Antigravity · started in services/payments
 ```
 
 - **Codex**는 프로젝트 루트부터 시작 폴더까지 폴더마다 `AGENTS.md`를 하나씩 읽으므로 두 파일을 모두 받는다. 저장소 루트에서 시작하면 `services/payments/AGENTS.md`는 읽지 않으며, `agctx explain --agent codex .`이 이를 경고한다.
-- **Claude Code**는 `AGENTS.md`를 직접 읽지 않는다. `services/payments/CLAUDE.md`에 `@AGENTS.md` 한 줄을 두면 결제 서비스 규칙을 받는다. 하위 폴더에서 시작하면 루트 `CLAUDE.md`가 가져오는 루트 `AGENTS.md`도 시작 폴더 밖의 파일이 되므로, 그 프로젝트를 대화형으로 처음 시작할 때 뜨는 승인 창에서 허용해야 읽는다. 승인한 적이 없는 사본에서 `claude -p`로 실행했을 때는 이 파일을 받지 않았다([외부 근거](references.md#에이전트-지침-로드와-전달-확인-근거)).
+- **Claude Code**는 `AGENTS.md`를 직접 읽지 않는다. 이 예시는 `AGENTS.md`를 적용한 뒤에 만들어서 아직 연결 파일이 없다. `agctx profile sync`를 실행하면 `services/payments/CLAUDE.md` 연결 파일이 생겨 결제 서비스 규칙을 받는다([모노레포에서 쓰기](#모노레포에서-쓰기)). `@AGENTS.md` 한 줄을 담은 파일을 직접 두어도 된다. 하위 폴더에서 시작하면 루트 `CLAUDE.md`가 가져오는 루트 `AGENTS.md`도 시작 폴더 밖의 파일이 되므로, 그 프로젝트를 대화형으로 처음 시작할 때 뜨는 승인 창에서 허용해야 읽는다. 승인한 적이 없는 사본에서 `claude -p`로 실행했을 때는 이 파일을 받지 않았다([외부 근거](references.md#에이전트-지침-로드와-전달-확인-근거)).
 - **Antigravity**는 실측에서 루트 `AGENTS.md`와 `trigger: always_on` 규칙만 세션 시작에 받았고, `glob` 규칙과 하위 폴더 `AGENTS.md`는 받지 않았다. 모든 작업에 필요한 규칙은 루트 `AGENTS.md`나 `always_on` 규칙에 둔다.
 
 `services/payments/CLAUDE.md`를 만들고 `.agents/rules/payments.md`의 `trigger: glob`을 `trigger: always_on`으로 고친 뒤 다시 확인하면, `missing`이 사라지고 경고만 남아 0으로 끝난다.
@@ -519,6 +604,8 @@ flowchart TD
 - **`repos sync`가 `dirty`로 건너뜀**: 그 저장소의 관리 파일에 커밋하지 않은 변경이 있다. 커밋하거나 stash한 뒤 다시 실행한다.
 - **`repos pr`이 `branch-exists`로 끝남**: 같은 이름의 브랜치가 원격에 남아 있다. PR로 병합하거나, 닫힌 PR의 브랜치라면 지운 뒤 다시 실행한다.
 - **`repos pr`이 `pushed`로 끝남**: 브랜치는 올라갔지만 `gh`가 PR을 만들지 못했다. `gh auth status`로 인증을 확인하거나 안내된 브랜치로 PR을 직접 연다.
+- **`APM generated AGENTS.md in its default mode`**(종료 코드 2): APM 기본 모드가 만든 파일이다. [APM과 함께 쓰기](#apm과-함께-쓰기)의 순서로 `managed_section`으로 바꾼 뒤 다시 적용한다.
+- **`does not import AGENTS.md` 경고**: 사람이 둔 하위 `CLAUDE.md`가 옆의 `AGENTS.md`를 가져오지 않는다. 그 파일에 `@AGENTS.md`를 더하면 경고가 사라진다.
 - **`explain`이 4로 끝남**: `missing` 줄의 파일이 그 에이전트에 닿지 않는다. 줄에 적힌 조치(같은 폴더에 `@AGENTS.md`를 담은 `CLAUDE.md` 두기, 규칙을 `trigger: always_on`으로 바꾸기)를 한 뒤 다시 실행한다.
 - **`verify`가 `no-evidence`만 보여 줌**: 그 폴더에서 에이전트를 시작한 기록이 없거나 지침을 읽은 뒤 파일이 바뀌었다. 에이전트를 그 폴더에서 다시 시작하거나 `agctx verify --probe`를 실행한다.
 - **`verify --probe`가 69로 끝남**: 에이전트 CLI가 PATH에 없거나 로그인하지 않았다. 터미널에서 그 CLI를 한 번 실행해 로그인한 뒤 다시 실행한다.

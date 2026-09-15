@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 14226c93005e15f73378623e75039e4e0027bd110a0bf6da5d132ffc613babe0 -->
+<!-- agctx-doc-sources-sha256: f8a661ff763108b413f1dda03fe1e2ccc6289052cc326031a6be016d1997afc1 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -142,6 +142,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 - `agctx explain [<path>]` — show which instruction files Codex, Claude Code, and Antigravity read when started in a folder, and why; exits with 4 when a file reaches no agent.
 - `agctx verify [--probe] [<path>]` — check from agent session logs that the instruction files actually arrived; `--probe` runs each agent once in a scratch copy after approval.
 - Agent skills `agctx` and `agctx-author` — tell an agent the commands and approval rules when you hand agctx over in plain language.
+- Monorepos and APM — create a `CLAUDE.md` link next to every nested `AGENTS.md` so Claude Code reads it, work alongside Microsoft APM's `managed_section` block, and stop instead of writing into files APM regenerates in its default mode.
 - Every command — a `--json` result document, exit codes that separate behind, conflict, and hidden characters, `--yes` confirmation outside a terminal, and `agctx <command> --help`.
 - `agctx config lang <ko|en>` — set the display and generation language; the default is English, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
 
@@ -157,7 +158,7 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 
 Applying also records the managed areas as last written under `.agctx/base/`. Commit it, because it is the reference for resolving managed-area conflicts.
 
-Whether an agent actually reads a file depends on the folder it starts in. Codex reads a subfolder `AGENTS.md` only when started in that folder, and Claude Code does not read an `AGENTS.md` that no `CLAUDE.md` imports. In a monorepo, check with `agctx explain <folder>`.
+Whether an agent actually reads a file depends on the folder it starts in. Codex reads a subfolder `AGENTS.md` only when started in that folder, and Claude Code does not read an `AGENTS.md` that no `CLAUDE.md` imports. In a monorepo, agctx creates a `CLAUDE.md` link that imports `@AGENTS.md` next to every nested `AGENTS.md` and leaves any `CLAUDE.md` a person wrote alone. Check each folder with `agctx explain <folder>`.
 
 ## Not supported
 
@@ -183,7 +184,7 @@ agctx's implementation is managed in stages around the questions of where the sh
 | [Project application](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md) | Apply the chosen Profile to a project while keeping domain guidance separate | Critical · Implemented | Finalize conflict and recovery handling |
 | [Agent artifact synchronization](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
 | [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Implementing | Agent scenario evaluations against the published package |
-| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Conflict visualization and recovery |
+| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Policy for unmarked root files and multi-file rollback |
 | [Git-based Profile management](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | Teams and organizations share Profiles through a standard Git remote and record and check the applied version | Critical · Implemented | None |
 | [Scope expansion and guidance composition](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | User-definable, shareable guidance layers and multi-layer inheritance and merging for a project | Medium · Proposed | Prototype the minimal composition after validation |
 

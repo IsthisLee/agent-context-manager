@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 71b1341279d847f31e8382eb5c026acf94d5d5cc1918e8adc72836bd6146b8d7 -->
+<!-- agctx-doc-sources-sha256: a34dd87c3b88027774a5a16fb14ef7013303fc7a35c18d0b5af74120be462534 -->
 
 ## 설치와 실행
 
@@ -68,7 +68,7 @@ Next: Did you mean agctx profile list?
 | --- | --- | --- |
 | 0 | 성공 | 계획만 출력했거나 이미 최신인 경우도 포함 |
 | 1 | 뒤처짐 | `check`·`repos status`: 이 컴퓨터의 프로필이나 원천 저장소에 기록보다 새 버전이 있음, 커밋하지 않은 프로필 수정으로 적용함. `repos sync`가 관리 파일의 커밋하지 않은 변경 때문에 건너뛴 저장소 |
-| 2 | 관리 영역 충돌 | `apply`·`sync`·`resolve`가 밖에서 고친 관리 영역을 만남, `check`의 관리 영역 불일치, `pull`·`push`에서 커밋하지 않은 변경·갈라짐·원격보다 뒤처짐 |
+| 2 | 관리 영역 충돌 | `apply`·`sync`·`resolve`가 밖에서 고친 관리 영역을 만남, APM 기본 모드가 만든 `AGENTS.md`·`CLAUDE.md`에 쓰려 함, `check`의 관리 영역 불일치, `pull`·`push`에서 커밋하지 않은 변경·갈라짐·원격보다 뒤처짐 |
 | 3 | 숨은 문자 | 받을 프로필, 적용할 프로필, 관리 파일에 사람에게 보이지 않는 문자가 있음 |
 | 4 | 전달 누락 | `explain`: 어느 에이전트에도 닿지 않는 프로젝트 지침 파일이 있음. `verify`: 받아야 할 파일이 세션 기록이나 probe에서 확인되지 않음 |
 | 64 | 사용법 오류 | 알 수 없는 명령·옵션, 인자 누락, 없는 프로필, 적용하지 않은 프로젝트, 확인할 수 없는 환경에서 `--yes` 없음 |
@@ -257,6 +257,45 @@ agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
 
 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일, `agctx.project.json`을 만든다. 마지막으로 쓴 관리 영역 원문은 `.agctx/base/<경로>.base`에 기록하고, `.agctx/.gitignore`로 `backups/`를 커밋에서 뺀다. 기존 `AGENTS.md`의 프로젝트 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존한다. 이미 적용된 프로젝트에 다시 실행하면 관리 영역만 갱신하며, 다른 이름을 주면 그 프로필로 전환한다. 적용은 멱등이므로 같은 프로필을 다시 적용해도 결과가 같고, 바뀔 파일이 없으면 확인 없이 `already up to date`로 끝난다.
 
+**하위 폴더 연결 파일:** Claude Code는 `AGENTS.md`를 직접 읽지 않으므로, 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
+
+- 프로젝트가 Git 저장소 루트면 `.gitignore`로 무시한 파일은 빼고 아직 커밋하지 않은 새 파일은 넣는다. `node_modules`·`dist`·`build`·`vendor`·`.venv`·`target`·`coverage` 폴더와 중첩된 Git 저장소는 보지 않는다.
+- 같은 폴더에 사람이 둔 `CLAUDE.md`나 `.claude/CLAUDE.md`(심볼릭 링크 포함)가 있으면 쓰지 않는다. 그 파일이 `AGENTS.md`를 가져오지 않으면 경고한다. 경고는 stderr로 나가고 `--json`이면 `warnings`에 담긴다.
+- 연결 파일도 관리 영역 hash와 `.agctx/base/`를 기록하므로, 블록 안을 고치면 다른 관리 파일처럼 충돌로 멈춘다.
+- 관리하던 연결 파일 옆의 `AGENTS.md`가 없어지면 파일은 지우지 않고 관리 기록에서만 빼며 경고한다.
+
+```bash
+$ agctx profile apply team-backend . --dry-run
+packages/web/CLAUDE.md does not import AGENTS.md, so Claude Code never reads packages/web/AGENTS.md. Add an import of it, such as @AGENTS.md.
+Dry-run: 12 file(s) to change.
+  create    AGENTS.md
+  create    CLAUDE.md
+  create    .agents/rules/agctx.md
+  create    services/orders/CLAUDE.md
+  create    services/payments/CLAUDE.md
+  create    .agctx/base/AGENTS.md.base
+  …
+  create    agctx.project.json
+Dry-run: no files were changed.
+
+$ cat services/payments/CLAUDE.md
+<!-- agctx:managed:start -->
+# Claude Code instructions for this folder
+
+Claude Code reads CLAUDE.md, not AGENTS.md, so this file brings in the AGENTS.md next to it.
+
+@AGENTS.md
+<!-- agctx:managed:end -->
+```
+
+**APM이 만든 파일:** Microsoft APM의 기본 모드가 만든 `AGENTS.md`나 `CLAUDE.md`(처음 다섯 줄에 APM 생성 표시)에는 쓰지 않고 종료 코드 2로 멈춘다. 다음 `apm compile`이 agctx가 쓴 내용을 덮어쓰기 때문이다. `AGENTS.md`의 프로젝트 영역에 둔 APM `managed_section` 블록(`<!-- apm:start -->`~`<!-- apm:end -->`)은 그대로 둔다. 함께 쓰는 절차는 [사용 가이드](usage-guide.md#apm과-함께-쓰기)에 있다.
+
+```bash
+$ agctx profile apply team-backend . --dry-run
+Error: APM generated AGENTS.md in its default mode, so the next apm compile would overwrite what agctx writes there.
+Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md aside, and run agctx profile apply again. Then put <!-- apm:start --> and <!-- apm:end --> below the project rule extensions heading and run apm compile.
+```
+
 적용한 프로필 버전은 `agctx.project.json`에 기록한다. 프로필 폴더가 Git 저장소이면 `source`에 원격 URL·브랜치·커밋을 적는다(URL의 사용자 정보와 토큰은 지운다). 프로필의 `AGENTS.md`·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`, `--pin`이면 `pin: true`를 더한다. 로컬 프로필은 `source`를 기록하지 않는다. `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)도 기록해, 다른 이름의 폴더로 clone한 저장소나 임시 worktree에서도 같은 파일이 나온다(`package.json`에 `name`이 있으면 그 이름이 먼저다). 적용한 저장소는 이 컴퓨터의 저장소 목록에도 기록된다([`repos list`](#repos-list)).
 
 ```json
@@ -308,7 +347,7 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `--yes` | 터미널이 아닌 환경에서 동기화를 승인 |
 
-대상 프로필은 프로젝트의 `agctx.project.json`에 기록된 값을 사용한다. 아직 적용되지 않은 프로젝트에서 실행하면 `profile apply <name> <project>`로 먼저 적용하라는 오류(64)로 끝난다. 프로젝트 `AGENTS.md`의 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존하고, agctx가 관리하는 블록만 갱신한다.
+대상 프로필은 프로젝트의 `agctx.project.json`에 기록된 값을 사용한다. 아직 적용되지 않은 프로젝트에서 실행하면 `profile apply <name> <project>`로 먼저 적용하라는 오류(64)로 끝난다. 프로젝트 `AGENTS.md`의 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존하고, agctx가 관리하는 블록만 갱신한다. 적용한 뒤에 생긴 하위 폴더 `AGENTS.md`에는 이때 연결 파일을 만든다([`profile apply`](#profile-apply)).
 
 - **고정한 프로젝트:** 기록한 커밋의 `AGENTS.md`로 다시 만든다. 보관함의 프로필을 pull한 뒤에도 결과는 바뀌지 않는다. 그 커밋이 이 컴퓨터의 프로필 저장소에 없으면 종료 코드 69로 멈추고 `profile pull`을 안내한다.
 - **고정하지 않은 프로젝트:** 보관함의 현재 프로필로 다시 만들고 버전 기록을 갱신한다.
@@ -533,7 +572,7 @@ agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
 파일 목록 아래에는 판정이 붙는다.
 
 - `missing`: 프로젝트 지침 파일이 이 에이전트에 닿지 않는다. 하나라도 있으면 종료 코드 4다. 가져오는 `CLAUDE.md`가 없는 `AGENTS.md`(Claude Code), `trigger: glob`이거나 `trigger` frontmatter가 없는 규칙(Antigravity)이 여기에 해당한다.
-- `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`가 여기에 해당한다.
+- `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`, 규칙으로 보이는 줄을 3줄 이상 함께 담은 두 파일(하나는 세션 시작에 읽는 파일)이 같은 에이전트에 들어가는 중복이 여기에 해당한다.
 - Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 파일(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`)은 마지막에 목록으로 보여 준다.
 - 사용자 수준 파일(`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md` 등)도 함께 보여 주지만 `missing`으로 판정하지 않는다. `CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 설정했으면 그 폴더를 본다.
 - 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다.
@@ -551,7 +590,7 @@ Claude Code · started in services/payments
   conditional  AGENTS.md  imported by CLAUDE.md from outside the start folder; read only after external imports are approved
   not-read     services/payments/AGENTS.md  Claude Code reads CLAUDE.md, not AGENTS.md, and no CLAUDE.md imports this file
   warning      CLAUDE.md imports AGENTS.md from outside the start folder. Claude Code reads it only after someone approves external imports for this project once in an interactive session; starting at the project root needs no approval.
-  missing      Claude Code never reads services/payments/AGENTS.md. Add a CLAUDE.md with @AGENTS.md next to it.
+  missing      Claude Code never reads services/payments/AGENTS.md. Run agctx profile sync to add a CLAUDE.md that imports it, or add one with @AGENTS.md yourself.
 
 Antigravity · started in services/payments
   read         AGENTS.md  workspace root file (measured)
@@ -572,7 +611,7 @@ Codex · started in the project root
 …
 ```
 
-첫 명령은 `missing`이 있어 4로, 둘째 명령은 경고만 있어 0으로 끝난다. `services/payments/CLAUDE.md`에 `@AGENTS.md`를 두고 규칙을 `trigger: always_on`으로 바꾸면 첫 명령도 0으로 끝난다.
+첫 명령은 `missing`이 있어 4로, 둘째 명령은 경고만 있어 0으로 끝난다. `agctx profile sync`로 `services/payments/CLAUDE.md` 연결 파일을 만들고 규칙을 `trigger: always_on`으로 바꾸면 첫 명령도 0으로 끝난다.
 
 `--json`이면 `data`에 `path`(시작 폴더)·`root`·`agents[]`·`unsupported[]`·`exitCode`가 들어간다. `agents[]`는 `agent`·`startDir`·`files[]`·`findings[]`를 담고, `files[]`의 `scope`는 `project`·`user`·`managed-policy`, `origin`은 agctx가 관리하는 파일이면 `agctx-managed`다.
 
@@ -607,7 +646,7 @@ $ agctx explain --json --agent claude services/payments
           {
             "kind": "missing",
             "file": "services/payments/AGENTS.md",
-            "message": "Claude Code never reads services/payments/AGENTS.md. Add a CLAUDE.md with @AGENTS.md next to it."
+            "message": "Claude Code never reads services/payments/AGENTS.md. Run agctx profile sync to add a CLAUDE.md that imports it, or add one with @AGENTS.md yourself."
           }
         ]
       }

@@ -41,14 +41,10 @@ export function git(args: readonly string[], options: { cwd?: string; allowFailu
 export function isGitRoot(dir: string): boolean {
   // A work tree top always holds .git (a folder, or a file for worktrees), so local profiles never need Git installed.
   if (!fs.existsSync(path.join(dir, '.git'))) return false;
-  const result = git(['rev-parse', '--show-toplevel'], { cwd: dir, allowFailure: true });
-  if (result.status !== 0) return false;
-  // Compare real paths: git reports /private/var/... for a macOS /var/... temp folder, and C:/ with forward slashes on Windows.
-  try {
-    return fs.realpathSync(result.stdout.trim()) === fs.realpathSync(dir);
-  } catch {
-    return false;
-  }
+  // Ask git how far up the top is instead of comparing paths: a macOS /var temp folder, a Windows short
+  // name such as RUNNER~1, or another letter case spells the folder differently from what git reports.
+  const result = git(['rev-parse', '--show-cdup'], { cwd: dir, allowFailure: true });
+  return result.status === 0 && result.stdout.trim() === '';
 }
 
 /**

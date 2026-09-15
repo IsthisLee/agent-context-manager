@@ -107,10 +107,11 @@ function defaultBase(top: string): string {
 /** A detached worktree at the remote base branch, next to the user's working copy. */
 function worktreeFor(projectDir: string, requestedBase: string | null): Workspace {
   if (!fs.existsSync(projectDir)) throw usageError('repos.missing', _('repos.sync.missing'), null);
-  const top = git(['rev-parse', '--show-toplevel'], { cwd: projectDir, allowFailure: true });
+  const top = git(['rev-parse', '--show-toplevel', '--show-prefix'], { cwd: projectDir, allowFailure: true });
   if (top.status !== 0) throw usageError('repos.not-git', _('error.repos.not-git', { project: projectDir }), _('hint.repos.targets'));
-  const topDir = fs.realpathSync(top.stdout.trim());
-  const relative = path.relative(topDir, fs.realpathSync(projectDir));
+  // git reports the top and the folder's place under it, so a Windows short name or another letter case cannot misplace the project.
+  const [topDir, prefix = ''] = top.stdout.split(/\r?\n/);
+  const relative = prefix.replace(/\/$/, '');
   if (git(['remote', 'get-url', 'origin'], { cwd: topDir, allowFailure: true }).status !== 0) {
     throw usageError('repos.no-remote', _('error.repos.no-remote', { project: projectDir }), _('hint.repos.no-remote', { project: projectDir }));
   }

@@ -222,3 +222,60 @@ test('repos pr --targets lets a scheduled bot work from clone URLs and pushes wi
 
   assert.deepEqual(JSON.parse(bot.ok(['repos', 'list', '--json']).stdout).data.repos, [], 'temporary clones are never registered');
 });
+
+test('repos pr applies inside the worktree when a target folder is spelled with another letter case', t => {
+  const { root, person } = makeWorkspace(t, 'agctx-repos-spelling-');
+  const admin = person('admin');
+  const bot = person('bot');
+  const profile = publishProfile(root, admin, 'team-backend');
+  bot.ok(['profile', 'clone', profile.remote]);
+  const service = serviceRepo(root, 'orders-api');
+  // Windows can name one folder RUNNER~1 or runneradmin, and git reports the spelling on disk.
+  const respelled = path.join(root, 'WORK', 'orders-api');
+  if (!fs.existsSync(respelled)) {
+    t.skip('this file system tells folder names apart by letter case');
+    return;
+  }
+  bot.ok(['profile', 'apply', 'team-backend', service.work, '--yes']);
+  commitAndPush(service.work, 'Apply team-backend profile');
+  fs.appendFileSync(path.join(profile.dir, 'AGENTS.md'), '\n- Document every public endpoint.\n');
+  gitIn(profile.dir, 'commit', '--quiet', '-am', 'Document endpoints');
+  admin.ok(['profile', 'push', 'team-backend', '--yes']);
+  bot.ok(['profile', 'pull', 'team-backend']);
+  const branch = `agctx/team-backend-${gitIn(bot.profileDir('team-backend'), 'rev-parse', 'HEAD').slice(0, 7)}`;
+
+  const targets = path.join(root, 'targets.txt');
+  fs.writeFileSync(targets, `${respelled}\n`);
+  const gh = fakeGh(t);
+  gh.setMode('not-github');
+  const result = bot.run(['repos', 'pr', '--targets', targets, '--profile', 'team-backend', '--yes'], gh.env);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
+  assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Document every public endpoint/);
+});
+
+test('repos pr updates a project that lives in a repository subfolder', t => {
+  const { root, person } = makeWorkspace(t, 'agctx-repos-subfolder-');
+  const admin = person('admin');
+  const bot = person('bot');
+  const profile = publishProfile(root, admin, 'team-backend');
+  bot.ok(['profile', 'clone', profile.remote]);
+  const service = serviceRepo(root, 'platform');
+  const project = path.join(service.work, 'packages', 'orders-api');
+  fs.mkdirSync(project, { recursive: true });
+  bot.ok(['profile', 'apply', 'team-backend', project, '--yes']);
+  commitAndPush(service.work, 'Apply team-backend profile to orders-api');
+  fs.appendFileSync(path.join(profile.dir, 'AGENTS.md'), '\n- Document every public endpoint.\n');
+  gitIn(profile.dir, 'commit', '--quiet', '-am', 'Document endpoints');
+  admin.ok(['profile', 'push', 'team-backend', '--yes']);
+  bot.ok(['profile', 'pull', 'team-backend']);
+  const branch = `agctx/team-backend-${gitIn(bot.profileDir('team-backend'), 'rev-parse', 'HEAD').slice(0, 7)}`;
+
+  const gh = fakeGh(t);
+  gh.setMode('not-github');
+  const result = bot.run(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
+  assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+  gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
+  assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'), /Document every public endpoint/);
+  assert.equal(gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'), '', 'nothing is written at the repository top');
+});

@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: d8dd7224708f7f0e41d5a91f87d9904a7e2841a1be075f53cfbca68d186bdc5d -->
+<!-- agctx-doc-sources-sha256: 2253aa1c9bf8ba404edf2384dbdbd220ca3c587c9d7bf8edaa421c15af68c4d0 -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 

@@ -86,6 +86,18 @@
   - `node_modules/dep/index.ts`를 `exports`로 가리키는 패키지를 import한 `use-dep.ts`는 Node.js v24.21.0에서 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`으로 실패했다.
   - TypeScript 7.0.2의 `tsc -p tsconfig.build.json`으로 만든 `dist/agentic.js`(이름을 바꾸기 전 진입점)는 첫 줄 `#!/usr/bin/env node`를 유지했고, 소스의 `import { run } from './commands/cli.ts'`를 `./commands/cli.js`로 바꿨다.
 
+## CLI 계약과 지침 공급망 근거
+
+agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command-contract.md))과 Git 프로필 공유의 숨은 문자 검사([ADR 0017](adr/0017-git-profile-sharing.md))가 기대는 외부 사실이다.
+
+- **공식 문서:** BSD `sysexits`는 명령이 실패의 성격을 미리 정한 종료 코드로 알리는 관례다. `EX_USAGE`(64)는 인자 개수·플래그·매개변수 문법이 틀린 경우, `EX_UNAVAILABLE`(69)은 서비스를 쓸 수 없거나 보조 프로그램·파일이 없는 경우, `EX_SOFTWARE`(70)는 내부 소프트웨어 오류를 뜻한다. 같은 페이지는 이 인터페이스를 호환성 때문에만 유지하며 사용을 권하지 않는다고 적는다. 그래서 agctx는 헤더를 쓰지 않고 번호의 뜻만 빌린다. [FreeBSD sysexits(3)](https://man.freebsd.org/cgi/man.cgi?query=sysexits&sektion=3) (확인일: 2026-09-15)
+- **비공식 자료:** Command Line Interface Guidelines는 성공하면 0, 실패하면 0이 아닌 종료 코드를 돌려주고, 주 출력은 stdout으로, 안내 메시지는 stderr로 보내며, `--json`을 받으면 JSON으로 출력하라고 권한다. 프롬프트는 stdin이 대화형 터미널일 때만 쓰라고 하고, 위험한 작업은 대화형이면 확인을 받고 아니면 `-f`·`--force` 같은 플래그를 요구하는 관례를 소개한다. 사용자가 잘못 입력했고 의도를 짐작할 수 있으면 제안하라고도 권한다. [Command Line Interface Guidelines](https://clig.dev/) (확인일: 2026-09-15)
+- **공식 문서:** Git은 불리언 환경 변수 `GIT_TERMINAL_PROMPT`를 false로 두면 HTTP 인증 같은 경우에도 터미널에서 묻지 않는다. [git(1) 환경 변수](https://git-scm.com/docs/git) (확인일: 2026-09-15)
+- **공식 문서:** 유니코드 양방향 알고리즘(UAX #9, Unicode 17.0.0 Revision 51)은 명시적 방향 서식 문자로 U+202A–U+202E(LRE·RLE·PDF·LRO·RLO)와 U+2066–U+2069(LRI·RLI·FSI·PDI)를 정의한다. [UAX #9](https://www.unicode.org/reports/tr9/) (확인일: 2026-09-15)
+- **연구:** Trojan Source는 유니코드 제어 문자로 소스 코드 토큰을 인코딩 수준에서 재배열하면 사람이 보는 순서와 컴파일러가 따르는 논리 순서가 달라진다고 보고한다. 양방향 제어 문자 공격은 CVE-2021-42574, 비슷하게 생긴 문자(homoglyph)를 쓰는 변형은 CVE-2021-42694로 추적된다. [Trojan Source](https://trojansource.codes/) (확인일: 2026-09-15)
+- **비공식 자료(벤더 블로그):** AWS 보안 블로그(2025-09-30)는 U+E0000–U+E007F 태그 문자가 사람에게는 보이지 않지만 언어 모델은 처리하므로, 사람이 보기에 무해한 입력에 숨은 지시를 넣는 프롬프트 주입 경로가 될 수 있다고 설명한다. [Defending LLM applications against Unicode character smuggling](https://aws.amazon.com/blogs/security/defending-llm-applications-against-unicode-character-smuggling/) (확인일: 2026-09-15)
+- **확인하지 못한 것:** agctx는 폭 없는 문자(U+200B–U+200D, U+2060, 파일 맨 앞이 아닌 U+FEFF)와 변형 선택자 보충(U+E0100–U+E01EF)도 검사한다. 보이지 않는 문자가 사람의 검토를 우회한다는 위 자료와 같은 이유로 넣은 판단이며, 이 두 범위를 직접 다룬 공식 자료는 찾지 못했다.
+
 ## 비교 대상
 
 비교의 기준은 “에이전트가 무엇을 잘하게 하는가”와 “여러 프로젝트·에이전트에 공통 지침을 어떻게 배포하고 관리하는가”를 분리하는 것이다. agctx는 후자에 초점을 둔다. 따라서 아래 도구들은 일부 기능이 겹쳐도 목적과 책임 범위가 다르며, 함께 사용할 수 있다.

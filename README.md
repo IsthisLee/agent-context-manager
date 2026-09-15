@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 8c52ccc3f8894640a89187be898e1e281a13e8109014dea4328b9b2eaf1955f4 -->
+<!-- agctx-doc-sources-sha256: 807222a5fb014324ebc982cee58155cc08d94477f35481c78673b994ea71a5c1 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -24,13 +24,13 @@
 
 
 
-> (⚙️ 지침 -&gt; 환경(Skills, Hooks 등)으로 적용 범위를 넓혀가는 중입니다. Git 기능 반영도 작업 중입니다.)
+> (⚙️ 지침 -&gt; 환경(Skills, Hooks 등)으로 적용 범위를 넓혀가는 중입니다.)
 
 <p align="center">
 
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.ko.dark.png">
-    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.ko.png" alt="agctx 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity가 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
+    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.ko.png" alt="agctx 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity가 읽는다. 팀·조직 프로필은 Git 원격으로 clone·pull·push한다." width="880">
   </picture>
 
 </p>
@@ -43,7 +43,7 @@
 
 agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 호환 에이전트들이 읽는 파일을 한 번에 적용합니다. 프로필에서 기준을 바꾸면 동기화로 프로젝트마다 다시 손대지 않아도 되고 각 프로젝트만의 도메인 규칙·세팅은 그대로 남습니다.
 
-> 프로필을 Git으로 공유·갱신하는 기능은 구현 예정입니다. 현재 릴리스는 로컬 프로필 관리·적용·동기화를 제공합니다. 자세한 계획은 [후속 아키텍처 논의](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md)를 참고하세요.
+> 팀·조직 프로필은 Git 원격으로 공유합니다. 구성원은 `profile clone`·`pull`로 받고, CI는 `agctx check`로 저장소가 최신 지침을 반영했는지 확인합니다. 절차는 [사용 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#팀과-git으로-공유하기)에 있습니다.
 
 ## 핵심 목표
 
@@ -62,8 +62,6 @@ agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 �
 
 ## 사용 사례
 
-> 아래 Git 기반 흐름은 Profile 원격 관리 기능이 구현된 뒤의 사용 기준입니다. 현재 릴리스는 로컬 프로필 관리·적용·동기화만 제공합니다.
-
 ### 개인 개발
 
 - **이렇게 사용합니다:** 프로젝트 성격별 Personal Profile을 만들고 `profile setup`으로 지침을 구성한 뒤, 각 프로젝트에 `profile apply`으로 적용합니다.
@@ -71,13 +69,13 @@ agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 �
 
 ### 팀 협업
 
-- **이렇게 사용합니다:** 팀 Profile을 Git 저장소로 공유하고, 구성원이 clone·pull한 뒤 담당 프로젝트에 적용합니다.
+- **이렇게 사용합니다:** 팀 Profile을 Git 저장소로 공유하고, 구성원이 `profile clone`·`pull`한 뒤 담당 프로젝트에 적용합니다. 검토한 버전에만 머물려면 `--pin`으로 커밋에 고정합니다.
 - **기대 효과:** 팀의 공통 지침 갱신을 같은 이력으로 검토·배포하고 개인별 설정 차이를 줄입니다.
 
 ### 조직 표준
 
 - **이렇게 사용합니다:** 조직 Profile의 공통 기준을 Git으로 관리하고, 팀·프로젝트는 각자의 도메인 지침을 프로젝트 `AGENTS.md`에 추가합니다.
-- **기대 효과:** 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 독립적으로 관리합니다.
+- **기대 효과:** 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 독립적으로 관리합니다. CI에서 `agctx check --refresh`로 각 저장소가 최신 기준을 반영했는지 확인합니다.
 
 ## 시작하기
 
@@ -116,7 +114,7 @@ Applied profile company to /path/to/project
 
 개인 프로필은 `~/.agctx/profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
-프로필 생성·setup·적용·동기화 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
+프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
 
 ### 검증의 범위
 
@@ -128,9 +126,13 @@ Applied profile company to /path/to/project
 - `agctx profile list [--scope <scope>]` — scope별 프로필 목록·선택·관리; TUI에서는 scope를 먼저 선택
 - `agctx profile setup [<name>]` — scope별 프로필 선택 후 하네스 동작·TDD·변경 검토·검증·문서화·보안 지침 설정; 생략하면 전체 TUI
 - `agctx profile remove [<name>]` — 확인 후 선택한 프로필 삭제; 적용된 프로젝트 파일은 유지
-- `agctx profile apply <name> <project>` — 선택한 프로필을 프로젝트에 적용
+- `agctx profile apply <name> <project> [--pin]` — 선택한 프로필을 프로젝트에 적용하고 적용한 프로필 버전을 기록; `--pin`이면 그 커밋에 고정
+- `agctx profile sync <project>` — 프로젝트에 기록된 프로필로 관리 영역만 다시 적용
 - `agctx profile resolve <project>` — 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 생성; 마지막 적용본을 모르면 `--discard`로 백업 후 재생성, `--edit`로 VS Code 3-way merge
 - 에이전트별 지침 파일 생성·동기화
+- `agctx profile clone|status|pull|push|connect` — 표준 Git 원격으로 프로필 공유; 프로젝트 파일은 건드리지 않고, 받을 지침에 숨은 문자가 있으면 멈춤
+- `agctx check [--refresh] <project>` — 관리 영역 충돌·숨은 문자·뒤처짐을 파일을 바꾸지 않고 종료 코드로 확인(CI용)
+- 모든 명령 — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, 터미널이 아니면 `--yes` 확인, `agctx <명령> --help`
 - `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 영어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
 ## 지원 에이전트
@@ -173,8 +175,9 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 | [setup과 지침 옵션](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)         | 사용자·CLI가 프로필의 TDD·변경 검토·검증·문서화·보안 지침을 선택 구성           | High · Implemented      | preset·설정 diff 고도화  |
 | [프로젝트 적용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md)             | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존                  | Critical · Implemented  | 충돌·복구 확정            |
 | [에이전트 산출물 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화                   | High · Implemented      | manifest·drift 고도화  |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Proposed         | 비대화형 CLI·JSON·종료 코드 |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Implementing     | 에이전트용 스킬·지침 전달 확인 |
 | [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장                    | Critical · Implementing | 충돌 시각화·복구           |
+| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 팀·조직이 표준 Git 원격으로 프로필을 공유하고 적용한 버전을 기록·확인 | Critical · Implemented | 여러 저장소 일괄 동기화·PR |
 | [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md)         | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합               | Medium · Proposed       | 검증 후 합성 최소 프로토타입    |
 
 
@@ -190,6 +193,7 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 | [프로필 모델과 저장소](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md)       | Personal·Company·Team·Workspace별 공통 지침을 분리·재사용 · 사용자·조직 ↔ CLI ↔ 프로필      | Critical · Implemented | 경로·이름·scope·기본 선택; 모든 후속 기능의 선행              |
 | [setup과 지침 옵션](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | 필요한 하네스·TDD·변경 검토·검증·문서화·보안 지침만 선택 · 사용자 ↔ CLI ↔ 프로필 `AGENTS.md`            | High · Implemented     | preset·기본값·재실행·대화형/비대화형; 프로필 모델 후, 프로젝트 적용 전 |
 | [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | scope를 공유·재사용하는 지침 계층으로 확장하고 다계층 상속·병합 · 사용자·조직 ↔ CLI ↔ 프로필·scope ↔ 프로젝트 | Medium · Proposed      | 병합·충돌 규칙과 scope 공유 형식; 검증 게이트 후 착수           |
+| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 공통 지침 프로필을 Git 원격으로 공유·갱신 · 관리자·구성원 ↔ CLI ↔ Git 원격 ↔ 프로필 | Critical · Implemented | 원격 연결·적용 버전 기록·고정·check; 프로필 모델 후 |
 
 
 #### 2. 프로젝트 적용과 에이전트 전달
@@ -207,7 +211,7 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 
 | 주제                                                                                                                          | 목적·대상 계층                                                             | 중요도·상태          | 결정할 것과 관계                                     |
 | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------- | --------------------------------------------- |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Proposed | 명시적 대상·기계 판독 결과·승인·종료 코드; 현재 CLI/TUI 위의 후속 작업 |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Implementing | 명시적 대상·기계 판독 결과·승인·종료 코드 구현; 에이전트용 스킬과 전달 확인이 다음 작업 |
 
 
 현재의 선행 구조는 프로필 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.

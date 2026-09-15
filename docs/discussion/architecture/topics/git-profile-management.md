@@ -1,6 +1,6 @@
 # Git 기반 프로필 관리
 
-**상태:** Proposed
+**상태:** Implemented
 
 ## 제안 요약
 
@@ -28,7 +28,7 @@
 | 후속 제안 | 원격 업데이트 알림·프로젝트 업데이트 PR 자동화(별도 제안), profile revision pinning·release 정책 |
 | 연관 제안 | [프로젝트 적용](project-application.md), [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md), [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md) |
 | 후속 작업 | CLI·TUI·프로필 목록 메뉴 동등성, 원격 변경 비교 UI, 적용 revision 기록, Git host별 선택적 자동화 검토 |
-| 권장 다음 작업 | 격리된 bare Git 저장소 평가로 `clone/status/pull/push` 안전 계약을 먼저 고정한다. |
+| 권장 다음 작업 | 여러 저장소의 상태를 한 번에 확인하고 동기화·PR을 만드는 기능에서 이 문서의 적용 버전 기록(`source`·`pin`)을 재사용한다. |
 
 ## 목차
 
@@ -42,6 +42,7 @@
 - [비범위](#비범위)
 - [구현 단계와 평가](#구현-단계와-평가)
 - [결정할 사항](#결정할-사항)
+- [구현 기록](#구현-기록)
 
 ## 문제와 핵심 원칙
 
@@ -203,3 +204,20 @@ GitHub·GitLab 등 특정 호스트의 CI가 Profile 변경을 감지해 프로�
 - 적용 revision을 사용자에게 어디에 표시하고, 프로젝트가 오래된 revision일 때 어떤 안내를 할지
 
 이 제안이 채택되면 공개 명령·파일 형식·supply-chain 안전 경계를 ADR로 기록하고, 구현 완료 단계만 현재 아키텍처·CLI Reference·workflow·README의 제공 기능으로 승격한다.
+
+## 구현 기록
+
+#### 구현 기록: Git 프로필 명령·적용 버전 기록·고정·check (2026-09-15)
+
+* **결정:** [ADR 0017](../../../adr/0017-git-profile-sharing.md). 표준 Git 원격과 사용자의 인증을 쓰고 `clone`·`status`·`pull`·`push`·`connect`는 프로젝트 파일을 건드리지 않는다. 적용한 버전은 `agctx.project.json`의 `source`·`pin`·`uncommitted`로 기록하고 저장소 검사는 `agctx check`가 맡는다. 종료 코드와 `--yes` 확인은 [ADR 0016](../../../adr/0016-command-contract.md)을 따른다.
+* **구현:** `src/profile/git-profile.ts`(clone·status·pull·push·connect), `src/shared/git.ts`(인자 분리 실행·오류 분류·URL의 인증 정보 제거), `src/shared/hidden-chars.ts`(숨은 문자 검사), `src/profile/apply.ts`의 `profileVersion`(버전 기록·고정), `src/check.ts`, `src/commands/registry.ts`의 명령 등록, `src/tui/main.ts`·`src/tui/profile.ts`의 메뉴. 사용법은 [CLI Reference](../../../cli-reference.md)와 [사용 가이드](../../../usage-guide.md)에 있다.
+* **평가:** `evals/git-profile.test.ts` 3개(bare 원격과 관리자·구성원 두 홈으로 clone과 프로젝트 미변경, 프로필 파일이 없거나 숨은 문자가 있는 저장소 거부, pull·`apply --pin`·`check --refresh`·고정한 프로젝트의 sync·고정 해제 경고·로컬 수정이 있을 때 pull 중단), `evals/hidden-chars.test.ts` 4개, `evals/command-contract.test.ts`의 check 시나리오 3개. 수동 E2E로 관리자 connect·push → 구성원 clone·`apply --pin` → 관리자 push → CI `check --refresh` 종료 코드 1 → 구성원 pull·`apply --pin` → `check --refresh` 종료 코드 0을 확인했다.
+* **계획과 달라진 점:**
+  - `profile clone`에 `--name`을 두지 않고 `profile.json`의 이름을 쓴다. 팀원마다 이름이 달라지면 저장소에 기록한 `profile`과 맞지 않기 때문이다. 저장소 하나에 프로필 하나만 받는다.
+  - 적용 버전은 제안의 `profileRevision { kind, remote, branch, commit }` 대신 `source { git, branch, commit }`로 기록하고 `pin`·`uncommitted`를 더했다. 로컬 프로필은 `source`를 기록하지 않으므로 `kind`가 필요 없다.
+  - "결정할 사항"의 commit 고정은 1차 범위에 넣었다(`apply --pin`). tag 고정은 넣지 않았다.
+  - 커밋하지 않은 변경이 있으면 push를 거부하고 `--allow-dirty`는 두지 않았다. push는 원격보다 뒤처졌을 때도 멈춘다.
+  - CI가 원격 변경을 확인하는 `agctx check --refresh`를 더했다. 자동 PR은 제안대로 만들지 않는다.
+  - clone·pull로 받는 `profile.json`·`AGENTS.md`의 숨은 문자 검사를 더했다(종료 코드 3).
+* **제약:** 잠금 파일이 없어 같은 프로필에 Git 명령을 동시에 실행하면 Git의 오류가 그대로 나온다. 네트워크 제한 시간이 없다. 프로필 metadata에는 아직 안정적인 `id`가 없다. 프로필 저장소에 둔 다른 문서·템플릿은 전달하지도 검사하지도 않는다.
+* **다음 단계:** 여러 저장소의 상태를 한 번에 보고 동기화·PR을 만드는 기능에서 이 기록을 재사용한다.

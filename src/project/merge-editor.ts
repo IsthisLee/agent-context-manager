@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { _ } from '../i18n/index.ts';
+import { CliError, EXIT } from '../shared/errors.ts';
 
 /** The file name VS Code shows for one merge input, e.g. `current-CLAUDE.md`. */
 export function mergeFileName(role: string, name: string): string {
@@ -46,7 +48,7 @@ export function mergeInVsCode({ name, current, incoming, base, result }: MergeIn
     : spawnSync('code', args, { stdio: 'inherit' });
   if (outcome.error || outcome.status !== 0) {
     fs.rmSync(dir, { recursive: true, force: true });
-    throw new Error('VS Code CLI `code` is not available or exited with an error. In VS Code run "Shell Command: Install \'code\' command in PATH", or resolve without --edit.');
+    throw new CliError('vscode.unavailable', _('error.vscode.unavailable'), { exitCode: EXIT.unavailable, hint: _('hint.vscode.install') });
   }
   return {
     content: fs.readFileSync(paths.result, 'utf8'),

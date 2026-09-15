@@ -26,7 +26,7 @@ function buildProject(home: string, env: NodeJS.ProcessEnv = {}) {
   run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
   run(home, ['profile', 'setup', 'demo', '--harness', 'strict', '--tdd', 'strict', '--review', 'strict', '--verification', 'strict', '--documentation', 'strict', '--security', 'strict'], env);
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-proj-'));
-  run(home, ['profile', 'apply', 'demo', project], env);
+  run(home, ['profile', 'apply', 'demo', project, '--yes'], env);
   return fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
 }
 
@@ -76,12 +76,12 @@ test('AGCTX_LANG=en sync preserves domain rules added under the extension sectio
   const env = { AGCTX_LANG: 'en' };
   try {
     run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
-    run(home, ['profile', 'apply', 'demo', project], env);
+    run(home, ['profile', 'apply', 'demo', project, '--yes'], env);
     const agentsPath = path.join(project, 'AGENTS.md');
     fs.appendFileSync(agentsPath, '\n- Domain rule: use pnpm.\n');
 
-    run(home, ['profile', 'sync', project], env);
-    run(home, ['profile', 'sync', project], env);
+    run(home, ['profile', 'sync', project, '--yes'], env);
+    run(home, ['profile', 'sync', project, '--yes'], env);
 
     const agents = fs.readFileSync(agentsPath, 'utf8');
     assert.match(agents, /Domain rule: use pnpm/);
@@ -100,7 +100,7 @@ test('a saved config.json locale is honored with no flag or env', () => {
     fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ locale: 'ko' }, null, 2) + '\n');
     run(home, ['profile', 'create', 'demo', '--scope', 'team']);
     const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfgproj-'));
-    run(home, ['profile', 'apply', 'demo', project]);
+    run(home, ['profile', 'apply', 'demo', project, '--yes']);
     assert.equal(hasHangul(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8')), true);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

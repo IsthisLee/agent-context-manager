@@ -6,23 +6,23 @@
 
 ### 인터페이스 동등성
 
-새 사용자 기능은 공통 기능 레이어를 기준으로 다음 세 경로를 모두 제공해야 한다.
+기능이 제공할 실행 경로는 명령 등록부(`src/commands/registry.ts`)에 적는 표면(surface)이 정한다([ADR 0016](../../../adr/0016-command-contract.md)).
 
-1. CLI 명령과 옵션
-2. 터미널 TUI의 선택·입력 흐름
-3. `agctx profile list`에서 프로필을 선택한 뒤 실행하는 관리 메뉴
-
-예외는 전역 도움말, 저장소 개발 전용 검사처럼 특정 프로필에 귀속되지 않는 기능뿐이다. 기능 registry와 평가 테스트에서 세 경로의 등록 누락을 실패로 처리한다.
+| 표면 | 대상 | 필수 경로 |
+| --- | --- | --- |
+| `profile` | 특정 프로필을 다루는 기능(create·setup·apply·sync·clone·pull 등) | CLI 명령·옵션, 터미널 TUI, `agctx profile list`에서 프로필을 고른 뒤의 관리 메뉴 |
+| `repository` | 저장소나 CI를 다루는 기능(`check`) | CLI 명령·옵션 |
+| `global` | 전역 도움말·언어 설정 | CLI 명령·옵션 |
 
 ```mermaid
 flowchart LR
-  REG["PROFILE_OPERATION_CONTRACT<br/>bin/contracts.mjs"] -->|cli| CLI["CLI 명령·옵션"]
-  REG -->|tui| TUI["터미널 TUI 흐름"]
-  REG -->|profileList| MENU["agctx profile list<br/>관리 메뉴"]
-  EVAL["평가 테스트"] -.->|세 경로 중 하나라도 빠지면 실패| REG
+  REG["COMMANDS<br/>src/commands/registry.ts"] -->|"모든 명령"| CLI["CLI 명령·옵션·--help"]
+  REG -->|"profile 표면: tui"| TUI["터미널 TUI 흐름"]
+  REG -->|"profile 표면: profileMenu"| MENU["agctx profile list<br/>관리 메뉴"]
+  EVAL["evals/interface-parity.test.ts"] -.->|"profile 명령에 경로가 빠지면 실패"| REG
 ```
 
-기능을 하나 추가하면 registry의 한 항목에 세 경로를 함께 적는다. 평가가 registry를 기준으로 세 경로를 확인하므로 한 경로만 구현한 기능은 검사에서 걸린다.
+기능을 추가하면 등록부에 항목을 하나 넣고 표면을 정한다. 평가가 등록부를 기준으로 `profile` 명령의 TUI 항목과 관리 메뉴 동작을 확인하므로 한 경로만 구현한 프로필 기능은 검사에서 걸린다.
 
 각 단계는 다음 순서를 따른다.
 

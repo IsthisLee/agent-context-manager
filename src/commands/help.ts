@@ -1,26 +1,29 @@
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from '../i18n/index.ts';
+import { _, DEFAULT_LOCALE, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { SCOPES } from '../profile/store.ts';
+import { say } from './output.ts';
+import { COMMANDS, usageLine, type CommandSpec } from './registry.ts';
 
-const USAGE = [
-  'agctx profile create [<name>] [--scope <scope>]',
-  'agctx profile list [--scope <scope>]',
-  'agctx profile view <name>',
-  'agctx profile setup [<name>] [--tdd <level>] ...',
-  'agctx profile apply <name> [--dry-run] <project>',
-  'agctx profile sync [--dry-run] <project>',
-  'agctx profile resolve [--dry-run] [--discard] [--edit] <project>',
-  'agctx profile remove [<name>] [--yes]',
-  'agctx config lang <ko|en>'
-];
-
+/** Every command with its usage line, read from the registry. */
 export function help(): void {
-  console.log([
-    'agctx (Agent Context Manager): a profile-based context manager for AI coding agents',
+  say([
+    _('help.title'),
     '',
-    ...USAGE.map(line => `  ${line}`),
+    ...COMMANDS.filter(command => command.id !== 'help').map(command => `  ${usageLine(command)}`),
     '',
-    `Scopes: ${SCOPES.join(', ')}`,
-    `Language: ${SUPPORTED_LOCALES.join(', ')} (default ${DEFAULT_LOCALE}). Set with --lang, AGCTX_LANG, or config lang; on first interactive run you are asked once and the choice is saved.`,
-    'Omit profile create, setup, or remove options to use interactive TUI prompts.'
+    `${_('help.global')}: --json, --lang <${SUPPORTED_LOCALES.join('|')}>, --help`,
+    _('help.scopes', { scopes: SCOPES.join(', ') }),
+    _('help.language', { locales: SUPPORTED_LOCALES.join(', '), locale: DEFAULT_LOCALE }),
+    _('help.more')
+  ].join('\n'));
+}
+
+/** One command: usage, what it does, and the exit codes it can return. */
+export function commandHelp(command: CommandSpec): void {
+  say([
+    `${_('help.usage')}: ${usageLine(command)}`,
+    '',
+    _(`command.${command.id}.summary`),
+    '',
+    `${_('help.exit-codes')}: ${command.exitCodes.map(code => `${code} ${_(`exit.${code}`)}`).join(', ')}`
   ].join('\n'));
 }

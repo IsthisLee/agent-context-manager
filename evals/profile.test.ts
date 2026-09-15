@@ -11,16 +11,13 @@ import { hashManagedDocument } from '../src/project/analyzer.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
-// These tests assert Korean guidance and messages, so they pin the locale for every CLI run.
-process.env.AGCTX_LANG = 'ko';
-
 test('profile create creates a named scoped profile in the user profile directory', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-test-'));
 
   try {
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], {
       cwd: repoRoot,
-      env: { ...process.env, AGCTX_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'ko' },
       encoding: 'utf8'
     });
 
@@ -141,7 +138,7 @@ test('setup applies selected guidance to the profile and preserves its project-i
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-setup-test-'));
 
   try {
-    const env = { ...process.env, AGCTX_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'ko' };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [
       cli, 'profile', 'setup', 'team',
@@ -173,7 +170,7 @@ test('setup writes a level-definition legend that shares its wording with the le
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-legend-test-'));
 
   try {
-    const env = { ...process.env, AGCTX_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'ko' };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--security', 'strict'], { cwd: repoRoot, env });
 
@@ -199,15 +196,16 @@ test('apply applies the selected profile to a project without changing the profi
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
     const profileAgentsBefore = fs.readFileSync(path.join(home, 'profiles', 'company', 'AGENTS.md'), 'utf8');
 
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project, '--yes'], { cwd: repoRoot, env });
 
     const projectAgents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
     assert.match(projectAgents, /# Profile: company/);
     assert.match(projectAgents, /## TDD/);
     assert.match(projectAgents, /sample-project/);
     const selection = JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'));
-    assert.equal(selection.schemaVersion, 1);
+    assert.equal(selection.schemaVersion, 2);
     assert.equal(selection.profile, 'company');
+    assert.equal(selection.source, undefined, 'a profile that is not a Git repository records no source');
     assert.deepEqual(Object.keys(selection.managedHashes).map(file => file.replaceAll(path.sep, '/')).sort(), [
       '.agents/rules/agctx.md',
       'AGENTS.md',
@@ -216,7 +214,7 @@ test('apply applies the selected profile to a project without changing the profi
     assert.equal(fs.existsSync(path.join(project, '.cursor')), false, 'Cursor is not a supported agent');
     assert.equal(fs.existsSync(path.join(project, '.github', 'copilot-instructions.md')), false, 'Copilot is not a supported agent');
     fs.appendFileSync(path.join(project, 'CLAUDE.md'), '\n## Local Claude guidance\n\nKeep this local workflow.\n');
-    execFileSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env });
     assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from agctx profile: company/);
     assert.match(fs.readFileSync(path.join(project, 'CLAUDE.md'), 'utf8'), /Keep this local workflow/);
     assert.equal(fs.readFileSync(path.join(home, 'profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
@@ -235,7 +233,7 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project, '--yes'], { cwd: repoRoot, env });
 
     const ruleRelativePath = '.agents/rules/agctx.md';
     const rulePath = path.join(project, '.agents', 'rules', 'agctx.md');
@@ -254,7 +252,7 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
     config.managedHashes[ruleRelativePath] = hashManagedDocument(earlierLayout);
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-    execFileSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env });
 
     const repaired = fs.readFileSync(rulePath, 'utf8');
     assert.ok(repaired.startsWith('---\ntrigger: always_on\n---\n'));
@@ -272,13 +270,13 @@ test('apply requires a profile name', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-apply-no-name-test-'));
 
   try {
-    const result = spawnSync(process.execPath, [cli, 'profile', 'apply'], {
+    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', '--yes'], {
       cwd: repoRoot,
       env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /profile apply requires <name> <project>/);
+    assert.equal(result.status, 64);
+    assert.match(result.stderr, /Missing argument\. Usage: agctx profile apply <name> \[<project>\]/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -292,7 +290,7 @@ test('apply rejects an unknown profile before changing the target project', () =
   fs.writeFileSync(path.join(project, 'package.json'), packageJson);
 
   try {
-    const result = execFileSync(process.execPath, [cli, 'profile', 'apply', 'missing', project], {
+    const result = execFileSync(process.execPath, [cli, 'profile', 'apply', 'missing', project, '--yes'], {
       cwd: repoRoot,
       env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8',
@@ -301,7 +299,7 @@ test('apply rejects an unknown profile before changing the target project', () =
     assert.fail(`expected failure, got ${result}`);
   } catch (error) {
     const failure = error as { status: number; stderr: string };
-    assert.equal(failure.status, 1);
+    assert.equal(failure.status, 64);
     assert.match(failure.stderr, /Profile not found: missing/);
   }
   assert.equal(fs.readFileSync(path.join(project, 'package.json'), 'utf8'), packageJson);
@@ -317,8 +315,8 @@ test('apply rejects a file path instead of treating it as a project directory', 
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'directory-check'], { cwd: repoRoot, env });
-    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'directory-check', target], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'directory-check', target, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 64);
     assert.match(result.stderr, /Project path is not a directory/);
     assert.equal(fs.readFileSync(target, 'utf8'), 'keep this file\n');
   } finally {
@@ -335,15 +333,15 @@ test('sync refuses to switch the bound profile', () => {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'bound'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'create', 'other'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'bound', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'bound', project, '--yes'], { cwd: repoRoot, env });
 
-    const positional = spawnSync(process.execPath, [cli, 'profile', 'sync', project, 'other'], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(positional.status, 1);
-    assert.match(positional.stderr, /profile sync takes only <project>/);
+    const positional = spawnSync(process.execPath, [cli, 'profile', 'sync', project, 'other', '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(positional.status, 64);
+    assert.match(positional.stderr, /To switch profiles, run agctx profile apply/);
 
-    const flagged = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--profile', 'other'], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(flagged.status, 1);
-    assert.match(flagged.stderr, /does not switch profiles/);
+    const flagged = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--profile', 'other', '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(flagged.status, 64);
+    assert.match(flagged.stderr, /To switch profiles, run agctx profile apply/);
 
     const selection = JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'));
     assert.equal(selection.profile, 'bound');
@@ -358,12 +356,12 @@ test('sync requires a project that was already applied', () => {
   fs.mkdirSync(project);
 
   try {
-    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], {
+    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], {
       cwd: repoRoot,
       env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
-    assert.equal(result.status, 1);
+    assert.equal(result.status, 64);
     assert.match(result.stderr, /profile sync requires a project already applied/);
     assert.deepEqual(fs.readdirSync(project), []);
   } finally {
@@ -380,8 +378,8 @@ test('sync reports invalid project metadata without changing the project', () =>
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'metadata-check'], { cwd: repoRoot, env });
     fs.writeFileSync(path.join(project, 'agctx.project.json'), '{ invalid json\n');
-    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 64);
     assert.match(result.stderr, /Invalid project metadata/);
     assert.deepEqual(fs.readdirSync(project), ['agctx.project.json']);
   } finally {
@@ -398,7 +396,7 @@ test('apply preserves an existing AGENTS.md that has no extension section', () =
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team-profile', '--scope', 'team'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'team-profile', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'team-profile', project, '--yes'], { cwd: repoRoot, env });
     const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
     assert.match(agents, /# Profile: team-profile/);
     assert.match(agents, /Existing project guidance/);
@@ -416,7 +414,7 @@ test('apply dry-run reports planned files without changing the project', () => {
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'dry-run-profile', '--scope', 'workspace'], { cwd: repoRoot, env });
-    const output = execFileSync(process.execPath, [cli, 'profile', 'apply', 'dry-run-profile', '--dry-run', project], {
+    const output = execFileSync(process.execPath, [cli, 'profile', 'apply', 'dry-run-profile', '--dry-run', project, '--yes'], {
       cwd: repoRoot,
       env,
       encoding: 'utf8'
@@ -445,8 +443,8 @@ test('apply preflights all targets and leaves the project unchanged when an adap
     }
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'preflight-profile'], { cwd: repoRoot, env });
-    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'preflight-profile', project], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'preflight-profile', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 70);
     assert.match(result.stderr, /symbolic link/);
     assert.deepEqual(fs.readdirSync(project), ['.agents']);
     assert.equal(fs.readFileSync(outside, 'utf8'), 'outside content\n');
@@ -464,8 +462,8 @@ test('apply preflights adapter parent paths and leaves the project unchanged whe
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'parent-check'], { cwd: repoRoot, env });
-    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'parent-check', project], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'parent-check', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 70);
     assert.match(result.stderr, /Parent path is not a directory/);
     assert.deepEqual(fs.readdirSync(project), ['.agents']);
   } finally {
@@ -481,12 +479,12 @@ test('sync stops when an agctx-managed block was manually changed', () => {
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'conflict-profile'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'conflict-profile', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'conflict-profile', project, '--yes'], { cwd: repoRoot, env });
     const claudePath = path.join(project, 'CLAUDE.md');
     const original = fs.readFileSync(claudePath, 'utf8');
     fs.writeFileSync(claudePath, original.replace('Follow the selected', 'Manually changed'));
-    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 2);
     assert.match(result.stderr, /Managed file changed outside agctx/);
     assert.match(fs.readFileSync(claudePath, 'utf8'), /Manually changed/);
   } finally {
@@ -502,12 +500,12 @@ test('sync stops when the profile-owned portion of AGENTS.md was manually change
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'agents-conflict'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'agents-conflict', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'agents-conflict', project, '--yes'], { cwd: repoRoot, env });
     const agentsPath = path.join(project, 'AGENTS.md');
     const original = fs.readFileSync(agentsPath, 'utf8');
-    fs.writeFileSync(agentsPath, original.replace('공통 에이전틱 개발 지침을 관리한다', 'Manually changed profile guidance'));
-    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
-    assert.equal(result.status, 1);
+    fs.writeFileSync(agentsPath, original.replace('This profile manages the shared agentic development guidance', 'Manually changed profile guidance'));
+    const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
+    assert.equal(result.status, 2);
     assert.match(result.stderr, /Managed file changed outside agctx: AGENTS\.md/);
     assert.match(fs.readFileSync(agentsPath, 'utf8'), /Manually changed profile guidance/);
   } finally {
@@ -594,7 +592,7 @@ test('profile remove deletes only the selected profile and preserves an applied 
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project, '--yes'], { cwd: repoRoot, env });
     const view = execFileSync(process.execPath, [cli, 'profile', 'view', 'company'], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.match(view, /company\s+company/);
     execFileSync(process.execPath, [cli, 'profile', 'remove', 'company', '--yes'], { cwd: repoRoot, env });
@@ -616,8 +614,8 @@ test('profile remove requires a name when confirmation is supplied non-interacti
       env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /profile remove --yes requires <name>/);
+    assert.equal(result.status, 64);
+    assert.match(result.stderr, /Missing argument\. Usage: agctx profile remove <name> --yes/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

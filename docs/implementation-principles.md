@@ -4,10 +4,10 @@
 
 **작성·검증 기준:** `agent-context-manager`(게시 전) · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:57-82`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: c50fe54c869b59c6b98389ae8feb31573f76a8da7e3b695ebe5def2cf3d46ded -->
+<!-- agctx-doc-sources-sha256: 6c0dd4dc96369c124541d34683d4319d614b8324fcc7518e261ec21c4c46523d -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -167,7 +167,7 @@ flowchart LR
 1. **터미널/셸**: `agctx`를 PATH에서 찾아 실행하고, 나머지 토큰(`profile`, `create`)을 인자로 넘긴다.
 2. **OS**: 진입점(심볼릭 링크 또는 shim)을 따라 실제 스크립트를 Node로 실행한다.
 3. **Node.js**: 설치본의 `dist/agctx.js`를 로드하고, 이 파일이 `dist/commands/cli.js`의 `run()`을 부른다.
-4. **JavaScript**: `process.argv.slice(2)`로 인자를 읽어(`src/commands/cli.ts:58-61`) `command`를 정하고, `main()`이 명령에 맞는 함수로 분기한다(`src/commands/cli.ts:57-82`).
+4. **JavaScript**: `main()`이 `process.argv.slice(2)`로 인자를 읽고(`src/commands/cli.ts:35-38`), 명령 등록부에서 `profile create`를 찾아 그 처리기를 부른다(`src/commands/cli.ts:54-63`).
 
 ```mermaid
 flowchart TD
@@ -175,19 +175,19 @@ flowchart TD
   B --> C["OS: 심볼릭 링크·shim 따라 Node 실행"]
   C --> D["Node: dist/agctx.js → dist/commands/cli.js 로드"]
   D --> E["JS: process.argv 파싱 후 command 결정"]
-  E --> F["main() 분기: profile·config·help"]
+  E --> F["등록부에서 명령 찾기 → 처리기 실행"]
   F --> G["결과는 stdout, 오류는 stderr + 종료 코드"]
 ```
 
 ### 이 패키지에서의 적용 예시
 
-- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`src/commands/cli.ts:73-74`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:57-60`, `src/tui/profile.ts:3`).
-- 명령별 분기: `profile` 하위 명령(`create/list/view/remove/setup/apply/sync/resolve`)과 `config lang`, 그 외에는 도움말. `profile`은 `runProfileCommand()`가 다시 하위 명령으로 분기한다.
-- 오류가 나면 `run()`이 `main()`의 오류를 받아 메시지를 출력하고 종료 코드 1로 끝낸다(`src/commands/cli.ts:85-90`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
+- 인자가 없고 표준 입력이 터미널(TTY)이며 `--json`이 아니면 대화형 메인 TUI를 연다(`src/commands/cli.ts:41-43`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:57-60`, `src/tui/profile.ts:3`).
+- 명령 분기: 명령 목록은 등록부 `COMMANDS`(`src/commands/registry.ts:47-64`) 한 곳에 있다. `main()`은 입력과 단어가 가장 많이 맞는 명령을 찾고, 없으면 비슷한 명령을 제안하며 종료 코드 64로 끝낸다(`src/commands/cli.ts:54-55`).
+- 오류가 나면 `run()`이 오류를 받아 `Error:`·`Next:` 두 줄을 stderr에 출력하고, 오류가 지닌 종료 코드(사용법 오류 64, 외부 도구 69, 그 밖 70 등)를 `process.exitCode`에 넣는다(`src/commands/cli.ts:75-85`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
 ### 사용자가 알아야 할 주의점
 
-- 같은 명령이라도 TTY 여부에 따라 동작이 달라진다. 터미널에서는 TUI가, 파이프·CI에서는 비대화형 경로가 쓰인다(예: `src/tui/profile.ts:12-16`의 stdin 입력 처리, `src/tui/profile.ts:57` 이하의 `isTTY` 분기).
+- 같은 명령이라도 TTY 여부에 따라 동작이 달라진다. 터미널에서는 TUI가, 파이프·CI에서는 비대화형 경로가 쓰인다(예: `src/tui/profile.ts:34-38`의 stdin 입력 처리). 파일을 바꾸는 명령은 터미널에서는 확인을 묻고, 파이프·CI에서는 `--yes`가 있어야 진행한다(`src/commands/options.ts:64-71`).
 - 인자를 잘못 주면 도움말이나 오류로 빠진다. 자동화 시에는 CLI Reference의 옵션 규칙을 따른다([CLI Reference](cli-reference.md)).
 
 ---
@@ -207,13 +207,13 @@ flowchart TD
 ### 이 패키지에서의 적용 예시
 
 - 프로필 데이터의 기준 위치는 `agctxHome()`(`src/shared/home.ts:11-13`)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
-- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `src/profile/store.ts:33-47`, `createProfile` `src/profile/store.ts:49-59`).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`applyProfile` `src/profile/apply.ts:123-140`, `planProject` `src/project/plan.ts:66-105`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
+- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `src/profile/store.ts:35-53`, `createProfile` `src/profile/store.ts:55-67`).
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`applyOrSync` `src/commands/handlers.ts:29-58`, `planProject` `src/project/plan.ts:68-113`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - `AGCTX_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.ts:41`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts:11-18`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`src/profile/store.ts:76-80`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
+- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts:11-18`). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않는다(`src/profile/store.ts:84-88`, [사용 가이드 6절](usage-guide.md#6-프로필-삭제)).
 
 ---
 
@@ -228,7 +228,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 | `fs`            | 파일 읽기·쓰기·존재 확인 | 프로필·프로젝트 파일 입출력 (`src/profile/store.ts:1`)                                                           |
 | `path`          | OS별 경로 조립           | 모든 경로를 조립해 `/`·`\` 차이 흡수 (`src/profile/store.ts:2`)                                                |
 | `os`            | 홈 디렉터리·플랫폼 정보  | `os.homedir()`로 프로필 기준 위치 (`src/shared/home.ts:2`, `12`)                                               |
-| `child_process` | 외부 프로그램 실행       | 배포 코드에서는 `profile resolve --edit`이 VS Code `code`를 실행할 때만 쓴다 (`src/project/merge-editor.ts`). 저장소 도구도 사용 (`tools/build.ts`, `tools/package-smoke.ts`) |
+| `child_process` | 외부 프로그램 실행       | 배포 코드에서는 `git` 실행(`src/shared/git.ts`)과 `profile resolve --edit`의 VS Code `code` 실행(`src/project/merge-editor.ts`)에 쓴다. 저장소 도구도 사용 (`tools/build.ts`, `tools/package-smoke.ts`) |
 
 > `crypto`도 쓰인다: 임시 파일 이름의 `randomUUID`(`src/shared/fs-utils.ts:3`), 관리 영역 hash의 `createHash`(`src/project/analyzer.ts:1`, `src/project/plan.ts:3`).
 
@@ -241,7 +241,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **배포되는 CLI(`src/`를 컴파일한 `dist/`)**는 `fs`·`os`·`path`를 쓴다(`src/profile/store.ts:1-2`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`src/shared/home.ts:12`).
 - 이 밖에 `src/shared/fs-utils.ts`, `src/project/analyzer.ts`, `src/project/plan.ts`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`src/shared/fs-utils.ts:3,55`), 관리 영역 무결성 확인에 `createHash`(`src/project/analyzer.ts:1,55,92`, `src/project/plan.ts:3,20-22`)를 사용한다.
-- **배포 코드에서 `child_process`를 쓰는 곳은 하나다.** 사용자가 `profile resolve --edit`을 명시했을 때 `src/project/merge-editor.ts`가 `spawnSync`로 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `44-46`). 셸 없이 인자 배열로 실행하며 Windows에서만 `code.cmd` 실행을 위해 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
+- **배포 코드에서 `child_process`를 쓰는 곳은 둘이다.** Git 프로필 명령과 적용 버전 기록은 `src/shared/git.ts`의 `git()`이 `spawnSync('git', args)`로 인자를 나눠 실행한다(`src/shared/git.ts:19-38`). 사용자가 `profile resolve --edit`을 명시하면 `src/project/merge-editor.ts`가 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `45-48`). 둘 다 셸 없이 인자 배열로 실행하며, Windows에서 `code.cmd`를 실행할 때만 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -263,9 +263,9 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`src/commands/cli.ts:58`), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`src/tui/profile.ts:13`, `201`).
-- 출력은 화면 DOM이 아니라 표준 출력/오류다: `console.log`로 결과를, `console.error`로 오류를 낸다(`src/profile/store.ts:58`, `src/commands/cli.ts:87`).
-- “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`src/tui/profile.ts:3`, `17-37`).
+- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`src/commands/cli.ts:35`), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`src/tui/profile.ts:35`, `254`).
+- 출력은 화면 DOM이 아니라 표준 출력/오류다: 결과 문장은 `say()`가 stdout에(`--json`이면 stderr에) 쓰고, 오류는 `run()`이 stderr에 쓴다(`src/commands/output.ts:20-22`, `src/commands/cli.ts:81-82`). `--json`이면 stdout에는 결과 문서 하나만 남는다.
+- “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`src/tui/profile.ts:3`, `40-60`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -407,8 +407,8 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts:13-20`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts:23-40`).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts:43-62`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
-- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts:110`).
-- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts:93-102`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 “Managed file changed outside agctx” 오류로 멈춘다(`src/project/plan.ts:74-77`). `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
+- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts:118`).
+- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts:95-110`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 “Managed file changed outside agctx” 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts:76-79`). `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.ts`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.ts`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
@@ -416,7 +416,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ```mermaid
 flowchart TD
   P["apply·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
-  H -->|"다름"| STOP["중단: Managed file changed outside agctx<br/>src/project/plan.ts:74-77 · profile resolve로 복구"]
+  H -->|"다름"| STOP["중단: Managed file changed outside agctx<br/>src/project/plan.ts:76-79 · profile resolve로 복구"]
   H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
   SAFE -->|"위험"| REFUSE["교체 거부<br/>src/shared/fs-utils.ts:13-40"]
   SAFE -->|"안전"| ATOM["임시 파일 쓰기 후 rename 교체<br/>권한 모드 보존·src/shared/fs-utils.ts:43-62"]
@@ -446,9 +446,10 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/profile/apply.ts:131-137`). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 0이 아닌 종료 코드로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 실제 변경 전에 “계획만 확인”을 선택할 수 있다(`profileActions`, `src/tui/profile.ts:111-152`).
-- **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts:94-102`).
-- **종료 코드**: 최상위 `catch`가 오류 메시지를 내고 `process.exit(1)`로 끝낸다(`run`, `src/commands/cli.ts:85-90`). 성공하면 기본 종료 코드 0이다.
+- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts:43-46`). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts:151-160`).
+- **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts:134-142`).
+- **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts:2-11`). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts:67-86`), 성공하면 0이다. 번호의 뜻은 [CLI Reference](cli-reference.md#종료-코드)에 있다.
+- **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts:64-71`).
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json:30`). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json:26`), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json:25`).
 
 ### 사용자가 알아야 할 주의점
@@ -542,11 +543,11 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 명령을 실행하는 **사용자**와 처리하는 **agctx 내부**를 구분해 적는다.
 
 1. **(사용자)** `npm install -g agent-context-manager` → **(npm)** tarball을 받아 전역 설치하고 `agctx` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
-2. **(사용자)** `agctx` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `dist/agctx.js` 실행 → **(agctx)** TTY면 메인 TUI를 연다(`src/commands/cli.ts:73-74`).
-3. **(사용자)** 프로필 생성·설정 선택 → **(agctx)** `~/.agctx/profiles/<name>/`(기본 위치이며 `AGCTX_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `profile.json`과 `AGENTS.md`를 만들고(`src/profile/store.ts:49-59`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`src/profile/setup.ts:17-43`).
-4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/profile/apply.ts:123-140`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
+2. **(사용자)** `agctx` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `dist/agctx.js` 실행 → **(agctx)** TTY면 메인 TUI를 연다(`src/commands/cli.ts:41-43`).
+3. **(사용자)** 프로필 생성·설정 선택 → **(agctx)** `~/.agctx/profiles/<name>/`(기본 위치이며 `AGCTX_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `profile.json`과 `AGENTS.md`를 만들고(`src/profile/store.ts:55-67`), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`src/profile/setup.ts:19-46`).
+4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts:29-58`, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. agctx는 에이전트 런타임을 실행하지 않는다([사용 가이드 4절](usage-guide.md#4-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
-6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/profile/apply.ts:147-162`). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts:61-122`).
+6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/commands/handlers.ts:97-101`). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts:68-126`).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
 

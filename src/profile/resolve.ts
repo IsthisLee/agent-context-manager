@@ -1,8 +1,9 @@
 import path from 'node:path';
-import { hasFlag } from '../commands/args.ts';
 import { _ } from '../i18n/index.ts';
+import { say } from '../commands/output.ts';
+import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import type { ConflictedFile, PlannedChange } from '../shared/types.ts';
-import { assertProjectDirectory, boundProfile, planFor, printConflicts, readProjectConfig } from './apply.ts';
+import { assertProjectDirectory, boundProfile, planFor, printConflicts } from './apply.ts';
 import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from '../project/conflicts.ts';
 import { mergeFileName, mergeInVsCode } from '../project/merge-editor.ts';
 import { managedRegion, regionHash, writePlan } from '../project/plan.ts';
@@ -22,11 +23,10 @@ function withBaseRegion(file: ConflictedFile, base: string): string {
 
 /**
  * Use the VS Code merge result as the file's new content. Only what lies outside
- * the managed area survives, because the managed area is regenerated; a formatter
- * that rewrote the area on save therefore does not block the merge (ADR 0010).
+ * the managed area survives, because the managed area is regenerated (ADR 0010).
  */
 function mergeWithEditor(file: ConflictedFile, base: string): string {
-  console.log(_('resolve.edit.guide', {
+  say(_('resolve.edit.guide', {
     file: file.rel,
     pane: mergeFileName('current', file.rel),
     boundary: _(`resolve.edit.boundary.${file.kind === 'agents' ? 'agents' : 'pointer'}`)
@@ -41,82 +41,86 @@ function mergeWithEditor(file: ConflictedFile, base: string): string {
   const mergedRegion = managedRegion(file.kind, merged.content);
   const hasBoundary = file.kind === 'agents' ? mergedRegion !== merged.content.trimEnd() : mergedRegion !== null;
   if (!mergedRegion || !hasBoundary) {
-    throw new Error(`Merge result for ${file.rel} has no agctx managed area. Keep the managed markers (the extension heading in AGENTS.md) and run resolve again. Result kept at ${merged.resultPath}`);
+    throw new CliError('resolve.no-managed-area', _('error.resolve.no-managed-area', { file: file.rel, result: merged.resultPath }), { exitCode: EXIT.conflict, hint: _('hint.resolve.markers') });
   }
   if (regionHash(mergedRegion) === regionHash(file.nextRegion)) {
     merged.cleanup();
-    console.log(`${file.rel}: applied the VS Code merge result.`);
+    say(_('resolve.edit.applied', { file: file.rel }));
   } else {
-    console.log(`${file.rel}: applied content outside the managed area from the VS Code merge result; changes inside it were not applied. Merge result kept at ${merged.resultPath}`);
-    console.log(formatDiff(`merge-result/${file.rel}`, `next/${file.rel}`, mergedRegion, file.nextRegion ?? ''));
+    say(_('resolve.edit.partial', { file: file.rel, result: merged.resultPath }));
+    say(formatDiff(`merge-result/${file.rel}`, `next/${file.rel}`, mergedRegion, file.nextRegion ?? ''));
   }
   return merged.content;
+}
+
+export interface ResolveResult {
+  conflicts: number;
+  written: boolean;
+  files: { file: string; action: 'recreate' | 'discard' | 'move' | 'edit'; moved?: number; restored?: number; backup?: string }[];
 }
 
 /**
  * Resolve managed-area conflicts on a project bound to a profile. Edits made
  * inside a managed area move outside it and the area is regenerated. When the
  * last applied version is unknown, only `--discard` (with a backup) proceeds.
+ * `confirm` runs before anything is written and may decline.
  */
-export function resolveProject(values: readonly string[]): { conflicts: number } {
-  const positional = values.filter(value => !value.startsWith('--'));
-  if (positional.length > 1) throw new Error('profile resolve takes only <project>.');
-  const targetDir = path.resolve(process.cwd(), positional[0] || '.');
+export async function resolveProject(targetDir: string, options: { dryRun: boolean; discard: boolean; edit: boolean }, confirm: () => Promise<boolean>): Promise<ResolveResult> {
   assertProjectDirectory(targetDir);
-  const name = boundProfile(readProjectConfig(path.join(targetDir, 'agctx.project.json')));
-  if (!name) throw new Error('profile resolve requires a project already applied with `agctx profile apply <name> <project>`.');
-  const dryRun = hasFlag(values, 'dry-run');
-  const plan = planFor(name, targetDir);
+  const name = boundProfile(targetDir, 'profile resolve');
+  const { plan } = planFor(name, targetDir, 'keep');
   if (!plan.conflicts.length) {
-    console.log('Nothing to resolve: every managed area matches the last apply.');
-    return { conflicts: 0 };
+    say(_('resolve.nothing'));
+    return { conflicts: 0, written: false, files: [] };
   }
 
   const stamp = new Date().toISOString().replaceAll(':', '-');
-  const will = (past: string, future: string) => (dryRun ? future : past);
   const overrides = new Map<string, string | null>();
   const backups: PlannedChange[] = [];
   const unresolved: ConflictedFile[] = [];
+  const files: ResolveResult['files'] = [];
+  const edits: ConflictedFile[] = [];
   for (const file of plan.conflicts) {
     const base = file.conflict.base;
     if (file.conflict.kind === 'missing') {
       overrides.set(file.rel, null);
-      console.log(`${file.rel}: ${will('recreated', 'would recreate')} the missing file.`);
+      files.push({ file: file.rel, action: 'recreate' });
     } else if (base === null) {
-      if (!hasFlag(values, 'discard')) {
+      if (!options.discard) {
         unresolved.push(file);
         continue;
       }
       const backup = `${BACKUP_DIR}/${stamp}/${file.rel}`;
       backups.push({ target: path.join(targetDir, backup), relativePath: backup, content: file.existing ?? '', status: 'create' });
       overrides.set(file.rel, file.regenerated);
-      console.log(`${file.rel}: ${will('backed up', 'would back up')} to ${backup} and ${will('regenerated', 'would regenerate')} the managed area.`);
-    } else if (hasFlag(values, 'edit') && !dryRun && file.currentRegion) {
-      overrides.set(file.rel, mergeWithEditor(file, base));
+      files.push({ file: file.rel, action: 'discard', backup });
+    } else if (options.edit && !options.dryRun && file.currentRegion) {
+      edits.push(file);
+      files.push({ file: file.rel, action: 'edit' });
     } else {
-      const { edits, content } = automaticResolution(file, base);
+      const { edits: userEdits, content } = automaticResolution(file, base);
       overrides.set(file.rel, content);
-      console.log(`${file.rel}: ${will('moved', 'would move')} ${edits.addedLines.length} line(s) outside the managed area; ${will('restored', 'would restore')} ${edits.removedLines.length} line(s) removed inside it.`);
-      if (edits.addedLines.length && edits.removedLines.length) {
-        console.log(`  Some lines were changed rather than added. Check ${file.rel} for near-duplicate lines below the managed area.`);
-      }
+      files.push({ file: file.rel, action: 'move', moved: userEdits.addedLines.length, restored: userEdits.removedLines.length });
     }
   }
 
   if (unresolved.length) {
     printConflicts(unresolved);
-    throw new Error([
-      `Cannot tell your edits from profile changes in: ${unresolved.map(file => file.rel).join(', ')}. The last applied version is unknown.`,
-      `  Keep what you need outside the managed area, then run: agctx profile resolve --discard ${targetDir}`,
-      `  --discard backs up each file under ${BACKUP_DIR}/ before regenerating it.`
-    ].join('\n'));
+    throw new CliError('resolve.unknown-base', _('error.resolve.unknown-base', { files: unresolved.map(file => file.rel).join(', ') }), { exitCode: EXIT.conflict, hint: _('hint.resolve.discard', { project: targetDir, backups: BACKUP_DIR }) });
   }
-  if (dryRun) {
-    console.log('Dry-run: no files were changed.');
-    return { conflicts: plan.conflicts.length };
+  for (const file of files) say(_(`resolve.${options.dryRun ? 'plan' : 'will'}.${file.action}`, { file: file.file, moved: file.moved ?? 0, restored: file.restored ?? 0, backup: file.backup ?? '' }));
+  if (options.dryRun) {
+    say(_('plan.dry-run.done'));
+    return { conflicts: plan.conflicts.length, written: false, files };
   }
-  const resolved = planFor(name, targetDir, overrides);
-  writePlan([...backups, ...resolved.changes], targetDir);
-  console.log(`Resolved ${plan.conflicts.length} conflict(s) in ${targetDir}`);
-  return { conflicts: plan.conflicts.length };
+  if (!(await confirm())) {
+    say(_('confirm.declined'));
+    return { conflicts: plan.conflicts.length, written: false, files };
+  }
+  for (const file of edits) overrides.set(file.rel, mergeWithEditor(file, file.conflict.base as string));
+  const resolved = planFor(name, targetDir, 'keep', overrides);
+  if (resolved.plan.conflicts.length) throw usageError('resolve.still-conflicted', _('error.resolve.still-conflicted'), null);
+  writePlan([...backups, ...resolved.plan.changes], targetDir);
+  say(_('resolve.done', { count: plan.conflicts.length, project: targetDir }));
+  return { conflicts: plan.conflicts.length, written: true, files };
 }

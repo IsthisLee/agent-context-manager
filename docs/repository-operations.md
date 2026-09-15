@@ -3,7 +3,7 @@
 이 문서는 agctx 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: a39328815175cc7fad52a77d98a7584495724e4f5b767d3f3369b29650af666d -->
+<!-- agctx-doc-sources-sha256: 369664cd46a3b90fe0888fe95f92387894a64616cf122e2bed1e3ae04533696d -->
 
 `agent-context-manager`는 공개 GitHub 저장소와 npm registry로 배포하는 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 

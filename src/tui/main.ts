@@ -4,7 +4,7 @@ import { saveLocale } from '../shared/home.ts';
 import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
-import { createProfileTui, listProfiles, setupProfileTui } from './profile.ts';
+import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 
 export async function mainTui(): Promise<void> {
   intro(_('main.intro'));
@@ -14,6 +14,7 @@ export async function mainTui(): Promise<void> {
       options: [
         { value: 'manage', label: _('main.manage.label'), hint: _('main.manage.hint') },
         { value: 'create', label: _('main.create.label'), hint: _('main.create.hint') },
+        { value: 'clone', label: _('main.clone.label'), hint: _('main.clone.hint') },
         { value: 'setup', label: _('main.setup.label'), hint: _('main.setup.hint') },
         { value: 'lang', label: _('main.lang.label'), hint: _('main.lang.hint') },
         { value: 'help', label: _('main.help.label'), hint: _('main.help.hint') },
@@ -21,9 +22,10 @@ export async function mainTui(): Promise<void> {
       ]
     });
     if (cancelled(action) || action === 'exit') break;
-    if (action === 'manage') await listProfiles();
-    else if (action === 'create') await createProfileTui();
-    else if (action === 'setup') await setupProfileTui();
+    if (action === 'manage') await runTuiStep(() => listProfiles());
+    else if (action === 'create') await runTuiStep(() => createProfileTui());
+    else if (action === 'clone') await runTuiStep(() => cloneProfileTui());
+    else if (action === 'setup') await runTuiStep(() => setupProfileTui());
     else if (action === 'lang') await changeLocaleTui();
     else if (action === 'help') help();
   }

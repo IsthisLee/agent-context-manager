@@ -1,16 +1,21 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { hasFlag, parseFlag } from '../commands/args.ts';
 import { _ } from '../i18n/index.ts';
-import { readProfile } from './store.ts';
+import { say } from '../commands/output.ts';
+import { CliError, EXIT, usageError } from '../shared/errors.ts';
+import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
+import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
-import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan } from '../shared/types.ts';
+import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan, ProjectSource } from '../shared/types.ts';
 import { formatDiff } from '../project/conflicts.ts';
-import { planProject, writePlan } from '../project/plan.ts';
+import { planProject } from '../project/plan.ts';
+import { assertNoHiddenCharacters } from './git-profile.ts';
+import { readProfile } from './store.ts';
 
-export function renderProfileAgents(profile: Profile, projectName: string): string {
-  const content = fs.readFileSync(profile.instructionsPath, 'utf8').trimEnd();
-  return `${content}\n\n> Applied from agctx profile: ${profile.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
+export const PROJECT_CONFIG_FILE = 'agctx.project.json';
+
+export function renderProfileAgents(content: string, profileName: string, projectName: string): string {
+  return `${content.trimEnd()}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
 export function getProjectName(targetDir: string): string {
@@ -25,12 +30,10 @@ export function getProjectName(targetDir: string): string {
 }
 
 export function assertProjectDirectory(targetDir: string): void {
-  if (!fs.existsSync(targetDir)) throw new Error(`Directory not found: ${targetDir}`);
-  try {
-    if (!fs.statSync(targetDir).isDirectory()) throw new Error(`Project path is not a directory: ${targetDir}`);
-  } catch (error) {
-    if (error instanceof Error && error.message.startsWith('Project path is not a directory:')) throw error;
-    throw new Error(`Project path is not a directory: ${targetDir}`);
+  let isDirectory = false;
+  try { isDirectory = fs.statSync(targetDir).isDirectory(); } catch {}
+  if (!isDirectory) {
+    throw usageError('project.not-directory', _('error.project.not-directory', { project: targetDir }), _('hint.project.path'));
   }
 }
 
@@ -41,122 +44,125 @@ export function readProjectConfig(configPath: string): ProjectConfig {
     if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('not an object');
     return config as ProjectConfig;
   } catch {
-    throw new Error(`Invalid project metadata: ${configPath}`);
+    throw usageError('project.invalid-config', _('error.project.invalid-config', { file: configPath }), _('hint.project.invalid-config', { file: configPath }));
   }
-}
-
-/** The profile a project is bound to. */
-export function boundProfile(projectConfig: ProjectConfig): string | null {
-  return projectConfig.profile || null;
-}
-
-/** Positional arguments for `profile apply`: `<name> [<project>]`. */
-export function applyArgs(values: readonly string[]): { name: string | null; targetPath: string } {
-  const positional = values.filter(value => !value.startsWith('--'));
-  return { name: positional[0] || null, targetPath: positional[1] || '.' };
 }
 
 export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#관리-영역을-고쳐서-멈췄을-때';
 
-/** Raised when managed areas were edited outside agctx; carries the conflicting files. */
-export class ConflictError extends Error {
-  conflicts: ConflictedFile[];
+export function conflictError(conflicts: readonly ConflictedFile[], targetDir: string): CliError {
+  return new CliError('project.conflict', _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }), {
+    exitCode: EXIT.conflict,
+    hint: _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
+    details: conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind }))
+  });
+}
 
-  constructor(message: string, conflicts: ConflictedFile[]) {
-    super(message);
-    this.conflicts = conflicts;
+/** Which profile content a project gets, and the version record written with it. */
+export interface ProfileVersion {
+  content: string;
+  source: ProjectSource | null;
+  uncommitted: boolean;
+  pin: boolean;
+}
+
+/**
+ * - `pin: true` (apply --pin): the committed profile, pinned to HEAD. Uncommitted edits are refused.
+ * - `pin: 'keep'` (sync): a pinned project renders the commit it recorded; others follow the store.
+ * - `pin: false` (apply): the store as it is now, recording the commit and whether edits are uncommitted.
+ */
+export function profileVersion(profile: Profile, projectConfig: ProjectConfig, pin: boolean | 'keep'): ProfileVersion {
+  const dir = profile.profileDir;
+  const name = profile.metadata.name;
+  const connected = isGitRoot(dir);
+  const pinned = pin === true || (pin === 'keep' && projectConfig.pin === true);
+  if (pinned && !connected) {
+    throw usageError('pin.not-git', _('error.pin.not-git', { name }), _('hint.profile.connect', { name }));
   }
+  if (!connected) return { content: fs.readFileSync(profile.instructionsPath, 'utf8'), source: null, uncommitted: false, pin: false };
+
+  const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
+  const remoteName = branch ? git(['config', `branch.${branch}.remote`], { cwd: dir, allowFailure: true }).stdout.trim() || 'origin' : 'origin';
+  const remoteUrl = git(['remote', 'get-url', remoteName], { cwd: dir, allowFailure: true }).stdout.trim();
+  const remote = remoteUrl ? sanitizeRemoteUrl(remoteUrl) : null;
+
+  if (pin === 'keep' && projectConfig.pin === true) {
+    const commit = projectConfig.source?.commit;
+    const shown = commit && /^[0-9a-f]{7,64}$/i.test(commit) ? git(['show', `${commit}:AGENTS.md`], { cwd: dir, allowFailure: true }) : null;
+    if (!commit || !shown || shown.status !== 0) {
+      throw new CliError('pin.commit-missing', _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }), { exitCode: EXIT.unavailable, hint: _('hint.profile.pull', { name }) });
+    }
+    return { content: shown.stdout, source: { ...projectConfig.source, git: remote ?? projectConfig.source?.git ?? null, branch: projectConfig.source?.branch ?? branch, commit }, uncommitted: false, pin: true };
+  }
+
+  const commit = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
+  const edited = git(['status', '--porcelain', '--', 'AGENTS.md', PROFILE_METADATA_FILE], { cwd: dir }).stdout.trim() !== '';
+  if (pin === true && (edited || !commit)) {
+    throw usageError('pin.uncommitted', _('error.pin.uncommitted', { name }), _('hint.git.commit', { dir }));
+  }
+  return { content: fs.readFileSync(profile.instructionsPath, 'utf8'), source: { git: remote, branch, commit }, uncommitted: edited, pin: pin === true };
 }
 
-export function conflictError(conflicts: ConflictedFile[], targetDir: string): ConflictError {
-  return new ConflictError([
-    `Managed file changed outside agctx: ${conflicts.map(file => file.rel).join(', ')}`,
-    `  See the difference:  agctx profile sync --dry-run ${targetDir}`,
-    `  Resolve it:          agctx profile resolve ${targetDir}`,
-    `  Guide: ${CONFLICT_GUIDE}`
-  ].join('\n'), conflicts);
+export interface ApplyPlan {
+  name: string;
+  targetDir: string;
+  version: ProfileVersion;
+  plan: ProjectPlan;
+  /** Whether agctx.project.json already pinned the project before this run. */
+  previousPin: boolean;
 }
 
-export function planFor(name: string, targetDir: string, overrides?: Map<string, string | null>): ProjectPlan {
+export function planFor(name: string, targetDir: string, pin: boolean | 'keep', overrides?: Map<string, string | null>): ApplyPlan {
   const profile = readProfile(name);
-  const projectConfig = readProjectConfig(path.join(targetDir, 'agctx.project.json'));
+  assertProjectDirectory(targetDir);
+  const projectConfig = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE));
+  const version = profileVersion(profile, projectConfig, pin);
+  assertNoHiddenCharacters([{ file: `${name}/AGENTS.md`, content: version.content }]);
   const projectName = getProjectName(targetDir);
-  return planProject({
+  const plan = planProject({
     packageRoot: PACKAGE_ROOT,
     targetDir,
     projectName,
     profileName: name,
-    renderedAgents: renderProfileAgents(profile, projectName),
-    projectConfig
+    renderedAgents: renderProfileAgents(version.content, name, projectName),
+    projectConfig,
+    record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted }
   }, overrides);
+  return { name, targetDir, version, plan, previousPin: projectConfig.pin === true };
 }
 
 export function printPlan(plan: ProjectPlan, label: string): void {
   const conflicted = new Set(plan.conflicts.map(file => file.rel));
   const changed = plan.changes.filter(change => change.status !== 'unchanged' && !conflicted.has(change.relativePath));
-  console.log(`${label}: ${changed.length} file(s) to change.`);
+  say(_('plan.summary', { label, count: changed.length }));
   for (const change of plan.changes) {
     const status = conflicted.has(change.relativePath) ? 'conflict' : change.status;
-    console.log(`  ${status.padEnd(9)} ${change.relativePath}`);
+    say(`  ${status.padEnd(9)} ${change.relativePath}`);
   }
 }
 
 export function printConflicts(conflicts: readonly ConflictedFile[]): void {
   for (const file of conflicts) {
-    console.log(`\nConflict: ${file.rel}`);
+    say(`\n${_('conflict.title', { file: file.rel })}`);
     if (file.conflict.kind === 'missing') {
-      console.log(`${file.rel} is missing. \`profile resolve\` recreates it.`);
+      say(_('conflict.missing', { file: file.rel }));
     } else if (file.conflict.base !== null) {
-      console.log('Edits inside the managed area since the last apply:');
-      console.log(formatDiff(`last-applied/${file.rel}`, `current/${file.rel}`, file.conflict.base, file.currentRegion ?? ''));
+      say(_('conflict.edits'));
+      say(formatDiff(`last-applied/${file.rel}`, `current/${file.rel}`, file.conflict.base, file.currentRegion ?? ''));
       if (file.nextRegion !== file.conflict.base) {
-        console.log('Profile or template changes agctx will write:');
-        console.log(formatDiff(`last-applied/${file.rel}`, `next/${file.rel}`, file.conflict.base, file.nextRegion ?? ''));
+        say(_('conflict.profile-changes'));
+        say(formatDiff(`last-applied/${file.rel}`, `next/${file.rel}`, file.conflict.base, file.nextRegion ?? ''));
       }
     } else {
-      console.log('The last applied version is unknown. Current managed area compared with what agctx will write:');
-      console.log(formatDiff(`current/${file.rel}`, `next/${file.rel}`, file.currentRegion ?? '', file.nextRegion ?? ''));
+      say(_('conflict.unknown-base'));
+      say(formatDiff(`current/${file.rel}`, `next/${file.rel}`, file.currentRegion ?? '', file.nextRegion ?? ''));
     }
   }
 }
 
-export function applyProfile(values: readonly string[]): void {
-  const { name, targetPath } = applyArgs(values);
-  if (!name) throw new Error('profile apply requires <name> <project>.');
-  const targetDir = path.resolve(process.cwd(), targetPath);
-  assertProjectDirectory(targetDir);
-  const plan = planFor(name, targetDir);
-  const dryRun = hasFlag(values, 'dry-run');
-  if (plan.conflicts.length && !dryRun) throw conflictError(plan.conflicts, targetDir);
-  printPlan(plan, dryRun ? 'Dry-run' : 'Plan');
-  if (dryRun) {
-    printConflicts(plan.conflicts);
-    console.log('Dry-run: no files were changed.');
-    if (plan.conflicts.length) throw conflictError(plan.conflicts, targetDir);
-    return;
-  }
-  writePlan(plan.changes, targetDir);
-  console.log(`Applied profile ${name} to ${targetDir}`);
-}
-
-/**
- * Refresh the profile a project is already bound to. `sync` never switches the
- * bound profile: naming a profile (a second positional, or `--profile`)
- * is rejected so bulk refreshes cannot silently rebind a project.
- */
-export function syncProject(values: readonly string[]): void {
-  if (parseFlag(values, 'profile')) {
-    throw new Error('profile sync does not switch profiles. To switch, use `agctx profile apply <name> <project>`.');
-  }
-  const positional = values.filter(value => !value.startsWith('--'));
-  if (positional.length > 1) {
-    throw new Error('profile sync takes only <project>. To switch profiles, use `agctx profile apply <name> <project>`.');
-  }
-  const targetPath = positional[0] || '.';
-  const targetDir = path.resolve(process.cwd(), targetPath);
-  assertProjectDirectory(targetDir);
-  const selectionPath = path.join(targetDir, 'agctx.project.json');
-  const selected = boundProfile(readProjectConfig(selectionPath));
-  if (!selected) throw new Error('profile sync requires a project already applied with `agctx profile apply <name> <project>`.');
-  applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
+/** The profile a project is bound to, or a usage error pointing at `profile apply`. */
+export function boundProfile(targetDir: string, command: string): string {
+  const name = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).profile;
+  if (!name) throw usageError('project.not-applied', _('error.project.not-applied', { command, project: targetDir }), _('hint.apply', { project: targetDir }));
+  return name;
 }

@@ -139,7 +139,7 @@ test('apply stores a base copy of every managed area that matches its recorded h
   const fixture = makeFixture(t);
   const { managedHashes } = JSON.parse(fixture.read('agentic.project.json'));
 
-  assert.deepEqual(Object.keys(managedHashes).sort(), ['.agents/rules/agentic.md', '.cursor/rules/agentic.mdc', '.github/copilot-instructions.md', 'AGENTS.md', 'CLAUDE.md']);
+  assert.deepEqual(Object.keys(managedHashes).sort(), ['.agents/rules/agentic.md', 'AGENTS.md', 'CLAUDE.md']);
   for (const [rel, hash] of Object.entries(managedHashes)) {
     const stored = fixture.read(`.agentic/base/${rel}.base`);
     assert.equal(sha256(stored.replace(/\n$/, '')), hash, rel);

@@ -17,10 +17,14 @@
 - 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
 - 런타임 의존성 `diff`(jsdiff) 추가
 
+### Removed
+
+- **호환성 파괴:** Cursor(`.cursor/rules/agentic.mdc`)와 GitHub Copilot(`.github/copilot-instructions.md`) 지침 파일을 더 이상 만들거나 동기화하지 않는다. 지원 에이전트는 Codex(`AGENTS.md`)·Claude Code·Antigravity다. 이미 만든 두 파일과 `.agentic/base/`의 base 파일은 지우지 않으므로 필요 없으면 직접 지운다. 근거는 [ADR 0011](docs/adr/0011-supported-agents.md)
+
 ### Fixed
 
 - Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록하고 이전 `\` 키도 읽는다
-- `.cursor/rules/agentic.mdc`의 frontmatter가 관리 마커 뒤에 놓여 파일 첫 줄에서 시작하지 않던 문제를 고침. 이제 템플릿 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다. 이전 버전이 만든 파일은 다음 `sync`에서 충돌 없이 고쳐진다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
+- 에이전트 규칙 파일의 frontmatter가 관리 마커 뒤에 놓여 파일 첫 줄에서 시작하지 않던 문제를 고침. 이제 템플릿 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다. 이전 버전이 만든 파일은 다음 `sync`에서 충돌 없이 고쳐진다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
 - Antigravity가 `.agents/rules/agentic.md`를 로드하지 않던 문제를 고침. 템플릿에 `trigger: always_on` frontmatter를 추가했다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
 
 ## [0.2.0] - 2026-09-14

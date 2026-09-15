@@ -7,7 +7,7 @@
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agentic-doc-sources: bin, lib -->
-<!-- agentic-doc-sources-sha256: fb6edfea1ae49231ef9d117682505203c66b7d27aa9c8ecad1dc659820e1a8b1 -->
+<!-- agentic-doc-sources-sha256: 7db9e2be89916c984cc569bd73e6128c4afb24d4c6fe872372896329af8cabef -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -93,9 +93,7 @@ agt profile apply company /path/to/project
 ├── .agentic/base/                   # 마지막으로 적용한 관리 영역 원문(충돌 해결 기준, 커밋)
 ├── .agentic/.gitignore              # 충돌 해결 백업 폴더 backups/를 커밋에서 제외
 ├── CLAUDE.md                        # Claude Code 포인터
-├── .agents/rules/agentic.md         # Antigravity 포인터
-├── .cursor/rules/agentic.mdc        # Cursor 포인터
-└── .github/copilot-instructions.md  # GitHub Copilot 포인터
+└── .agents/rules/agentic.md         # Antigravity 포인터
 ```
 
 바꾸기 전에 계획만 보려면 `--dry-run`을 붙인다.
@@ -122,7 +120,7 @@ flowchart TB
   end
 ```
 
-Agentic이 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외로 `.cursor/rules/agentic.mdc`와 `.agents/rules/agentic.md`는 파일 맨 앞에 frontmatter가 없을 때만 템플릿 frontmatter를 넣는다. 에이전트가 첫 줄의 frontmatter로 규칙을 로드하기 때문이며, 이미 있는 frontmatter는 고치지 않는다.
+Agentic이 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외로 `.agents/rules/agentic.md`는 파일 맨 앞에 frontmatter가 없을 때만 템플릿 frontmatter를 넣는다. 에이전트가 첫 줄의 frontmatter로 규칙을 로드하기 때문이며, 이미 있는 frontmatter는 고치지 않는다.
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 한국어 로케일에서 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어 로케일에서 `## 4. Project rule extensions (SSOT)`이며 Agentic은 두 제목을 모두 인식한다.
 
@@ -130,7 +128,7 @@ Agentic은 코드베이스를 분석해 이 섹션을 채우지 않는다. 초�
 
 ## 4. 에이전트로 개발
 
-적용이 끝나면 평소 쓰는 에이전트(Codex·Claude Code·Antigravity·Cursor·Copilot)에 작업을 맡긴다. 에이전트는 프로젝트의 `AGENTS.md`와 포인터 파일을 읽고 그 지침대로 작업한다. Agentic은 에이전트를 실행하거나 통제하지 않는다.
+적용이 끝나면 평소 쓰는 에이전트(Codex·Claude Code·Antigravity)에 작업을 맡긴다. 에이전트는 프로젝트의 `AGENTS.md`와 포인터 파일을 읽고 그 지침대로 작업한다. Agentic은 에이전트를 실행하거나 통제하지 않는다.
 
 ## 5. 프로필 갱신과 동기화
 

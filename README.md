@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 에이전트 개발 지침 관리
 
 <!-- agentic-doc-sources: bin, lib, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: ce8a433b16c3b97895c83636ecb1ebe42d2120fbfff44894153ffcff3e847033 -->
+<!-- agentic-doc-sources-sha256: 36caa7651885b27935914011a7b8336cd34a94a45b8bdccd67e7251d027f1cc5 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -10,7 +10,7 @@
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)
 ![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)
 ![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)
-![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)
+![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)
 
 **한국어** · [English](README.en.md)
 
@@ -133,8 +133,6 @@ agt profile apply company /path/to/project
 | Codex 등 (AGENTS.md 표준) | `AGENTS.md`                       |
 | Claude Code            | `CLAUDE.md`                       |
 | Antigravity            | `.agents/rules/agentic.md`        |
-| Cursor                 | `.cursor/rules/agentic.mdc`       |
-| GitHub Copilot         | `.github/copilot-instructions.md` |
 
 적용하면 마지막으로 쓴 관리 영역 원문도 `.agentic/base/`에 함께 기록합니다. 관리 영역 충돌을 풀 때 기준이 되므로 git에 커밋하세요.
 

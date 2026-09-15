@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `lib/cli.mjs:58-84`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin, lib, package.json, tools/package-smoke.mjs, tools/check-syntax.mjs, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.mjs -->
-<!-- agentic-doc-sources-sha256: fd7d2bf27e7c27b124d7ba5809546c88da6ab985972e5ada2e2aa960974ac1e6 -->
+<!-- agentic-doc-sources-sha256: 65078acfde042dfb4a08e6b47773eb7f3f8d13a3652aa24811f44ea0f29c96e9 -->
 
 이 문서는 `@isthis/agentic`이 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -50,7 +50,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 패키지 이름과 버전은 `package.json:2-3`에 있다(`"@isthis/agentic"`, `"0.2.0"`). `@isthis/`는 스코프(scope)이고, `publishConfig.access`가 `public`이라 스코프 패키지를 공개로 게시한다(`package.json:53-55`).
+- 패키지 이름과 버전은 `package.json:2-3`에 있다(`"@isthis/agentic"`, `"0.2.0"`). `@isthis/`는 스코프(scope)이고, `publishConfig.access`가 `public`이라 스코프 패키지를 공개로 게시한다(`package.json:51-53`).
 - 실제 게시는 GitHub Actions가 수행한다. `release`가 게시되면 `.github/workflows/publish.yml`이 검증을 돌린 뒤 `npm publish --provenance --access public`을 실행한다(`.github/workflows/publish.yml:48-50`). 자세한 배포 원리는 [15번](#15-github-actions에서-npm으로-자동-배포되는-원리)에서 다룬다.
 - 같은 버전 중복 게시를 막기 위해, 워크플로는 게시 전에 Registry에 이미 그 버전이 있는지 확인하고 있으면 건너뛴다(`.github/workflows/publish.yml:37-50`).
 
@@ -139,7 +139,7 @@ Unix 계열에서 스크립트 첫 줄의 `#!`(shebang)는 “이 파일을 어�
 ### 사용자가 알아야 할 주의점
 
 - Windows에는 shebang 개념이 없다. 대신 npm이 만든 shim이 Node로 실행되게 연결하므로, shebang은 주로 macOS/Linux에서 의미가 있다([9번](#9-macoslinux와-windows의-실행-파일path-처리-차이) 참고).
-- shebang이 동작하려면 PATH에 `node`가 있어야 한다. 이 패키지는 Node 24 이상을 요구한다(`package.json:56-58`).
+- shebang이 동작하려면 PATH에 `node`가 있어야 한다. 이 패키지는 Node 24 이상을 요구한다(`package.json:54-56`).
 
 ---
 
@@ -170,7 +170,7 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`lib/cli.mjs:75-76`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:59-62`, `lib/tui/profile.mjs:3`).
+- 인자가 없고 표준 입력이 터미널(TTY)이면 대화형 메인 TUI를 연다(`lib/cli.mjs:75-76`). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json:57-60`, `lib/tui/profile.mjs:3`).
 - 명령별 분기: `profile` 하위 명령(`create/list/view/remove/setup/apply/sync/resolve`)과 `config lang`, 그 외에는 도움말. `profile`은 `runProfileCommand()`가 다시 하위 명령으로 분기한다.
 - 오류가 나면 `run()`이 `main()`의 오류를 받아 메시지를 출력하고 종료 코드 1로 끝낸다(`lib/cli.mjs:87-92`). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
@@ -197,7 +197,7 @@ flowchart TD
 
 - 프로필 데이터의 기준 위치는 `profileHome()`(`lib/home.mjs`)이 정한다: `process.env.AGENTIC_HOME`이 있으면 그 아래, 없으면 사용자 홈 디렉터리 아래의 `.agentic/profiles`다. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 `.agentic/profiles`로 한 번 이관한다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `agentic-profile.json`과 지침 `AGENTS.md`가 있다(`readProfile` `lib/profile/store.mjs:25-39`, `createProfile` `lib/profile/store.mjs:41-51`).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`, 마지막 적용 관리 영역 원문 `.agentic/base/`를 만든다(`applyProfile` `lib/project/apply.mjs:120-137`, `planProject` `lib/project/plan.mjs:65-105`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agentic.project.json`, 마지막 적용 관리 영역 원문 `.agentic/base/`를 만든다(`applyProfile` `lib/project/apply.mjs:120-137`, `planProject` `lib/project/plan.mjs:63-103`). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture/)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -363,7 +363,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- tarball에 담기는 파일은 `files`에 적힌 `bin`, `lib`, `templates`, `README.md`, `LICENSE`이며(`package.json:19-25`) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json:59-62`).
+- tarball에 담기는 파일은 `files`에 적힌 `bin`, `lib`, `templates`, `README.md`, `LICENSE`이며(`package.json:19-25`) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json:57-60`).
 
   ```json
   "files": ["bin", "lib", "templates", "README.md", "LICENSE"]
@@ -396,8 +396,8 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`lib/fs-utils.mjs:11-18`). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`lib/fs-utils.mjs:21-38`).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agentic-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`lib/fs-utils.mjs:41-59`). 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
-- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `lib/project/plan.mjs:110`).
-- **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에, 원문을 `.agentic/base/`에 기록한다(`lib/project/plan.mjs:92-102`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 “Managed file changed outside Agentic” 오류로 멈춘다(`lib/project/plan.mjs:73-76`). `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `lib/project/analyzer.mjs`, 충돌 편집 처리는 `lib/project/conflicts.mjs`에 있다.
+- **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `lib/project/plan.mjs:108`).
+- **관리 영역 무결성**: 사용자 영역과 Agentic 관리 영역을 분리하고, 관리 영역의 hash를 `agentic.project.json`에, 원문을 `.agentic/base/`에 기록한다(`lib/project/plan.mjs:90-100`). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 “Managed file changed outside Agentic” 오류로 멈춘다(`lib/project/plan.mjs:71-74`). `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `lib/project/analyzer.mjs`, 충돌 편집 처리는 `lib/project/conflicts.mjs`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.mjs`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.mjs`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
@@ -405,7 +405,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ```mermaid
 flowchart TD
   P["apply·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
-  H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>lib/project/plan.mjs:73-76 · profile resolve로 복구"]
+  H -->|"다름"| STOP["중단: Managed file changed outside Agentic<br/>lib/project/plan.mjs:71-74 · profile resolve로 복구"]
   H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
   SAFE -->|"위험"| REFUSE["교체 거부<br/>lib/fs-utils.mjs:11-38"]
   SAFE -->|"안전"| ATOM["임시 파일 쓰기 후 rename 교체<br/>권한 모드 보존·lib/fs-utils.mjs:41-59"]

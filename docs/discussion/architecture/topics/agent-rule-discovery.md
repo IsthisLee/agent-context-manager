@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 제안 목표 | `apply` 전에 대상 프로젝트에 이미 있는 에이전트 규칙 파일·폴더를 스캔해 사용자에게 보고하고, 무엇을 어디에 생성·갱신할지 가시성과 동의를 준다. |
-| 제안 이유 | 현재 `apply`·`sync`는 하드코딩된 고정 경로 집합에만 쓴다(`AGENTS.md`, `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`). 프로젝트가 이미 다른 위치나 다른 도구의 규칙(루트 `GEMINI.md`, 단수 `.agent/rules/`, 구형 `.cursorrules`, `.windsurfrules`, `.clinerules` 등)을 갖고 있어도 발견하지 못한다. 그래서 사용자는 기존 규칙과 새 산출물의 관계를 모른 채 적용하게 되고, 두 곳이 따로 노는 상태를 사후에야 알아챈다. |
+| 제안 이유 | 현재 `apply`·`sync`는 하드코딩된 고정 경로 집합에만 쓴다(`AGENTS.md`, `CLAUDE.md`, `.agents/rules/agentic.md`). 프로젝트가 이미 다른 위치나 다른 도구의 규칙(루트 `GEMINI.md`, 단수 `.agent/rules/`, 구형 `.cursorrules`, `.windsurfrules`, `.clinerules` 등)을 갖고 있어도 발견하지 못한다. 그래서 사용자는 기존 규칙과 새 산출물의 관계를 모른 채 적용하게 되고, 두 곳이 따로 노는 상태를 사후에야 알아챈다. |
 
 > 병합 자체는 이미 비파괴적이다. 이 제안은 "깨진 병합을 고친다"가 아니라 "적용 전에 기존 규칙 위치를 스캔·보고해 가시성과 동의를 준다"이다. 기존 merge·drift 계약을 재구현하지 않고 참조한다.
 
@@ -43,7 +43,7 @@
 
 ## 현재 동작과 한계
 
-- `bin/agentic.mjs`의 산출물 매핑은 고정된 5개 경로에만 쓴다. 프로젝트를 스캔해 기존 규칙 위치를 찾는 단계가 없다.
+- `lib/project/plan.mjs`의 산출물 매핑은 고정된 3개 경로에만 쓴다. 프로젝트를 스캔해 기존 규칙 위치를 찾는 단계가 없다.
 - 모델링되지 않은 위치의 규칙은 읽지도, 합치지도, 보고하지도 않는다.
 - 결과적으로 이미 다른 위치에 규칙을 둔 프로젝트에 적용하면 우리 산출물과 기존 규칙이 갈라질 수 있다. [ADR 0004](../../../adr/0004-antigravity-rules-path.md) 이전 Antigravity가 이 갈라짐의 실제 사례였다. 프로젝트가 올바른 `.agents/rules/`를 쓰는데 패키지는 `.gemini/rules/`에 썼다.
 
@@ -54,8 +54,6 @@ flowchart LR
     A1["AGENTS.md"]
     A2["CLAUDE.md"]
     A3[".agents/rules/agentic.md"]
-    A4[".cursor/rules/agentic.mdc"]
-    A5[".github/copilot-instructions.md"]
   end
   subgraph N["발견하지 못하는 경로 · 탐지 후보"]
     B1["GEMINI.md"]

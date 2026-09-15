@@ -17,3 +17,33 @@
 | 70 | 그 밖의 오류 | 심볼릭 링크 대상 거부 같은 파일 시스템 오류 |
 
 결과가 여러 개 겹치면 3 > 2 > 1 순서로 가장 심각한 코드를 돌려준다. 명령마다 돌려줄 수 있는 코드는 `--help`의 마지막 줄에 있다. 결정 근거는 [ADR 0016](../adr/0016-command-contract.md)이다.
+
+## 명령별 종료 코드
+
+아래 표는 명령 등록부에서 만든다. 명령 하나의 코드는 `agctx <명령> --help`의 마지막 줄에도 나온다.
+
+<!-- agctx:generated:exit-codes:start -->
+| 명령 | 돌려줄 수 있는 종료 코드 |
+| --- | --- |
+| `agctx profile create` | `0` · `64` · `70` |
+| `agctx profile list` | `0` · `64` · `70` |
+| `agctx profile view` | `0` · `64` · `70` |
+| `agctx profile setup` | `0` · `64` · `70` |
+| `agctx profile apply` | `0` · `2` · `3` · `64` · `69` · `70` |
+| `agctx profile sync` | `0` · `2` · `3` · `64` · `69` · `70` |
+| `agctx profile resolve` | `0` · `2` · `64` · `69` · `70` |
+| `agctx profile remove` | `0` · `64` · `70` |
+| `agctx profile clone` | `0` · `3` · `64` · `69` · `70` |
+| `agctx profile status` | `0` · `64` · `69` · `70` |
+| `agctx profile pull` | `0` · `2` · `3` · `64` · `69` · `70` |
+| `agctx profile push` | `0` · `2` · `64` · `69` · `70` |
+| `agctx profile connect` | `0` · `64` · `69` · `70` |
+| `agctx check` | `0` · `1` · `2` · `3` · `64` · `69` · `70` |
+| `agctx explain` | `0` · `4` · `64` · `70` |
+| `agctx verify` | `0` · `4` · `64` · `69` · `70` |
+| `agctx repos list` | `0` · `64` · `70` |
+| `agctx repos status` | `0` · `1` · `2` · `3` · `64` · `69` · `70` |
+| `agctx repos sync` | `0` · `1` · `2` · `3` · `64` · `69` · `70` |
+| `agctx repos pr` | `0` · `2` · `3` · `64` · `69` · `70` |
+| `agctx config lang` | `0` · `64` · `70` |
+<!-- agctx:generated:exit-codes:end -->

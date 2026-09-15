@@ -126,13 +126,45 @@ agctx --tui
 
 ## 명령어
 
+아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
+
+<!-- agctx:generated:commands:start -->
+| 명령 | 하는 일 | 바꾸는 것 | 쓸 수 있는 곳 |
+| --- | --- | --- | --- |
+| [`profile create`](#profile-create) | 초기 AGENTS.md가 있는 프로필을 만듭니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile list`](#profile-list) | scope별 프로필을 보고 하나를 관리합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
+| [`profile view`](#profile-view) | 프로필의 scope와 AGENTS.md를 출력합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
+| [`profile setup`](#profile-setup) | 프로필에 쓸 지침 수준을 고릅니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile apply`](#profile-apply) | 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
+| [`profile sync`](#profile-sync) | 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
+| [`profile resolve`](#profile-resolve) | 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
+| [`profile remove`](#profile-remove) | 프로필을 지웁니다. 프로젝트에 적용한 파일은 남습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile clone`](#profile-clone) | 파일과 숨은 문자를 검사한 뒤 Git 저장소에서 프로필을 가져옵니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile status`](#profile-status) | 프로필의 원격·브랜치·커밋·로컬 수정과 원격 대비 위치를 보여 줍니다. --refresh를 붙이면 먼저 fetch합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
+| [`profile pull`](#profile-pull) | 프로필을 원격까지 fast-forward합니다. 저장소 파일은 바뀌지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile push`](#profile-push) | 이미 만든 커밋을 프로필의 원격으로 보냅니다. | Git 원격 | CLI · TUI · 프로필 메뉴 |
+| [`profile connect`](#profile-connect) | 이미 Git 저장소인 프로필을 원격에 연결합니다. 커밋이나 push는 하지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`check`](#check) | 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다. | 없음 | CLI |
+| [`explain`](#explain) | 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
+| [`verify`](#verify) | explain이 기대하는 프로젝트 지침 파일을 Codex·Claude Code·Antigravity가 실제로 받았는지 세션 기록이나 --probe로 확인하고, 받지 못한 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
+| [`repos list`](#repos-list) | 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 줍니다. --prune은 없어진 폴더를 목록에서 지웁니다. | 프로필 보관함 | CLI |
+| [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI |
+| [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI |
+| [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI |
+| [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI |
+<!-- agctx:generated:commands:end -->
+
 ### `profile create`
 
 새 프로필과 초기 `AGENTS.md`를 만든다. 프로필은 기본적으로 `~/.agctx/profiles/<name>`에 저장된다.
 
+<!-- agctx:generated:usage:profile.create:start -->
 ```bash
 agctx profile create [--scope <scope>] [<name>]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.create:end -->
 
 | 인자·옵션 | 설명 | 기본값·허용값 |
 | --- | --- | --- |
@@ -145,9 +177,13 @@ agctx profile create [--scope <scope>] [<name>]
 
 등록된 프로필을 scope별로 표시한다. 터미널에서는 프로필을 선택한 뒤 관리 작업까지 이어서 실행할 수 있다.
 
+<!-- agctx:generated:usage:profile.list:start -->
 ```bash
 agctx profile list [--scope <scope>]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.list:end -->
 
 터미널에서는 먼저 전체 또는 `personal`, `company`, `team`, `workspace` scope를 선택한다. 선택한 범위의 프로필 목록과 전체 개수를 표시한 뒤 프로필을 고르거나 새 프로필을 만들거나 Git에서 프로필을 가져온다. `--scope`를 전달하면 범위 선택을 건너뛴다. 프로필을 고르면 다음 작업을 선택한다.
 
@@ -176,9 +212,13 @@ scope가 없는 프로필을 임의로 선택하지 않으며, 해당 scope에 �
 
 프로필의 scope와 현재 `AGENTS.md` 내용을 출력한다.
 
+<!-- agctx:generated:usage:profile.view:start -->
 ```bash
 agctx profile view <name>
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.view:end -->
 
 `profile list`의 관리 메뉴에서는 `상세 보기`를 선택해 같은 내용을 TUI에서 확인할 수 있다.
 
@@ -186,9 +226,13 @@ agctx profile view <name>
 
 선택한 프로필의 원본과 설정을 삭제한다. 이미 프로젝트에 적용된 파일은 변경하지 않는다.
 
+<!-- agctx:generated:usage:profile.remove:start -->
 ```bash
 agctx profile remove [--yes] [<name>]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.remove:end -->
 
 | 인자·옵션 | 설명 |
 | --- | --- |
@@ -201,9 +245,13 @@ agctx profile remove [--yes] [<name>]
 
 프로필의 공통 에이전틱 개발 지침을 설정한다. 프로젝트 파일은 변경하지 않는다.
 
+<!-- agctx:generated:usage:profile.setup:start -->
 ```bash
-agctx profile setup [지침 옵션] [<name>]
+agctx profile setup [--harness <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--documentation <level>] [--security <level>] [<name>]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.setup:end -->
 
 | 인자·옵션 | 설정 대상 |
 | --- | --- |
@@ -232,9 +280,13 @@ agctx profile setup company --tdd strict --security strict
 
 선택한 프로필을 대상 프로젝트에 적용한다. 프로필 이름을 반드시 지정하므로, 프로젝트에 적용된 프로필을 처음 정하거나 다른 프로필로 전환하는 명령이다.
 
+<!-- agctx:generated:usage:profile.apply:start -->
 ```bash
 agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.apply:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -309,9 +361,13 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 
 프로젝트가 이미 적용받은 프로필을 최신 지침으로 다시 적용한다. `sync`는 프로필을 **전환하지 않는다**. 프로필 이름이나 `--profile`을 주면 종료 코드 64로 거부하며, 전환하려면 `profile apply <name> <project>`를 쓴다.
 
+<!-- agctx:generated:usage:profile.sync:start -->
 ```bash
 agctx profile sync [--dry-run] [--yes] [<project>]
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.sync:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -330,9 +386,13 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 
 관리 영역 충돌을 푼다. 대상 프로필은 `sync`처럼 프로젝트의 `agctx.project.json`에 기록된 값을 사용한다.
 
+<!-- agctx:generated:usage:profile.resolve:start -->
 ```bash
 agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.resolve:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -356,9 +416,13 @@ agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]
 
 Git 원격에 있는 프로필 저장소를 받아 프로필로 등록한다. 프로젝트 파일은 바꾸지 않는다.
 
+<!-- agctx:generated:usage:profile.clone:start -->
 ```bash
 agctx profile clone [--branch <branch>] <git-url>
 ```
+
+종료 코드: `0` 성공 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.clone:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -381,9 +445,13 @@ Next: agctx profile apply team-backend <project>
 
 Git 프로필의 원격·브랜치·커밋·수정 여부와 원격 대비 앞섬·뒤처짐을 보여 준다.
 
+<!-- agctx:generated:usage:profile.status:start -->
 ```bash
 agctx profile status [--refresh] [<name>]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.status:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -402,9 +470,13 @@ team-backend	/work/team-backend.git main@39ca6e1	clean	ahead 0, behind 1
 
 추적 원격의 새 커밋을 프로필에 받는다. 프로필 보관함만 바꾸므로 확인을 묻지 않는다.
 
+<!-- agctx:generated:usage:profile.pull:start -->
 ```bash
 agctx profile pull [--dry-run] <name>
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.pull:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -427,9 +499,13 @@ Next: run agctx profile sync <project> in projects that use team-backend. A proj
 
 프로필 폴더에서 이미 만든 커밋을 추적 원격으로 보낸다.
 
+<!-- agctx:generated:usage:profile.push:start -->
 ```bash
 agctx profile push [--dry-run] [--yes] <name>
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.push:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -452,9 +528,13 @@ Pushed profile team-backend.
 
 로컬에서 만든 프로필을 Git 원격에 연결한다. 커밋과 push는 하지 않는다.
 
+<!-- agctx:generated:usage:profile.connect:start -->
 ```bash
 agctx profile connect [--branch <branch>] <name> <git-url>
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.connect:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -486,9 +566,13 @@ Next: agctx profile push team-backend
 
 프로젝트가 기록한 프로필 버전과 지금 파일이 맞는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
 
+<!-- agctx:generated:usage:check:start -->
 ```bash
 agctx check [--refresh] [<project>]
 ```
+
+종료 코드: `0` 성공 · `1` 뒤처짐 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:check:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -522,9 +606,13 @@ behind            -  the source repository has a newer commit (ddf3742)
 
 한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않으며, CLI로만 제공한다.
 
+<!-- agctx:generated:usage:explain:start -->
 ```bash
 agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
 ```
+
+종료 코드: `0` 성공 · `4` 전달 누락 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:explain:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -637,9 +725,13 @@ $ agctx explain --json --agent claude services/payments
 
 `explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
 
+<!-- agctx:generated:usage:verify:start -->
 ```bash
 agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]
 ```
+
+종료 코드: `0` 성공 · `4` 전달 누락 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:verify:end -->
 
 | 옵션·인자 | 설명 |
 | --- | --- |
@@ -711,9 +803,13 @@ claude       pass         session log /Users/me/.claude/projects/-work-shop/0f1c
 
 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 준다. `profile apply`·`profile sync`가 파일을 썼거나 이미 최신이면 저장소의 실제 경로·프로필·고정 여부를 `~/.agctx/repos.json`에 기록한다. dry-run과 확인 거절은 기록하지 않는다.
 
+<!-- agctx:generated:usage:repos.list:start -->
 ```bash
 agctx repos list [--profile <name>] [--prune]
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:repos.list:end -->
 
 | 옵션 | 설명 |
 | --- | --- |
@@ -740,9 +836,13 @@ ok       client-a         -      /work/client-a-api
 
 목록의 저장소마다 `check`를 실행해 한 줄씩 보여 준다. 파일은 바꾸지 않으며 TUI 메인 메뉴의 `저장소 상태`도 같은 내용을 보여 준다.
 
+<!-- agctx:generated:usage:repos.status:start -->
 ```bash
 agctx repos status [--profile <name>] [--refresh]
 ```
+
+종료 코드: `0` 성공 · `1` 뒤처짐 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:repos.status:end -->
 
 | 옵션 | 설명 |
 | --- | --- |
@@ -767,9 +867,13 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 
 고정하지 않은 목록의 저장소를 보관함의 현재 프로필로 한 번에 동기화한다.
 
+<!-- agctx:generated:usage:repos.sync:start -->
 ```bash
 agctx repos sync [--profile <name>] [--dry-run] [--yes]
 ```
+
+종료 코드: `0` 성공 · `1` 뒤처짐 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:repos.sync:end -->
 
 | 옵션 | 설명 |
 | --- | --- |
@@ -811,9 +915,13 @@ pinned      /work/orders-api  pinned to e086802; update it with agctx repos pr -
 
 프로필이 바뀐 저장소마다 갱신을 새 브랜치에 커밋해 push하고 `gh`로 PR을 연다. 사용자의 작업 폴더·체크아웃·로컬 브랜치는 바꾸지 않는다.
 
+<!-- agctx:generated:usage:repos.pr:start -->
 ```bash
 agctx repos pr [--profile <name>] [--targets <file>] [--base <branch>] [--draft] [--message <text>] [--dry-run] [--yes]
 ```
+
+종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
+<!-- agctx:generated:usage:repos.pr:end -->
 
 | 옵션 | 설명 |
 | --- | --- |
@@ -860,9 +968,13 @@ git@github.com:acme/payments-api.git
 
 CLI와 생성 지침의 언어를 저장한다.
 
+<!-- agctx:generated:usage:config.lang:start -->
 ```bash
-agctx config lang <ko|en>
+agctx config lang <en|ko>
 ```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:config.lang:end -->
 
 허용값은 `en`, `ko`이며 기본은 `en`이다. 로케일은 `--lang` → `AGCTX_LANG` → 저장된 선택 → (대화형이면 첫 실행에 한 번 물어 저장하고 비대화형이거나 `--json`이면 `en`) 순서로 정한다. `--lang`과 `AGCTX_LANG`에 허용되지 않는 값을 주면 오류로 끝나고 저장된 값이 잘못됐으면 무시한다.
 

@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
-<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts -->
-<!-- agctx-doc-sources-sha256: 3d9cf523c8aa2fc002de0c4dbc2ce95b0070358703dc1424fc3f027412b93db7 -->
+<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts -->
+<!-- agctx-doc-sources-sha256: 9c2a3a7ebdbd19d75c190abd79fe3f2945687848b1aaf5d144b90ba1531bf565 -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 
@@ -23,7 +23,7 @@ pnpm run audit
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.
 - `evals/support/git-workspace.ts`의 `makeWorkspace`는 사람마다 따로 `AGCTX_HOME`을 둔 임시 컴퓨터를 만들고, `publishProfile`·`serviceRepo`는 bare 원격과 작업 저장소를, `fakeCommands`는 PATH에 두는 가짜 `gh`·에이전트 CLI를 만든다(Windows에서는 `.cmd` 래퍼).
 - 에이전트 관련 평가는 `HOME`·`USERPROFILE`·`CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 임시 폴더로 바꿔 이 컴퓨터의 사용자 파일과 세션 기록이 섞이지 않게 한다.
-- 명령 등록부를 바꾸면 `node tools/generate-skills.ts`로 스킬의 명령 목록을 다시 만든다. 목록이 다르면 `evals/skills.test.ts`가 실패한다.
+- 명령 등록부를 바꾸면 `node tools/generate-skills.ts`와 `node tools/generate-reference.ts`로 스킬의 명령 목록과 레퍼런스의 생성 블록을 다시 만든다. 다르면 `evals/skills.test.ts`와 `evals/reference-docs.test.ts`가 실패한다.
 
 ## CI 환경
 

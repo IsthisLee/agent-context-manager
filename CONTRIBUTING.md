@@ -21,7 +21,7 @@ pnpm run check
 pnpm run pack:check
 ```
 
-명령 등록부(`src/commands/registry.ts`)를 바꾸면 `node tools/generate-skills.ts`로 `skills/*/SKILL.md`의 명령 목록을 다시 만드세요. 목록이 등록부와 다르면 `pnpm run check`가 실패합니다. 스킬 파일 구성을 바꿨다면 `node tools/skills-smoke.ts`로 skills CLI 설치 위치도 확인합니다. 이 도구는 npm에서 skills CLI를 받아 실행합니다.
+명령 등록부(`src/commands/registry.ts`)를 바꾸면 `node tools/generate-skills.ts`로 `skills/*/SKILL.md`의 명령 목록을, `node tools/generate-reference.ts`로 `docs/reference/`의 생성 블록을 다시 만드세요. 등록부와 다르면 `pnpm run check`가 실패합니다. 스킬 파일 구성을 바꿨다면 `node tools/skills-smoke.ts`로 skills CLI 설치 위치도 확인합니다. 이 도구는 npm에서 skills CLI를 받아 실행합니다.
 
 ## 변경 규칙
 

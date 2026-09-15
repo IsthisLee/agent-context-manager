@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-16
+
 ### Added
 
 - 모노레포 연결 파일: `profile apply`·`sync`가 프로젝트 안의 하위 폴더 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다. Git 저장소면 `.gitignore`로 무시한 파일을 빼고, `node_modules`·`dist` 같은 폴더와 중첩 저장소는 보지 않는다. 사람이 둔 `CLAUDE.md`와 심볼릭 링크는 건드리지 않고 `AGENTS.md`를 가져오지 않으면 경고한다. `AGENTS.md`가 없어진 연결 파일은 지우지 않고 관리만 멈춘다. `repos sync`는 연결 파일의 커밋하지 않은 변경도 확인한다. 근거는 [ADR 0020](docs/adr/0020-apm-coexistence-and-monorepo-links.md)

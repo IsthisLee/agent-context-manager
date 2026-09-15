@@ -56,41 +56,49 @@
 ### 문서 체계 및 변경 규칙
 
 
-| 문서                              | 책임                                               |
-| ------------------------------- | ------------------------------------------------ |
-| `docs/product-direction.md`     | 패키지의 목적, 책임 경계, 장기 방향의 정본                        |
-| `README.md`                     | 외부 사용자를 위한 한 페이지 패키지 소개: 핵심 문제·기능·구조·빠른 시작·문서 링크 |
-| `docs/architecture/`            | 현재 채택되어 실제로 동작하는 아키텍처                            |
-| `docs/discussion/`              | 아직 채택되지 않았거나 구현·검증 중인 주제별 논의와 계약                 |
-| `docs/adr/`                     | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력                       |
-| `docs/usage-guide.md`           | 설치부터 동기화까지 처음부터 끝까지 읽는 사용 가이드(개념·설명·문제 해결)       |
-| `docs/workflow.md`              | 구현된 기능의 사용 절차 요약과 명령 소유권                         |
-| `docs/cli-reference.md`         | 현재 구현된 CLI 명령·옵션·TUI·자동화 방식의 전체 문법              |
-| `docs/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설         |
-| `docs/repository-operations.md` | 공개 저장소 품질 게이트·릴리스·보안·기여 운영 계약                    |
-| `docs/references.md`            | 외부 근거와 참고 자료                                     |
-| `docs/README.md`                | 문서 탐색 시작점과 색인                                    |
-| `CHANGELOG.md`                  | 사용자 영향 변경과 릴리스 버전 이력                             |
+| 문서 | 책임 |
+| --- | --- |
+| `README.md` | 외부 사용자를 위한 한 페이지 패키지 소개: 핵심 문제·기능·구조·빠른 시작·문서 링크 |
+| `docs/README.md` | 문서 입구: 사용 흐름 요약, 사용자·기여자 문서 목차, ADR 색인 |
+| `docs/getting-started/` | 설치와 첫 적용·확인까지의 최소 흐름 |
+| `docs/guides/` | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM |
+| `docs/concepts/` | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인 |
+| `docs/reference/` | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·문제 해결의 정확한 사양 |
+| `docs/faq.md` | 자주 묻는 질문의 짧은 답과 정본 링크 |
+| `docs/contributing/product-direction.md` | 패키지의 목적, 책임 경계, 장기 방향의 정본 |
+| `docs/contributing/architecture.md` | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `guidance-catalog.md` |
+| `docs/contributing/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설 |
+| `docs/contributing/testing.md` | 품질 게이트와 평가 작성 방법 |
+| `docs/contributing/releasing.md` | 공개 저장소 릴리스·보안·기여 운영 계약 |
+| `docs/contributing/doc-gate.md` | 문서 소스 해시 게이트와 문서 근거 게이트 |
+| `docs/contributing/adapters.md` | 새 에이전트를 지원하는 절차 |
+| `docs/discussion/` | 아직 채택되지 않았거나 구현·검증 중인 주제별 논의와 계약 |
+| `docs/adr/` | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력 |
+| `docs/references.md` | 외부 근거와 참고 자료 |
+| `CHANGELOG.md` | 사용자 영향 변경과 릴리스 버전 이력 |
 
 
 - **README 작성 기준:** README는 패키지를 처음 검토하는 사용자를 위한 한 페이지 소개다. 목적과 해결하려는 문제, 현재 제공 기능과 아직 구현되지 않은 다음 단계의 구분, 전제 조건, 최소 시작 명령, 검증의 목적·증거 범위·한계, 동기화·생성 파일의 사용자 영향, 저장소 구조와 정본 문서 링크를 유지하라. 현재 구현되지 않은 기능을 사용 가능한 것처럼 쓰지 말고, 상세 근거·결정·논의는 각 정본 문서로 링크한다.
 - 다른 개발자·에이전트·사용자가 관찰하거나 의존하는 동작, 계약, 설정, 운영 정책, 보안 경계, 호환성이 생성·변경·폐기될 때는 작업 완료 전 같은 변경에서 해당 문서를 갱신하라.
 - **문서 배치 판정은 작성 전에 한다.** 모든 중요한 문장·표·목록은 아래 상태 중 하나를 정하고, **정본 문서를 정확히 하나만** 둔다. 다른 문서는 내용을 다시 결정하거나 확장하지 않고 짧게 요약해 정본으로 링크한다.
   
-  | 내용의 상태                        | 정본 위치                                  |
-  | ----------------------------- | -------------------------------------- |
-  | 패키지의 목적·책임 경계·장기 방향           | `docs/product-direction.md`            |
-  | 외부 사실·인용·조사 결과·도구 비교          | `docs/references.md`                   |
-  | 문제·위험·격차·우선 과제·대안·미확정 채택 여부   | `docs/discussion/architecture/topics/` |
-  | 채택되어 현재 실제로 동작하는 구조·계약        | `docs/architecture/`                   |
-  | 구현된 사용 절차 요약과 명령 소유권          | `docs/workflow.md`                     |
-  | 구현된 사용 흐름의 개념·설명·문제 해결        | `docs/usage-guide.md`                  |
-  | 구현된 CLI 명령·옵션·TUI의 전체 문법        | `docs/cli-reference.md`                |
-  | 저장소 품질 게이트·릴리스·보안 운영 절차       | `docs/repository-operations.md`        |
-  | npm·Node.js·CLI 일반 원리와 구현의 연결 해설 | `docs/implementation-principles.md`    |
-  | 되돌리기 어렵거나 장기 영향을 주는 결정의 이유·결과 | `docs/adr/`                            |
-  | 사용자 영향 변경의 버전별 기록             | `CHANGELOG.md`                         |
-  | 외부 소개·탐색용 요약                  | `README.md`, `docs/README.md`          |
+  | 내용의 상태 | 정본 위치 |
+  | --- | --- |
+  | 패키지의 목적·책임 경계·장기 방향 | `docs/contributing/product-direction.md` |
+  | 외부 사실·인용·조사 결과·도구 비교 | `docs/references.md` |
+  | 문제·위험·격차·우선 과제·대안·미확정 채택 여부 | `docs/discussion/architecture/topics/` |
+  | 채택되어 현재 실제로 동작하는 구조·계약 | `docs/contributing/architecture.md` |
+  | 설치와 첫 적용 흐름 | `docs/getting-started/` |
+  | 구현된 기능의 상황별 사용 절차 | `docs/guides/` |
+  | 구현된 동작의 원리와 이유 | `docs/concepts/` |
+  | 구현된 CLI 명령·옵션·종료 코드·파일 형식의 정확한 사양 | `docs/reference/` |
+  | 저장소 품질 게이트와 평가 작성 | `docs/contributing/testing.md` |
+  | 릴리스·보안 운영 절차 | `docs/contributing/releasing.md` |
+  | 문서 게이트 계약과 대상 | `docs/contributing/doc-gate.md` |
+  | npm·Node.js·CLI 일반 원리와 구현의 연결 해설 | `docs/contributing/implementation-principles.md` |
+  | 되돌리기 어렵거나 장기 영향을 주는 결정의 이유·결과 | `docs/adr/` |
+  | 사용자 영향 변경의 버전별 기록 | `CHANGELOG.md` |
+  | 외부 소개·탐색용 요약 | `README.md`, `docs/README.md` |
   
 - **외부 근거는 출처와 확인일을 붙여 한 곳에 둔다.** 외부 도구의 동작, 공식 문서 내용, 표준, 연구 결과는 `docs/references.md`에 출처 링크와 함께 쓴다. 링크한 문서를 열어 그 주장이 실제로 있는지 확인한 뒤, 외부 링크가 있는 목록 항목·표 행 끝에 `(확인일: YYYY-MM-DD)`를 붙여라. 공식 문서·비공식 자료·직접 실험을 구분하고, 실험이면 실행한 명령과 결과를 남겨라. 다른 문서는 외부 사실을 다시 쓰지 말고 `references.md`의 절로 링크한다. 코드 동작 문서의 근거는 `파일:줄`과 소스 해시 게이트로, `CHANGELOG.md`의 근거는 ADR 링크로 충분하다. 확인일 표기는 `check:docs`가 강제한다.
 - **정본·상태·링크 확인을 변경 완료 조건으로 한다.** 문서를 추가·수정할 때 (1) 내용 상태와 정본 위치, (2) 기존 정본과의 중복·모순 여부, (3) 다른 문서에는 요약·링크만 둘지, (4) 논의가 결정 또는 구현으로 승격됐는지를 확인하라. 이 확인 없이 편의상 이미 열어 둔 문서에 내용을 섞어 넣지 마라.
@@ -117,13 +125,13 @@
   - 예시는 핵심을 보여 주는 최소 분량으로 줄이고, 생략한 곳은 `…`로 표시한다.
   - 그림과 예시는 본문을 대체하지 않는다. 바로 아래에 보여 주는 대상과 핵심 결론을 한두 문장으로 적고, 논의가 바뀌면 그림·예시·본문을 같은 변경에서 함께 고쳐라.
   - 한 문장으로 충분히 설명되는 내용에 장식용 그림이나 예시를 넣지 마라.
-- 이 원칙은 `references.md`뿐 아니라 README, 제품 방향, 아키텍처, 워크플로, ADR, discussion 전체에 적용된다. 예를 들어 외부 비교에서 나온 TODO는 비교 문서가 아니라 논의 문서에, 구현 중 발견한 장기 결정은 작업 문서가 아니라 ADR에, 확정 전 제안은 현재 아키텍처 문서가 아니라 discussion에 둔다.
+- 이 원칙은 `references.md`뿐 아니라 README, 사용자 문서, 제품 방향, 아키텍처, ADR, discussion 전체에 적용된다. 예를 들어 외부 비교에서 나온 TODO는 비교 문서가 아니라 논의 문서에, 구현 중 발견한 장기 결정은 작업 문서가 아니라 ADR에, 확정 전 제안은 현재 아키텍처 문서가 아니라 discussion에 둔다.
 - 문서에는 최종 동작 또는 정책, 영향 범위, 검증 증거, 알려진 제약과 후속 작업을 기록하라.
-- 논의가 확정되면 ADR을 작성하고 `docs/architecture/`에 현재 사실을 반영하라. 구현되지 않은 목표를 현재 아키텍처나 운영 가이드에 사실처럼 기록하지 마라.
-- 패키지의 목적·책임 경계·기본 작업 모델을 바꾸면 `docs/product-direction.md`, 관련 README 요약, ADR을 같은 변경에서 갱신하라.
-- 문서화 방향, 문서별 책임, 문서화 구조, 이 표의 위치 또는 변경 규칙 자체를 바꾸면 이 `AGENTS.md` 섹션과 `docs/product-direction.md`, `docs/README.md`를 같은 변경에서 함께 갱신하라.
+- 논의가 확정되면 ADR을 작성하고 `docs/contributing/architecture.md`와 사용자 문서에 현재 사실을 반영하라. 구현되지 않은 목표를 현재 아키텍처나 운영 가이드에 사실처럼 기록하지 마라.
+- 패키지의 목적·책임 경계·기본 작업 모델을 바꾸면 `docs/contributing/product-direction.md`, 관련 README 요약, ADR을 같은 변경에서 갱신하라.
+- 문서화 방향, 문서별 책임, 문서화 구조, 이 표의 위치 또는 변경 규칙 자체를 바꾸면 이 `AGENTS.md` 섹션과 `docs/contributing/product-direction.md`, `docs/README.md`를 같은 변경에서 함께 갱신하라.
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
-- 공개 저장소 운영 계약을 변경할 때는 `docs/repository-operations.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
+- 공개 저장소 운영 계약을 변경할 때는 `docs/contributing/releasing.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.
-- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서(코드를 `파일:줄`로 인용하거나 특정 소스의 동작을 서술하는 문서)를 새로 만들거나 고칠 때는 문서 상단에 소스 해시 마커 두 줄을 두고 `node tools/check-docs.ts --stamp`로 해시를 기록하라. 마커는 `<!-- agctx-doc-sources: <소스 경로들> -->`와 `<!-- agctx-doc-sources-sha256: <값> -->`이다. 핀한 소스가 바뀌면 `pnpm run check`의 `check:docs`가 실패하므로 문서를 다시 읽어 드리프트를 고친 뒤 다시 stamp하라. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다. 게이트 계약과 현재 대상 목록의 정본은 `docs/repository-operations.md`의 "문서 소스 해시 게이트" 절이다.
+- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서(코드를 `파일:줄`로 인용하거나 특정 소스의 동작을 서술하는 문서)를 새로 만들거나 고칠 때는 문서 상단에 소스 해시 마커 두 줄을 두고 `node tools/check-docs.ts --stamp`로 해시를 기록하라. 마커는 `<!-- agctx-doc-sources: <소스 경로들> -->`와 `<!-- agctx-doc-sources-sha256: <값> -->`이다. 핀한 소스가 바뀌면 `pnpm run check`의 `check:docs`가 실패하므로 문서를 다시 읽어 드리프트를 고친 뒤 다시 stamp하라. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다. 게이트 계약과 현재 대상 목록의 정본은 `docs/contributing/doc-gate.md`의 "문서 소스 해시 게이트" 절이다.
 

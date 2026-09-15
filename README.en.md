@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: f8a661ff763108b413f1dda03fe1e2ccc6289052cc326031a6be016d1997afc1 -->
+<!-- agctx-doc-sources-sha256: b282d848ec97be0667ee542896cd0a799c38c85536661fd9ecbfa765993c3f31 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -39,7 +39,7 @@ One flow — `profile create` → `profile setup` → `profile apply`/`profile s
 
 agctx manages those standards as a Profile and, when you apply it to a project, generates the files that compatible agents read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
 
-> Team and organization Profiles are shared through a Git remote. Members receive them with `profile clone` and `pull`, and CI runs `agctx check` to confirm that a repository reflects the latest guidance. The steps are in the [usage guide](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#팀과-git으로-공유하기) (Korean).
+> Team and organization Profiles are shared through a Git remote. Members receive them with `profile clone` and `pull`, and CI runs `agctx check` to confirm that a repository reflects the latest guidance. The steps are in the [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md) (Korean).
 
 ## Core goals
 
@@ -75,7 +75,7 @@ Individual developers can also split and reuse per-project `Personal` Profiles a
 
 ## Getting Started
 
-> The full usage — from installation to synchronization — is documented step by step in the [usage guide](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md).
+> The full usage — from installation to synchronization — is documented step by step in the [quick start (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md).
 
 > Runtime: Node.js 22 LTS or newer
 
@@ -110,7 +110,7 @@ Applied profile company to /path/to/project
 
 Personal Profiles are stored under `~/.agctx/profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
 
-agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, to check that agents receive the guidance, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, to check that agents receive the guidance, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/contributing/architecture.md) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
 
 ### Hand it to an agent
 
@@ -120,7 +120,7 @@ Install the agent skills and you can hand agctx to an agent in plain language, s
 DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
 ```
 
-The skills CLI sends anonymous usage data; with `DISABLE_TELEMETRY=1` as above it sends none. Details are in the [usage guide](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#에이전트에게-agctx를-맡기기).
+The skills CLI sends anonymous usage data; with `DISABLE_TELEMETRY=1` as above it sends none. Details are in the [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md).
 
 ### Scope of verification
 
@@ -219,11 +219,12 @@ The current sequence is profile creation → guidance setup → project applicat
 
 ## Documentation
 
-- [Product direction](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/product-direction.md)
-- [Implementation principles](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/implementation-principles.md)
-- [User workflow](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/workflow.md)
-- [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/cli-reference.md)
-- [Repository operations](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/repository-operations.md)
+- [Documentation index](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md): usage flow and full table of contents (Korean)
+- [Quick start](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md)
+- [Guides by situation](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드)
+- [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md)
+- [Product direction](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/contributing/product-direction.md)
+- [Contributor docs](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#기여자-문서)
 - [Architecture implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)
 - [External references](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md)
 

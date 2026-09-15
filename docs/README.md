@@ -1,21 +1,70 @@
-# Agent Context Manager 문서 안내
+# Agent Context Manager 문서
 
 문서는 정본을 하나만 두고, 다른 문서에서는 요약과 링크만 제공한다. 외부 사실은 [외부 참고 문헌](references.md)에 출처 링크와 확인일을 붙여 두고, ADR은 머리말의 `근거`로 그 절을 가리킨다.
 
-## 문서 목록
+## 사용 흐름
 
-1. [제품 방향](product-direction.md): 목표·범위·용어·단계별 완료 기준
-2. [구현 원리](implementation-principles.md): npm·Node.js·CLI 생태계 원리와 이 패키지 구현의 연결
-3. [현재 아키텍처](architecture/): 현재 구현된 구조와 소유권
-   - [기능 구현 메커니즘](architecture/implementation-mechanics.md): 현재 구현된 각 기능의 내부 코드 로직
-   - [지침 카탈로그](architecture/guidance-catalog.md): 프로필에 배포되는 공통 지침 6개의 정본과 작성 경로
-4. [아키텍처 구현 계획](discussion/architecture/): 단계별 계약과 미구현 기능
-5. [사용 가이드](usage-guide.md): 설치부터 동기화까지 처음부터 끝까지 읽는 사용 설명
-6. [사용자 워크플로](workflow.md): 순서와 명령 소유권을 빠르게 보는 절차 요약
-7. [CLI Reference](cli-reference.md): 모든 명령어·옵션·TUI·자동화 방식
-8. [공개 저장소 운영](repository-operations.md): 품질 게이트·릴리스·보안·기여 정책
-9. [외부 참고 문헌](references.md): 연구·사례·비교 도구
-10. [결정 기록](adr/): 확정된 장기 결정
+1. **설치와 첫 적용**: [설치](getting-started/installation.md) → [빠른 시작](getting-started/quick-start.md)(`profile create` → `profile setup` → `profile apply` → `check`)
+2. **개발**: 평소 쓰는 에이전트에 작업을 맡긴다. 에이전트가 읽는 파일은 [에이전트가 읽는 지침 파일](concepts/agent-loading.md)에 있다
+3. **갱신**: 프로필을 고친 뒤 `profile sync` 또는 `repos sync`, 고정한 저장소는 `repos pr`([갱신 방식 고르기](guides/update-policies.md))
+4. **팀 공유와 CI**: `profile connect`·`push`·`clone`·`pull`([팀과 Git으로 공유하기](guides/team-sharing.md)), CI의 `check`([CI와 자동화에서 쓰기](guides/ci.md))
+5. **전달 확인과 스킬**: `explain`·`verify`([전달 확인과 검증의 범위](concepts/verification.md)), 에이전트용 스킬([에이전트에게 agctx를 맡기기](guides/agent-skills.md))
+6. **문제가 생기면**: [문제 해결](reference/troubleshooting.md)
+
+## 사용자 문서
+
+### 처음 시작
+
+- [설치](getting-started/installation.md)
+- [빠른 시작](getting-started/quick-start.md)
+
+### 목적별 가이드
+
+| 상황 | 가이드 |
+| --- | --- |
+| 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](guides/multi-repo-individual.md) |
+| 고객사가 여럿 | [고객사 여러 곳의 규칙 따로 쓰기](guides/multi-client.md) |
+| 팀 프로필 공유 | [팀과 Git으로 공유하기](guides/team-sharing.md) |
+| 모노레포 | [모노레포에서 쓰기](guides/monorepo.md) |
+| 고정 여부와 예약 봇 | [갱신 방식 고르기: 고정과 예약 봇](guides/update-policies.md) |
+| CI와 스크립트 | [CI와 자동화에서 쓰기](guides/ci.md) |
+| 에이전트에게 맡기기 | [에이전트에게 agctx를 맡기기](guides/agent-skills.md) |
+| Microsoft APM과 함께 | [APM과 함께 쓰기](guides/apm-coexistence.md) |
+
+### 개념
+
+- [agctx를 쓰는 이유와 책임 경계](concepts/why-agctx.md)
+- [프로필과 적용](concepts/profiles.md)
+- [관리 영역과 확장 영역](concepts/managed-and-extension-areas.md)
+- [에이전트가 읽는 지침 파일](concepts/agent-loading.md)
+- [전달 확인과 검증의 범위](concepts/verification.md)
+
+### 레퍼런스
+
+- [CLI Reference](reference/cli.md)
+- [종료 코드](reference/exit-codes.md)
+- [파일 형식과 저장 위치](reference/file-formats.md)
+- [지원 에이전트](reference/supported-agents.md)
+- [문제 해결](reference/troubleshooting.md)
+- [자주 묻는 질문](faq.md)
+
+## 기여자 문서
+
+- [제품 방향](contributing/product-direction.md): 목표·범위·용어·단계별 완료 기준
+- [현재 아키텍처](contributing/architecture.md): 현재 구현된 구조와 소유권
+  - [기능 구현 메커니즘](contributing/implementation-mechanics.md): 각 기능의 내부 코드 로직
+  - [지침 카탈로그](contributing/guidance-catalog.md): 프로필에 배포되는 공통 지침 6개
+- [구현 원리](contributing/implementation-principles.md): npm·Node.js·CLI 원리와 구현의 연결
+- [테스트와 품질 게이트](contributing/testing.md)
+- [릴리스와 저장소 운영](contributing/releasing.md)
+- [문서 게이트](contributing/doc-gate.md)
+- [새 에이전트 지원하기](contributing/adapters.md)
+- [아키텍처 구현 계획](discussion/architecture/): 단계별 계약과 미구현 기능
+- [외부 참고 문헌](references.md): 연구·사례·비교 도구
+
+## 결정 기록
+
+- [결정 기록](adr/): 확정된 장기 결정
     - [ADR 0001: 제품 범위](adr/0001-product-scope.md) (일부 대체: ADR 0019)
     - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md) (일부 대체: ADR 0014)
     - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md) (일부 대체: ADR 0013)

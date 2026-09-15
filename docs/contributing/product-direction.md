@@ -24,7 +24,7 @@
 - **Why:** 안정적인 기본 환경을 제공하면서도 회사·팀·프로젝트에 필요한 지침만 선택할 수 있도록 하기 위해서다.
 - **How:** `agctx profile create <name>`으로 프로필을 생성한 뒤 `agctx profile setup <name>`에서 하네스 동작, TDD, 변경 검토, 검증, 문서화, 보안 지침을 선택하고 프로필의 `AGENTS.md`에 반영한다.
 
-외부 연구와 사례는 [`references.md`](references.md)에서 검토한다. 외부 자료는 선택의 근거이며, 실제 기본 지침의 정본은 프로필의 `AGENTS.md`와 패키지 템플릿이다. 외부 자료는 링크한 문서에서 주장을 확인한 날짜와 함께 기록한다.
+외부 연구와 사례는 [`references.md`](../references.md)에서 검토한다. 외부 자료는 선택의 근거이며, 실제 기본 지침의 정본은 프로필의 `AGENTS.md`와 패키지 템플릿이다. 외부 자료는 링크한 문서에서 주장을 확인한 날짜와 함께 기록한다.
 
 ## 범위와 경계
 
@@ -54,19 +54,19 @@ flowchart LR
   O5 -.->|"세션 기록 읽기 · 요청하면 한 번 실행"| AGENT
 ```
 
-agctx는 공통 지침을 프로젝트까지 전달하고, 그 지침이 에이전트에 닿는지 확인하는 데서 멈춘다. 확인할 때도 에이전트가 남긴 세션 기록을 읽기만 하고, 사용자가 `verify --probe`로 요청할 때만 도구를 끈 에이전트를 임시 사본에서 한 번 실행한다. 에이전트는 프로젝트 파일을 직접 읽고 오른쪽의 기능은 에이전트나 다른 도구가 맡는다. 결정은 [ADR 0019](adr/0019-explain-verify-and-agent-skills.md)에 있다.
+agctx는 공통 지침을 프로젝트까지 전달하고, 그 지침이 에이전트에 닿는지 확인하는 데서 멈춘다. 확인할 때도 에이전트가 남긴 세션 기록을 읽기만 하고, 사용자가 `verify --probe`로 요청할 때만 도구를 끈 에이전트를 임시 사본에서 한 번 실행한다. 에이전트는 프로젝트 파일을 직접 읽고 오른쪽의 기능은 에이전트나 다른 도구가 맡는다. 결정은 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)에 있다.
 
-코드베이스를 분석해 프로젝트 지침을 작성하는 일도 담당하지 않는다. 초안이 필요하면 각 에이전트의 `/init`으로 만들고 프로젝트가 다듬어 소유한다. 결정과 근거는 [ADR 0006](adr/0006-no-codebase-analysis-guidance.md)과 [`references.md`](references.md#프로젝트-지침-자동-생성에-관한-근거)에 있다.
+코드베이스를 분석해 프로젝트 지침을 작성하는 일도 담당하지 않는다. 초안이 필요하면 각 에이전트의 `/init`으로 만들고 프로젝트가 다듬어 소유한다. 결정과 근거는 [ADR 0006](../adr/0006-no-codebase-analysis-guidance.md)과 [`references.md`](../references.md#프로젝트-지침-자동-생성에-관한-근거)에 있다.
 
 프로필의 공통 지침과 프로젝트의 도메인 지침은 서로 다른 소유 영역이다. 선택한 프로필을 적용해 생성된 프로젝트 `AGENTS.md`는 에이전트가 읽는 최종 파일이지만, 프로젝트 지침이 프로필에 역으로 기록되지는 않는다.
 
-프로필은 로컬에 두거나 표준 Git 원격으로 공유한다. 팀은 `profile clone`·`pull`·`push`로 프로필을 주고받고, 프로젝트에 적용한 버전은 `agctx.project.json`에 기록해 `agctx check`로 CI에서도 확인한다. Git 호스트의 권한·리뷰는 agctx가 대신하지 않는다. 결정은 [ADR 0017](adr/0017-git-profile-sharing.md)에 있다. 한 프로필을 여러 저장소가 쓰면 `repos` 명령으로 한 번에 상태를 보고 동기화하며, 고정한 저장소는 저장소마다 PR로 새 버전을 들인다. PR의 리뷰와 병합은 각 저장소의 절차를 따른다([ADR 0018](adr/0018-multi-repository-sync.md)).
+프로필은 로컬에 두거나 표준 Git 원격으로 공유한다. 팀은 `profile clone`·`pull`·`push`로 프로필을 주고받고, 프로젝트에 적용한 버전은 `agctx.project.json`에 기록해 `agctx check`로 CI에서도 확인한다. Git 호스트의 권한·리뷰는 agctx가 대신하지 않는다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다. 한 프로필을 여러 저장소가 쓰면 `repos` 명령으로 한 번에 상태를 보고 동기화하며, 고정한 저장소는 저장소마다 PR로 새 버전을 들인다. PR의 리뷰와 병합은 각 저장소의 절차를 따른다([ADR 0018](../adr/0018-multi-repository-sync.md)).
 
 사용자가 에이전트에게 말로 agctx를 맡길 수 있도록 저장소에 에이전트용 스킬 두 개를 둔다. 진단·갱신용 `agctx`는 에이전트가 스스로 쓸 수 있고, 프로필 게시·PR용 `agctx-author`는 사용자가 이름으로 부를 때만 쓰인다. 두 스킬 모두 쓰기 명령 앞에 사용자의 승인을 받게 하며, 자연어를 명령으로 바꾸는 일은 여전히 에이전트의 몫이다.
 
 ## 로케일 정책
 
-CLI와 생성 지침은 영어(en)·한국어(ko)를 지원한다. 기본은 `en`이고 한국어는 `--lang ko`·`AGCTX_LANG=ko`·`agctx config lang ko`로 고른다. 로케일을 정하는 순서와 명령은 [CLI Reference](cli-reference.md#config-lang)에, 근거와 대안은 [ADR 0002](adr/0002-locale-i18n.md)와 [ADR 0014](adr/0014-default-locale-english.md)에 있다.
+CLI와 생성 지침은 영어(en)·한국어(ko)를 지원한다. 기본은 `en`이고 한국어는 `--lang ko`·`AGCTX_LANG=ko`·`agctx config lang ko`로 고른다. 로케일을 정하는 순서와 명령은 [CLI Reference](../reference/cli.md#config-lang)에, 근거와 대안은 [ADR 0002](../adr/0002-locale-i18n.md)와 [ADR 0014](../adr/0014-default-locale-english.md)에 있다.
 
 ## 단계별 구현 목표
 
@@ -80,4 +80,6 @@ CLI와 생성 지침은 영어(en)·한국어(ko)를 지원한다. 기본은 `en
 
 단계가 완료되기 전에는 해당 기능을 README나 현재 아키텍처에서 제공 기능으로 표현하지 않는다.
 
-문서 변경과 논의 문서의 구현 기록은 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다. 이 저장소의 개발 명령은 고정된 pnpm 환경에서 실행한다.
+문서 변경과 논의 문서의 구현 기록은 [구현 계약 및 문서 규칙](../discussion/architecture/topics/implementation-contracts.md)을 따른다. 이 저장소의 개발 명령은 고정된 pnpm 환경에서 실행한다.
+
+사용자 문서는 처음 시작·목적별 가이드·개념·레퍼런스로, 기여자 문서는 `docs/contributing/`으로 나눈다. 문서별 책임과 정본 위치는 루트 `AGENTS.md`의 문서 규칙과 [문서 안내](../README.md)에 있다.

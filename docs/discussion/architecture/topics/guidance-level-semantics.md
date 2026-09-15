@@ -28,7 +28,7 @@
 | 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) (Implemented) |
 | 후속 제안 | 없음 — 확정 시 ADR로 승격 |
 | 연관 제안 | [프로젝트 적용](project-application.md), [관리 산출물 안전](managed-artifact-safety.md) |
-| 후속 작업 | 확정 시 ADR 기록, `docs/architecture/`·`docs/workflow.md`·`CHANGELOG.md` 정합화 |
+| 후속 작업 | 확정 시 ADR 기록, `docs/contributing/architecture.md`·`docs/getting-started/quick-start.md`·`CHANGELOG.md` 정합화 |
 | 권장 다음 작업 | 레벨 정의 문구 확정 → 실패 평가 추가 → 최소 구현 → `pnpm run check` |
 
 ## 목차
@@ -178,8 +178,8 @@ flowchart TD
 | --- | --- |
 | `bin/agentic.mjs` | `levelDefinitions` 상수 추가, `setupProfile` 범례 삽입, TUI 힌트를 상수 참조로 교체 |
 | `docs/adr/` | 산출물 계약 확장이므로 신규 ADR(`0002-*`) 기록 |
-| `docs/architecture/` | 채택 후 guidance 블록에 범례가 포함된다는 현재 사실 반영 |
-| `docs/workflow.md` | setup 결과 설명에 레벨 정의 노출 반영(요약 + 이 문서 링크) |
+| `docs/contributing/architecture.md` | 채택 후 guidance 블록에 범례가 포함된다는 현재 사실 반영 |
+| `docs/getting-started/quick-start.md` | setup 결과 설명에 레벨 정의 노출 반영(요약 + 이 문서 링크) |
 | `CHANGELOG.md` | `Unreleased`에 사용자 영향(산출물·TUI에 레벨 정의 노출) 기록 |
 | `setup-and-guidance.md` | 이 제안으로 링크 |
 
@@ -193,4 +193,4 @@ flowchart TD
 - `setupProfile`(`bin/agentic.mjs`)이 guidance 블록 맨 위에 "## 적용 수준 정의" 범례를 넣는다. 포함된 항목이 하나라도 있을 때만 넣는다.
 - setup TUI의 레벨 힌트가 같은 상수를 읽는다. 사람과 에이전트가 같은 정의를 본다.
 - 평가: `evals/profile.test.mjs`가 범례 존재와 "범례 문구 == 상수"를 확인한다.
-- 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../architecture/guidance-catalog.md)에 반영했다.
+- 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../contributing/guidance-catalog.md)에 반영했다.

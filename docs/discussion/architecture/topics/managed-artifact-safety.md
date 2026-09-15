@@ -203,7 +203,7 @@ erDiagram
 - 첫 `profile apply` 이후 사용자 수정, 반복 `profile sync`, 프로필 변경, 프로필 삭제를 포함한 격리 평가
 - TUI·CLI·`agctx profile list`에서 동일한 안전 정책에 접근할 수 있는지 여부
 
-이 논의가 채택되면 현재 아키텍처, CLI Reference, 사용자 워크플로, 관련 ADR을 같은 변경에서 갱신한다. 현재는 사용자 영역 보존·관리 영역 갱신·dry-run·수동 관리 영역 수정 중단·대상 preflight·파일 단위 원자적 교체·충돌 diff 표시·`profile resolve` 복구까지 구현되어 있으며, 여러 파일 전체 롤백과 마커 없는 파일 정책은 아직 사용자 문서에서 제공 기능으로 표현하지 않는다.
+이 논의가 채택되면 현재 아키텍처, CLI Reference, 사용자 문서, 관련 ADR을 같은 변경에서 갱신한다. 현재는 사용자 영역 보존·관리 영역 갱신·dry-run·수동 관리 영역 수정 중단·대상 preflight·파일 단위 원자적 교체·충돌 diff 표시·`profile resolve` 복구까지 구현되어 있으며, 여러 파일 전체 롤백과 마커 없는 파일 정책은 아직 사용자 문서에서 제공 기능으로 표현하지 않는다.
 
 #### 구현 기록: 충돌 표시와 resolve
 
@@ -231,7 +231,7 @@ flowchart TD
 #### 구현 기록: APM 생성 파일 보호와 모노레포 연결 파일 (2026-09-16)
 
 * **결정:** [ADR 0020](../../../adr/0020-apm-coexistence-and-monorepo-links.md). APM이 기본 모드에서 통째로 다시 만드는 `AGENTS.md`·`CLAUDE.md`에는 관리 영역을 더하지 않고 멈춘다. `AGENTS.md`의 APM `managed_section` 블록은 프로젝트 영역의 내용으로 보고 그대로 둔다. 하위 폴더의 `AGENTS.md`마다 옆에 관리 블록만 담은 `CLAUDE.md` 연결 파일을 만들고, 사람이 둔 `CLAUDE.md`는 건드리지 않는다.
-* **구현:** `src/project/apm.ts`(생성 표시 판정), `src/project/links.ts`(하위 `AGENTS.md` 찾기·사람이 둔 연결 확인), `src/project/plan.ts`(연결 파일 계획과 경고), `templates/CLAUDE.link.md`, `src/repos/sync.ts`(연결 파일도 커밋하지 않은 변경 검사에 포함). 사용법은 [CLI Reference](../../../cli-reference.md#profile-apply)에 있다.
+* **구현:** `src/project/apm.ts`(생성 표시 판정), `src/project/links.ts`(하위 `AGENTS.md` 찾기·사람이 둔 연결 확인), `src/project/plan.ts`(연결 파일 계획과 경고), `templates/CLAUDE.link.md`, `src/repos/sync.ts`(연결 파일도 커밋하지 않은 변경 검사에 포함). 사용법은 [CLI Reference](../../../reference/cli.md#profile-apply)에 있다.
 * **평가:** `evals/apm-coexistence.test.ts` 3개, `evals/monorepo-links.test.ts` 3개. 실제 apm-cli 0.30.0과 함께 두 적용 순서를 실행했다([외부 근거](../../../references.md#apm과-함께-쓰기-근거)).
 * **계획과 달라진 점:**
   - "마커 없는 파일은 자동 덮어쓰지 않음"은 다른 도구가 통째로 다시 만드는 파일부터 적용했다. 사람이 쓴 루트 `CLAUDE.md`에 관리 블록을 덧붙이는 기존 동작은 그대로다.

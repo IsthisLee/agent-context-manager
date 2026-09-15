@@ -37,13 +37,13 @@ flowchart LR
 
 | 내용 | 정본 |
 | --- | --- |
-| 제품 목표·범위·용어 | `docs/product-direction.md` |
-| 현재 구현 | `docs/architecture/` |
+| 제품 목표·범위·용어 | `docs/contributing/product-direction.md` |
+| 현재 구현 | `docs/contributing/architecture.md` |
 | 미구현 계약·단계 계획 | `docs/discussion/architecture/` |
 | 외부 근거 | `docs/references.md` |
-| 사용 흐름의 설명·문제 해결 | `docs/usage-guide.md` |
-| 사용 절차 요약·명령 소유권 | `docs/workflow.md` |
-| CLI 명령·옵션·TUI 문법 | `docs/cli-reference.md` |
+| 설치·상황별 사용 절차·동작 원리 | `docs/getting-started/`, `docs/guides/`, `docs/concepts/` |
+| 사용 흐름 요약·명령 소유권 | `docs/README.md`, `docs/concepts/why-agctx.md` |
+| CLI 명령·옵션·종료 코드·파일 형식 | `docs/reference/` |
 | 결정 이력 | `docs/adr/` |
 
 같은 사실을 여러 문서에서 다시 정의하지 않는다. 요약이 필요한 문서는 정본으로 링크한다.
@@ -58,7 +58,7 @@ flowchart LR
   I -->|"다음 부분 구현"| I
   I -->|"남은 계약까지 구현"| D["Implemented<br/>마지막 구현 기록 추가"]
   P -->|"한 번에 전체 구현"| D
-  D --> SYNC["논의 색인 상태 · 권장 다음 작업 갱신<br/>현재 사실은 docs/architecture/ · 결정은 ADR"]
+  D --> SYNC["논의 색인 상태 · 권장 다음 작업 갱신<br/>현재 사실은 docs/contributing/architecture.md · 결정은 ADR"]
 ```
 
 구현이 한 단계 진행될 때마다 논의 문서에 기록이 하나씩 쌓인다. 상태를 바꾸는 변경과 기록을 추가하는 변경은 같은 커밋이나 PR에 들어간다.
@@ -66,7 +66,7 @@ flowchart LR
 | 시점 | 논의 문서에서 갱신할 것 |
 | --- | --- |
 | 일부 계약을 구현했을 때 | 상태를 `Implementing`으로 바꾸고 구현한 범위마다 구현 기록을 하나 추가한다. 논의 색인의 상태와 제안 요약의 `권장 다음 작업`을 남은 계약 기준으로 고친다. |
-| 남은 계약까지 모두 구현했을 때 | 상태를 `Implemented`로 바꾸고 마지막 구현 기록을 추가한다. 논의 색인의 상태를 맞추고 현재 사실은 `docs/architecture/`에, 되돌리기 어려운 결정은 ADR에 옮긴다. |
+| 남은 계약까지 모두 구현했을 때 | 상태를 `Implemented`로 바꾸고 마지막 구현 기록을 추가한다. 논의 색인의 상태를 맞추고 현재 사실은 `docs/contributing/architecture.md`에, 되돌리기 어려운 결정은 ADR에 옮긴다. |
 | 구현하면서 계약이 제안과 달라졌을 때 | 제안 본문을 지우지 않는다. 달라진 내용과 이유를 구현 기록의 `계획과 달라진 점`에 적는다. |
 
 ```markdown

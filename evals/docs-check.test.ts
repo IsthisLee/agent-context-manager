@@ -62,7 +62,7 @@ test('documentation checker keeps document-system entry points linked to the can
 test('documentation checker protects the public repository operations contract', () => {
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
 
-  assert.match(checker, /repository-operations\.md/);
+  assert.match(checker, /releasing\.md/);
   assert.match(checker, /CONTRIBUTING\.md/);
   assert.match(checker, /SECURITY\.md/);
 });

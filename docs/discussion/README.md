@@ -1,6 +1,6 @@
 # 설계 논의
 
-제품 방향을 구현 단계로 분해하고, 아직 결정이 필요하거나 구현 중인 계약을 기록한다. 확정된 제품 방향은 [`../product-direction.md`](../product-direction.md), 현재 동작은 [`../architecture/`](../architecture/)에 둔다.
+제품 방향을 구현 단계로 분해하고, 아직 결정이 필요하거나 구현 중인 계약을 기록한다. 확정된 제품 방향은 [`../contributing/product-direction.md`](../contributing/product-direction.md), 현재 동작은 [`../contributing/architecture.md`](../contributing/architecture.md)에 둔다.
 
 ## 논의 원칙
 
@@ -19,9 +19,9 @@
 flowchart LR
   P["Proposed<br/>문제·대안·미확정 계약"] -->|구현 착수| I["Implementing<br/>일부 구현 · 나머지 논의"]
   I -->|코드·평가 완료| D["Implemented<br/>구현 기록 추가"]
-  D --> ARCH["docs/architecture/<br/>현재 동작"]
+  D --> ARCH["docs/contributing/architecture.md<br/>현재 동작"]
   D --> RM["README<br/>현재 기능으로 소개"]
   D -->|되돌리기 어려운 결정| ADR["docs/adr/<br/>결정 이력"]
 ```
 
-토픽은 `Proposed`로 시작해 일부가 구현되면 `Implementing`, 코드와 평가가 끝나면 `Implemented`가 된다. 구현된 사실은 `docs/architecture/`와 README로 옮기며 되돌리기 어려운 결정은 ADR로 남긴다. 논의 문서에는 제안과 구현 기록이 이력으로 남는다.
+토픽은 `Proposed`로 시작해 일부가 구현되면 `Implementing`, 코드와 평가가 끝나면 `Implemented`가 된다. 구현된 사실은 `docs/contributing/architecture.md`와 README로 옮기며 되돌리기 어려운 결정은 ADR로 남긴다. 논의 문서에는 제안과 구현 기록이 이력으로 남는다.

@@ -61,7 +61,7 @@
 - 공개 저장소 운영 문서와 기여·보안·행동규범 안내
 - Node.js 24 LTS·26 Current CI, npm tarball 검사, Dependabot 설정, provenance 배포 workflow
 - OpenSSF Scorecard workflow와 README의 자동 계산 점수 뱃지
-- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/architecture/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 사용 가이드와 지침 카탈로그에 명시
+- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/contributing/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 사용 가이드와 지침 카탈로그에 명시
 - `setup` 산출물에 `recommended`/`strict`의 뜻을 정의하는 "적용 수준 정의" 범례를 추가하고 setup TUI 힌트와 같은 문구를 공유. 배포되는 6개 지침을 근거 기반으로 다시 씀(하네스는 "작게 유지·선택적 확장" 반영). 근거는 [ADR 0005](docs/adr/0005-guidance-level-semantics.md)
 
 ### Changed

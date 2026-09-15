@@ -185,9 +185,9 @@ function checkDocumentationGovernance() {
   const proposalFormat = path.join(root, 'docs', 'discussion', 'architecture', 'topics', 'implementation-contracts.md');
   const requiredReferences = [
     path.join(root, 'AGENTS.md'),
-    path.join(root, 'docs', 'product-direction.md'),
+    path.join(root, 'docs', 'contributing', 'product-direction.md'),
     path.join(root, 'docs', 'README.md'),
-    path.join(root, 'docs', 'repository-operations.md')
+    path.join(root, 'docs', 'contributing', 'releasing.md')
   ];
 
   const formatContent = fs.readFileSync(proposalFormat, 'utf8');

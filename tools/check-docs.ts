@@ -170,9 +170,9 @@ function checkReadme() {
     if (!content.includes(heading)) errors.push(`README.md: missing required section ${heading}`);
   }
   for (const requiredText of [
-    '@isthis/agentic',
+    'agent-context-manager',
     'npm install -g',
-    'agt',
+    'agctx',
     'docs/discussion/architecture/',
     '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 개발 지침은',
     '개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정'
@@ -224,8 +224,8 @@ function checkChangelog() {
 // sha256 of those files. When any listed source changes, the recorded hash no
 // longer matches and `pnpm run check` fails, forcing a re-read of the document.
 // `--stamp` re-records the hash after a human has re-verified the document.
-const DOC_SOURCES_LIST = /<!--\s*agentic-doc-sources:\s*([^\n]+?)\s*-->/;
-const DOC_SOURCES_HASH = /<!--\s*agentic-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
+const DOC_SOURCES_LIST = /<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/;
+const DOC_SOURCES_HASH = /<!--\s*agctx-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
 
 function docSourceSpec(content: string) {
   const listMatch = content.match(DOC_SOURCES_LIST);
@@ -280,11 +280,11 @@ function checkDocSources() {
     if (!spec) continue;
     const relative = path.relative(root, markdownFile);
     if (!spec.listMatch || !spec.hashMatch) {
-      errors.push(`${relative}: doc-source marker needs both the agentic-doc-sources and agentic-doc-sources-sha256 lines`);
+      errors.push(`${relative}: doc-source marker needs both the agctx-doc-sources and agctx-doc-sources-sha256 lines`);
       continue;
     }
     if (!spec.sources.length) {
-      errors.push(`${relative}: agentic-doc-sources list is empty`);
+      errors.push(`${relative}: agctx-doc-sources list is empty`);
       continue;
     }
     const computed = computeDocSourcesHash(spec.sources);
@@ -317,7 +317,7 @@ function stampDocSources() {
       continue;
     }
     if (spec.hashMatch[1] === computed.digest) continue;
-    fs.writeFileSync(markdownFile, content.replace(DOC_SOURCES_HASH, `<!-- agentic-doc-sources-sha256: ${computed.digest} -->`));
+    fs.writeFileSync(markdownFile, content.replace(DOC_SOURCES_HASH, `<!-- agctx-doc-sources-sha256: ${computed.digest} -->`));
     updated.push(path.relative(root, markdownFile));
   }
   if (updated.length) {

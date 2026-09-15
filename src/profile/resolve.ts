@@ -1,7 +1,6 @@
 import path from 'node:path';
 import { hasFlag } from '../commands/args.ts';
 import { _ } from '../i18n/index.ts';
-import { cliName } from '../shared/runtime.ts';
 import type { ConflictedFile, PlannedChange } from '../shared/types.ts';
 import { assertProjectDirectory, boundProfile, planFor, printConflicts, readProjectConfig } from './apply.ts';
 import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from '../project/conflicts.ts';
@@ -42,7 +41,7 @@ function mergeWithEditor(file: ConflictedFile, base: string): string {
   const mergedRegion = managedRegion(file.kind, merged.content);
   const hasBoundary = file.kind === 'agents' ? mergedRegion !== merged.content.trimEnd() : mergedRegion !== null;
   if (!mergedRegion || !hasBoundary) {
-    throw new Error(`Merge result for ${file.rel} has no Agentic managed area. Keep the managed markers (the extension heading in AGENTS.md) and run resolve again. Result kept at ${merged.resultPath}`);
+    throw new Error(`Merge result for ${file.rel} has no agctx managed area. Keep the managed markers (the extension heading in AGENTS.md) and run resolve again. Result kept at ${merged.resultPath}`);
   }
   if (regionHash(mergedRegion) === regionHash(file.nextRegion)) {
     merged.cleanup();
@@ -64,8 +63,8 @@ export function resolveProject(values: readonly string[]): { conflicts: number }
   if (positional.length > 1) throw new Error('profile resolve takes only <project>.');
   const targetDir = path.resolve(process.cwd(), positional[0] || '.');
   assertProjectDirectory(targetDir);
-  const name = boundProfile(readProjectConfig(path.join(targetDir, 'agentic.project.json')));
-  if (!name) throw new Error('profile resolve requires a project already applied with `agentic profile apply <name> <project>`.');
+  const name = boundProfile(readProjectConfig(path.join(targetDir, 'agctx.project.json')));
+  if (!name) throw new Error('profile resolve requires a project already applied with `agctx profile apply <name> <project>`.');
   const dryRun = hasFlag(values, 'dry-run');
   const plan = planFor(name, targetDir);
   if (!plan.conflicts.length) {
@@ -108,7 +107,7 @@ export function resolveProject(values: readonly string[]): { conflicts: number }
     printConflicts(unresolved);
     throw new Error([
       `Cannot tell your edits from profile changes in: ${unresolved.map(file => file.rel).join(', ')}. The last applied version is unknown.`,
-      `  Keep what you need outside the managed area, then run: ${cliName()} profile resolve --discard ${targetDir}`,
+      `  Keep what you need outside the managed area, then run: agctx profile resolve --discard ${targetDir}`,
       `  --discard backs up each file under ${BACKUP_DIR}/ before regenerating it.`
     ].join('\n'));
   }

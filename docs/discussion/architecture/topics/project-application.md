@@ -15,7 +15,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자·Agentic CLI·프로필·대상 프로젝트 |
+| 대상 계층 | 사용자·agctx CLI·프로필·대상 프로젝트 |
 | 결정할 것 | 적용 명령, 대상 파일, 기존 `AGENTS.md` 병합, 승인·dry-run, 프로필 선택 기록 |
 | 중요도 | Critical — 실제 사용자 프로젝트를 변경하는 가장 큰 경계 |
 
@@ -27,7 +27,7 @@
 | 선행 제안 | [프로필 모델과 저장소](profile-model.md), [setup과 지침 옵션](setup-and-guidance.md) |
 | 후속 제안 | [에이전트 산출물 동기화](agent-sync.md) |
 | 연관 제안 | 없음 |
-| 후속 작업 | `agentic profile apply <name> <project>`와 병합·dry-run 평가 |
+| 후속 작업 | `agctx profile apply <name> <project>`와 병합·dry-run 평가 |
 | 권장 다음 작업 | 기존 도메인 규칙을 보존하는 최소 병합 규칙 확정 |
 
 ## 목표 계약
@@ -36,14 +36,14 @@
 
 ```mermaid
 flowchart LR
-  PA["프로필 AGENTS.md<br/>공통 지침 정본"] -->|읽기만| CMD["agentic profile apply<br/>프로필 이름 · 프로젝트 경로"]
+  PA["프로필 AGENTS.md<br/>공통 지침 정본"] -->|읽기만| CMD["agctx profile apply<br/>프로필 이름 · 프로젝트 경로"]
   CMD --> PJ
   CMD --> PTR
   CMD --> META
   subgraph PROJ["대상 프로젝트"]
     PJ["AGENTS.md<br/>공통 지침 영역 + 프로젝트 도메인 지침 영역"]
     PTR["에이전트별 포인터"]
-    META["agentic.project.json<br/>선택한 프로필 기록"]
+    META["agctx.project.json<br/>선택한 프로필 기록"]
   end
 ```
 
@@ -53,7 +53,7 @@ flowchart LR
 
 #### 구현 기록: 프로필 프로젝트 적용
 
-* **결정:** `agentic profile apply <name> <project>`가 선택 프로필을 프로젝트에 적용하고 `agentic.project.json`에 선택을 기록한다.
+* **결정:** `agctx profile apply <name> <project>`가 선택 프로필을 프로젝트에 적용하고 `agctx.project.json`에 선택을 기록한다.
 * **구현:** 공통 `AGENTS.md`, 에이전트별 포인터, 프로젝트 확장 영역 병합.
 * **평가:** 프로필 적용·재동기화·프로필 원본 불변·존재하지 않는 프로필의 무변경 실패를 확인.
 * **제약:** 복잡한 충돌 시각화·백업 기반 복구·관리 파일 manifest는 후속 작업이다.

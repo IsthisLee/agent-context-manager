@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { resolveLocale, SUPPORTED_LOCALES, DEFAULT_LOCALE } from '../src/i18n/index.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const cli = path.join(repoRoot, 'src', 'agentic.ts');
+const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
 function hasHangul(text: string) {
   return /[가-힣]/.test(text);
@@ -17,7 +17,7 @@ function hasHangul(text: string) {
 function run(home: string, args: string[], env: NodeJS.ProcessEnv = {}) {
   return execFileSync(process.execPath, [cli, ...args], {
     cwd: repoRoot,
-    env: { ...process.env, AGENTIC_HOME: home, ...env },
+    env: { ...process.env, AGCTX_HOME: home, ...env },
     encoding: 'utf8'
   });
 }
@@ -25,7 +25,7 @@ function run(home: string, args: string[], env: NodeJS.ProcessEnv = {}) {
 function buildProject(home: string, env: NodeJS.ProcessEnv = {}) {
   run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
   run(home, ['profile', 'setup', 'demo', '--harness', 'strict', '--tdd', 'strict', '--review', 'strict', '--verification', 'strict', '--documentation', 'strict', '--security', 'strict'], env);
-  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-proj-'));
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-proj-'));
   run(home, ['profile', 'apply', 'demo', project], env);
   return fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
 }
@@ -41,11 +41,11 @@ test('resolveLocale follows the fixed precedence order', () => {
 
 test('resolveLocale rejects an unsupported flag or env value', () => {
   assert.throws(() => resolveLocale({ flag: 'fr' }), /--lang must be one of: ko, en/);
-  assert.throws(() => resolveLocale({ env: 'jp' }), /AGENTIC_LANG must be one of: ko, en/);
+  assert.throws(() => resolveLocale({ env: 'jp' }), /AGCTX_LANG must be one of: ko, en/);
 });
 
 test('default (non-interactive) locale keeps Korean generated guidance', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-ko-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-ko-'));
   try {
     const agents = buildProject(home);
     assert.ok(hasHangul(agents), 'ko AGENTS.md should still contain Korean guidance');
@@ -57,10 +57,10 @@ test('default (non-interactive) locale keeps Korean generated guidance', () => {
   }
 });
 
-test('AGENTIC_LANG=en generates guidance with no Korean characters', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-en-'));
+test('AGCTX_LANG=en generates guidance with no Korean characters', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-'));
   try {
-    const agents = buildProject(home, { AGENTIC_LANG: 'en' });
+    const agents = buildProject(home, { AGCTX_LANG: 'en' });
     assert.equal(hasHangul(agents), false, 'en AGENTS.md must contain no Korean characters');
     assert.match(agents, /Project rule extensions/);
     assert.match(agents, /^## Change review$/m);
@@ -70,10 +70,10 @@ test('AGENTIC_LANG=en generates guidance with no Korean characters', () => {
   }
 });
 
-test('AGENTIC_LANG=en sync preserves domain rules added under the extension section', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-en-sync-'));
-  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-en-sync-proj-'));
-  const env = { AGENTIC_LANG: 'en' };
+test('AGCTX_LANG=en sync preserves domain rules added under the extension section', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-sync-'));
+  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-sync-proj-'));
+  const env = { AGCTX_LANG: 'en' };
   try {
     run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
     run(home, ['profile', 'apply', 'demo', project], env);
@@ -94,12 +94,12 @@ test('AGENTIC_LANG=en sync preserves domain rules added under the extension sect
 });
 
 test('a saved config.json locale is honored with no flag or env', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfg-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfg-'));
   try {
-    fs.mkdirSync(path.join(home, '.agentic'), { recursive: true });
-    fs.writeFileSync(path.join(home, '.agentic', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+    fs.mkdirSync(home, { recursive: true });
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
     run(home, ['profile', 'create', 'demo', '--scope', 'team']);
-    const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-cfgproj-'));
+    const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfgproj-'));
     run(home, ['profile', 'apply', 'demo', project]);
     assert.equal(hasHangul(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8')), false);
   } finally {
@@ -108,10 +108,10 @@ test('a saved config.json locale is honored with no flag or env', () => {
 });
 
 test('config lang persists the selected locale', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-save-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-save-'));
   try {
     run(home, ['config', 'lang', 'en']);
-    const config = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'config.json'), 'utf8'));
+    const config = JSON.parse(fs.readFileSync(path.join(home, 'config.json'), 'utf8'));
     assert.equal(config.locale, 'en');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -119,11 +119,11 @@ test('config lang persists the selected locale', () => {
 });
 
 test('an unsupported --lang value exits non-zero', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-i18n-bad-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-bad-'));
   try {
     const result = spawnSync(process.execPath, [cli, 'profile', 'list', '--lang', 'fr'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.notEqual(result.status, 0);

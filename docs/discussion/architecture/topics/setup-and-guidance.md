@@ -15,7 +15,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자·Agentic CLI·프로필 `AGENTS.md` |
+| 대상 계층 | 사용자·agctx CLI·프로필 `AGENTS.md` |
 | 결정할 것 | preset 목록, 기본값, 옵션 schema, 대화형·비대화형 동작, 재실행·삭제 정책 |
 | 중요도 | High — 프로필의 실제 정책을 결정하는 사용자 경계 |
 
@@ -32,14 +32,14 @@
 
 ## 목표 계약
 
-`agentic profile setup <name>`은 프로필의 설정만 변경한다. 프로젝트 파일이나 프로젝트의 도메인 `AGENTS.md`는 변경하지 않는다. 세부 옵션을 생략하면 현재 설정을 기본값으로 보여 주는 TUI에서 항목별 수준을 입력한다.
+`agctx profile setup <name>`은 프로필의 설정만 변경한다. 프로젝트 파일이나 프로젝트의 도메인 `AGENTS.md`는 변경하지 않는다. 세부 옵션을 생략하면 현재 설정을 기본값으로 보여 주는 TUI에서 항목별 수준을 입력한다.
 
 권장 옵션은 `recommended`, `strict`, `off`처럼 의미가 명확한 값으로 제공한다. 외부 연구는 선택 근거로 사용하되, 연구 결과를 보편적 성공 보장처럼 표현하지 않는다.
 
 예상 예시:
 
 ```bash
-agentic profile setup company \
+agctx profile setup company \
   --tdd recommended \
   --review recommended \
   --verification recommended \
@@ -52,7 +52,7 @@ setup은 기존 선택을 보여 주고 사용자의 승인 없이 정책을 제
 #### 구현 기록: 프로필 setup
 
 * **결정:** 지침 항목별 `off`, `recommended`, `strict`를 사용하며 기본값은 `recommended`다.
-* **구현:** `agentic profile setup [<name>]`이 프로필 metadata와 `AGENTS.md`를 갱신한다. 프로필을 생략하면 scope·이름을 함께 표시하는 선택 메뉴를 사용하고, 세부 플래그를 생략하면 설명·현재값·적용 수준을 보여 주는 지침별 TUI를 사용한다. 전체 설정 요약을 승인한 뒤 저장하며, `off` 항목은 프로필 지침에서 제외한다.
+* **구현:** `agctx profile setup [<name>]`이 프로필 metadata와 `AGENTS.md`를 갱신한다. 프로필을 생략하면 scope·이름을 함께 표시하는 선택 메뉴를 사용하고, 세부 플래그를 생략하면 설명·현재값·적용 수준을 보여 주는 지침별 TUI를 사용한다. 전체 설정 요약을 승인한 뒤 저장하며, `off` 항목은 프로필 지침에서 제외한다.
 * **평가:** `evals/core.test.mjs`에서 선택·제외·scope 분류·TUI·프로필 경계 보존을 확인.
 * **제약:** TUI는 터미널 환경에서만 활성화되며, CI·스크립트에서는 비대화형 flags 또는 stdin 입력을 사용한다.
 * **다음 단계:** preset 파일 분리와 사용자 승인 diff의 세분화.
@@ -61,7 +61,7 @@ setup은 기존 선택을 보여 주고 사용자의 승인 없이 정책을 제
 
 ```mermaid
 flowchart TD
-  CMD["agentic profile setup"] --> FLAG{"지침 플래그가 있는가?"}
+  CMD["agctx profile setup"] --> FLAG{"지침 플래그가 있는가?"}
   FLAG -->|있음| NAMED{"프로필 이름이 있는가?"}
   NAMED -->|없음| ERR["오류 · 변경 없음"]
   NAMED -->|있음| SAVE["setupProfile<br/>값 검증 · 생략한 항목은 현재값 또는 recommended"]
@@ -76,7 +76,7 @@ flowchart TD
   SUMMARY --> OK{"승인?"}
   OK -->|아니오| CANCEL["취소 · 변경 없음"]
   OK -->|예| SAVE
-  SAVE --> META["agentic-profile.json<br/>settings · updatedAt"]
+  SAVE --> META["profile.json<br/>settings · updatedAt"]
   SAVE --> AGENTS["프로필 AGENTS.md<br/>guidance 블록 · off 항목 제외"]
 ```
 

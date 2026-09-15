@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 제안 목표 | `apply` 전에 대상 프로젝트에 이미 있는 에이전트 규칙 파일·폴더를 스캔해 사용자에게 보고하고, 무엇을 어디에 생성·갱신할지 가시성과 동의를 준다. |
-| 제안 이유 | 현재 `apply`·`sync`는 하드코딩된 고정 경로 집합에만 쓴다(`AGENTS.md`, `CLAUDE.md`, `.agents/rules/agentic.md`). 프로젝트가 이미 다른 위치나 다른 도구의 규칙(루트 `GEMINI.md`, 단수 `.agent/rules/`, 구형 `.cursorrules`, `.windsurfrules`, `.clinerules` 등)을 갖고 있어도 발견하지 못한다. 그래서 사용자는 기존 규칙과 새 산출물의 관계를 모른 채 적용하게 되고, 두 곳이 따로 노는 상태를 사후에야 알아챈다. |
+| 제안 이유 | 현재 `apply`·`sync`는 하드코딩된 고정 경로 집합에만 쓴다(`AGENTS.md`, `CLAUDE.md`, `.agents/rules/agctx.md`). 프로젝트가 이미 다른 위치나 다른 도구의 규칙(루트 `GEMINI.md`, 단수 `.agent/rules/`, 구형 `.cursorrules`, `.windsurfrules`, `.clinerules` 등)을 갖고 있어도 발견하지 못한다. 그래서 사용자는 기존 규칙과 새 산출물의 관계를 모른 채 적용하게 되고, 두 곳이 따로 노는 상태를 사후에야 알아챈다. |
 
 > 병합 자체는 이미 비파괴적이다. 이 제안은 "깨진 병합을 고친다"가 아니라 "적용 전에 기존 규칙 위치를 스캔·보고해 가시성과 동의를 준다"이다. 기존 merge·drift 계약을 재구현하지 않고 참조한다.
 
@@ -17,7 +17,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자·AI 에이전트·Agentic CLI/TUI·대상 프로젝트 |
+| 대상 계층 | 사용자·AI 에이전트·agctx CLI/TUI·대상 프로젝트 |
 | 결정할 것 | 스캔 대상 경로 목록의 정본, 보고 형식(사람용·기계 판독), `--dry-run`과의 관계, 동의 없이는 모델링되지 않은 경로에 쓰지 않는다는 경계 |
 | 중요도 | Medium — 기존 merge·drift 안전장치로 데이터 손실 위험은 낮고, 사용자 경험(가시성·동의)을 높인다. |
 
@@ -26,9 +26,9 @@
 | 항목 | 내용 |
 | --- | --- |
 | 선행 작업 | 현재 산출물 매핑과 파일 소유 경계 |
-| 선행 제안 | [에이전트 산출물 동기화](agent-sync.md), [Agentic 관리 산출물의 안전한 동기화](managed-artifact-safety.md), [프로젝트 적용](project-application.md) |
+| 선행 제안 | [에이전트 산출물 동기화](agent-sync.md), [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md), [프로젝트 적용](project-application.md) |
 | 후속 제안 | 모델링되지 않은 경로 채택(adopt) 정책, 도구별 경로 레지스트리 |
-| 연관 제안 | [자연어 요청을 통한 Agentic 사용](agent-mediated-usage.md)의 기계 판독 보고 스키마 |
+| 연관 제안 | [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)의 기계 판독 보고 스키마 |
 | 후속 작업 | 스캔 대상 경로 레지스트리를 확정하고, 보고 스키마와 평가 시나리오를 만든다. |
 | 권장 다음 작업 | 읽기 전용 스캔·보고를 먼저 만들고, 모델링되지 않은 경로에 쓰는 동작은 별도 결정으로 분리한다. |
 
@@ -53,7 +53,7 @@ flowchart LR
   subgraph W["쓰기 대상 · 모델링된 경로"]
     A1["AGENTS.md"]
     A2["CLAUDE.md"]
-    A3[".agents/rules/agentic.md"]
+    A3[".agents/rules/agctx.md"]
   end
   subgraph N["발견하지 못하는 경로 · 탐지 후보"]
     B1["GEMINI.md"]

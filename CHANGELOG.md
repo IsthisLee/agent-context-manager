@@ -6,27 +6,27 @@
 
 ### Added
 
-- `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agentic/backups/`에 백업한 뒤 다시 만들고, `--edit`은 자동 해결 결과로 채운 VS Code 3-way merge 편집기를 열고 결과에서 관리 영역 밖의 내용을 가져온다(관리 영역은 다시 만들므로 저장 시 포매터가 바꿔도 된다). `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
-- `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agentic/base/`에 기록하고 `.agentic/.gitignore`로 백업 폴더를 커밋에서 제외
+- `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agctx/backups/`에 백업한 뒤 다시 만들고, `--edit`은 자동 해결 결과로 채운 VS Code 3-way merge 편집기를 열고 결과에서 관리 영역 밖의 내용을 가져온다(관리 영역은 다시 만들므로 저장 시 포매터가 바꿔도 된다). `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
+- `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agctx/base/`에 기록하고 `.agctx/.gitignore`로 백업 폴더를 커밋에서 제외
 
 ### Changed
 
 - 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
 
-- **호환성 파괴:** 프로필 저장 위치를 `~/.agentic/profiles/<name>`로, 언어 설정을 `~/.agentic/config.json`으로 옮김. 이전 `~/.agentic-cores`·`~/.agentic-profiles`는 최초 실행 때 새 위치로 자동 이관하고 `config.json`을 `~/.agentic/`로 올린다. 근거는 [ADR 0007](docs/adr/0007-profile-home-layout.md)
+- **호환성 파괴:** 이름을 Agent Context Manager로 바꿈. 패키지는 `@isthis/agentic`에서 `agent-context-manager`로, 명령은 `agentic`·`agt`에서 `agctx` 하나로 바뀐다. 프로필은 `~/.agctx/profiles/<name>/`(`profile.json`, `AGENTS.md`), 언어 설정은 `~/.agctx/config.json`에 둔다. 환경 변수는 `AGCTX_HOME`(데이터 폴더 자체를 가리킴)과 `AGCTX_LANG`이다. 프로젝트 파일은 `agctx.project.json`, `.agctx/`, `.agents/rules/agctx.md`이고 관리 표지는 `agctx:managed`다. 이전 이름의 홈과 프로젝트 파일은 읽거나 옮기지 않으므로 프로필을 다시 만들고 프로젝트에 다시 적용한다. 근거는 [ADR 0013](docs/adr/0013-rename-agent-context-manager.md)
 - 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
 - 런타임 의존성 `diff`(jsdiff) 추가
 - 소스를 TypeScript로 옮김. 설치본은 `src/`를 컴파일한 `dist/`의 JavaScript이며 설치·실행 방법은 그대로다. 저장소 개발에는 Node.js 22.18 이상이 필요하고, `pnpm run check`가 문법 검사 대신 TypeScript 형식 검사를 실행한다. 근거는 [ADR 0012](docs/adr/0012-typescript-source.md)
 
 ### Removed
 
-- **호환성 파괴:** Cursor(`.cursor/rules/agentic.mdc`)와 GitHub Copilot(`.github/copilot-instructions.md`) 지침 파일을 더 이상 만들거나 동기화하지 않는다. 지원 에이전트는 Codex(`AGENTS.md`)·Claude Code·Antigravity다. 이미 만든 두 파일과 `.agentic/base/`의 base 파일은 지우지 않으므로 필요 없으면 직접 지운다. 근거는 [ADR 0011](docs/adr/0011-supported-agents.md)
+- **호환성 파괴:** Cursor(`.cursor/rules/agentic.mdc`)와 GitHub Copilot(`.github/copilot-instructions.md`) 지침 파일을 더 이상 만들거나 동기화하지 않는다. 지원 에이전트는 Codex(`AGENTS.md`)·Claude Code·Antigravity다. 이미 만든 두 파일은 지우지 않으므로 필요 없으면 직접 지운다. 근거는 [ADR 0011](docs/adr/0011-supported-agents.md)
 
 ### Fixed
 
-- Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록하고 이전 `\` 키도 읽는다
+- Windows에서 포인터 파일의 관리 hash를 `\` 경로 키로 기록하고 `/` 경로로 조회해 수동 수정을 감지하지 못할 수 있던 문제를 고침. 이제 `/` 키로 기록한다
 - 에이전트 규칙 파일의 frontmatter가 관리 마커 뒤에 놓여 파일 첫 줄에서 시작하지 않던 문제를 고침. 이제 템플릿 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다. 이전 버전이 만든 파일은 다음 `sync`에서 충돌 없이 고쳐진다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
-- Antigravity가 `.agents/rules/agentic.md`를 로드하지 않던 문제를 고침. 템플릿에 `trigger: always_on` frontmatter를 추가했다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
+- Antigravity가 규칙 파일(`.agents/rules/agctx.md`)을 로드하지 않던 문제를 고침. 템플릿에 `trigger: always_on` frontmatter를 추가했다. 근거는 [ADR 0009](docs/adr/0009-agent-rule-frontmatter.md)
 
 ## [0.2.0] - 2026-09-14
 

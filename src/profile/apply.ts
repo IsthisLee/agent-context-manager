@@ -3,14 +3,14 @@ import path from 'node:path';
 import { hasFlag, parseFlag } from '../commands/args.ts';
 import { _ } from '../i18n/index.ts';
 import { readProfile } from './store.ts';
-import { cliName, PACKAGE_ROOT } from '../shared/runtime.ts';
+import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan } from '../shared/types.ts';
 import { formatDiff } from '../project/conflicts.ts';
 import { planProject, writePlan } from '../project/plan.ts';
 
 export function renderProfileAgents(profile: Profile, projectName: string): string {
   const content = fs.readFileSync(profile.instructionsPath, 'utf8').trimEnd();
-  return `${content}\n\n> Applied from Agentic Profile: ${profile.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
+  return `${content}\n\n> Applied from agctx profile: ${profile.metadata.name}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
 export function getProjectName(targetDir: string): string {
@@ -45,9 +45,9 @@ export function readProjectConfig(configPath: string): ProjectConfig {
   }
 }
 
-/** The profile a project is bound to, reading the current key and the pre-rename `core` key. */
+/** The profile a project is bound to. */
 export function boundProfile(projectConfig: ProjectConfig): string | null {
-  return projectConfig.profile || projectConfig.core || null;
+  return projectConfig.profile || null;
 }
 
 /** Positional arguments for `profile apply`: `<name> [<project>]`. */
@@ -56,9 +56,9 @@ export function applyArgs(values: readonly string[]): { name: string | null; tar
   return { name: positional[0] || null, targetPath: positional[1] || '.' };
 }
 
-export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agentic/blob/main/docs/usage-guide.md#관리-영역을-고쳐서-멈췄을-때';
+export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#관리-영역을-고쳐서-멈췄을-때';
 
-/** Raised when managed areas were edited outside Agentic; carries the conflicting files. */
+/** Raised when managed areas were edited outside agctx; carries the conflicting files. */
 export class ConflictError extends Error {
   conflicts: ConflictedFile[];
 
@@ -70,16 +70,16 @@ export class ConflictError extends Error {
 
 export function conflictError(conflicts: ConflictedFile[], targetDir: string): ConflictError {
   return new ConflictError([
-    `Managed file changed outside Agentic: ${conflicts.map(file => file.rel).join(', ')}`,
-    `  See the difference:  ${cliName()} profile sync --dry-run ${targetDir}`,
-    `  Resolve it:          ${cliName()} profile resolve ${targetDir}`,
+    `Managed file changed outside agctx: ${conflicts.map(file => file.rel).join(', ')}`,
+    `  See the difference:  agctx profile sync --dry-run ${targetDir}`,
+    `  Resolve it:          agctx profile resolve ${targetDir}`,
     `  Guide: ${CONFLICT_GUIDE}`
   ].join('\n'), conflicts);
 }
 
 export function planFor(name: string, targetDir: string, overrides?: Map<string, string | null>): ProjectPlan {
   const profile = readProfile(name);
-  const projectConfig = readProjectConfig(path.join(targetDir, 'agentic.project.json'));
+  const projectConfig = readProjectConfig(path.join(targetDir, 'agctx.project.json'));
   const projectName = getProjectName(targetDir);
   return planProject({
     packageRoot: PACKAGE_ROOT,
@@ -110,11 +110,11 @@ export function printConflicts(conflicts: readonly ConflictedFile[]): void {
       console.log('Edits inside the managed area since the last apply:');
       console.log(formatDiff(`last-applied/${file.rel}`, `current/${file.rel}`, file.conflict.base, file.currentRegion ?? ''));
       if (file.nextRegion !== file.conflict.base) {
-        console.log('Profile or template changes Agentic will write:');
+        console.log('Profile or template changes agctx will write:');
         console.log(formatDiff(`last-applied/${file.rel}`, `next/${file.rel}`, file.conflict.base, file.nextRegion ?? ''));
       }
     } else {
-      console.log('The last applied version is unknown. Current managed area compared with what Agentic will write:');
+      console.log('The last applied version is unknown. Current managed area compared with what agctx will write:');
       console.log(formatDiff(`current/${file.rel}`, `next/${file.rel}`, file.currentRegion ?? '', file.nextRegion ?? ''));
     }
   }
@@ -141,22 +141,22 @@ export function applyProfile(values: readonly string[]): void {
 
 /**
  * Refresh the profile a project is already bound to. `sync` never switches the
- * bound profile: naming a profile (a second positional, or `--profile`/`--core`)
+ * bound profile: naming a profile (a second positional, or `--profile`)
  * is rejected so bulk refreshes cannot silently rebind a project.
  */
 export function syncProject(values: readonly string[]): void {
-  if (parseFlag(values, 'profile') || parseFlag(values, 'core')) {
-    throw new Error('profile sync does not switch profiles. To switch, use `agentic profile apply <name> <project>`.');
+  if (parseFlag(values, 'profile')) {
+    throw new Error('profile sync does not switch profiles. To switch, use `agctx profile apply <name> <project>`.');
   }
   const positional = values.filter(value => !value.startsWith('--'));
   if (positional.length > 1) {
-    throw new Error('profile sync takes only <project>. To switch profiles, use `agentic profile apply <name> <project>`.');
+    throw new Error('profile sync takes only <project>. To switch profiles, use `agctx profile apply <name> <project>`.');
   }
   const targetPath = positional[0] || '.';
   const targetDir = path.resolve(process.cwd(), targetPath);
   assertProjectDirectory(targetDir);
-  const selectionPath = path.join(targetDir, 'agentic.project.json');
+  const selectionPath = path.join(targetDir, 'agctx.project.json');
   const selected = boundProfile(readProjectConfig(selectionPath));
-  if (!selected) throw new Error('profile sync requires a project already applied with `agentic profile apply <name> <project>`.');
+  if (!selected) throw new Error('profile sync requires a project already applied with `agctx profile apply <name> <project>`.');
   applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 }

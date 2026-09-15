@@ -6,7 +6,7 @@ import path from 'node:path';
 import { assertSafeTextTarget, writeTextAtomic } from '../src/shared/fs-utils.ts';
 
 test('writeTextAtomic replaces a file without leaving a temporary artifact', () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-file-safety-test-'));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-safety-test-'));
   const target = path.join(directory, 'guidance.md');
 
   try {
@@ -20,7 +20,7 @@ test('writeTextAtomic replaces a file without leaving a temporary artifact', () 
 });
 
 test('writeTextAtomic refuses to replace a symbolic-link target', () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-file-symlink-test-'));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-symlink-test-'));
   const target = path.join(directory, 'guidance.md');
   const actual = path.join(directory, 'actual.md');
 
@@ -40,7 +40,7 @@ test('writeTextAtomic refuses to replace a symbolic-link target', () => {
 });
 
 test('assertSafeTextTarget detects a symbolic link before a write plan starts', () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-safety-test-'));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-preflight-safety-test-'));
   const target = path.join(directory, 'guidance.md');
   const actual = path.join(directory, 'actual.md');
 
@@ -59,7 +59,7 @@ test('assertSafeTextTarget detects a symbolic link before a write plan starts', 
 });
 
 test('assertSafeTextTarget rejects a directory target', () => {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-directory-target-test-'));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-directory-target-test-'));
   const target = path.join(directory, 'guidance.md');
 
   try {

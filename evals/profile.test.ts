@@ -9,25 +9,25 @@ import { guidanceLevelDefinitions } from '../src/i18n/index.ts';
 import { hashManagedDocument } from '../src/project/analyzer.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const cli = path.join(repoRoot, 'src', 'agentic.ts');
+const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
 test('profile create creates a named scoped profile in the user profile directory', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-test-'));
 
   try {
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
 
-    const profileDir = path.join(home, '.agentic', 'profiles', 'company');
-    const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'agentic-profile.json'), 'utf8'));
+    const profileDir = path.join(home, 'profiles', 'company');
+    const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'profile.json'), 'utf8'));
     assert.equal(metadata.name, 'company');
     assert.equal(metadata.scope, 'company');
     assert.equal(metadata.schemaVersion, 1);
     const instructions = fs.readFileSync(path.join(profileDir, 'AGENTS.md'), 'utf8');
-    assert.match(instructions, /Agentic Profile: company/);
+    assert.match(instructions, /# Profile: company/);
     assert.match(instructions, /공통 에이전틱 개발 지침을 관리한다/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -35,17 +35,17 @@ test('profile create creates a named scoped profile in the user profile director
 });
 
 test('profile list reports registered profiles without exposing paths as the identity', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-list-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-list-test-'));
 
   try {
     execFileSync(process.execPath, [cli, 'profile', 'create', 'personal', '--scope', 'personal'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.match(output, /\[personal\]\s+personal/);
@@ -56,10 +56,10 @@ test('profile list reports registered profiles without exposing paths as the ide
 });
 
 test('profile list can filter registered profiles by scope', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-scope-list-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-scope-list-test-'));
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'personal-main', '--scope', 'personal'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company-main', '--scope', 'company'], { cwd: repoRoot, env });
     const output = execFileSync(process.execPath, [cli, 'profile', 'list', '--scope', 'company'], {
@@ -75,15 +75,15 @@ test('profile list can filter registered profiles by scope', () => {
 });
 
 test('profile list ignores malformed metadata instead of presenting an invalid profile', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-invalid-metadata-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-invalid-metadata-test-'));
 
   try {
-    const profileDir = path.join(home, '.agentic', 'profiles', 'broken');
+    const profileDir = path.join(home, 'profiles', 'broken');
     fs.mkdirSync(profileDir, { recursive: true });
-    fs.writeFileSync(path.join(profileDir, 'agentic-profile.json'), JSON.stringify({ schemaVersion: 1, name: 'broken', scope: 'unknown' }));
+    fs.writeFileSync(path.join(profileDir, 'profile.json'), JSON.stringify({ schemaVersion: 1, name: 'broken', scope: 'unknown' }));
     const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.match(output, /No profiles found/);
@@ -93,61 +93,52 @@ test('profile list ignores malformed metadata instead of presenting an invalid p
   }
 });
 
-test('a legacy .agentic-cores home migrates to .agentic/profiles on first use', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-migrate-test-'));
+test('profiles and the language setting live directly under AGCTX_HOME', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-home-layout-test-'));
 
   try {
-    const legacyDir = path.join(home, '.agentic-cores', 'legacy');
-    fs.mkdirSync(legacyDir, { recursive: true });
-    fs.writeFileSync(path.join(legacyDir, 'agentic-core.json'), JSON.stringify({ schemaVersion: 1, name: 'legacy', scope: 'team' }, null, 2) + '\n');
-    fs.writeFileSync(path.join(legacyDir, 'AGENTS.md'), '# Agentic Profile: legacy\n');
+    const env = { ...process.env, AGCTX_HOME: home };
+    execFileSync(process.execPath, [cli, 'profile', 'create', 'layout', '--scope', 'team'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'config', 'lang', 'en'], { cwd: repoRoot, env });
 
-    const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
-      cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
-      encoding: 'utf8'
-    });
-
-    assert.match(output, /\[team\]\s+legacy/);
-    assert.equal(fs.existsSync(path.join(home, '.agentic-cores')), false);
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-profile.json')), true);
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-core.json')), false);
+    assert.equal(fs.existsSync(path.join(home, 'profiles', 'layout', 'profile.json')), true);
+    assert.equal(fs.existsSync(path.join(home, 'profiles', 'layout', 'AGENTS.md')), true);
+    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, 'config.json'), 'utf8')), { locale: 'en' });
+    assert.equal(fs.existsSync(path.join(home, '.agctx')), false, 'AGCTX_HOME is the agctx folder itself, not a home directory');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('a legacy .agentic-profiles home migrates to .agentic/profiles and lifts config.json', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-migrate2-test-'));
+test('without AGCTX_HOME, agctx uses ~/.agctx and leaves an old ~/.agentic home untouched', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-default-home-test-'));
 
   try {
-    const legacyDir = path.join(home, '.agentic-profiles', 'legacy');
-    fs.mkdirSync(legacyDir, { recursive: true });
-    fs.writeFileSync(path.join(legacyDir, 'agentic-profile.json'), JSON.stringify({ schemaVersion: 1, name: 'legacy', scope: 'team' }, null, 2) + '\n');
-    fs.writeFileSync(path.join(legacyDir, 'AGENTS.md'), '# Agentic Profile: legacy\n');
-    fs.writeFileSync(path.join(home, '.agentic-profiles', 'config.json'), JSON.stringify({ locale: 'en' }, null, 2) + '\n');
+    const oldProfile = path.join(home, 'profiles', 'legacy');
+    fs.mkdirSync(oldProfile, { recursive: true });
+    fs.writeFileSync(path.join(oldProfile, 'profile.json'), JSON.stringify({ schemaVersion: 1, name: 'legacy', scope: 'team' }) + '\n');
+    fs.writeFileSync(path.join(oldProfile, 'AGENTS.md'), '# legacy\n');
+    const env: NodeJS.ProcessEnv = { ...process.env, HOME: home, USERPROFILE: home };
+    delete env.AGCTX_HOME;
 
-    const output = execFileSync(process.execPath, [cli, 'profile', 'list'], {
-      cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
-      encoding: 'utf8'
-    });
+    const output = execFileSync(process.execPath, [cli, 'profile', 'list'], { cwd: repoRoot, env, encoding: 'utf8' });
+    execFileSync(process.execPath, [cli, 'profile', 'create', 'fresh'], { cwd: repoRoot, env });
 
-    assert.match(output, /\[team\]\s+legacy/);
-    assert.equal(fs.existsSync(path.join(home, '.agentic-profiles')), false);
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'legacy', 'agentic-profile.json')), true);
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'config.json')), true);
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'config.json')), false);
+    assert.match(output, /No profiles found/);
+    assert.doesNotMatch(output, /legacy/);
+    assert.equal(fs.existsSync(path.join(oldProfile, 'profile.json')), true);
+    assert.equal(fs.existsSync(path.join(home, '.agctx', 'profiles', 'legacy')), false);
+    assert.equal(fs.existsSync(path.join(home, '.agctx', 'profiles', 'fresh', 'profile.json')), true);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
 test('setup applies selected guidance to the profile and preserves its project-independent boundary', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-setup-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-setup-test-'));
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [
       cli, 'profile', 'setup', 'team',
@@ -155,8 +146,8 @@ test('setup applies selected guidance to the profile and preserves its project-i
       '--verification', 'recommended', '--documentation', 'off', '--security', 'strict'
     ], { cwd: repoRoot, env, encoding: 'utf8' });
 
-    const profileDir = path.join(home, '.agentic', 'profiles', 'team');
-    const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'agentic-profile.json'), 'utf8'));
+    const profileDir = path.join(home, 'profiles', 'team');
+    const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       harness: 'recommended',
       tdd: 'strict',
@@ -176,14 +167,14 @@ test('setup applies selected guidance to the profile and preserves its project-i
 });
 
 test('setup writes a level-definition legend that shares its wording with the level constant', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-legend-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-legend-test-'));
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--security', 'strict'], { cwd: repoRoot, env });
 
-    const instructions = fs.readFileSync(path.join(home, '.agentic', 'profiles', 'team', 'AGENTS.md'), 'utf8');
+    const instructions = fs.readFileSync(path.join(home, 'profiles', 'team', 'AGENTS.md'), 'utf8');
     const definitions = guidanceLevelDefinitions('ko');
     assert.match(instructions, /## 적용 수준 정의/);
     assert.ok(instructions.includes(definitions.recommended), 'legend must reuse the recommended definition from the level constant');
@@ -194,28 +185,28 @@ test('setup writes a level-definition legend that shares its wording with the le
 });
 
 test('apply applies the selected profile to a project without changing the profile', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-apply-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-apply-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   fs.writeFileSync(path.join(project, 'package.json'), JSON.stringify({ name: 'sample-project', version: '1.0.0' }));
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
-    const profileAgentsBefore = fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company', 'AGENTS.md'), 'utf8');
+    const profileAgentsBefore = fs.readFileSync(path.join(home, 'profiles', 'company', 'AGENTS.md'), 'utf8');
 
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
 
     const projectAgents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
-    assert.match(projectAgents, /Agentic Profile: company/);
+    assert.match(projectAgents, /# Profile: company/);
     assert.match(projectAgents, /## TDD/);
     assert.match(projectAgents, /sample-project/);
-    const selection = JSON.parse(fs.readFileSync(path.join(project, 'agentic.project.json'), 'utf8'));
+    const selection = JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'));
     assert.equal(selection.schemaVersion, 1);
     assert.equal(selection.profile, 'company');
     assert.deepEqual(Object.keys(selection.managedHashes).map(file => file.replaceAll(path.sep, '/')).sort(), [
-      '.agents/rules/agentic.md',
+      '.agents/rules/agctx.md',
       'AGENTS.md',
       'CLAUDE.md'
     ]);
@@ -223,39 +214,39 @@ test('apply applies the selected profile to a project without changing the profi
     assert.equal(fs.existsSync(path.join(project, '.github', 'copilot-instructions.md')), false, 'Copilot is not a supported agent');
     fs.appendFileSync(path.join(project, 'CLAUDE.md'), '\n## Local Claude guidance\n\nKeep this local workflow.\n');
     execFileSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env });
-    assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from Agentic Profile: company/);
+    assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Applied from agctx profile: company/);
     assert.match(fs.readFileSync(path.join(project, 'CLAUDE.md'), 'utf8'), /Keep this local workflow/);
-    assert.equal(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
+    assert.equal(fs.readFileSync(path.join(home, 'profiles', 'company', 'AGENTS.md'), 'utf8'), profileAgentsBefore);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
 test('apply puts agent rule frontmatter first and sync repairs rule files an earlier version wrapped in the managed block', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-rule-frontmatter-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-rule-frontmatter-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   fs.writeFileSync(path.join(project, 'package.json'), JSON.stringify({ name: 'sample-project', version: '1.0.0' }));
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
 
-    const ruleRelativePath = '.agents/rules/agentic.md';
-    const rulePath = path.join(project, '.agents', 'rules', 'agentic.md');
+    const ruleRelativePath = '.agents/rules/agctx.md';
+    const rulePath = path.join(project, '.agents', 'rules', 'agctx.md');
     const rule = fs.readFileSync(rulePath, 'utf8');
     assert.ok(rule.startsWith('---\ntrigger: always_on\n---\n'),
       'Antigravity reads rule frontmatter only from the first line and loads a workspace rule on every task only with trigger: always_on');
-    assert.match(rule, /^---\ntrigger: always_on\n---\n\n<!-- agentic:managed:start -->\n/, 'the managed block starts right after the frontmatter');
+    assert.match(rule, /^---\ntrigger: always_on\n---\n\n<!-- agctx:managed:start -->\n/, 'the managed block starts right after the frontmatter');
 
     const layout = rule.match(/^(---\n[\s\S]*?\n---\n)\n?([\s\S]*)$/);
     assert.ok(layout, 'the rule file starts with frontmatter');
     const [, frontmatter, rest] = layout;
-    const earlierLayout = rest.replace('<!-- agentic:managed:start -->\n', `<!-- agentic:managed:start -->\n${frontmatter}\n`);
+    const earlierLayout = rest.replace('<!-- agctx:managed:start -->\n', `<!-- agctx:managed:start -->\n${frontmatter}\n`);
     fs.writeFileSync(rulePath, earlierLayout);
-    const configPath = path.join(project, 'agentic.project.json');
+    const configPath = path.join(project, 'agctx.project.json');
     const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     config.managedHashes[ruleRelativePath] = hashManagedDocument(earlierLayout);
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -265,7 +256,7 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
     const repaired = fs.readFileSync(rulePath, 'utf8');
     assert.ok(repaired.startsWith('---\ntrigger: always_on\n---\n'));
     assert.equal((repaired.match(/trigger: always_on/g) || []).length, 1);
-    const repairedMatch = repaired.match(/<!-- agentic:managed:start -->[\s\S]*?<!-- agentic:managed:end -->/);
+    const repairedMatch = repaired.match(/<!-- agctx:managed:start -->[\s\S]*?<!-- agctx:managed:end -->/);
     assert.ok(repairedMatch, 'the repaired rule keeps its managed block');
     const repairedBlock = repairedMatch[0];
     assert.doesNotMatch(repairedBlock, /^---$/m, 'sync moves frontmatter an earlier version wrapped in the managed block out of it');
@@ -275,12 +266,12 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
 });
 
 test('apply requires a profile name', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-apply-no-name-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-apply-no-name-test-'));
 
   try {
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.equal(result.status, 1);
@@ -291,7 +282,7 @@ test('apply requires a profile name', () => {
 });
 
 test('apply rejects an unknown profile before changing the target project', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-invalid-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-invalid-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   const packageJson = JSON.stringify({ name: 'untouched-project', version: '1.0.0' }, null, 2);
@@ -300,7 +291,7 @@ test('apply rejects an unknown profile before changing the target project', () =
   try {
     const result = execFileSync(process.execPath, [cli, 'profile', 'apply', 'missing', project], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
@@ -316,12 +307,12 @@ test('apply rejects an unknown profile before changing the target project', () =
 });
 
 test('apply rejects a file path instead of treating it as a project directory', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-file-target-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-target-test-'));
   const target = path.join(home, 'not-a-project-directory');
   fs.writeFileSync(target, 'keep this file\n');
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'directory-check'], { cwd: repoRoot, env });
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'directory-check', target], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
@@ -333,12 +324,12 @@ test('apply rejects a file path instead of treating it as a project directory', 
 });
 
 test('sync refuses to switch the bound profile', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-sync-no-switch-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-sync-no-switch-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'bound'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'create', 'other'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'bound', project], { cwd: repoRoot, env });
@@ -351,7 +342,7 @@ test('sync refuses to switch the bound profile', () => {
     assert.equal(flagged.status, 1);
     assert.match(flagged.stderr, /does not switch profiles/);
 
-    const selection = JSON.parse(fs.readFileSync(path.join(project, 'agentic.project.json'), 'utf8'));
+    const selection = JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'));
     assert.equal(selection.profile, 'bound');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -359,14 +350,14 @@ test('sync refuses to switch the bound profile', () => {
 });
 
 test('sync requires a project that was already applied', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-sync-unapplied-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-sync-unapplied-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.equal(result.status, 1);
@@ -378,35 +369,35 @@ test('sync requires a project that was already applied', () => {
 });
 
 test('sync reports invalid project metadata without changing the project', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-invalid-project-metadata-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-invalid-project-metadata-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'metadata-check'], { cwd: repoRoot, env });
-    fs.writeFileSync(path.join(project, 'agentic.project.json'), '{ invalid json\n');
+    fs.writeFileSync(path.join(project, 'agctx.project.json'), '{ invalid json\n');
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Invalid project metadata/);
-    assert.deepEqual(fs.readdirSync(project), ['agentic.project.json']);
+    assert.deepEqual(fs.readdirSync(project), ['agctx.project.json']);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('apply preserves an existing AGENTS.md that has no Agentic extension section', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-existing-agents-test-'));
+test('apply preserves an existing AGENTS.md that has no extension section', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-existing-agents-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   fs.writeFileSync(path.join(project, 'AGENTS.md'), '# Existing project guidance\n\n- Keep the API backwards compatible.\n');
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team-profile', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'team-profile', project], { cwd: repoRoot, env });
     const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
-    assert.match(agents, /Agentic Profile: team-profile/);
+    assert.match(agents, /# Profile: team-profile/);
     assert.match(agents, /Existing project guidance/);
     assert.match(agents, /Keep the API backwards compatible/);
   } finally {
@@ -415,12 +406,12 @@ test('apply preserves an existing AGENTS.md that has no Agentic extension sectio
 });
 
 test('apply dry-run reports planned files without changing the project', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-dry-run-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-dry-run-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'dry-run-profile', '--scope', 'workspace'], { cwd: repoRoot, env });
     const output = execFileSync(process.execPath, [cli, 'profile', 'apply', 'dry-run-profile', '--dry-run', project], {
       cwd: repoRoot,
@@ -436,7 +427,7 @@ test('apply dry-run reports planned files without changing the project', () => {
 });
 
 test('apply preflights all targets and leaves the project unchanged when an adapter is a symbolic link', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-symlink-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-preflight-symlink-test-'));
   const project = path.join(home, 'project');
   const outside = path.join(home, 'outside.md');
   fs.mkdirSync(path.join(project, '.agents', 'rules'), { recursive: true });
@@ -444,12 +435,12 @@ test('apply preflights all targets and leaves the project unchanged when an adap
 
   try {
     try {
-      fs.symlinkSync(outside, path.join(project, '.agents', 'rules', 'agentic.md'));
+      fs.symlinkSync(outside, path.join(project, '.agents', 'rules', 'agctx.md'));
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code === 'EPERM' || (error as NodeJS.ErrnoException).code === 'EACCES') return;
       throw error;
     }
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'preflight-profile'], { cwd: repoRoot, env });
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'preflight-profile', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
@@ -462,13 +453,13 @@ test('apply preflights all targets and leaves the project unchanged when an adap
 });
 
 test('apply preflights adapter parent paths and leaves the project unchanged when a parent is a file', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-preflight-parent-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-preflight-parent-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   fs.writeFileSync(path.join(project, '.agents'), 'not a directory\n');
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'parent-check'], { cwd: repoRoot, env });
     const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'parent-check', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
@@ -479,13 +470,13 @@ test('apply preflights adapter parent paths and leaves the project unchanged whe
   }
 });
 
-test('sync stops when an Agentic-managed block was manually changed', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-conflict-test-'));
+test('sync stops when an agctx-managed block was manually changed', () => {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-conflict-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'conflict-profile'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'conflict-profile', project], { cwd: repoRoot, env });
     const claudePath = path.join(project, 'CLAUDE.md');
@@ -493,7 +484,7 @@ test('sync stops when an Agentic-managed block was manually changed', () => {
     fs.writeFileSync(claudePath, original.replace('Follow the selected', 'Manually changed'));
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /Managed file changed outside Agentic/);
+    assert.match(result.stderr, /Managed file changed outside agctx/);
     assert.match(fs.readFileSync(claudePath, 'utf8'), /Manually changed/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -501,12 +492,12 @@ test('sync stops when an Agentic-managed block was manually changed', () => {
 });
 
 test('sync stops when the profile-owned portion of AGENTS.md was manually changed', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-agents-conflict-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-agents-conflict-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'agents-conflict'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'agents-conflict', project], { cwd: repoRoot, env });
     const agentsPath = path.join(project, 'AGENTS.md');
@@ -514,7 +505,7 @@ test('sync stops when the profile-owned portion of AGENTS.md was manually change
     fs.writeFileSync(agentsPath, original.replace('공통 에이전틱 개발 지침을 관리한다', 'Manually changed profile guidance'));
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /Managed file changed outside Agentic: AGENTS\.md/);
+    assert.match(result.stderr, /Managed file changed outside agctx: AGENTS\.md/);
     assert.match(fs.readFileSync(agentsPath, 'utf8'), /Manually changed profile guidance/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -522,8 +513,8 @@ test('sync stops when the profile-owned portion of AGENTS.md was manually change
 });
 
 test('profile create and setup support interactive TUI input when options are omitted', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-tui-test-'));
-  const env = { ...process.env, AGENTIC_HOME: home };
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-test-'));
+  const env = { ...process.env, AGCTX_HOME: home };
 
   try {
     const create = spawnSync(process.execPath, [cli, 'profile', 'create'], {
@@ -542,7 +533,7 @@ test('profile create and setup support interactive TUI input when options are om
     });
     assert.equal(setup.status, 0, setup.stderr);
 
-    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
+    const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       harness: 'recommended',
       tdd: 'strict',
@@ -557,8 +548,8 @@ test('profile create and setup support interactive TUI input when options are om
 });
 
 test('setup without a profile name lets the user choose a scope-grouped profile in the TUI', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-tui-select-test-'));
-  const env = { ...process.env, AGENTIC_HOME: home };
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-select-test-'));
+  const env = { ...process.env, AGCTX_HOME: home };
 
   try {
     execFileSync(process.execPath, [cli, 'profile', 'create', 'personal-main', '--scope', 'personal'], { cwd: repoRoot, env });
@@ -571,7 +562,7 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
     });
     assert.equal(setup.status, 0, setup.stderr);
 
-    const metadata = JSON.parse(fs.readFileSync(path.join(home, '.agentic', 'profiles', 'company-main', 'agentic-profile.json'), 'utf8'));
+    const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.equal(metadata.settings.verification, 'strict');
     assert.equal(metadata.settings.documentation, 'off');
   } finally {
@@ -579,50 +570,47 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
   }
 });
 
-test('agt is an alias for the agentic CLI', () => {
-  const result = spawnSync(process.execPath, [path.join(repoRoot, 'src', 'agt.ts'), 'help'], {
-    cwd: repoRoot,
-    encoding: 'utf8'
-  });
+test('agctx is the only command and its help names it', () => {
+  const result = spawnSync(process.execPath, [cli, 'help'], { cwd: repoRoot, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /agt \(agentic\) shared project guidance manager/);
-  assert.match(result.stdout, /agt profile create/);
-  assert.doesNotMatch(result.stdout, /  agentic profile create/);
+  assert.match(result.stdout, /^agctx \(Agent Context Manager\)/);
+  assert.match(result.stdout, /  agctx profile create/);
+  assert.doesNotMatch(result.stdout, /\bagt\b/);
+  assert.doesNotMatch(result.stdout, /agentic/i);
 
-  const primary = spawnSync(process.execPath, [cli, 'help'], { cwd: repoRoot, encoding: 'utf8' });
-  assert.equal(primary.status, 0, primary.stderr);
-  assert.match(primary.stdout, /agentic \(agt\) shared project guidance manager/);
-  assert.match(primary.stdout, /agentic profile create/);
+  const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+  assert.deepEqual(Object.keys(packageJson.bin), ['agctx']);
+  assert.equal(fs.existsSync(path.join(repoRoot, 'src', 'agt.ts')), false);
 });
 
 test('profile remove deletes only the selected profile and preserves an applied project', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-profile-remove-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-remove-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
 
   try {
-    const env = { ...process.env, AGENTIC_HOME: home };
+    const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project], { cwd: repoRoot, env });
     const view = execFileSync(process.execPath, [cli, 'profile', 'view', 'company'], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.match(view, /company\s+company/);
     execFileSync(process.execPath, [cli, 'profile', 'remove', 'company', '--yes'], { cwd: repoRoot, env });
 
-    assert.equal(fs.existsSync(path.join(home, '.agentic', 'profiles', 'company')), false);
+    assert.equal(fs.existsSync(path.join(home, 'profiles', 'company')), false);
     assert.equal(fs.existsSync(path.join(project, 'AGENTS.md')), true);
-    assert.equal(fs.existsSync(path.join(project, 'agentic.project.json')), true);
+    assert.equal(fs.existsSync(path.join(project, 'agctx.project.json')), true);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
 test('profile remove requires a name when confirmation is supplied non-interactively', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-remove-approval-test-'));
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-remove-approval-test-'));
 
   try {
     const result = spawnSync(process.execPath, [cli, 'profile', 'remove', '--yes'], {
       cwd: repoRoot,
-      env: { ...process.env, AGENTIC_HOME: home },
+      env: { ...process.env, AGCTX_HOME: home },
       encoding: 'utf8'
     });
     assert.equal(result.status, 1);

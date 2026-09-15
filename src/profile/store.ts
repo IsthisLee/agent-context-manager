@@ -86,7 +86,7 @@ export function viewProfile(name: string): void {
 }
 
 export function selectProfile(selection: string | undefined, profiles: ProfileMetadata[] = getProfiles()): string {
-  if (!profiles.length) throw new Error('No profiles found. Run `agentic profile create` first.');
+  if (!profiles.length) throw new Error('No profiles found. Run `agctx profile create` first.');
   const index = Number.parseInt(selection ?? '', 10);
   const selected = Number.isInteger(index) && index >= 1
     ? profiles[index - 1]

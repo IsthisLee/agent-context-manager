@@ -28,10 +28,10 @@ export interface MergeOutcome {
  * directory is kept until `cleanup()` so a rejected result can still be inspected.
  */
 export function mergeInVsCode({ name, current, incoming, base, result }: MergeInput): MergeOutcome {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-merge-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-merge-'));
   const paths = {
     current: path.join(dir, mergeFileName('current', name)),
-    incoming: path.join(dir, mergeFileName('agentic', name)),
+    incoming: path.join(dir, mergeFileName('agctx', name)),
     base: path.join(dir, mergeFileName('base', name)),
     result: path.join(dir, mergeFileName('result', name))
   };

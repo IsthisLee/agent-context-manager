@@ -1,6 +1,6 @@
 # 0007. 프로필 저장소를 `~/.agentic/` 아래로 모은다
 
-* **상태:** 채택됨 (Accepted)
+* **상태:** 채택됨 (Accepted), 일부 대체됨: 홈 위치 `~/.agentic/`와 자동 이관은 [ADR 0013](0013-rename-agent-context-manager.md)이 `~/.agctx/`와 이관 없음으로 바꾼다
 * **일자:** 2026-09-14
 * **결정자:** 제품 소유자·개발자
 * **관련:** [0003](0003-rename-core-to-guidance-profile.md)의 `~/.agentic-profiles` 배치를 대체한다. 현재 구조는 [현재 아키텍처](../architecture/README.md)와 [기능 구현 메커니즘](../architecture/implementation-mechanics.md)에 반영한다.

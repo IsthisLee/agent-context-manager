@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { baseFilePath, collectUserEdits, formatDiff, parseBase, relocateUserEdits, serializeBase } from '../src/project/conflicts.ts';
 
-const START = '<!-- agentic:managed:start -->';
-const END = '<!-- agentic:managed:end -->';
+const START = '<!-- agctx:managed:start -->';
+const END = '<!-- agctx:managed:end -->';
 
 test('collectUserEdits separates lines added and removed relative to the base', () => {
   const edits = collectUserEdits('a\nb\nc', 'a\nx\nc\ny');
@@ -42,8 +42,8 @@ test('formatDiff renders a unified diff of two texts', () => {
   assert.match(diff, /^\+x$/m);
 });
 
-test('base files round-trip the exact managed text under .agentic/base', () => {
-  assert.equal(baseFilePath('.agents/rules/agentic.md'), '.agentic/base/.agents/rules/agentic.md.base');
+test('base files round-trip the exact managed text under .agctx/base', () => {
+  assert.equal(baseFilePath('.agents/rules/agctx.md'), '.agctx/base/.agents/rules/agctx.md.base');
   const managed = `${START}\nmanaged\n${END}`;
   assert.equal(parseBase(serializeBase(managed)), managed);
 });

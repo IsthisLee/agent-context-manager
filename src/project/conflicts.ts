@@ -2,15 +2,15 @@ import { createTwoFilesPatch, diffLines } from 'diff';
 import type { ManagedKind } from '../shared/types.ts';
 
 /**
- * Pure helpers for showing and resolving edits made inside Agentic-managed areas.
- * A "base" is the managed area exactly as Agentic last wrote it, kept under
- * `.agentic/base/` so user edits can be told apart from later profile changes.
+ * Pure helpers for showing and resolving edits made inside agctx-managed areas.
+ * A "base" is the managed area exactly as agctx last wrote it, kept under
+ * `.agctx/base/` so user edits can be told apart from later profile changes.
  */
 
-export const MANAGED_END = '<!-- agentic:managed:end -->';
-export const BASE_DIR = '.agentic/base';
-export const BACKUP_DIR = '.agentic/backups';
-export const AGENTIC_GITIGNORE = '.agentic/.gitignore';
+export const MANAGED_END = '<!-- agctx:managed:end -->';
+export const BASE_DIR = '.agctx/base';
+export const BACKUP_DIR = '.agctx/backups';
+export const AGCTX_GITIGNORE = '.agctx/.gitignore';
 
 /** Project-relative base file for a managed file, always `/`-separated. */
 export function baseFilePath(relativePath: string): string {
@@ -60,7 +60,7 @@ export function collectUserEdits(base: string, current: string): UserEdits {
 }
 
 /**
- * Put user lines where Agentic never rewrites them: right below the managed
+ * Put user lines where agctx never rewrites them: right below the managed
  * block of a pointer file, or at the end of the AGENTS.md extension section.
  * @param content - file content whose managed area is already regenerated
  */

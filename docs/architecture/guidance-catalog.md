@@ -1,15 +1,15 @@
 # 지침 카탈로그 (배포되는 공통 지침)
 
-이 문서는 Agentic이 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
+이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
-<!-- agentic-doc-sources: src/i18n/index.ts, src/profile/setup.ts -->
-<!-- agentic-doc-sources-sha256: 74343e9c38ddc57cf1c552f15943aeacf167c4f7ab55b063709044a394f00f92 -->
+<!-- agctx-doc-sources: src/i18n/index.ts, src/profile/setup.ts -->
+<!-- agctx-doc-sources-sha256: 48bae75b66dffcabd793ee7fb4b2d5145508ad793b96b41eb5f9e57768923a8a -->
 
 ## 지침이 만들어지는 두 경로
 
 프로필의 `AGENTS.md`에 지침이 들어가는 길은 두 가지다.
 
-1. **`profile setup`이 관리하는 블록.** `setup`은 아래 6개 항목을 골라 `<!-- agentic:guidance:start --> … <!-- agentic:guidance:end -->` 블록으로 프로필 `AGENTS.md`에 쓴다. 이 블록은 `setup`을 다시 돌릴 때 통째로 교체된다.
+1. **`profile setup`이 관리하는 블록.** `setup`은 아래 6개 항목을 골라 `<!-- agctx:guidance:start --> … <!-- agctx:guidance:end -->` 블록으로 프로필 `AGENTS.md`에 쓴다. 이 블록은 `setup`을 다시 돌릴 때 통째로 교체된다.
 2. **사용자가 직접 편집.** 프로필의 `AGENTS.md`는 일반 텍스트 파일이다. 관리 블록 **바깥**에 원하는 지침을 직접 써도 된다. `setup`은 블록 안만 교체하므로 바깥 내용은 보존되고 `profile apply`로 적용할 때 프로필 `AGENTS.md` 전체가 프로젝트로 전달된다.
 
 ```mermaid
@@ -17,7 +17,7 @@ flowchart TB
   subgraph PROFILE["프로필 AGENTS.md"]
     direction TB
     TEMPLATE["템플릿 본문<br/>profile create가 생성"]
-    subgraph GUIDANCE["agentic:guidance 블록 · profile setup이 통째로 교체"]
+    subgraph GUIDANCE["agctx:guidance 블록 · profile setup이 통째로 교체"]
       LEGEND["적용 수준 정의 범례"]
       ITEMS["off가 아닌 항목의 규칙"]
     end

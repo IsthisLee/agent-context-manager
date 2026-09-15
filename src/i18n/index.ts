@@ -1,5 +1,5 @@
 /**
- * Locale resolution and message catalog for the Agentic CLI.
+ * Locale resolution and message catalog for the agctx CLI.
  *
  * The default locale is `ko`, so with no flag, environment variable, saved
  * choice, or interactive prompt the CLI behaves exactly as before. English is
@@ -35,14 +35,14 @@ export interface LocaleInputs {
 /**
  * Decide the active locale from the fixed precedence order:
  *   1. --lang flag        (this run only; invalid value throws)
- *   2. AGENTIC_LANG env    (invalid value throws)
+ *   2. AGCTX_LANG env    (invalid value throws)
  *   3. saved user choice   (invalid value ignored)
  *   4. interactive (TTY) → null, meaning the caller must prompt and save
  *      non-interactive     → DEFAULT_LOCALE (ko), the pre-i18n behavior
  */
 export function resolveLocale({ flag = null, env = null, saved = null, isTTY = false }: LocaleInputs = {}): Locale | null {
   if (flag != null) return validated('--lang', flag);
-  if (env != null && env !== '') return validated('AGENTIC_LANG', env);
+  if (env != null && env !== '') return validated('AGCTX_LANG', env);
   if (isLocale(saved)) return saved;
   if (!isTTY) return DEFAULT_LOCALE;
   return null;

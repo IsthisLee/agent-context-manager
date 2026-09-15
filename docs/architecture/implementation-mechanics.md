@@ -2,18 +2,18 @@
 
 **문서 유형:** 내부 동작 메커니즘 (유지보수자용). 현재 구현된 각 기능이 코드 안에서 어떻게 동작하는지를 기능 단위로 설명한다. npm·Node.js·CLI가 왜 그렇게 도는지의 일반 원리는 [구현 원리](../implementation-principles.md)에, 현재 구조·소유권의 정본은 [현재 아키텍처](README.md)에 있다. 이 문서는 그 사이, 이 패키지 고유의 로직을 기능별로 채운다.
 
-**작성·검증 기준:** `@isthis/agentic` `0.2.0` · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
+**작성·검증 기준:** `agent-context-manager`(게시 전) · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
 
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/profile/apply.ts:123-140`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
-<!-- agentic-doc-sources: src -->
-<!-- agentic-doc-sources-sha256: 01e7b7606f0955f4b27a9f74e42a19458745ba142b7a03257808732d114107a2 -->
+<!-- agctx-doc-sources: src -->
+<!-- agctx-doc-sources-sha256: 10508799fb799fd0a36a239db73ba55c1bf03ca70ed429fd76f323c511064596 -->
 
 ## 읽는 법
 
 - 다루는 것은 **CLI 소스(`src/`)의 로직**이다. 배포본 `dist/`는 이 소스를 컴파일한 것이라 동작이 같다. 각 절은 하나의 기능·메커니즘을 맡고 `src/` 모듈의 실제 함수에 대응한다. 다이어그램은 흐름을, 코드블록은 그 흐름을 만드는 실제 구현을 보여 준다.
 - 다루지 않는 것: 생태계 일반 원리([구현 원리](../implementation-principles.md)), 현재 구조·파일 트리·소유권 표([현재 아키텍처](README.md)), 사용자 관점 명령·옵션([CLI Reference](../cli-reference.md)), 사용 흐름([사용자 워크플로](../workflow.md)). 여기서는 이 계약들을 다시 정의하지 않고 원리 설명에 필요한 만큼만 인용한다.
-- 마커: 프로필 지침용 `<!-- agentic:guidance:* -->`와 프로젝트 산출물용 `<!-- agentic:managed:* -->`는 서로 다른 계층이다. 아래에서 구분해 적는다.
+- 마커: 프로필 지침용 `<!-- agctx:guidance:* -->`와 프로젝트 산출물용 `<!-- agctx:managed:* -->`는 서로 다른 계층이다. 아래에서 구분해 적는다.
 
 ## 모듈 지도
 
@@ -21,8 +21,7 @@
 
 ```mermaid
 flowchart LR
-  agt["src/agt.ts<br/>별칭 진입점"] --> entry["src/agentic.ts<br/>run() 호출"]
-  entry --> cli["commands/cli.ts<br/>인자·로케일·명령 분기"]
+  entry["src/agctx.ts<br/>진입점: run() 호출"] --> cli["commands/cli.ts<br/>인자·로케일·명령 분기"]
   cli --> tui["tui/<br/>메인·프로필 화면"]
   cli --> store["profile/store.ts · setup.ts<br/>프로필 저장소·지침 설정"]
   cli --> apply["profile/apply.ts<br/>apply·sync"]
@@ -48,12 +47,11 @@ flowchart LR
 
 ## 1. 진입점과 명령 분기
 
-두 진입점 `src/agentic.ts`와 `src/agt.ts` 중 `agt`는 본체를 불러오는 한 줄이다: `import './agentic.ts';`(`src/agt.ts:3`). `src/agentic.ts`도 `commands/cli.ts`의 `run()`을 부르기만 한다(`src/agentic.ts:3-5`). 로직은 모두 역할별 폴더에 있고, 모듈을 불러오는 것만으로는 CLI가 실행되지 않는다. 설치본에서는 컴파일한 `dist/agt.js`·`dist/agentic.js`가 같은 일을 한다.
+진입점 `src/agctx.ts`는 `commands/cli.ts`의 `run()`을 부르기만 한다(`src/agctx.ts:3-5`). 로직은 모두 역할별 폴더에 있고, 모듈을 불러오는 것만으로는 CLI가 실행되지 않는다. 설치본에서는 컴파일한 `dist/agctx.js`가 같은 일을 한다.
 
-인자를 읽고 `command`를 정하는 부분은 `main(argv)` 맨 앞에 있다(`src/commands/cli.ts:59-63`).
+인자를 읽고 `command`를 정하는 부분은 `main(argv)` 맨 앞에 있다(`src/commands/cli.ts:58-61`).
 
 ```ts
-setInvokedAs(argv[1]);                         // 실행한 bin 이름(agentic/agt) 기억
 const rawArgs = argv.slice(2);
 const langFlag = parseFlag(rawArgs, 'lang');   // --lang 값을 먼저 분리
 const args = stripFlag(rawArgs, 'lang');       // 나머지에서 --lang 제거
@@ -61,9 +59,9 @@ const command = args[0] || 'help';
 ```
 
 - **플래그 헬퍼**: 값 읽기 `parseFlag`(`src/commands/args.ts:1-6`), 존재 여부 `hasFlag`(`src/commands/args.ts:8-10`), 제거 `stripFlag`(`src/commands/args.ts:12-18`). `--dry-run`·`--discard`·`--edit`·`--scope`·`--yes` 등이 모두 이 헬퍼를 거친다.
-- **호출 이름 판별**: `invokedAs`는 `process.argv[1]`의 파일명에서 확장자(`.js`·`.ts`·`.mjs`)를 뗀 값이다(`setInvokedAs`, `src/shared/runtime.ts:10-12`). 설치본(`dist/agt.js`)과 저장소 실행(`src/agt.ts`) 모두 `agt`가 된다. 도움말의 명령 이름·제목과 충돌 오류가 안내하는 명령 이름을 `agt`/`agentic`에 맞춰 바꾼다(`help()`, `src/commands/help.ts:5-9`).
+- **도움말**: `help()`(`src/commands/help.ts:16-26`)가 `agctx` 명령 목록과 scope·언어 설정 방법을 출력한다.
 
-`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`src/commands/cli.ts:75-83`).
+`main()`은 로케일을 확정한 뒤 아래 표준 입력·명령 조건으로 분기한다(`src/commands/cli.ts:73-81`).
 
 ```ts
 if ((!args.length || command === '--tui') && process.stdin.isTTY) {
@@ -79,7 +77,7 @@ if ((!args.length || command === '--tui') && process.stdin.isTTY) {
 
 ```mermaid
 flowchart TD
-  A["agt / agentic 실행"] --> B["process.argv 파싱<br/>--lang 분리, command 결정"]
+  A["agctx 실행"] --> B["process.argv 파싱<br/>--lang 분리, command 결정"]
   B --> C["main(): resolveLocale로 로케일 확정"]
   C --> D{"인자 없음 또는 --tui<br/>그리고 TTY?"}
   D -->|"예"| TUI["mainTui() 대화형 루프"]
@@ -91,7 +89,7 @@ flowchart TD
   LANG --> Z
   PROF --> Z
   HELP --> Z
-  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>src/commands/cli.ts:87-92"]
+  Z -.->|"오류"| ERR["catch: stderr + process.exit(1)<br/>src/commands/cli.ts:85-90"]
 ```
 
 ## 2. 로케일 해석과 저장
@@ -101,45 +99,44 @@ flowchart TD
 ```ts
 export function resolveLocale({ flag = null, env = null, saved = null, isTTY = false }: LocaleInputs = {}): Locale | null {
   if (flag != null) return validated('--lang', flag);                   // 1) --lang
-  if (env != null && env !== '') return validated('AGENTIC_LANG', env); // 2) 환경변수
+  if (env != null && env !== '') return validated('AGCTX_LANG', env); // 2) 환경변수
   if (isLocale(saved)) return saved;                                    // 3) 저장된 선택
   if (!isTTY) return DEFAULT_LOCALE;                                    // 4a) 비TTY면 기본값 ko
   return null;                                                          // 4b) TTY면 물어봄
 }
 ```
 
-- `--lang`·`AGENTIC_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
-- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`src/commands/cli.ts:70-73`).
-- **저장 위치**: `.agentic/config.json`(`configPath`, `src/shared/home.ts:66`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`src/commands/cli.ts:15-19`).
+- `--lang`·`AGCTX_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
+- `null`이 오면 `main()`이 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다(`src/commands/cli.ts:68-71`).
+- **저장 위치**: agctx 데이터 폴더의 `config.json`이다(`configPath`, `src/shared/home.ts:20-22`). `config lang <ko|en>`은 `configLang`이 같은 경로에 저장한다(`src/commands/cli.ts:14-18`).
 - `t()`는 키를 찾고 없으면 `ko`로, 그것도 없으면 키 문자열을 그대로 돌려준다(`src/i18n/index.ts:57-64`).
 
 ## 3. 프로필 저장소 모델
 
-`profileHome()`(`src/shared/home.ts:52-63`)이 기준 위치를 정한다: `AGENTIC_HOME`이 있으면 그 아래, 없으면 `os.homedir()` 아래의 `.agentic/profiles`. 언어 설정 `config.json`은 그 위 `.agentic/`에 둔다. `AGENTIC_HOME`으로 저장 위치를 바꿀 수 있고 테스트·스모크가 이를 쓴다. `.agentic/profiles`가 없고 이전 `.agentic-profiles`나 `.agentic-cores`가 있으면 최초 접근 때 한 번 폴더를 `.agentic/profiles`로 옮기고 `config.json`을 `.agentic/`로 올린다. Core 시절 홈은 각 메타데이터도 `agentic-profile.json`으로 바꾼다(`migrateFlatHome`, `src/shared/home.ts:23-46`). best-effort이며 실패하면 크래시하지 않고 새 홈으로 진행한다.
+`agctxHome()`(`src/shared/home.ts:11-13`)가 데이터 폴더를 정한다: `AGCTX_HOME`이 있으면 그 폴더, 없으면 `os.homedir()` 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`(`profileHome`, `src/shared/home.ts:16-18`), 언어 설정은 `config.json`에 있다. 테스트·스모크는 `AGCTX_HOME`으로 임시 폴더를 쓴다. 이름을 바꾸기 전의 홈(`~/.agentic` 등)은 읽거나 옮기지 않는다([ADR 0013](../adr/0013-rename-agent-context-manager.md)).
 
 프로필 저장소와 적용 결과물의 온디스크 배치는 다음과 같다.
 
 ```text
-$AGENTIC_HOME 또는 ~/            대상 프로젝트/
-└── .agentic/                   ├── AGENTS.md              (프로필 영역 + 프로젝트 확장)
-    ├── config.json  (locale)   ├── agentic.project.json   (profile, managedHashes)
-    └── profiles/               ├── CLAUDE.md              (관리 블록)
-        └── <name>/             ├── .agents/rules/agentic.md
-            ├── agentic-profile.json└── .agentic/         (base/*.base · backups/ · .gitignore)
-            └── AGENTS.md
+$AGCTX_HOME 또는 ~/.agctx/      대상 프로젝트/
+├── config.json  (locale)       ├── AGENTS.md              (프로필 영역 + 프로젝트 확장)
+└── profiles/                   ├── agctx.project.json     (profile, managedHashes)
+    └── <name>/                 ├── CLAUDE.md              (관리 블록)
+        ├── profile.json        ├── .agents/rules/agctx.md
+        └── AGENTS.md           └── .agctx/                (base/*.base · backups/ · .gitignore)
 ```
 
 메타데이터 스키마와 프로젝트 설정의 관계를 ERD로 보면 이렇다.
 
 ```mermaid
 erDiagram
-  PROFILE ||--|| PROFILE_METADATA : "agentic-profile.json"
+  PROFILE ||--|| PROFILE_METADATA : "profile.json"
   PROFILE ||--|| PROFILE_AGENTS : "AGENTS.md"
   PROFILE ||--o{ PROJECT : "profile apply"
-  PROJECT ||--|| PROJECT_CONFIG : "agentic.project.json"
+  PROJECT ||--|| PROJECT_CONFIG : "agctx.project.json"
   PROJECT ||--|| PROJECT_AGENTS : "AGENTS.md"
   PROJECT ||--o{ POINTER_FILE : "관리 블록"
-  PROJECT ||--o{ BASE_FILE : ".agentic/base"
+  PROJECT ||--o{ BASE_FILE : ".agctx/base"
   PROFILE_METADATA {
     int schemaVersion "항상 1"
     string name "정규식 검증"
@@ -155,10 +152,10 @@ erDiagram
   }
   POINTER_FILE {
     string path "CLAUDE.md·Antigravity 규칙 2종"
-    string managedBlock "agentic:managed 블록"
+    string managedBlock "agctx:managed 블록"
   }
   BASE_FILE {
-    string path ".agentic/base/경로.base"
+    string path ".agctx/base/경로.base"
     string managedText "마지막으로 쓴 관리 영역 원문, sha256 == managedHashes"
   }
 ```
@@ -188,8 +185,8 @@ writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('
 ```ts
 const definitions = guidanceLevelDefinitions(getLocale());
 const legend = `## ${_('setup.legend.title')}\n\n- recommended: ${definitions.recommended}\n- strict: ${definitions.strict}\n\n${_('setup.legend.intro')}`;
-const start = '<!-- agentic:guidance:start -->';
-const end = '<!-- agentic:guidance:end -->';
+const start = '<!-- agctx:guidance:start -->';
+const end = '<!-- agctx:guidance:end -->';
 const body = blocks.length ? [legend, ...blocks].join('\n\n') : '';
 const block = `${start}\n\n${body}\n\n${end}`;
 const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
@@ -201,7 +198,7 @@ writeTextAtomic(profile.instructionsPath,
 
 ## 6. profile apply: 변경 계획과 적용
 
-`applyProfile`(`src/profile/apply.ts:123-140`)이 핵심이다. `applyArgs`(`src/profile/apply.ts:54-57`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑고, `planFor`(`src/profile/apply.ts:80-92`)가 프로필·프로젝트 설정·프로젝트 이름을 모아 `planProject`(`src/project/plan.ts:68-108`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다. 전체 파이프라인은 다음과 같다.
+`applyProfile`(`src/profile/apply.ts:123-140`)이 핵심이다. `applyArgs`(`src/profile/apply.ts:54-57`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑고, `planFor`(`src/profile/apply.ts:80-92`)가 프로필·프로젝트 설정·프로젝트 이름을 모아 `planProject`(`src/project/plan.ts:66-105`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다. 전체 파이프라인은 다음과 같다.
 
 ```mermaid
 flowchart TD
@@ -215,28 +212,28 @@ flowchart TD
   G -->|"아니오"| W["writePlan<br/>모든 대상 assertSafeTextTarget 후 writeTextAtomic"]
 ```
 
-`planProject`는 `AGENTS.md`와 포인터 2종마다 새 내용과 충돌 여부를 계산한다(`src/project/plan.ts:70-81`).
+`planProject`는 `AGENTS.md`와 포인터 2종마다 새 내용과 충돌 여부를 계산한다(`src/project/plan.ts:68-79`).
 
 ```ts
 const existing = overridden ? overrides.get(relativePath) ?? null : readIfExists(path.join(targetDir, relativePath));
 const regenerated = regenerate(existing);            // mergeAgentsMd 또는 mergeManagedDocument
 const currentRegion = managedRegion(kind, existing); // 지금 파일의 관리 영역
-const nextRegion = managedRegion(kind, regenerated); // Agentic이 쓸 관리 영역
+const nextRegion = managedRegion(kind, regenerated); // agctx가 쓸 관리 영역
 const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
 const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
   ? { kind: existing === null ? 'missing' as const : 'edited' as const, base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
   : null;
 ```
 
-한 파일이라도 충돌이면 쓰기 전에 멈추므로 어떤 파일도 바뀌지 않는다. dry-run에서는 `agentic.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 계산을 거치므로 같은 프로필로 다시 적용해도 충돌은 풀리지 않는다. 충돌 표시와 복구는 [14절](#14-관리-영역-충돌-표시와-profile-resolve)에 있다.
+한 파일이라도 충돌이면 쓰기 전에 멈추므로 어떤 파일도 바뀌지 않는다. dry-run에서는 `agctx.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 계산을 거치므로 같은 프로필로 다시 적용해도 충돌은 풀리지 않는다. 충돌 표시와 복구는 [14절](#14-관리-영역-충돌-표시와-profile-resolve)에 있다.
 
-- **포인터 파일 2종**(`POINTER_TEMPLATES`, `src/project/plan.ts:15-18`): `CLAUDE.md`, `.agents/rules/agentic.md`. Cursor·Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)). 템플릿의 `{{PROJECT_NAME}}`을 채운 뒤 `mergeManagedDocument`로 관리 블록만 병합한다(`src/project/plan.ts:84-87`).
-- **계획 파일 순서**(`src/project/plan.ts:89-105`): 관리 파일 3개, 각 관리 영역의 base 파일 `.agentic/base/<경로>.base`, `.agentic/.gitignore`(`backups/`), 마지막으로 `agentic.project.json`이다. `agentic.project.json`은 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다.
+- **포인터 파일 2종**(`POINTER_TEMPLATES`, `src/project/plan.ts:15-18`): `CLAUDE.md`, `.agents/rules/agctx.md`. Cursor·Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)). 템플릿의 `{{PROJECT_NAME}}`을 채운 뒤 `mergeManagedDocument`로 관리 블록만 병합한다(`src/project/plan.ts:82-85`).
+- **계획 파일 순서**(`src/project/plan.ts:87-102`): 관리 파일 3개, 각 관리 영역의 base 파일 `.agctx/base/<경로>.base`, `.agctx/.gitignore`(`backups/`), 마지막으로 `agctx.project.json`이다. `agctx.project.json`에는 기존 키를 그대로 두고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다.
 - **출력**: `printPlan`(`src/profile/apply.ts:94-102`)이 계획 요약과 파일별 상태를 한 줄씩 출력한다.
 
 ## 7. 관리 영역 병합과 hash
 
-`src/project/analyzer.ts`가 사용자 영역과 Agentic 관리 영역을 분리한다. `AGENTS.md`는 프로필 소유 영역과 프로젝트 확장이 한 파일에 공존한다.
+`src/project/analyzer.ts`가 사용자 영역과 agctx 관리 영역을 분리한다. `AGENTS.md`는 프로필 소유 영역과 프로젝트 확장이 한 파일에 공존한다.
 
 ```mermaid
 flowchart TD
@@ -245,7 +242,7 @@ flowchart TD
     U["## N. 프로젝트 규칙 확장 이하<br/>사용자 소유, 보존"]
   end
   subgraph POINTER["포인터 파일"]
-    PM["agentic:managed 블록<br/>apply/sync가 갱신"]
+    PM["agctx:managed 블록<br/>apply/sync가 갱신"]
     PU["블록 밖 사용자 편집<br/>보존"]
   end
 ```
@@ -273,18 +270,18 @@ return LEADING_FRONTMATTER.test(existingContent) ? merged : withFrontmatter(merg
 
 - **frontmatter 위치**: Antigravity 규칙은 파일 첫 줄의 frontmatter(`trigger`)로 로드 방식을 정한다. 그래서 템플릿 frontmatter(`LEADING_FRONTMATTER`, `src/project/analyzer.ts:58`)는 관리 블록과 관리 hash 밖, 파일 맨 앞에 둔다. 파일 맨 앞에 frontmatter가 이미 있으면 사용자의 것으로 보고 보존한다. 결정 근거는 [ADR 0009](../adr/0009-agent-rule-frontmatter.md)에 있다.
 
-`hashAgentsManagedDocument`(`src/project/analyzer.ts:53-56`)와 `hashManagedDocument`(`src/project/analyzer.ts:90-93`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `src/project/analyzer.ts:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
+`hashAgentsManagedDocument`(`src/project/analyzer.ts:53-56`)와 `hashManagedDocument`(`src/project/analyzer.ts:90-93`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agctx.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `src/project/analyzer.ts:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
 
 ## 8. profile sync
 
 `syncProject`(`src/profile/apply.ts:147-162`)은 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.**
 
 ```ts
-if (parseFlag(values, 'profile') || parseFlag(values, 'core')) {
-  throw new Error('profile sync does not switch profiles. To switch, use `agentic profile apply <name> <project>`.');
+if (parseFlag(values, 'profile')) {
+  throw new Error('profile sync does not switch profiles. To switch, use `agctx profile apply <name> <project>`.');
 }
 // ...위치 인자 2개 이상도 거부...
-const selected = boundProfile(readProjectConfig(selectionPath)); // profile 또는 레거시 core
+const selected = boundProfile(readProjectConfig(selectionPath)); // 기록된 profile
 if (!selected) throw new Error('profile sync requires a project already applied ...');
 applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), targetDir]);
 ```
@@ -293,10 +290,10 @@ applyProfile([selected, ...(hasFlag(values, 'dry-run') ? ['--dry-run'] : []), ta
 sequenceDiagram
   actor U as 사용자
   participant S as syncProject
-  participant J as agentic.project.json
+  participant J as agctx.project.json
   participant A as applyProfile
   U->>S: profile sync <project>
-  S->>S: --profile/--core·다중 인자 거부
+  S->>S: --profile·다중 인자 거부
   S->>J: boundProfile 읽기
   alt 바인딩 없음
     S-->>U: throw "먼저 apply하라"
@@ -323,7 +320,7 @@ if (!stat.isFile()) throw new Error(`Refusing to replace non-regular file: ${tar
 
 ```ts
 // src/shared/fs-utils.ts:55-61 — 임시 파일 작성 후 rename, finally로 잔여물 제거
-const temporary = path.join(path.dirname(target), `.${path.basename(target)}.agentic-${randomUUID()}.tmp`);
+const temporary = path.join(path.dirname(target), `.${path.basename(target)}.agctx-${randomUUID()}.tmp`);
 try {
   fs.writeFileSync(temporary, content, { encoding: 'utf8', mode });
   fs.renameSync(temporary, target);
@@ -339,7 +336,7 @@ try {
 
 - **dry-run**: `apply`/`sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/profile/apply.ts:131-137`). 충돌이 있으면 계획 뒤에 diff를 출력하고 종료 코드 1로 끝난다([14절](#14-관리-영역-충돌-표시와-profile-resolve)). TUI에서도 적용·동기화 전 "계획만 확인"을 고르면 `--dry-run`이 붙는다(`profileActions`, `src/tui/profile.ts:111-152`).
 - **로그**: `printPlan`(`src/profile/apply.ts:94-102`)이 계획 요약과 파일별 `create`/`update`/`unchanged`/`conflict` 상태를 한 줄씩 출력한다.
-- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`run`, `src/commands/cli.ts:87-92`). 성공하면 기본 0이다.
+- **종료 코드**: 최상위 `catch`가 오류를 내고 `process.exit(1)`로 끝낸다(`run`, `src/commands/cli.ts:85-90`). 성공하면 기본 0이다.
 
 ## 11. TUI 흐름 배선
 
@@ -397,9 +394,9 @@ export const PROFILE_OPERATION_CONTRACT: readonly ProfileOperation[] = [
 
 충돌 판정과 복구는 세 모듈이 나눠 맡는다. `src/project/plan.ts`가 충돌을 모으고, `src/project/conflicts.ts`가 편집을 추출·재배치하며, `src/project/merge-editor.ts`가 VS Code를 연다. 이 셋을 부르는 명령은 `src/profile/resolve.ts`다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이다.
 
-- **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agentic/base/<경로>.base`(`baseFilePath`, `src/project/conflicts.ts:16-18`)와 `.agentic/.gitignore`를 계획에 넣는다(`src/project/plan.ts:100-103`). 충돌이 나면 `knownBase`(`src/project/plan.ts:47-52`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 `/` 경로이며 `recordedHashFor`(`src/project/plan.ts:38-41`)가 이전 Windows 기록의 `\` 키도 읽는다.
+- **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agctx/base/<경로>.base`(`baseFilePath`, `src/project/conflicts.ts:16-18`)와 `.agctx/.gitignore`를 계획에 넣는다(`src/project/plan.ts:98-101`). 충돌이 나면 `knownBase`(`src/project/plan.ts:45-50`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 운영체제와 관계없이 `/`로 구분한 경로다(`recordedHashFor`, `src/project/plan.ts:37-39`).
 - **표시:** 실제 `apply`·`sync`는 `conflictError`(`src/profile/apply.ts:71-78`)가 만든 `ConflictError`(`src/profile/apply.ts:62-69`)를 던진다. 메시지에는 충돌 파일 목록과 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`src/profile/apply.ts:104-121`)가 diff를 출력한 뒤 같은 오류를 던져 종료 코드 1로 끝난다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`src/project/conflicts.ts:77-79`)가 만든다.
-- **resolve:** `resolveProject`(`src/profile/resolve.ts:62-123`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
+- **resolve:** `resolveProject`(`src/profile/resolve.ts:61-122`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
 
 ```mermaid
 flowchart TD
@@ -431,7 +428,7 @@ for (const part of diffLines(withTrailingNewline(base), withTrailingNewline(curr
 if (kind === 'agents' || index === -1) return `${content.trimEnd()}\n\n${block}\n`;
 ```
 
-- **`--edit`:** `mergeWithEditor`(`src/profile/resolve.ts:29-55`)는 `withBaseRegion`(`src/profile/resolve.ts:18-22`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`src/project/merge-editor.ts:30-56`)를 부른다. 편집기를 열기 전에 `resolve.edit.guide` 문구로 확인 순서를 출력한다(ko·en, `src/i18n/messages-ko.ts`·`src/i18n/messages-en.ts`). 결과 파일은 자동 해결과 같은 내용(`automaticResolution`, `src/profile/resolve.ts:12-15`)으로 채워 두므로 Result 창은 사용자 줄이 이미 관리 영역 밖으로 옮겨진 상태로 열린다. `mergeInVsCode`는 임시 폴더에 현재·Agentic·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`). 편집기를 닫으면 결과 파일을 새 내용으로 삼아 계획을 다시 세우므로 관리 영역은 다시 만들어지고 밖의 내용만 남는다. 결과의 관리 영역이 재생성본과 다르면 적용하지 않은 변경을 diff로 출력하고 임시 폴더를 남기며, 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 없으면 throw한다([ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)).
+- **`--edit`:** `mergeWithEditor`(`src/profile/resolve.ts:28-54`)는 `withBaseRegion`(`src/profile/resolve.ts:17-21`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`src/project/merge-editor.ts:30-56`)를 부른다. 편집기를 열기 전에 `resolve.edit.guide` 문구로 확인 순서를 출력한다(ko·en, `src/i18n/messages-ko.ts`·`src/i18n/messages-en.ts`). 결과 파일은 자동 해결과 같은 내용(`automaticResolution`, `src/profile/resolve.ts:11-14`)으로 채워 두므로 Result 창은 사용자 줄이 이미 관리 영역 밖으로 옮겨진 상태로 열린다. `mergeInVsCode`는 임시 폴더에 현재·agctx·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`). 편집기를 닫으면 결과 파일을 새 내용으로 삼아 계획을 다시 세우므로 관리 영역은 다시 만들어지고 밖의 내용만 남는다. 결과의 관리 영역이 재생성본과 다르면 적용하지 않은 변경을 diff로 출력하고 임시 폴더를 남기며, 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 없으면 throw한다([ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)).
 - **TUI:** `profileActions`(`src/tui/profile.ts:111-152`)는 `resolve` 메뉴를 `resolveProjectTui`(`src/tui/profile.ts:155-176`)로 보낸다. `apply`·`sync`가 `ConflictError`로 멈추면 오류를 보여 주고 해결로 이어갈지 묻는다. `resolveProjectTui`는 먼저 `--dry-run`으로 계획을 보여 준 뒤 자동 해결·`--edit`·`--discard` 중 하나를 고르게 한다.
 
 ## 관련 문서

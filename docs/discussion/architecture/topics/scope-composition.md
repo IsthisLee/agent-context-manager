@@ -15,7 +15,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자·조직, Agentic CLI/TUI, 프로필·scope 저장소, 대상 프로젝트 |
+| 대상 계층 | 사용자·조직, agctx CLI/TUI, 프로필·scope 저장소, 대상 프로젝트 |
 | 결정할 것 | scope의 정의 단위와 이름 규칙, scope와 프로필의 관계, 계층 상속·병합 순서와 충돌 규칙, scope 공유·갱신 저장소 형식, 세 인터페이스 동등성 |
 | 중요도 | Medium — 기존 프로필 모델을 폐기하지 않고 그 위에 얹는 확장이다. 채택되면 차별점을 키우지만 검증 전 착수는 금지한다. |
 
@@ -24,7 +24,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 선행 작업 | 계획된 Git 프로필 공유의 최소 구현과 실사용 검증 |
-| 선행 제안 | [프로필 모델과 저장소](profile-model.md), [프로젝트 적용](project-application.md), [Agentic 관리 산출물의 안전한 동기화](managed-artifact-safety.md) |
+| 선행 제안 | [프로필 모델과 저장소](profile-model.md), [프로젝트 적용](project-application.md), [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md) |
 | 후속 제안 | 합성 결과의 안전 동기화 계약 |
 | 연관 제안 | [에이전트 산출물 동기화](agent-sync.md), [setup과 지침 옵션](setup-and-guidance.md), [프로필 설정 표면 확장](profile-config-surface.md) |
 | 후속 작업 | 계층 병합·충돌 정책 평가, scope 공유 저장소 형식과 다중 사용자 갱신 정책 평가 |
@@ -42,7 +42,7 @@
 
 ## 현재 상태와 한계
 
-현재 Agentic에서 scope는 프로필을 분류하는 라벨이다. CLI 코드에 `personal·company·team·workspace` 네 값으로 고정돼 있다. 프로필의 `agentic-profile.json`에 metadata로 기록되며 목록과 그룹핑에 쓰인다.
+현재 agctx에서 scope는 프로필을 분류하는 라벨이다. CLI 코드에 `personal·company·team·workspace` 네 값으로 고정돼 있다. 프로필의 `profile.json`에 metadata로 기록되며 목록과 그룹핑에 쓰인다.
 
 [프로필 모델과 저장소](profile-model.md)는 scope를 "고정된 시스템 종류가 아니라 프로필의 용도·metadata"로 규정한다. 코드는 이 규정보다 좁게 네 값으로 굳어 있다. 문서가 그린 모델과 실제 코드 사이에 간극이 있다.
 
@@ -89,7 +89,7 @@ flowchart TD
 
 산출물의 형태는 지금과 같다. 병합 결과를 `AGENTS.md`와 도구별 파일로 생성한다. 다만 각 규칙이 어느 계층에서 왔는지 추적할 수 있어야 사용자가 최종 결과를 이해하고 되돌릴 수 있다.
 
-안전 계약은 새로 만들지 않고 넓힌다. [Agentic 관리 산출물의 안전한 동기화](managed-artifact-safety.md)의 관리 블록·hash·dry-run을 다계층 병합에도 적용한다.
+안전 계약은 새로 만들지 않고 넓힌다. [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md)의 관리 블록·hash·dry-run을 다계층 병합에도 적용한다.
 
 ## 경계와 지키는 원칙
 
@@ -98,7 +98,7 @@ flowchart TD
 - 프로필과 scope는 지침의 소유 경계다. 에이전트가 자연어를 이해하게 만드는 프롬프트 저장소가 아니다.
 - 외부 에이전트 런타임을 실행·파싱·래핑하지 않는다. 담당은 지침 파일의 생성·동기화까지다.
 - 프로젝트 도메인 지침은 병합에서 항상 보존한다. 상위 계층이 정본을 오염시키지 않는다.
-- 공통 기능은 인터페이스 동등성을 지킨다. scope CRUD·공유·합성도 CLI·TUI·`agt profile list` 관리 메뉴 세 경로에 제공한다. 비대화형 전용 표현은 [구현 계약 및 문서 규칙](implementation-contracts.md)의 예외로 둔다.
+- 공통 기능은 인터페이스 동등성을 지킨다. scope CRUD·공유·합성도 CLI·TUI·`agctx profile list` 관리 메뉴 세 경로에 제공한다. 비대화형 전용 표현은 [구현 계약 및 문서 규칙](implementation-contracts.md)의 예외로 둔다.
 
 ## 검증 우선과 착수 조건
 

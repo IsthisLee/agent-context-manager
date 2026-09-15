@@ -1,6 +1,6 @@
 /** Korean message catalog. */
 export default {
-    'create.intro': 'Agentic 프로필 생성',
+    'create.intro': 'agctx 프로필 생성',
     'create.name.message': '프로필 이름을 입력하세요.',
     'create.name.invalid': '영문 소문자, 숫자, 하이픈으로 1-64자를 입력하세요.',
     'create.scope.message': '프로필의 용도를 선택하세요.',
@@ -9,7 +9,7 @@ export default {
     'create.cancel': '프로필 생성을 취소했습니다.',
     'create.outro': '프로필이 생성되었습니다.',
 
-    'list.intro': 'Agentic 프로필',
+    'list.intro': 'agctx 프로필',
     'list.scope.message': '확인할 프로필 범위를 선택하세요.',
     'list.scope.all': '전체 scope',
     'list.scope.allHint': '{n}개 프로필',
@@ -52,14 +52,14 @@ export default {
     'resolve.mode.edit': 'VS Code에서 병합',
     'resolve.mode.edit.hint': '마지막 적용본을 base로 3-way merge 편집기를 연다',
     'resolve.mode.discard': '백업 후 다시 생성',
-    'resolve.mode.discard.hint': '현재 파일을 .agentic/backups/에 복사한 뒤 관리 영역을 새로 만든다',
+    'resolve.mode.discard.hint': '현재 파일을 .agctx/backups/에 복사한 뒤 관리 영역을 새로 만든다',
     'resolve.nothing': '해결할 충돌이 없습니다.',
     'resolve.outro': '충돌 해결 완료',
     'resolve.edit.guide': '{file}: VS Code 병합 편집기를 엽니다. 다음 순서로 확인하세요.\n  1. 위쪽 `{pane}` 창에서 강조된 영역은 관리 영역 안에서 고쳤던 원래 위치입니다. 이 창의 수락 버튼은 누르지 않습니다.\n  2. 아래쪽 결과 창에는 그 줄이 {boundary} 이미 옮겨져 있습니다. 남길 내용이 모두 관리 영역 밖에 있는지 확인하고, 필요하면 고친 뒤 저장합니다.\n  3. 탭을 닫을 때 "파일에 처리되지 않은 충돌이 포함되어 있습니다" 경고가 뜨면, 결과 창을 확인했는지 다시 보고 \'충돌과 함께 닫기\'(Close with Conflicts)를 누릅니다. 저장한 결과가 적용됩니다.\n  4. 결과 창에서 관리 영역 안에 남긴 변경은 적용되지 않으며, 닫은 뒤 diff로 보여 줍니다.',
-    'resolve.edit.boundary.pointer': '`<!-- agentic:managed:end -->` 아래로',
+    'resolve.edit.boundary.pointer': '`<!-- agctx:managed:end -->` 아래로',
     'resolve.edit.boundary.agents': '확장 섹션 끝으로',
 
-    'main.intro': 'Agentic',
+    'main.intro': 'Agent Context Manager (agctx)',
     'main.message': '무엇을 할까요?',
     'main.manage.label': '프로필 관리',
     'main.manage.hint': '프로필 선택 후 설정·적용·동기화·조회·삭제',
@@ -72,13 +72,13 @@ export default {
     'main.help.label': '도움말',
     'main.help.hint': 'CLI 명령과 자동화 방식 확인',
     'main.exit.label': '종료',
-    'main.outro': 'Agentic을 종료했습니다.',
+    'main.outro': 'agctx를 종료했습니다.',
 
     'lang.prompt.message': '언어를 선택하세요 / Select your language',
     'lang.saved': '언어 설정을 저장했습니다: {locale}',
     'lang.cancel': '언어 선택을 취소했습니다.',
 
-    'remove.intro': 'Agentic 프로필 삭제',
+    'remove.intro': 'agctx 프로필 삭제',
     'remove.select': '삭제할 프로필을 선택하세요.',
     'remove.select.hint': '프로필 원본과 설정만 삭제',
     'remove.note.title': '삭제 대상',
@@ -87,7 +87,7 @@ export default {
     'remove.cancel': '프로필 삭제를 취소했습니다.',
     'remove.outro': '프로필이 삭제되었습니다.',
 
-    'setup.intro': 'Agentic 프로필 지침 설정',
+    'setup.intro': 'agctx 프로필 지침 설정',
     'setup.select': '설정할 프로필을 선택하세요.',
     'setup.select.hint': '공통 지침을 설정할 프로필',
     'setup.item.message': '{label} — {description}',

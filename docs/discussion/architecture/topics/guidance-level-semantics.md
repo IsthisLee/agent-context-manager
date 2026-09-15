@@ -15,7 +15,7 @@
 
 | 항목 | 내용 |
 | --- | --- |
-| 대상 계층 | 사용자 · Agentic CLI/TUI · 프로필 `AGENTS.md` |
+| 대상 계층 | 사용자 · agctx CLI/TUI · 프로필 `AGENTS.md` |
 | 결정할 것 | 레벨 정의 문구, 정의의 저장 위치(단일 정본), 산출물 범례 위치, TUI 노출 방식 |
 | 비범위 | 지침 6개의 규칙 문구 변경, 레벨별로 다른 규칙 문구 생성, 새 레벨 추가, 새 CLI 명령 |
 | 중요도 | Medium — 산출물 계약을 넓히지만 기존 선택 모델(항목별 3단계)은 그대로 둔다. |
@@ -47,7 +47,7 @@
 
 ## 1. 현재 동작과 빈 곳
 
-`agentic profile setup`은 항목마다 `off`/`recommended`/`strict`를 받아 프로필 `AGENTS.md`의 guidance 블록을 만든다. 그런데 레벨을 바꿔도 산출물에서 바뀌는 것은 `적용 수준:` 라벨 한 줄뿐이고, 그 아래 규칙 문구는 두 레벨에서 동일하다.
+`agctx profile setup`은 항목마다 `off`/`recommended`/`strict`를 받아 프로필 `AGENTS.md`의 guidance 블록을 만든다. 그런데 레벨을 바꿔도 산출물에서 바뀌는 것은 `적용 수준:` 라벨 한 줄뿐이고, 그 아래 규칙 문구는 두 레벨에서 동일하다.
 
 실제로 `보안`을 strict와 recommended로 각각 생성해 비교하면 라벨 줄만 다르다.
 
@@ -104,7 +104,7 @@ flowchart LR
 guidance 블록 맨 위, 첫 지침 항목 앞에 정의를 한 번 넣는다. 항목 6개는 지금처럼 규칙 문구를 공유한다.
 
 ```text
-<!-- agentic:guidance:start -->
+<!-- agctx:guidance:start -->
 
 ## 적용 수준 정의
 
@@ -123,7 +123,7 @@ guidance 블록 맨 위, 첫 지침 항목 앞에 정의를 한 번 넣는다. �
 - 적용 수준: strict
 - 비밀값을 출력·커밋하지 않고, 외부 변경과 권한이 필요한 작업은 사용자 승인을 받는다.
 
-<!-- agentic:guidance:end -->
+<!-- agctx:guidance:end -->
 ```
 
 `## 적용 수준 정의`는 `##` 헤딩이지만 지침 항목명(`## 보안` 등)과 겹치지 않는다. 기존 평가(`evals/core.test.mjs`)가 확인하는 `## TDD` 존재와 `off` 항목(`## 리뷰`) 부재는 그대로 성립한다.

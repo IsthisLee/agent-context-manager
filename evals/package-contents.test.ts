@@ -21,7 +21,7 @@ test('npm package contains only runtime assets and the package README', () => {
   const paths = files.map(file => file.path);
 
   assert(paths.includes('README.md'));
-  assert(paths.includes('dist/agentic.js'));
+  assert(paths.includes('dist/agctx.js'));
   assert(paths.some(file => file.startsWith('dist/profile/')));
   assert(!paths.some(file => file.startsWith('src/')));
   assert(paths.some(file => file.startsWith('templates/')));
@@ -32,7 +32,7 @@ test('npm package contains only runtime assets and the package README', () => {
   assert.doesNotMatch(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
   assert.match(readme, /img\.shields\.io\/badge\/Node\.js-24/);
   assert.doesNotMatch(readme, /\]\((?:docs\/|CONTRIBUTING\.md|SECURITY\.md|CODE_OF_CONDUCT\.md)/);
-  assert.match(readme, /https:\/\/github\.com\/IsthisLee\/agentic\/blob\/main\/docs\//);
+  assert.match(readme, /https:\/\/github\.com\/IsthisLee\/agent-context-manager\/blob\/main\/docs\//);
 });
 
 test('repository exposes an installed-package smoke test', () => {

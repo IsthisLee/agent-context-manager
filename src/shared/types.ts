@@ -5,7 +5,7 @@ export type Scope = 'personal' | 'company' | 'team' | 'workspace';
 export type GuidanceKey = 'harness' | 'tdd' | 'review' | 'verification' | 'documentation' | 'security';
 export type GuidanceLevel = 'off' | 'recommended' | 'strict';
 
-/** `agentic-profile.json` in a profile folder. */
+/** `profile.json` in a profile folder. */
 export interface ProfileMetadata {
   schemaVersion: 1;
   name: string;
@@ -22,11 +22,10 @@ export interface Profile {
   metadata: ProfileMetadata;
 }
 
-/** `agentic.project.json` in a project. Unknown keys are kept when the file is rewritten. */
+/** `agctx.project.json` in a project. Unknown keys are kept when the file is rewritten. */
 export interface ProjectConfig {
   schemaVersion?: number;
   profile?: string;
-  core?: string;
   managedHashes?: Record<string, string>;
   [key: string]: unknown;
 }

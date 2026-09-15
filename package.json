@@ -1,20 +1,19 @@
 {
-  "name": "@isthis/agentic",
+  "name": "agent-context-manager",
   "version": "0.2.0",
   "packageManager": "pnpm@10.15.0",
-  "description": "Create shared development-guidance Profiles and safely apply and synchronize them across projects and AI agents",
+  "description": "A profile-based context manager for AI coding agents: keep rules in profiles, apply one per repository, and keep Codex, Claude Code, and Antigravity in sync",
   "repository": {
     "type": "git",
-    "url": "https://github.com/IsthisLee/agentic.git"
+    "url": "https://github.com/IsthisLee/agent-context-manager.git"
   },
-  "homepage": "https://github.com/IsthisLee/agentic#readme",
+  "homepage": "https://github.com/IsthisLee/agent-context-manager#readme",
   "bugs": {
-    "url": "https://github.com/IsthisLee/agentic/issues"
+    "url": "https://github.com/IsthisLee/agent-context-manager/issues"
   },
   "type": "module",
   "bin": {
-    "agentic": "./dist/agentic.js",
-    "agt": "./dist/agt.js"
+    "agctx": "./dist/agctx.js"
   },
   "files": [
     "dist",
@@ -36,7 +35,7 @@
     "prepublishOnly": "pnpm run check && pnpm run pack:check"
   },
   "keywords": [
-    "agentic",
+    "agctx",
     "agent-guidance",
     "ai-agents",
     "claude-code",

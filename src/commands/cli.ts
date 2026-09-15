@@ -1,4 +1,4 @@
-/** Agentic guidance-profile and project manager. */
+/** agctx command line: resolve the locale and dispatch commands. */
 
 import { hasFlag, parseFlag, stripFlag } from './args.ts';
 import { help } from './help.ts';
@@ -8,7 +8,6 @@ import { applyProfile, syncProject } from '../profile/apply.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
 import { createProfile, removeProfile, viewProfile } from '../profile/store.ts';
-import { setInvokedAs } from '../shared/runtime.ts';
 import { mainTui, promptLocale } from '../tui/main.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
 
@@ -56,14 +55,13 @@ async function runProfileCommand(profileArgs: readonly string[]): Promise<void> 
 }
 
 export async function main(argv: readonly string[] = process.argv): Promise<void> {
-  setInvokedAs(argv[1]);
   const rawArgs = argv.slice(2);
   const langFlag = parseFlag(rawArgs, 'lang');
   const args = stripFlag(rawArgs, 'lang');
   const command = args[0] || 'help';
   let locale = resolveLocale({
     flag: langFlag,
-    env: process.env.AGENTIC_LANG || null,
+    env: process.env.AGCTX_LANG || null,
     saved: getSavedLocale(),
     isTTY: process.stdin.isTTY
   });

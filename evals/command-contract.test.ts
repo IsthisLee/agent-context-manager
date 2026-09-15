@@ -68,6 +68,16 @@ test('with --json, stdout holds one result document and messages move to stderr'
   assert.match(result.stderr, /demo/, 'the human listing still reaches the terminal on stderr');
 });
 
+test('--json before a positional argument leaves the argument in place', t => {
+  const { root, project, ok } = sandbox(t);
+  ok(['profile', 'create', 'demo']);
+  ok(['profile', 'apply', 'demo', project, '--yes']);
+  const checked = ok(['check', '--json', project], { AGCTX_HOME: path.join(root, 'ci-home') });
+  assert.ok([project, fs.realpathSync(project)].includes(jsonDocument(checked.stdout).data.project));
+  const viewed = ok(['profile', 'view', '--json', 'demo']);
+  assert.equal(jsonDocument(viewed.stdout).command, 'profile view');
+});
+
 test('a --json failure carries the error code, message, and next step', t => {
   const { run } = sandbox(t);
   const result = run(['profile', 'view', 'missing', '--json']);

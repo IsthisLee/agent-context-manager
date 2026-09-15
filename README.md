@@ -29,8 +29,8 @@
 <p align="center">
 
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic-overview.ko.dark.png">
-    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic-overview.ko.png" alt="agctx 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity·Cursor·Copilot이 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.ko.dark.png">
+    <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agctx-overview.ko.png" alt="agctx 구조: Personal·Company·Team 프로필을 여러 프로젝트에 apply·sync하고, 프로젝트마다 생성된 AGENTS.md·CLAUDE.md 등을 Codex·Claude Code·Antigravity가 읽는다. Git 저장소로 프로필을 공유하는 흐름은 구현 예정이다." width="880">
   </picture>
 
 </p>
@@ -93,13 +93,21 @@ agctx profile setup company --tdd recommended --security strict
 agctx profile apply company /path/to/project
 ```
 
-위 명령은 다음 흐름으로 동작합니다.
+적용하면 에이전트별 지침 파일과 관리 기록이 한 번에 만들어집니다. 아래는 마지막 명령의 실제 출력입니다.
 
-<p align="center">
-
-  <img src="https://raw.githubusercontent.com/IsthisLee/agent-context-manager/main/docs/assets/agentic.gif" alt="agctx 사용 흐름: profile create → setup → apply·sync로 프로필을 만들어 프로젝트에 적용하고 여러 AI 에이전트가 같은 기준으로 작업" width="800">
-
-</p>
+```text
+$ agctx profile apply company /path/to/project
+Plan: 8 file(s) to change.
+  create    AGENTS.md
+  create    CLAUDE.md
+  create    .agents/rules/agctx.md
+  create    .agctx/base/AGENTS.md.base
+  create    .agctx/base/CLAUDE.md.base
+  create    .agctx/base/.agents/rules/agctx.md.base
+  create    .agctx/.gitignore
+  create    agctx.project.json
+Applied profile company to /path/to/project
+```
 
 > [!Tip]
 > 터미널에서 `agctx`를 입력하면 TUI로 모든 기능을 간편하게 사용할 수 있습니다.

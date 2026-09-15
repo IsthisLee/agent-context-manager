@@ -2,7 +2,7 @@
 
 ## 사용 흐름
 
-1. **설치와 첫 적용**: [설치](getting-started/installation.md) → [빠른 시작](getting-started/quick-start.md)(`profile create` → `profile setup` → `profile apply` → `check`)
+1. **설치와 첫 적용**: [빠른 시작](getting-started/quick-start.md)(설치 → `profile create` → `profile setup` → `profile apply` → `check`)
 2. **개발**: 평소 쓰는 에이전트에 작업을 맡긴다. 에이전트가 읽는 파일은 [에이전트가 읽는 지침 파일](concepts/agent-loading.md)에 있다
 3. **갱신**: 프로필을 고친 뒤 `profile sync` 또는 `repos sync`, 고정한 저장소는 `repos pr`([갱신 방식 고르기](guides/update-policies.md))
 4. **팀 공유와 CI**: `profile connect`·`push`·`clone`·`pull`([팀과 Git으로 공유하기](guides/team-sharing.md)), CI의 `check`([CI와 자동화에서 쓰기](guides/ci.md))
@@ -13,7 +13,6 @@
 
 ### 처음 시작
 
-- [설치](getting-started/installation.md)
 - [빠른 시작](getting-started/quick-start.md)
 
 ### 목적별 가이드

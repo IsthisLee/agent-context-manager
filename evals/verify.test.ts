@@ -245,6 +245,7 @@ test('verify without session logs gives one next step for Codex and Claude Code 
   const next = result.stderr.split('\n').filter(line => line.startsWith('Next:'));
   assert.equal(next.length, 2, result.stderr);
   assert.match(next[0], /Codex, Claude Code/);
+  assert.match(next[0], /^Next: start an agent \(Codex, Claude Code\) in this folder once/);
   assert.match(next[1], /--probe.*Antigravity/);
 });
 

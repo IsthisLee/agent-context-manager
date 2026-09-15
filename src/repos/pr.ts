@@ -166,7 +166,7 @@ function gh(args: readonly string[], cwd: string): GhResult {
   const result = process.platform === 'win32'
     ? spawnSync('gh', args.map(arg => `"${arg.replaceAll('"', '\\"')}"`), { cwd, env, encoding: 'utf8', shell: true })
     : spawnSync('gh', [...args], { cwd, env, encoding: 'utf8' });
-  if (result.error) return { ok: false, stdout: '', stderr: result.error.message };
+  if (result.error) return { ok: false, stdout: '', stderr: ghFailureReason(result.error) };
   return { ok: result.status === 0, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
 }
 
@@ -310,4 +310,9 @@ export function openPullRequests(candidates: readonly Candidate[], options: PrOp
       return { ...item, state: 'error' as const, exitCode: cliError.exitCode, detail: cliError.message };
     }
   });
+}
+
+/** Why gh could not run, for people: a missing GitHub CLI in words, any other spawn error as reported. */
+export function ghFailureReason(error: Error): string {
+  return (error as NodeJS.ErrnoException).code === 'ENOENT' ? _('repos.pr.gh-missing') : error.message;
 }

@@ -4,6 +4,11 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- `repos pr`: GitHub CLI(`gh`)가 설치돼 있지 않아 PR을 열지 못하면, 안내 끝에 내부 오류(`spawnSync gh ENOENT`) 대신 "GitHub CLI (gh) is not installed; install it to open pull requests automatically."를 보여 준다.
+- `verify`: 세션 기록이 없거나 오래됐을 때의 영어 다음 단계 안내가 에이전트 목록을 "an agent (Codex, Claude Code)"처럼 묶어 보여 준다.
+
 ## [0.3.0] - 2026-09-16
 
 ### Added

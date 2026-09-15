@@ -26,11 +26,11 @@
 | 항목 | 내용 |
 | --- | --- |
 | 선행 작업 | 현재 산출물 매핑·파일 소유 경계, 관리 영역 병합 계약 |
-| 선행 제안 | [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md)(단계 6, Implementing) — 지침 안전 동기화가 먼저 굳어야 한다. [프로젝트 적용](project-application.md), [에이전트 산출물 동기화](agent-sync.md) |
+| 선행 제안 | [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md)(단계 6, Implementing) — 지침 안전 동기화가 먼저 굳어야 한다. [프로젝트 적용](project-application.md), [에이전트 산출물 동기화](agent-sync.md), [적용할 에이전트와 대상 종류 고르기](apply-selection.md)(에이전트별 설정 파일을 이 선택대로 쓴다) |
 | 후속 제안 | 아티팩트별 병합 어댑터(MCP → skills → subagents, hooks의 자리는 미정), 도구별 설정 위치 레지스트리 |
 | 연관 제안 | [에이전트 규칙 위치 탐지](agent-rule-discovery.md)의 기존 설정 스캔, [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)의 비대화형 경로 |
 | 후속 작업 | 아티팩트 종류별 소스·타깃·병합 난이도 표를 확정하고, MCP부터 실패 평가와 최소 구현을 붙인다. |
-| 권장 다음 작업 | 지침 safe-sync(단계 6) 완성을 선행으로 못박고, MCP 하나만 안전 병합으로 시범 구현해 계약을 검증한 뒤 skills·subagents로 넓힌다. [ADR 0022](../../../adr/0022-profile-scope-hooks.md)로 범위에 들어온 hooks는 구현 순서와 적용 전 확인 방식을 정한다. |
+| 권장 다음 작업 | 2026-09-16 제품 소유자 결정으로 다음 구현은 [에이전트 고르기](apply-selection.md) → MCP 순서다. 지침 safe-sync(단계 6) 완성을 선행으로 못박고, MCP 하나만 안전 병합으로 시범 구현해 계약을 검증한 뒤 skills·subagents로 넓힌다. [ADR 0022](../../../adr/0022-profile-scope-hooks.md)로 범위에 들어온 hooks는 구현 순서와 적용 전 확인 방식을 정한다. |
 
 ## 목차
 

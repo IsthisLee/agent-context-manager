@@ -177,47 +177,11 @@ Refine a `/init` draft by hand, then place it in the project extension area of `
 
 ## 🧭 Architecture direction and progress
 
-agctx's implementation is managed in stages around the questions of where the shared context lives and who changes what. The table below condenses each discussion document's proposal summary from a user's perspective. `Proposed` items are follow-up work not yet guaranteed as current behavior.
+agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) is the canonical list of topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
-| Topic | Target and goal | Priority · Status | Next work |
-| --- | --- | --- | --- |
-| [Profile model and store](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md) | A per-Personal/Company/Team/Workspace shared-context store for users and organizations | Critical · Implemented | Review the organization-sharing contract |
-| [setup and guidance options](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Users and the CLI selectively configure a Profile's TDD, change review, verification, documentation, and security guidance | High · Implemented | Advance presets and configuration diffs |
-| [Project application](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md) | Apply the chosen Profile to a project while keeping domain rules separate | Critical · Implemented | Finalize conflict and recovery handling |
-| [Agent artifact synchronization](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Generate and sync only the managed blocks from a Profile into per-agent guidance files | High · Implemented | Advance manifest and drift handling |
-| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Responsibilities of users, AI agents, TUI, and CLI, and safe automation boundaries | High · Implementing | Agent scenario evaluations against the published package |
-| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Update managed files partially and guarantee user edits, conflicts, and recovery | Critical · Implementing | Policy for unmarked root files and multi-file rollback |
-| [Git-based Profile management](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | Teams and organizations share Profiles through a standard Git remote and record and check the applied version | Critical · Implemented | None |
-| [Scope expansion and guidance composition](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | User-definable, shareable guidance layers and multi-layer inheritance and merging for a project | Medium · Proposed | Prototype the minimal composition after validation |
-
-### Proposal summaries
-
-Each document manages not only the code feature but also the target layer, the reason for introduction, priority, preceding/following/related work, and the contracts to decide before implementation. Below is a map that condenses that information by area; the detailed current status and implementation records are in each document.
-
-#### 1. Profiles and shared-context configuration
-
-| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
-| --- | --- | --- | --- |
-| [Profile model and store](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/profile-model.md) | Separate and reuse shared context per Personal/Company/Team/Workspace · users and organizations ↔ CLI ↔ Profile | Critical · Implemented | Path, name, scope, default selection; precedes every follow-up feature |
-| [setup and guidance options](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md) | Select only the needed harness, TDD, change review, verification, documentation, and security guidance · user ↔ CLI ↔ Profile `AGENTS.md` | High · Implemented | Presets, defaults, re-runs, interactive/non-interactive; after the profile model, before project application |
-| [Scope expansion and guidance composition](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md) | Raise scope into shareable, reusable guidance layers with multi-layer inheritance and merging · users and organizations ↔ CLI ↔ Profile/scope ↔ project | Medium · Proposed | Merge and conflict rules, scope-sharing format; start after the validation gate |
-| [Git-based Profile management](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | Share and update shared-context Profiles through a Git remote · admins and members ↔ CLI ↔ Git remote ↔ Profile | Critical · Implemented | Remote connection, applied-version record, pinning, check; after the profile model |
-
-#### 2. Project application and agent delivery
-
-| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
-| --- | --- | --- | --- |
-| [Project application](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md) | Use shared context and project domain rules together while keeping them separate · user ↔ CLI ↔ Profile ↔ project | Critical · Implemented | Target, merge, approval, application record; after setup, before synchronization |
-| [Agent artifact synchronization](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md) | Deliver the same shared standard to each agent's file format · Profile ↔ CLI ↔ project artifacts | High · Implemented | Adapters, pointers, file ownership, drift; after project application |
-| [Safe synchronization of managed artifacts](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | Protect user content and manual changes during re-application and updates · CLI/TUI ↔ Profile ↔ project files | Critical · Implementing | Managed blocks, hash, dry-run, conflict, backup, recovery; follow-up on the safety of application and synchronization |
-
-#### 3. User and agent automation boundaries
-
-| Topic | Purpose · target layer | Priority · Status | What to decide and relationships |
-| --- | --- | --- | --- |
-| [Use through natural-language requests](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | Keep AI agents from changing the wrong target on an ambiguous request · user ↔ AI agent ↔ CLI/TUI ↔ project | High · Implementing | Explicit target, machine-readable result, approval, exit codes, agent skills, and delivery checks implemented; agent scenario evaluations against the published package come next |
-
-The current sequence is profile creation → guidance setup → project application → agent artifact synchronization. Each proposal's status, its preceding/following/related proposals, follow-up work, recommended next steps, and the decisions to make are in the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+- **Implemented:** Profile model and store, setup and guidance options, guidance level semantics, project application, agent artifact synchronization, agent rule discovery, Git-based Profile management
+- **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording per-file ownership and a policy for files without markers remain)
+- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents), scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
 
 ## Documentation
 

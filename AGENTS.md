@@ -36,7 +36,7 @@
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약
 
-- **개발 언어:** TypeScript (Node.js 24 LTS 이상 환경). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다.
+- **개발 언어:** TypeScript (설치본 실행은 Node.js 22 이상, 저장소 개발은 Node.js 22.18 이상). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다.
 - **TypeScript 제약:** Node가 타입만 지워 실행할 수 있는 문법만 쓴다(`erasableSyntaxOnly`: `enum`·`namespace`·생성자 매개변수 속성 금지). 상대 import에는 `.ts` 확장자를 붙이고, 타입만 가져올 때는 `import type`을 쓴다(`verbatimModuleSyntax`). 형식 검사는 `pnpm run typecheck`이며 `pnpm run check`에 포함된다.
 - **패키지 매니저:** pnpm — 저장소 의존성·스크립트·CI는 고정된 pnpm 버전을 사용하라. 사용자의 npm 설치 명령은 배포 호환성을 위해 README에 유지한다.
 

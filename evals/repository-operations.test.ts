@@ -15,14 +15,15 @@ function runReleaseCheck(args: string[]) {
 test('CI verifies the repository on supported Node and operating system combinations', () => {
   const ci = read('.github/workflows/ci.yml');
   const packageJson = JSON.parse(read('package.json'));
-  assert.equal(packageJson.engines.node, '>=24.0.0');
-  assert.equal(read('.nvmrc').trim(), '24');
+  assert.equal(packageJson.engines.node, '>=22.0.0');
+  assert.equal(read('.nvmrc').trim(), '22');
   assert.match(ci, /pnpm\/action-setup@[0-9a-f]{40}/);
   assert.match(ci, /persist-credentials: false/);
   assert.match(ci, /pnpm install --frozen-lockfile/);
   assert.match(ci, /ubuntu-latest/);
   assert.match(ci, /macos-latest/);
   assert.match(ci, /windows-latest/);
+  assert.match(ci, /node: 22\.x/);
   assert.match(ci, /node: 24\.x/);
   assert.match(ci, /node: 26\.x/);
   assert.match(ci, /pnpm run check/);

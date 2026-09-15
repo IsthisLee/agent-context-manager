@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:57-82`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: a2cf2b7b75d9569567d066deeb9841e7ef9f08e3fa60032fe4c9d3117df9c7e6 -->
+<!-- agctx-doc-sources-sha256: c50fe54c869b59c6b98389ae8feb31573f76a8da7e3b695ebe5def2cf3d46ded -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -149,7 +149,7 @@ flowchart LR
 ### 사용자가 알아야 할 주의점
 
 - Windows에는 shebang 개념이 없다. 대신 npm이 만든 shim이 Node로 실행되게 연결하므로, shebang은 주로 macOS/Linux에서 의미가 있다([9번](#9-macoslinux와-windows의-실행-파일path-처리-차이) 참고).
-- shebang이 동작하려면 PATH에 `node`가 있어야 한다. 이 패키지는 Node 24 이상을 요구한다(`package.json:54-56`).
+- shebang이 동작하려면 PATH에 `node`가 있어야 한다. 이 패키지는 Node 22 이상을 요구한다(`package.json:54-56`).
 - `dist/`는 저장소에 커밋하지 않는다. 저장소에서 `dist/agctx.js`를 실행하려면 먼저 `pnpm run build`로 만든다.
 
 ---
@@ -296,7 +296,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - 코드가 경로를 문자열로 이어 붙이지 않고 항상 `path`로 조립해 OS 차이를 흡수한다(예: `src/shared/runtime.ts:5`, `src/shared/home.ts:17`).
 - OS 분기를 명시적으로 다루는 곳은 저장소 도구다. `tools/package-smoke.ts`는 Windows면 `npm.cmd`와 `agctx.cmd`를 쓰고, 그 외에는 `npm`·`agctx`를 쓴다(`tools/package-smoke.ts:16-17`, `40`). Windows용 인자 인용 처리와 `cmd.exe` 경유 실행도 여기서 처리한다(`tools/package-smoke.ts:19-31`).
-- CI는 실제로 세 OS(ubuntu·macos·windows)에서 검증을 돌려 이 차이를 확인한다(`.github/workflows/ci.yml:22-31`).
+- CI는 실제로 세 OS(ubuntu·macos·windows)에서 검증을 돌려 이 차이를 확인한다(`.github/workflows/ci.yml:22-33`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -349,7 +349,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:24-36`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:37-40`, `.github/workflows/publish.yml:19-22`).
+- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json:4`에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json:24-36`). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml:39-42`, `.github/workflows/publish.yml:19-22`).
 - **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다([CLI Reference](cli-reference.md#설치와-실행)). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
 - `npx`를 이 저장소가 요구하는 흐름은 **현재 저장소에서 확인되지 않는다.** README·CLI Reference의 사용 예시는 전역 설치 후 `agctx` 실행을 전제로 한다.
 
@@ -477,7 +477,7 @@ GitHub Actions는 저장소 이벤트(예: 릴리스 게시)에 반응해 정해
 - 게시 전 검증: `pnpm run check && pnpm run pack:check && pnpm run package:smoke`(`.github/workflows/publish.yml:31-32`).
 - 릴리스 버전 계약: `check:release`가 태그(`v0.1.0` 등)에서 버전을 뽑아 `package.json`의 버전과 같은지, `CHANGELOG.md`에 해당 버전 항목이 있는지 확인한다(`.github/workflows/publish.yml:33-34`, `tools/check-release.ts`).
 - 중복 게시 방지: Registry에 같은 버전이 있으면 게시 단계를 건너뛴다(`.github/workflows/publish.yml:37-50`).
-- CI 워크플로는 배포와 별개로 `main` 브랜치 push와 모든 PR에서 검증한다(`.github/workflows/ci.yml:3-5`). 조합은 Ubuntu(Node 24·26)·macOS(Node 24)·Windows(Node 24)로 총 4가지이며 여섯 조합을 모두 도는 것은 아니다(`.github/workflows/ci.yml:22-31`).
+- CI 워크플로는 배포와 별개로 `main` 브랜치 push와 모든 PR에서 검증한다(`.github/workflows/ci.yml:3-5`). 조합은 Ubuntu(Node 22·24·26)·macOS(Node 22)·Windows(Node 22)로 총 5가지이며 모든 운영체제·버전 조합을 도는 것은 아니다(`.github/workflows/ci.yml:22-33`).
 
 게시 워크플로의 단계 순서는 이렇다.
 

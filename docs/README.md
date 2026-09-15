@@ -30,6 +30,7 @@
     - [ADR 0012: 소스를 TypeScript로 쓰고 컴파일한 JavaScript로 배포](adr/0012-typescript-source.md)
     - [ADR 0013: 이름을 Agent Context Manager(agctx)로 바꾸고 호환 계층을 두지 않음](adr/0013-rename-agent-context-manager.md)
     - [ADR 0014: 패키지 기본 로케일을 영어로 바꿈](adr/0014-default-locale-english.md)
+    - [ADR 0015: 지원 Node.js 하한을 22로 낮춤](adr/0015-node-22-support.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

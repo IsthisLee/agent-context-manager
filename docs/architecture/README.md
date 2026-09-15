@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 835d165295c6dad2caeb21ca9037c56f2797f94c843b393291a347a330bfa4f4 -->
+<!-- agctx-doc-sources-sha256: bd93ac89b90b6bef1c9eeb247c25c6496b6b74ac957eeb85ebf8681a08657fc6 -->
 
 agctx는 개인·조직별 에이전틱 개발 지침을 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 

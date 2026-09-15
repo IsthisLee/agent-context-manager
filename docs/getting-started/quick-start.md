@@ -1,9 +1,9 @@
 # 빠른 시작
 
-<!-- agctx-doc-sources: src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: c33f7f1c889a266fbe1842b8dc09f976e215e82339cfaf05b3a086aacae25159 -->
+<!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 775bad573d0f3dc90808bfab5da597ec9e43cbde6fd9ee3e733a7a343c62939e -->
 
-프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 설치는 [설치](installation.md), 개념은 [프로필과 적용](../concepts/profiles.md), 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
+agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md), 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 
 전체 흐름은 다음과 같다.
 
@@ -21,9 +21,24 @@ flowchart LR
 
 프로필을 만들고 설정한 뒤 한 번 적용하면, 그 뒤로는 개발과 동기화를 반복한다. 팀이 공유하는 프로필은 만들지 않고 Git 원격에서 받는다([팀과 Git으로 공유하기](../guides/team-sharing.md)). 프로필을 지우는 방법은 [프로필과 적용](../concepts/profiles.md#프로필-삭제)에 있다.
 
-아래 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이며, `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 문서와 대조한다.
+## 설치
+
+agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
+
+```bash
+npm install -g agent-context-manager
+agctx help
+```
+
+- 설치하지 않고 한 번만 쓰려면 `npx agent-context-manager <명령>`으로 실행한다. CI에서 쓰는 예시는 [CI와 자동화에서 쓰기](../guides/ci.md)에 있다.
+- 터미널에서 인자 없이 `agctx`를 실행하면 메인 TUI가 열려 프로필 만들기·설정·적용을 메뉴로 진행한다.
+- Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. `repos pr`이 PR까지 열려면 GitHub CLI `gh`가 필요하다.
+- 표시 언어는 영어가 기본이다. 한국어는 `--lang ko`, `AGCTX_LANG=ko`, `agctx config lang ko` 가운데 하나로 고른다.
+- `command not found: agctx`가 나오면 전역 bin 경로가 PATH에 없다. `npm prefix -g`로 위치를 확인해 PATH에 더한다.
 
 ## 1. 프로필 만들기
+
+1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이며, `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 문서와 대조한다.
 
 ```bash
 $ agctx profile create team-backend --scope team

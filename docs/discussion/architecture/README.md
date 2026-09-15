@@ -16,10 +16,11 @@
 | 6 | [agctx 관리 산출물의 안전한 동기화](topics/managed-artifact-safety.md) | Critical | 1·3·4 | 관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화 | Implementing |
 | 7 | [지침 적용 수준의 의미 정의](topics/guidance-level-semantics.md) | Medium | 2 | off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출 | Implemented |
 | 8 | [에이전트 규칙 위치 탐지](topics/agent-rule-discovery.md) | Medium | 3·4 | 적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공 | Implemented |
-| 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6 | 프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
+| 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6·13 | 프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
 | 10 | [스코프 확장과 지침 합성](topics/scope-composition.md) | Medium | 1·6 | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합 | Proposed |
 | 11 | [Git 기반 프로필 관리](topics/git-profile-management.md) | Critical | 1 | 표준 Git 원격을 통한 프로필 공유·확인·안전한 갱신 | Implemented |
 | 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Proposed |
+| 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | — | [문서 정확성 자동 리뷰](topics/doc-accuracy-review.md) | Medium | — | 해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 
@@ -49,15 +50,18 @@ flowchart LR
   S1 --> S11["11 Git 기반 프로필 관리"]
   S2 --> S12["12 기본 지침 근거·분량"]
   S7 --> S12
+  S3 --> S13["13 적용 대상 고르기"]
+  S4 --> S13
+  S13 --> S9
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
   class S1,S2,S3,S4,S7,S8,S11 done
   class S5,S6 doing
-  class S9,S10,S12 todo
+  class S9,S10,S12,S13 todo
 ```
 
-화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다.
+화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다. 13단계는 2026-09-16 제품 소유자 결정으로 9단계의 MCP보다 먼저 구현한다.
 
 ## 공통 구현 규칙
 

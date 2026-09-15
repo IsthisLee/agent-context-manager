@@ -3,6 +3,7 @@ import path from 'node:path';
 import { _ } from '../i18n/index.ts';
 import { say } from '../commands/output.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
+import { toLf } from '../shared/fs-utils.ts';
 import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
@@ -84,7 +85,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   if (pinned && !connected) {
     throw usageError('pin.not-git', _('error.pin.not-git', { name }), _('hint.profile.connect', { name }));
   }
-  if (!connected) return { content: fs.readFileSync(profile.instructionsPath, 'utf8'), source: null, uncommitted: false, pin: false };
+  if (!connected) return { content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')), source: null, uncommitted: false, pin: false };
 
   const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
   const remoteName = branch ? git(['config', `branch.${branch}.remote`], { cwd: dir, allowFailure: true }).stdout.trim() || 'origin' : 'origin';
@@ -105,7 +106,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   if (pin === true && (edited || !commit)) {
     throw usageError('pin.uncommitted', _('error.pin.uncommitted', { name }), _('hint.git.commit', { dir }));
   }
-  return { content: fs.readFileSync(profile.instructionsPath, 'utf8'), source: { git: remote, branch, commit }, uncommitted: edited, pin: pin === true };
+  return { content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')), source: { git: remote, branch, commit }, uncommitted: edited, pin: pin === true };
 }
 
 export interface ApplyPlan {

@@ -1,7 +1,7 @@
 # 프로필과 적용
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts, src/profile/apply.ts, src/shared/home.ts -->
-<!-- agctx-doc-sources-sha256: 80b0eb3a3dae641625b08a828ce8cebfa3ab9762022a01fe594ade1d36010f09 -->
+<!-- agctx-doc-sources-sha256: 9a09c2843f5ebba521f555fa5b64346e87fe424d9d6500065c576dc4a612367a -->
 
 agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여러 프로젝트와 여러 AI 에이전트에 **적용·동기화**하는 도구다. 코드를 대신 쓰지 않는다. 지침을 만들고 배포하며, 그 지침이 에이전트에 닿는지 확인한다. 확인하려고 에이전트를 실행하는 것은 사용자가 `verify --probe`로 요청할 때뿐이다.
 

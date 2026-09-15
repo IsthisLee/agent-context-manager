@@ -1,7 +1,7 @@
 # 갱신 방식 고르기: 고정과 예약 봇
 
 <!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 362a66c1134367c8b04dd559608ed269ca8e7ebad40586cc0a195e1bda7f1791 -->
+<!-- agctx-doc-sources-sha256: c3bee2f4c25137ac3c16a6435aec9e5e57e3f794057789ebcadc9c131d0317b9 -->
 
 프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다.
 

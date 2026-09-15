@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
 <!-- agctx-doc-sources: src/project, src/profile/resolve.ts -->
-<!-- agctx-doc-sources-sha256: a9fcbc6a352c6e528960d3eeb7fbb4dcfa23c5ecf0542ad576df1e4b408c7762 -->
+<!-- agctx-doc-sources-sha256: b49d5b083ceca5d14f3b68f9c4f30f9bb46e988b7a83d01a8e4d68b121fbfa1d -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 
@@ -29,7 +29,7 @@ agctx는 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안�
 
 ## 관리 영역을 고쳐서 멈췄을 때
 
-`apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다.
+`apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다. 줄 끝 문자만 다른 것은 차이로 보지 않는다. Git for Windows처럼 `core.autocrlf` 설정으로 파일을 CRLF 줄 끝으로 체크아웃해도 agctx는 LF로 맞춰 비교하고, 파일을 다시 쓸 때는 그 파일이 쓰던 CRLF를 유지한다.
 
 ```mermaid
 flowchart TD

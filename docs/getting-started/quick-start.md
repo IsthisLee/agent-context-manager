@@ -1,7 +1,7 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: c956f3036b90a8de58406c787e2d7b421781de837f15a25d26094c0df90383fe -->
+<!-- agctx-doc-sources-sha256: e3a2b2c24ded9af8f726d351ff948ab303f79faeb6d9cf16b842c9c5d62d6d71 -->
 
 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 설치는 [설치](installation.md), 개념은 [프로필과 적용](../concepts/profiles.md), 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 

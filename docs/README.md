@@ -1,7 +1,5 @@
 # Agent Context Manager 문서
 
-문서는 정본을 하나만 두고, 다른 문서에서는 요약과 링크만 제공한다. 외부 사실은 [외부 참고 문헌](references.md)에 출처 링크와 확인일을 붙여 두고, ADR은 머리말의 `근거`로 그 절을 가리킨다.
-
 ## 사용 흐름
 
 1. **설치와 첫 적용**: [설치](getting-started/installation.md) → [빠른 시작](getting-started/quick-start.md)(`profile create` → `profile setup` → `profile apply` → `check`)

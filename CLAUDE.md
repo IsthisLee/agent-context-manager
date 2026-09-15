@@ -1,4 +1,4 @@
-# Claude Code Instructions for @isthis/agentic
+# Claude Code Instructions for agent-context-manager
 
 All behavioral guidelines, TDD principles, and verification commands in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.
 

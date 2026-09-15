@@ -44,8 +44,8 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
   if (scopeFilter) profiles = profiles.filter(profile => profile.scope === scopeFilter);
   if (!profiles.length) {
     console.log(scopeFilter
-      ? `No profiles found in scope '${scopeFilter}'. Run \`agentic profile create <name> --scope ${scopeFilter}\` to create one.`
-      : 'No profiles found. Run `agentic profile create` to create one.');
+      ? `No profiles found in scope '${scopeFilter}'. Run \`agctx profile create <name> --scope ${scopeFilter}\` to create one.`
+      : 'No profiles found. Run `agctx profile create` to create one.');
     return;
   }
   const grouped = new Map<string, string[]>();
@@ -214,7 +214,7 @@ export async function setupProfileTui(name: string | null = null): Promise<void>
   const levels = levelOptions(getLocale());
   const profiles = getProfiles();
   if (!name) {
-    if (!profiles.length) throw new Error('No profiles found. Run `agentic profile create` first.');
+    if (!profiles.length) throw new Error('No profiles found. Run `agctx profile create` first.');
     const selected = await select<string>({
       message: _('setup.select'),
       options: profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('setup.select.hint') }))

@@ -31,8 +31,8 @@ export function setupProfile(name: string, values: readonly string[]): void {
   // file explains its own `적용 수준` labels instead of leaving them undefined.
   const definitions = guidanceLevelDefinitions(getLocale());
   const legend = `## ${_('setup.legend.title')}\n\n- recommended: ${definitions.recommended}\n- strict: ${definitions.strict}\n\n${_('setup.legend.intro')}`;
-  const start = '<!-- agentic:guidance:start -->';
-  const end = '<!-- agentic:guidance:end -->';
+  const start = '<!-- agctx:guidance:start -->';
+  const end = '<!-- agctx:guidance:end -->';
   const body = blocks.length ? [legend, ...blocks].join('\n\n') : '';
   const block = `${start}\n\n${body}\n\n${end}`;
   const current = fs.readFileSync(profile.instructionsPath, 'utf8');

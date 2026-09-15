@@ -106,7 +106,7 @@ test('the English extension header bounds the managed AGENTS.md region like the 
   assert.doesNotMatch(merged, /Existing project guidance/);
 });
 
-test('mergeManagedDocument updates only the Agentic block and preserves user edits', () => {
+test('mergeManagedDocument updates only the agctx block and preserves user edits', () => {
   const first = mergeManagedDocument('Generated v1', null);
   const existing = `${first}\n\n## User additions\n\nKeep this rule.\n`;
   const updated = mergeManagedDocument('Generated v2', existing);
@@ -115,8 +115,8 @@ test('mergeManagedDocument updates only the Agentic block and preserves user edi
   assert.doesNotMatch(updated, /Generated v1/);
   assert.match(updated, /## User additions/);
   assert.match(updated, /Keep this rule/);
-  assert.equal((updated.match(/agentic:managed:start/g) || []).length, 1);
-  assert.equal((updated.match(/agentic:managed:end/g) || []).length, 1);
+  assert.equal((updated.match(/agctx:managed:start/g) || []).length, 1);
+  assert.equal((updated.match(/agctx:managed:end/g) || []).length, 1);
 });
 
 const frontmatterTemplate = '---\nalwaysApply: true\n---\n\n# Generated rules v1\n';
@@ -132,13 +132,13 @@ test('mergeManagedDocument keeps template frontmatter at the top of a new file, 
 });
 
 test('mergeManagedDocument moves frontmatter out of a managed block written by an earlier version', () => {
-  const earlier = '<!-- agentic:managed:start -->\n---\nalwaysApply: true\n---\n\n# Generated rules v1\n<!-- agentic:managed:end -->\n';
+  const earlier = '<!-- agctx:managed:start -->\n---\nalwaysApply: true\n---\n\n# Generated rules v1\n<!-- agctx:managed:end -->\n';
   const merged = mergeManagedDocument(frontmatterTemplate.replace('v1', 'v2'), earlier);
 
   assert.ok(merged.startsWith('---\nalwaysApply: true\n---\n'));
   assert.equal((merged.match(/alwaysApply/g) || []).length, 1);
   assert.match(merged, /Generated rules v2/);
-  assert.equal((merged.match(/agentic:managed:start/g) || []).length, 1);
+  assert.equal((merged.match(/agctx:managed:start/g) || []).length, 1);
 });
 
 test('mergeManagedDocument keeps frontmatter the user already has at the top', () => {

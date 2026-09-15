@@ -8,7 +8,7 @@ import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from 'node:c
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agentic-package-smoke-'));
+const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-package-smoke-'));
 const packDir = path.join(smokeRoot, 'pack');
 const consumerDir = path.join(smokeRoot, 'consumer');
 const profilesHome = path.join(smokeRoot, 'home');
@@ -37,20 +37,20 @@ try {
   const [{ filename }] = JSON.parse(packOutput);
   const tarball = path.join(packDir, filename);
   runCommand(npmCommand, ['install', '--prefix', consumerDir, tarball], { stdio: 'ignore' });
-  const agt = path.join(consumerDir, 'node_modules', '.bin', isWindows ? 'agt.cmd' : 'agt');
-  const env = { ...process.env, AGENTIC_HOME: profilesHome };
-  const help = runCommand(agt, ['help'], { env });
-  assert.match(help, /agt \(agentic\) shared project guidance manager/);
+  const agctx = path.join(consumerDir, 'node_modules', '.bin', isWindows ? 'agctx.cmd' : 'agctx');
+  const env = { ...process.env, AGCTX_HOME: profilesHome };
+  const help = runCommand(agctx, ['help'], { env });
+  assert.match(help, /^agctx \(Agent Context Manager\)/);
   assert.match(help, /profile list \[--scope <scope>\]/);
   fs.mkdirSync(projectDir);
-  runCommand(agt, ['profile', 'create', 'smoke-profile', '--scope', 'workspace'], { env, stdio: 'ignore' });
-  runCommand(agt, ['profile', 'setup', 'smoke-profile', '--tdd', 'strict'], { env, stdio: 'ignore' });
-  runCommand(agt, ['profile', 'apply', 'smoke-profile', projectDir], { env, stdio: 'ignore' });
-  runCommand(agt, ['profile', 'sync', projectDir], { env, stdio: 'ignore' });
-  assert(fs.existsSync(path.join(profilesHome, '.agentic', 'profiles', 'smoke-profile', 'AGENTS.md')));
+  runCommand(agctx, ['profile', 'create', 'smoke-profile', '--scope', 'workspace'], { env, stdio: 'ignore' });
+  runCommand(agctx, ['profile', 'setup', 'smoke-profile', '--tdd', 'strict'], { env, stdio: 'ignore' });
+  runCommand(agctx, ['profile', 'apply', 'smoke-profile', projectDir], { env, stdio: 'ignore' });
+  runCommand(agctx, ['profile', 'sync', projectDir], { env, stdio: 'ignore' });
+  assert(fs.existsSync(path.join(profilesHome, 'profiles', 'smoke-profile', 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));
-  assert(fs.existsSync(path.join(projectDir, 'agentic.project.json')));
+  assert(fs.existsSync(path.join(projectDir, 'agctx.project.json')));
   console.log('Installed package smoke test passed (help, profile setup, project apply, and sync).');
 } finally {
   fs.rmSync(smokeRoot, { recursive: true, force: true });

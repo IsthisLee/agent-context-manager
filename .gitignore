@@ -31,14 +31,6 @@ pnpm-debug.log*
 tmp/
 scratch/
 
-# Agent execution runs & traces (confidential)
-.agentic/runs/
-.agentic/browser/
-.agentic/artifacts/
-
 # Build artifacts
 dist/
 build/
-
-# Agentic artifacts
-.agentic/last-check.json

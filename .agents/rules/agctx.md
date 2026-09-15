@@ -1,4 +1,4 @@
-# Antigravity Rules for @isthis/agentic
+# Antigravity Rules for agent-context-manager
 
 All behavioral, development, and verification rules in this repository are maintained in `AGENTS.md` in the project root as the shared source of truth.
 

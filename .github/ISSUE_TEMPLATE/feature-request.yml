@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an improvement to Agentic.
+description: Suggest an improvement to agctx.
 title: "feat: "
 labels: [enhancement]
 body:
@@ -27,4 +27,4 @@ body:
     attributes:
       label: 범위 확인
       options:
-        - label: 이 제안은 Agentic의 공통 개발 지침 생성·설정·동기화·적용 방향과 관련 있습니다.
+        - label: 이 제안은 agctx의 공통 개발 지침 생성·설정·동기화·적용 방향과 관련 있습니다.

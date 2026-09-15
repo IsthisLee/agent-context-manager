@@ -10,7 +10,7 @@
 
 1. CLI 명령과 옵션
 2. 터미널 TUI의 선택·입력 흐름
-3. `agt profile list`에서 프로필을 선택한 뒤 실행하는 관리 메뉴
+3. `agctx profile list`에서 프로필을 선택한 뒤 실행하는 관리 메뉴
 
 예외는 전역 도움말, 저장소 개발 전용 검사처럼 특정 프로필에 귀속되지 않는 기능뿐이다. 기능 registry와 평가 테스트에서 세 경로의 등록 누락을 실패로 처리한다.
 
@@ -18,7 +18,7 @@
 flowchart LR
   REG["PROFILE_OPERATION_CONTRACT<br/>bin/contracts.mjs"] -->|cli| CLI["CLI 명령·옵션"]
   REG -->|tui| TUI["터미널 TUI 흐름"]
-  REG -->|profileList| MENU["agt profile list<br/>관리 메뉴"]
+  REG -->|profileList| MENU["agctx profile list<br/>관리 메뉴"]
   EVAL["평가 테스트"] -.->|세 경로 중 하나라도 빠지면 실패| REG
 ```
 

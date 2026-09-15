@@ -58,15 +58,15 @@ export function hashAgentsManagedDocument(content: string | null | undefined): s
 const LEADING_FRONTMATTER = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
 
 /**
- * Replace only the Agentic-owned block in a generated guidance file.
+ * Replace only the agctx-owned block in a generated guidance file.
  * Unmarked legacy files are preserved and receive a new managed block.
  * Agents parse rule frontmatter only from the first line, so template
  * frontmatter stays outside the block at the top of the file. Frontmatter
  * already at the top of the file is kept as the user's.
  */
 export function mergeManagedDocument(managedContent: string, existingContent?: string | null): string {
-  const start = '<!-- agentic:managed:start -->';
-  const end = '<!-- agentic:managed:end -->';
+  const start = '<!-- agctx:managed:start -->';
+  const end = '<!-- agctx:managed:end -->';
   const template = managedContent.trim();
   const frontmatter = template.match(LEADING_FRONTMATTER)?.[0] || '';
   const managedBlock = `${start}\n${template.slice(frontmatter.length).trim()}\n${end}`;
@@ -81,8 +81,8 @@ export function mergeManagedDocument(managedContent: string, existingContent?: s
 }
 
 export function extractManagedDocument(content: string | null | undefined): string | null {
-  const start = '<!-- agentic:managed:start -->';
-  const end = '<!-- agentic:managed:end -->';
+  const start = '<!-- agctx:managed:start -->';
+  const end = '<!-- agctx:managed:end -->';
   const match = content?.match(new RegExp(`${start}[\\s\\S]*?${end}`, 'm'));
   return match?.[0] || null;
 }

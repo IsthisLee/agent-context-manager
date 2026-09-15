@@ -52,7 +52,7 @@ export function writeTextAtomic(target: string, content: string): void {
   }
 
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  const temporary = path.join(path.dirname(target), `.${path.basename(target)}.agentic-${randomUUID()}.tmp`);
+  const temporary = path.join(path.dirname(target), `.${path.basename(target)}.agctx-${randomUUID()}.tmp`);
   try {
     fs.writeFileSync(temporary, content, { encoding: 'utf8', mode });
     fs.renameSync(temporary, target);

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
-import { AGENTIC_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
+import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
 import { assertSafeTextTarget, writeTextAtomic } from '../shared/fs-utils.ts';
 import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan } from '../shared/types.ts';
 
@@ -14,7 +14,7 @@ import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectCo
 
 export const POINTER_TEMPLATES: ReadonlyArray<readonly [source: string, target: string]> = [
   ['templates/CLAUDE.md', 'CLAUDE.md'],
-  ['templates/antigravity-rules/agentic.md', '.agents/rules/agentic.md']
+  ['templates/antigravity-rules/agctx.md', '.agents/rules/agctx.md']
 ];
 
 function sha256(text: string): string {
@@ -34,14 +34,12 @@ export function regionHash(region: string | null): string | null {
   return region ? sha256(region) : null;
 }
 
-/** Recorded hash for a file; earlier Windows runs keyed pointer paths with `\`. */
 function recordedHashFor(projectConfig: ProjectConfig, relativePath: string): string | null {
-  const hashes = projectConfig.managedHashes || {};
-  return hashes[relativePath] || hashes[relativePath.replaceAll('/', '\\')] || null;
+  return projectConfig.managedHashes?.[relativePath] ?? null;
 }
 
 /**
- * The managed area as Agentic last wrote it, when it can be known: a base file
+ * The managed area as agctx last wrote it, when it can be known: a base file
  * matching the recorded hash, or a regenerated area that still hashes the same.
  */
 function knownBase(targetDir: string, relativePath: string, recordedHash: string, nextRegion: string | null): string | null {
@@ -58,7 +56,7 @@ export interface PlanInput {
   profileName: string;
   /** Profile AGENTS.md rendered for this project. */
   renderedAgents: string;
-  /** Parsed agentic.project.json. */
+  /** Parsed agctx.project.json. */
   projectConfig: ProjectConfig;
 }
 
@@ -100,9 +98,8 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   for (const file of files) {
     if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
-  planFile(AGENTIC_GITIGNORE, 'backups/\n');
-  const { core: _legacyCore, ...restConfig } = projectConfig;
-  planFile('agentic.project.json', JSON.stringify({ ...restConfig, schemaVersion: 1, profile: profileName, managedHashes }, null, 2) + '\n');
+  planFile(AGCTX_GITIGNORE, 'backups/\n');
+  planFile('agctx.project.json', JSON.stringify({ ...projectConfig, schemaVersion: 1, profile: profileName, managedHashes }, null, 2) + '\n');
 
   return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes };
 }

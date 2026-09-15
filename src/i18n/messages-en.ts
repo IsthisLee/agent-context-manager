@@ -1,6 +1,6 @@
 /** English message catalog. */
 export default {
-    'create.intro': 'Create an Agentic Profile',
+    'create.intro': 'Create an agctx profile',
     'create.name.message': 'Enter a profile name.',
     'create.name.invalid': 'Use 1-64 lowercase letters, numbers, or hyphens.',
     'create.scope.message': 'Select what this profile is for.',
@@ -9,7 +9,7 @@ export default {
     'create.cancel': 'Profile creation cancelled.',
     'create.outro': 'Profile created.',
 
-    'list.intro': 'Agentic Profiles',
+    'list.intro': 'agctx profiles',
     'list.scope.message': 'Select the profile scope to view.',
     'list.scope.all': 'All scopes',
     'list.scope.allHint': '{n} profiles',
@@ -52,14 +52,14 @@ export default {
     'resolve.mode.edit': 'Merge in VS Code',
     'resolve.mode.edit.hint': 'Open the three-way merge editor with the last applied version as base',
     'resolve.mode.discard': 'Back up and regenerate',
-    'resolve.mode.discard.hint': 'Copy current files to .agentic/backups/ and regenerate managed areas',
+    'resolve.mode.discard.hint': 'Copy current files to .agctx/backups/ and regenerate managed areas',
     'resolve.nothing': 'Nothing to resolve.',
     'resolve.outro': 'Conflicts resolved',
     'resolve.edit.guide': '{file}: opening the VS Code merge editor. Check it in this order.\n  1. The highlighted area in the upper `{pane}` pane is where you edited inside the managed area. Do not press its accept buttons.\n  2. The Result pane below already has those lines moved {boundary}. Check that everything you want to keep is outside the managed area, edit if needed, and save.\n  3. If closing the tab warns "The file contains unhandled conflicts.", confirm the Result pane once more and press \'Close with Conflicts\'. The saved result is applied.\n  4. Changes left inside the managed area in the Result pane are not applied; a diff shows them after you close.',
-    'resolve.edit.boundary.pointer': 'below `<!-- agentic:managed:end -->`',
+    'resolve.edit.boundary.pointer': 'below `<!-- agctx:managed:end -->`',
     'resolve.edit.boundary.agents': 'to the end of the extension section',
 
-    'main.intro': 'Agentic',
+    'main.intro': 'Agent Context Manager (agctx)',
     'main.message': 'What would you like to do?',
     'main.manage.label': 'Manage profiles',
     'main.manage.hint': 'Select a profile, then configure, apply, sync, view, or delete',
@@ -72,13 +72,13 @@ export default {
     'main.help.label': 'Help',
     'main.help.hint': 'View CLI commands and automation',
     'main.exit.label': 'Exit',
-    'main.outro': 'Agentic exited.',
+    'main.outro': 'agctx exited.',
 
     'lang.prompt.message': '언어를 선택하세요 / Select your language',
     'lang.saved': 'Saved language preference: {locale}',
     'lang.cancel': 'Language selection cancelled.',
 
-    'remove.intro': 'Delete an Agentic Profile',
+    'remove.intro': 'Delete an agctx profile',
     'remove.select': 'Select a profile to delete.',
     'remove.select.hint': 'Deletes only the profile source and settings',
     'remove.note.title': 'Deletion target',
@@ -87,7 +87,7 @@ export default {
     'remove.cancel': 'Profile deletion cancelled.',
     'remove.outro': 'Profile deleted.',
 
-    'setup.intro': 'Configure Agentic Profile guidance',
+    'setup.intro': 'Configure agctx profile guidance',
     'setup.select': 'Select a profile to configure.',
     'setup.select.hint': 'The profile whose shared guidance you configure',
     'setup.item.message': '{label} — {description}',

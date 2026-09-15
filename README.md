@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: bdf62d089ea19bafbfa04e8ee3bd0905935ddda07d79258c55a11b03c25c073d -->
+<!-- agctx-doc-sources-sha256: 05420e3a144c85734e44a19998e8d7ffed4d142100d2854a5bf1c5a5bc785112 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -22,9 +22,9 @@
 
 > agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화합니다.
 >
-> agctx가 지향하는 모습은 규칙·스킬·MCP·subagents를 프로필로 관리하고 저장소마다 골라 적용해, 모든 에이전트가 같은 설정을 따르고 동기화된 상태를 유지하는 것입니다.
+> agctx가 지향하는 모습은 규칙·스킬·MCP·subagents·hooks를 프로필로 관리하고 저장소마다 골라 적용해, 모든 에이전트가 같은 설정을 따르고 동기화된 상태를 유지하는 것입니다.
 
-> (⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)이며, 스킬·MCP·subagents로 범위를 넓혀 가는 중입니다.)
+> (⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)이며, 스킬·MCP·subagents·hooks로 범위를 넓혀 가는 중입니다.)
 
 <p align="center">
 
@@ -189,7 +189,7 @@ agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 
 
 - **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 적용 수준의 의미 정의, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
 - **구현 중:** 자연어 요청을 통한 agctx 사용(스킬·`--json`·`explain`·`verify`는 동작하고, 배포 패키지로 에이전트 시나리오를 평가하는 일이 남음), agctx 관리 산출물의 안전한 동기화(관리 영역 hash·dry-run·충돌 복구는 동작하고, 파일별 소유권 기록과 마커 없는 파일 정책을 정하는 일이 남음)
-- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents), 스코프 확장과 지침 합성, 기본 지침의 근거 기준과 분량 예산, 문서 정확성 자동 리뷰. 아직 현재 동작으로 보장하지 않습니다.
+- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents·hooks), 스코프 확장과 지침 합성, 기본 지침의 근거 기준과 분량 예산, 문서 정확성 자동 리뷰. 아직 현재 동작으로 보장하지 않습니다.
 
 ## 문서
 

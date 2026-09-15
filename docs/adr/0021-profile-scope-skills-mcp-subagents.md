@@ -1,6 +1,6 @@
 # 0021. 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정한다
 
-* **상태:** 채택됨 (Accepted)
+* **상태:** 채택됨 (Accepted), 일부 대체됨: hooks를 넣지 않는다는 결정은 [ADR 0022](0022-profile-scope-hooks.md)가 hooks를 대상에 더하는 것으로 바꾼다
 * **일자:** 2026-09-16
 * **결정자:** 제품 소유자
 * **근거:** 외부 근거 없음: 프로필이 담을 대상은 제품 범위에 관한 결정이다. 대상마다 에이전트가 읽는 위치와 형식은 구현할 때 [프로필 설정 표면 확장](../discussion/architecture/topics/profile-config-surface.md) 논의에서 근거와 함께 정한다.

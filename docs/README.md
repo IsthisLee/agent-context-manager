@@ -65,7 +65,7 @@
 ## 결정 기록
 
 - [결정 기록](adr/): 확정된 장기 결정
-    - [ADR 0001: 제품 범위](adr/0001-product-scope.md) (일부 대체: ADR 0019)
+    - [ADR 0001: 제품 범위](adr/0001-product-scope.md) (일부 대체: ADR 0019, ADR 0021)
     - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md) (일부 대체: ADR 0014)
     - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md) (일부 대체: ADR 0013)
     - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md) (일부 정정: ADR 0009, 일부 대체: ADR 0013)
@@ -85,6 +85,7 @@
     - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md)
     - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md)
     - [ADR 0020: APM이 다시 만드는 파일에는 쓰지 않고, 하위 AGENTS.md마다 Claude Code 연결 파일을 만듦](adr/0020-apm-coexistence-and-monorepo-links.md)
+    - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

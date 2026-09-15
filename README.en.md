@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 0e7e8c1882e7c2b5680a1ea2e154208de1f974fca08f118a0999d5dd1246234b -->
+<!-- agctx-doc-sources-sha256: e3c213dcb9111e63826b9bf77a3ca27d76b452144e5ca266d28caa1b867fd682 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -22,9 +22,9 @@
 
 > agctx creates and configures agent context as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
 >
-> Where agctx is headed: rules, skills, and MCP managed as Profiles — pick one per repository, and every agent follows the same setup and stays in sync.
+> Where agctx is headed: rules, skills, MCP, and subagents managed as Profiles — pick one per repository, and every agent follows the same setup and stays in sync.
 
-> (⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`); the scope is expanding to skills, MCP, and hooks.)
+> (⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`); the scope is expanding to skills, MCP, and subagents.)
 
 <p align="center">
   <picture>
@@ -40,6 +40,8 @@ One flow — `profile create` → `profile setup` → `profile apply`/`profile s
 **Your working principles for TDD, verification, security, and documentation are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
 
 agctx manages those standards as a Profile and, when you apply it to a project, generates the files that compatible agents read, in a single pass. Change the standard in the Profile and sync it, so you never touch each project by hand again; each project's own domain rules and settings stay intact.
+
+The same problem shows up beyond rules, in the skills, MCP server settings, and subagent definitions a team shares. agctx manages rules today and is extending the same Profile to cover them.
 
 > Team and organization Profiles are shared through a Git remote. Members receive them with `profile clone` and `pull`, and CI runs `agctx check` to confirm that a repository reflects the latest Profile version. The steps are in the [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md) (Korean).
 

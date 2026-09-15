@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 0e7e8c1882e7c2b5680a1ea2e154208de1f974fca08f118a0999d5dd1246234b -->
+<!-- agctx-doc-sources-sha256: e3c213dcb9111e63826b9bf77a3ca27d76b452144e5ca266d28caa1b867fd682 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -22,9 +22,9 @@
 
 > agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고, 이를 로컬 또는 Git 기반으로 관리하며 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화합니다.
 >
-> agctx가 지향하는 모습은 규칙·스킬·MCP를 프로필로 관리하고 저장소마다 골라 적용해, 모든 에이전트가 같은 설정을 따르고 동기화된 상태를 유지하는 것입니다.
+> agctx가 지향하는 모습은 규칙·스킬·MCP·subagents를 프로필로 관리하고 저장소마다 골라 적용해, 모든 에이전트가 같은 설정을 따르고 동기화된 상태를 유지하는 것입니다.
 
-> (⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)이며, 스킬·MCP·Hooks로 범위를 넓혀 가는 중입니다.)
+> (⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)이며, 스킬·MCP·subagents로 범위를 넓혀 가는 중입니다.)
 
 <p align="center">
 
@@ -42,6 +42,8 @@
 **TDD·검증·보안·문서화 같은 작업 원칙을 이미 CLAUDE.md에 정해 뒀는데, 프로젝트와 AI 도구가 늘어날 때마다 같은 걸 다시 세팅하고 있진 않나요?**
 
 agctx는 그 기준을 프로필로 관리하고 프로젝트에 적용하면 호환 에이전트들이 읽는 파일을 한 번에 적용합니다. 프로필에서 기준을 바꾸면 동기화로 프로젝트마다 다시 손대지 않아도 되고 각 프로젝트만의 도메인 규칙·세팅은 그대로 남습니다.
+
+같은 문제는 규칙만이 아니라 팀이 함께 쓰는 스킬·MCP 서버 설정·subagent 정의에서도 생깁니다. agctx는 지금 규칙부터 관리하고, 이 설정들도 같은 프로필로 관리하도록 넓혀 갑니다.
 
 > 팀·조직 프로필은 Git 원격으로 공유합니다. 구성원은 `profile clone`·`pull`로 받고, CI는 `agctx check`로 저장소가 최신 프로필 버전을 반영했는지 확인합니다. 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)에 있습니다.
 

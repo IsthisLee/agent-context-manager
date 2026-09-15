@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `lib/project/apply.mjs:120-137`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agentic-doc-sources: bin, lib -->
-<!-- agentic-doc-sources-sha256: fb6edfea1ae49231ef9d117682505203c66b7d27aa9c8ecad1dc659820e1a8b1 -->
+<!-- agentic-doc-sources-sha256: 7db9e2be89916c984cc569bd73e6128c4afb24d4c6fe872372896329af8cabef -->
 
 ## 읽는 법
 
@@ -123,9 +123,8 @@ $AGENTIC_HOME 또는 ~/            대상 프로젝트/
     ├── config.json  (locale)   ├── agentic.project.json   (profile, managedHashes)
     └── profiles/               ├── CLAUDE.md              (관리 블록)
         └── <name>/             ├── .agents/rules/agentic.md
-            ├── agentic-profile.json├── .cursor/rules/agentic.mdc
-            └── AGENTS.md       ├── .github/copilot-instructions.md
-                                └── .agentic/              (base/*.base · backups/ · .gitignore)
+            ├── agentic-profile.json└── .agentic/         (base/*.base · backups/ · .gitignore)
+            └── AGENTS.md
 ```
 
 메타데이터 스키마와 프로젝트 설정의 관계를 ERD로 보면 이렇다.
@@ -153,7 +152,7 @@ erDiagram
     object managedHashes "파일별 sha256"
   }
   POINTER_FILE {
-    string path "CLAUDE.md 등 4종"
+    string path "CLAUDE.md·Antigravity 규칙 2종"
     string managedBlock "agentic:managed 블록"
   }
   BASE_FILE {
@@ -200,7 +199,7 @@ writeTextAtomic(profile.instructionsPath,
 
 ## 6. profile apply: 변경 계획과 적용
 
-`applyProfile`(`lib/project/apply.mjs:120-137`)이 핵심이다. `applyArgs`(`lib/project/apply.mjs:53-56`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑고, `planFor`(`lib/project/apply.mjs:77-89`)가 프로필·프로젝트 설정·프로젝트 이름을 모아 `planProject`(`lib/project/plan.mjs:65-105`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다. 전체 파이프라인은 다음과 같다.
+`applyProfile`(`lib/project/apply.mjs:120-137`)이 핵심이다. `applyArgs`(`lib/project/apply.mjs:53-56`)로 `name`(첫 위치인자)과 `project`(둘째, 없으면 `.`)를 뽑고, `planFor`(`lib/project/apply.mjs:77-89`)가 프로필·프로젝트 설정·프로젝트 이름을 모아 `planProject`(`lib/project/plan.mjs:63-103`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다. 전체 파이프라인은 다음과 같다.
 
 ```mermaid
 flowchart TD
@@ -214,7 +213,7 @@ flowchart TD
   G -->|"아니오"| W["writePlan<br/>모든 대상 assertSafeTextTarget 후 writeTextAtomic"]
 ```
 
-`planProject`는 `AGENTS.md`와 포인터 4종마다 새 내용과 충돌 여부를 계산한다(`lib/project/plan.mjs:67-78`).
+`planProject`는 `AGENTS.md`와 포인터 2종마다 새 내용과 충돌 여부를 계산한다(`lib/project/plan.mjs:65-76`).
 
 ```js
 const existing = overridden ? overrides.get(relativePath) : readIfExists(path.join(targetDir, relativePath));
@@ -229,8 +228,8 @@ const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
 
 한 파일이라도 충돌이면 쓰기 전에 멈추므로 어떤 파일도 바뀌지 않는다. dry-run에서는 `agentic.project.json`을 포함해 아무 파일도 쓰지 않는다. `apply`도 `sync`와 같은 계산을 거치므로 같은 프로필로 다시 적용해도 충돌은 풀리지 않는다. 충돌 표시와 복구는 [14절](#14-관리-영역-충돌-표시와-profile-resolve)에 있다.
 
-- **포인터 파일 4종**(`POINTER_TEMPLATES`, `lib/project/plan.mjs:14-19`): `CLAUDE.md`, `.agents/rules/agentic.md`, `.cursor/rules/agentic.mdc`, `.github/copilot-instructions.md`. 템플릿의 `{{PROJECT_NAME}}`을 채운 뒤 `mergeManagedDocument`로 관리 블록만 병합한다(`lib/project/plan.mjs:81-84`).
-- **계획 파일 순서**(`lib/project/plan.mjs:86-102`): 관리 파일 5개, 각 관리 영역의 base 파일 `.agentic/base/<경로>.base`, `.agentic/.gitignore`(`backups/`), 마지막으로 `agentic.project.json`이다. `agentic.project.json`은 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다.
+- **포인터 파일 2종**(`POINTER_TEMPLATES`, `lib/project/plan.mjs:14-17`): `CLAUDE.md`, `.agents/rules/agentic.md`. Cursor·Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)). 템플릿의 `{{PROJECT_NAME}}`을 채운 뒤 `mergeManagedDocument`로 관리 블록만 병합한다(`lib/project/plan.mjs:79-82`).
+- **계획 파일 순서**(`lib/project/plan.mjs:84-100`): 관리 파일 3개, 각 관리 영역의 base 파일 `.agentic/base/<경로>.base`, `.agentic/.gitignore`(`backups/`), 마지막으로 `agentic.project.json`이다. `agentic.project.json`은 레거시 `core` 키를 제거하고 `{ schemaVersion: 1, profile: name, managedHashes }`를 기록한다.
 - **출력**: `printPlan`(`lib/project/apply.mjs:91-99`)이 계획 요약과 파일별 상태를 한 줄씩 출력한다.
 
 ## 7. 관리 영역 병합과 hash
@@ -270,7 +269,7 @@ const merged = pattern.test(existingContent)
 return LEADING_FRONTMATTER.test(existingContent) ? merged : withFrontmatter(merged);
 ```
 
-- **frontmatter 위치**: Cursor `.mdc`와 Antigravity 규칙은 파일 첫 줄의 frontmatter(`alwaysApply`, `trigger`)로 로드 방식을 정한다. 그래서 템플릿 frontmatter(`LEADING_FRONTMATTER`, `lib/project/analyzer.mjs:61`)는 관리 블록과 관리 hash 밖, 파일 맨 앞에 둔다. 파일 맨 앞에 frontmatter가 이미 있으면 사용자의 것으로 보고 보존한다. 결정 근거는 [ADR 0009](../adr/0009-agent-rule-frontmatter.md)에 있다.
+- **frontmatter 위치**: Antigravity 규칙은 파일 첫 줄의 frontmatter(`trigger`)로 로드 방식을 정한다. 그래서 템플릿 frontmatter(`LEADING_FRONTMATTER`, `lib/project/analyzer.mjs:61`)는 관리 블록과 관리 hash 밖, 파일 맨 앞에 둔다. 파일 맨 앞에 frontmatter가 이미 있으면 사용자의 것으로 보고 보존한다. 결정 근거는 [ADR 0009](../adr/0009-agent-rule-frontmatter.md)에 있다.
 
 `hashAgentsManagedDocument`(`lib/project/analyzer.mjs:56-59`)와 `hashManagedDocument`(`lib/project/analyzer.mjs:96-99`)가 각각 관리 영역·관리 블록만 `sha256`한다. 이 hash를 `agentic.project.json`에 저장해 두고 다음 `apply`/`sync` 때 사용자가 관리 영역을 밖에서 손댔는지 감지한다(`createHash`, `lib/project/analyzer.mjs:1`). 이는 이 패키지가 **자기 산출물의 드리프트를 감지하는 방식** 그대로다.
 
@@ -396,7 +395,7 @@ export const PROFILE_OPERATION_CONTRACT = [
 
 충돌 판정과 복구는 세 모듈이 나눠 맡는다. `lib/project/plan.mjs`가 충돌을 모으고, `lib/project/conflicts.mjs`가 편집을 추출·재배치하며, `lib/project/merge-editor.mjs`가 VS Code를 연다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이다.
 
-- **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agentic/base/<경로>.base`(`baseFilePath`, `lib/project/conflicts.mjs:15-17`)와 `.agentic/.gitignore`를 계획에 넣는다(`lib/project/plan.mjs:97-100`). 충돌이 나면 `knownBase`(`lib/project/plan.mjs:48-53`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 `/` 경로이며 `recordedHashFor`(`lib/project/plan.mjs:39-42`)가 이전 Windows 기록의 `\` 키도 읽는다.
+- **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agentic/base/<경로>.base`(`baseFilePath`, `lib/project/conflicts.mjs:15-17`)와 `.agentic/.gitignore`를 계획에 넣는다(`lib/project/plan.mjs:95-98`). 충돌이 나면 `knownBase`(`lib/project/plan.mjs:46-51`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 `/` 경로이며 `recordedHashFor`(`lib/project/plan.mjs:37-40`)가 이전 Windows 기록의 `\` 키도 읽는다.
 - **표시:** 실제 `apply`·`sync`는 `conflictError`(`lib/project/apply.mjs:68-75`)가 만든 `ConflictError`(`lib/project/apply.mjs:61-66`)를 던진다. 메시지에는 충돌 파일 목록과 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`lib/project/apply.mjs:101-118`)가 diff를 출력한 뒤 같은 오류를 던져 종료 코드 1로 끝난다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`lib/project/conflicts.mjs:78-80`)가 만든다.
 - **resolve:** `resolveProject`(`lib/project/resolve.mjs:60-120`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담고 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 throw한다.
 

@@ -43,7 +43,7 @@ test('formatDiff renders a unified diff of two texts', () => {
 });
 
 test('base files round-trip the exact managed text under .agentic/base', () => {
-  assert.equal(baseFilePath('.github/copilot-instructions.md'), '.agentic/base/.github/copilot-instructions.md.base');
+  assert.equal(baseFilePath('.agents/rules/agentic.md'), '.agentic/base/.agents/rules/agentic.md.base');
   const managed = `${START}\nmanaged\n${END}`;
   assert.equal(parseBase(serializeBase(managed)), managed);
 });

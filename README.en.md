@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI Agent development guidance
 
 <!-- agentic-doc-sources: bin, lib, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: ce8a433b16c3b97895c83636ecb1ebe42d2120fbfff44894153ffcff3e847033 -->
+<!-- agentic-doc-sources-sha256: 36caa7651885b27935914011a7b8336cd34a94a45b8bdccd67e7251d027f1cc5 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agentic)](https://github.com/IsthisLee/agentic/commits/main)
-[![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity%20%C2%B7%20Cursor%20%C2%B7%20Copilot-6f42c1)](https://github.com/IsthisLee/agentic#supported-agents)
+[![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agentic#supported-agents)
 
 [한국어](README.md) · **English**
 
@@ -129,8 +129,6 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 | Codex, etc. (AGENTS.md standard) | `AGENTS.md` |
 | Claude Code | `CLAUDE.md` |
 | Antigravity | `.agents/rules/agentic.md` |
-| Cursor | `.cursor/rules/agentic.mdc` |
-| GitHub Copilot | `.github/copilot-instructions.md` |
 
 Applying also records the managed areas as last written under `.agentic/base/`. Commit it, because it is the reference for resolving managed-area conflicts.
 

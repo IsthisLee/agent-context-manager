@@ -24,8 +24,9 @@
     - [ADR 0006: 코드베이스 분석 기반 지침 생성을 구현하지 않음](adr/0006-no-codebase-analysis-guidance.md)
     - [ADR 0007: 프로필 저장소를 `~/.agentic/` 아래로 모음](adr/0007-profile-home-layout.md)
     - [ADR 0008: 관리 영역 충돌을 보여 주고 마지막 적용본으로 복구](adr/0008-managed-conflict-recovery.md) (일부 대체: ADR 0010)
-    - [ADR 0009: 에이전트 규칙 파일의 frontmatter를 파일 맨 앞에 두고 Antigravity 규칙을 항상 적용](adr/0009-agent-rule-frontmatter.md)
+    - [ADR 0009: 에이전트 규칙 파일의 frontmatter를 파일 맨 앞에 두고 Antigravity 규칙을 항상 적용](adr/0009-agent-rule-frontmatter.md) (일부 대체: ADR 0011)
     - [ADR 0010: resolve --edit은 merge 결과에서 관리 영역 밖만 적용](adr/0010-edit-merge-regenerates-managed-area.md)
+    - [ADR 0011: 지원 에이전트를 Codex·Claude Code·Antigravity로 좁힘](adr/0011-supported-agents.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

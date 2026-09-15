@@ -9,7 +9,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 제안 목표 | 하나의 공통 정본에서 도구별 지침 산출물을 생성하고 변경을 투명하게 동기화한다. |
-| 제안 이유 | Claude Code, Codex, Cursor 등은 서로 다른 지침 파일 위치와 문법을 사용한다. |
+| 제안 이유 | Claude Code, Codex, Antigravity 등은 서로 다른 지침 파일 위치와 문법을 사용한다. |
 
 ### 범위와 우선순위
 
@@ -40,7 +40,7 @@ flowchart LR
   T["패키지 templates/<br/>도구별 포인터 원본"] --> ADP
   subgraph P["대상 프로젝트"]
     PJA["AGENTS.md<br/>프로필 소유 영역 + 프로젝트 확장 영역"]
-    ADP["CLAUDE.md<br/>.agents/rules/agctx.md<br/>.cursor/rules/agentic.mdc<br/>.github/copilot-instructions.md<br/>관리 블록 + 사용자 내용"]
+    ADP["CLAUDE.md<br/>.agents/rules/agctx.md<br/>관리 블록 + 사용자 내용"]
     META["agctx.project.json<br/>profile · managedHashes"]
   end
   ADP -.->|정본 위치 참조| PJA
@@ -56,7 +56,7 @@ agctx는 각 에이전트의 모델 호출·인증·세션·런타임을 실행�
 
 #### 구현 기록: 에이전트별 산출물 동기화
 
-* **결정:** `CLAUDE.md`, `.agents/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`를 포인터 산출물로 관리한다.
+* **결정:** `CLAUDE.md`, `.agents/rules/`, `.cursor/rules/`, `.github/copilot-instructions.md`를 포인터 산출물로 관리한다. 이후 [ADR 0011](../../../adr/0011-supported-agents.md)로 `.cursor/rules/`와 `.github/copilot-instructions.md`는 만들지 않는다.
 * **구현:** `profile apply`·`profile sync`가 선택 프로필과 프로젝트 확장 영역을 사용해 산출물을 생성하고, 관리 마커 내부만 갱신한다.
 * **평가:** `evals/core.test.mjs`, `evals/sync-merge.test.mjs`에서 산출물과 규칙 보존을 확인.
 * **제약:** 각 에이전트가 포인터를 해석하는 방식 자체는 agctx가 보장하지 않는다.

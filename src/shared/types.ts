@@ -22,10 +22,30 @@ export interface Profile {
   metadata: ProfileMetadata;
 }
 
+/** The Git version of the profile a project was applied from. */
+export interface ProjectSource {
+  /** Remote URL without user names, passwords, or tokens; null when the profile has no remote. */
+  git: string | null;
+  branch: string | null;
+  commit: string | null;
+}
+
+/** What `agctx.project.json` records about the applied profile version. */
+export interface VersionRecord {
+  source: ProjectSource | null;
+  /** The project stays on `source.commit` until `profile apply --pin` moves it. */
+  pin: boolean;
+  /** The applied content included profile edits that were not committed, so it cannot be reproduced. */
+  uncommitted: boolean;
+}
+
 /** `agctx.project.json` in a project. Unknown keys are kept when the file is rewritten. */
 export interface ProjectConfig {
   schemaVersion?: number;
   profile?: string;
+  source?: ProjectSource;
+  pin?: boolean;
+  uncommitted?: boolean;
   managedHashes?: Record<string, string>;
   [key: string]: unknown;
 }

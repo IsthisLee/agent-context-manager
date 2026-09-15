@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import { parseFlag } from '../commands/args.ts';
-import { writeTextAtomic } from '../shared/fs-utils.ts';
+import { say } from '../commands/output.ts';
 import { _, getLocale, guidanceLevelDefinitions, guidanceSections } from '../i18n/index.ts';
+import { usageError } from '../shared/errors.ts';
+import { writeTextAtomic } from '../shared/fs-utils.ts';
 import type { GuidanceKey, GuidanceLevel } from '../shared/types.ts';
 import { readProfile } from './store.ts';
 
@@ -14,12 +16,12 @@ export function isGuidanceLevel(value: unknown): value is GuidanceLevel {
   return value === 'off' || value === 'recommended' || value === 'strict';
 }
 
-export function setupProfile(name: string, values: readonly string[]): void {
+export function setupProfile(name: string, values: readonly string[]): { profile: string; settings: Record<GuidanceKey, GuidanceLevel> } {
   const profile = readProfile(name);
-  const settings: Partial<Record<GuidanceKey, GuidanceLevel>> = {};
+  const settings = {} as Record<GuidanceKey, GuidanceLevel>;
   for (const key of GUIDANCE_KEYS) {
     const value = parseFlag(values, key, profile.metadata.settings?.[key] || guidanceDefaults[key]);
-    if (!isGuidanceLevel(value)) throw new Error(`--${key} must be off, recommended, or strict.`);
+    if (!isGuidanceLevel(value)) throw usageError('setup.invalid-level', _('error.setup.invalid-level', { option: `--${key}` }), null);
     settings[key] = value;
   }
   const sections = guidanceSections(getLocale());
@@ -28,7 +30,7 @@ export function setupProfile(name: string, values: readonly string[]): void {
     return `## ${title}\n\n- ${_('setup.block.level')}: ${settings[key]}\n- ${body}`;
   });
   // Define what the levels mean once, from the shared constant, so the produced
-  // file explains its own `적용 수준` labels instead of leaving them undefined.
+  // file explains its own level labels instead of leaving them undefined.
   const definitions = guidanceLevelDefinitions(getLocale());
   const legend = `## ${_('setup.legend.title')}\n\n- recommended: ${definitions.recommended}\n- strict: ${definitions.strict}\n\n${_('setup.legend.intro')}`;
   const start = '<!-- agctx:guidance:start -->';
@@ -39,5 +41,6 @@ export function setupProfile(name: string, values: readonly string[]): void {
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
   writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
   writeTextAtomic(profile.metadataPath, JSON.stringify({ ...profile.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
-  console.log(`Configured profile: ${name}`);
+  say(_('setup.done', { name }));
+  return { profile: name, settings };
 }

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="740" viewBox="0 0 1280 740" font-family="'Pretendard Variable', 'Pretendard', 'Inter', 'Helvetica Neue', Arial, sans-serif">
   <!-- Dark-theme variant of agctx-overview.en.svg with the same geometry; only colors differ. Keep both in sync. Render: rsvg-convert -z 2 agctx-overview.en.dark.svg -o agctx-overview.en.dark.png -->
-  <!-- Git flow follows docs/discussion/architecture/topics/git-profile-management.md (Proposed). Remove the planned styling once it ships. -->
+  <!-- Git flow shows docs/discussion/architecture/topics/git-profile-management.md (Implemented, ADR 0017). -->
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0,0 L10,5 L0,10 z" fill="#c9d1d9"/>
@@ -16,32 +16,32 @@
 
   <!-- Column headers -->
   <text x="145" y="112" font-size="16" font-weight="700" fill="#9da7b3" text-anchor="middle">Git remote</text>
-  <rect x="100" y="124" width="90" height="24" rx="12" fill="#1e1633" stroke="#a371f7" stroke-dasharray="4 3"/>
-  <text x="145" y="141" font-size="12" font-weight="700" fill="#a371f7" text-anchor="middle">Planned</text>
+  <rect x="72" y="124" width="146" height="24" rx="12" fill="#1e1633" stroke="#a371f7"/>
+  <text x="145" y="141" font-size="12" font-weight="700" fill="#a371f7" text-anchor="middle">clone · pull · push</text>
   <text x="445" y="112" font-size="16" font-weight="700" fill="#9da7b3" text-anchor="middle">Profiles</text>
   <text x="445" y="136" font-size="12" fill="#7d8590" text-anchor="middle">~/.agctx/profiles</text>
   <text x="795" y="112" font-size="16" font-weight="700" fill="#9da7b3" text-anchor="middle">Projects</text>
   <text x="1125" y="112" font-size="16" font-weight="700" fill="#9da7b3" text-anchor="middle">Generated files → reading agents</text>
   <text x="1125" y="136" font-size="12" fill="#7d8590" text-anchor="middle">Example: api-server</text>
 
-  <!-- Git remote (planned) -->
-  <rect x="40" y="250" width="210" height="150" rx="14" fill="#1a1430" stroke="#a371f7" stroke-width="2" stroke-dasharray="7 5"/>
+  <!-- Git remote -->
+  <rect x="40" y="250" width="210" height="150" rx="14" fill="#1a1430" stroke="#a371f7" stroke-width="2"/>
   <text x="145" y="294" font-size="15" font-weight="700" fill="#d2a8ff" text-anchor="middle">Team · org Profile repo</text>
   <text x="145" y="318" font-size="12" fill="#a371f7" text-anchor="middle">Standard Git: GitHub, GitLab, …</text>
   <text x="145" y="350" font-size="13" fill="#9da7b3" text-anchor="middle">The Profile owner pushes;</text>
   <text x="145" y="370" font-size="13" fill="#9da7b3" text-anchor="middle">members clone and pull</text>
 
-  <rect x="40" y="450" width="210" height="76" rx="14" fill="#1a1430" stroke="#a371f7" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <rect x="40" y="450" width="210" height="76" rx="14" fill="#1a1430" stroke="#a371f7" stroke-width="1.5"/>
   <text x="145" y="480" font-size="15" font-weight="700" fill="#d2a8ff" text-anchor="middle">Member A · B</text>
   <text x="145" y="504" font-size="12" fill="#9da7b3" text-anchor="middle">Same Profile, their own projects</text>
-  <path d="M145,400 L145,446" fill="none" stroke="#a371f7" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-plan)"/>
+  <path d="M145,400 L145,446" fill="none" stroke="#a371f7" stroke-width="2" marker-end="url(#arrow-plan)"/>
   <text x="155" y="428" font-size="12" fill="#a371f7">profile clone</text>
   <text x="145" y="560" font-size="12" fill="#a371f7" text-anchor="middle">profile pull updates only the Profile;</text>
   <text x="145" y="578" font-size="12" fill="#a371f7" text-anchor="middle">profile sync updates projects</text>
 
-  <!-- Git ⇄ profiles (planned) -->
-  <path d="M250,300 C292,300 290,370 326,370" fill="none" stroke="#a371f7" stroke-width="2" stroke-dasharray="6 4" marker-start="url(#arrow-plan)" marker-end="url(#arrow-plan)"/>
-  <path d="M250,370 C292,370 290,530 326,530" fill="none" stroke="#a371f7" stroke-width="2" stroke-dasharray="6 4" marker-start="url(#arrow-plan)" marker-end="url(#arrow-plan)"/>
+  <!-- Git ⇄ profiles -->
+  <path d="M250,300 C292,300 290,370 326,370" fill="none" stroke="#a371f7" stroke-width="2" marker-start="url(#arrow-plan)" marker-end="url(#arrow-plan)"/>
+  <path d="M250,370 C292,370 290,530 326,530" fill="none" stroke="#a371f7" stroke-width="2" marker-start="url(#arrow-plan)" marker-end="url(#arrow-plan)"/>
   <text x="256" y="284" font-size="12" font-weight="600" fill="#a371f7">clone · pull ⇄ push</text>
 
   <!-- Profiles -->
@@ -128,7 +128,7 @@
 
   <!-- Legend -->
   <path d="M40,694 L96,694" stroke="#c9d1d9" stroke-width="2.2" marker-end="url(#arrow)"/>
-  <text x="108" y="699" font-size="13" fill="#c9d1d9">Available now</text>
-  <path d="M230,694 L286,694" stroke="#a371f7" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrow-plan)"/>
-  <text x="298" y="699" font-size="13" fill="#a371f7">Planned (Git sharing)</text>
+  <text x="108" y="699" font-size="13" fill="#c9d1d9">Apply and sync</text>
+  <path d="M230,694 L286,694" stroke="#a371f7" stroke-width="2" marker-end="url(#arrow-plan)"/>
+  <text x="298" y="699" font-size="13" fill="#a371f7">Git sharing (clone · pull · push)</text>
 </svg>

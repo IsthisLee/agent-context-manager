@@ -6,17 +6,26 @@
 
 ### Added
 
+- Git 프로필 공유: `profile clone [--branch <branch>] <git-url>`, `profile status [--refresh] [<name>]`, `profile pull [--dry-run] <name>`, `profile push [--dry-run] [--yes] <name>`, `profile connect [--branch <branch>] <name> <git-url>`. 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`·`AGENTS.md`를 검증하고 숨은 문자를 검사한 뒤에만 반영하며 pull은 fast-forward만 한다. push는 이미 만든 커밋만 보낸다. TUI 메인 화면과 `profile list` 관리 메뉴에서도 실행할 수 있다. 근거는 [ADR 0017](docs/adr/0017-git-profile-sharing.md)
+- 적용 버전 기록과 고정: `apply`·`sync`가 `agctx.project.json`에 `source { git, branch, commit }`와 `uncommitted`를 기록한다. `profile apply --pin`은 현재 커밋에 고정하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 지침으로 다시 만든다. 고정한 프로젝트에 `--pin` 없이 적용하면 경고한다
+- `agctx check [--refresh] [<project>]`: 파일을 바꾸지 않고 관리 영역 충돌(2)·숨은 문자(3)·뒤처짐(1)을 종료 코드로 알린다. 프로필 보관함이 없는 CI에서는 `--refresh`로 원천 브랜치의 최신 커밋과 비교한다
+- 숨은 문자 검사: 양방향 제어 문자·폭 없는 문자·태그 문자·변형 선택자 보충을 `파일:줄:열 U+XXXX 종류`로 보고한다. 받을 프로필, 적용할 프로필, `check`의 관리 파일에 적용한다
+- 모든 명령의 `--json` 결과 문서(stdout에 문서 하나, 안내는 stderr), `agctx <명령> --help`, 잘못 입력한 명령의 제안, `Error:`·`Next:` 형식의 로케일별 오류 문구. 근거는 [ADR 0016](docs/adr/0016-command-contract.md)
 - `profile resolve [--dry-run] [--discard] [--edit] <project>`: 관리 영역 안에서 고친 줄을 관리 영역 밖으로 옮기고 관리 영역을 현재 프로필로 다시 만든다. 마지막 적용본을 알 수 없으면 멈추며 `--discard`는 `.agctx/backups/`에 백업한 뒤 다시 만들고, `--edit`은 자동 해결 결과로 채운 VS Code 3-way merge 편집기를 열고 결과에서 관리 영역 밖의 내용을 가져온다(관리 영역은 다시 만들므로 저장 시 포매터가 바꿔도 된다). `profile list` 관리 메뉴와 TUI의 충돌 흐름에서도 실행할 수 있다. 근거는 [ADR 0008](docs/adr/0008-managed-conflict-recovery.md)
 - `apply`·`sync`가 마지막으로 쓴 관리 영역 원문을 프로젝트의 `.agctx/base/`에 기록하고 `.agctx/.gitignore`로 백업 폴더를 커밋에서 제외
 
 ### Changed
 
+- **호환성 파괴:** 종료 코드를 나눴다. 관리 영역 충돌은 1에서 2로, 사용법 오류는 1에서 64로 바뀌고, 외부 도구·네트워크·인증 실패는 69, 그 밖의 오류는 70이다. 알 수 없는 명령은 도움말을 출력하고 0으로 끝나던 것을 비슷한 명령을 제안하고 64로 끝낸다. 근거는 [ADR 0016](docs/adr/0016-command-contract.md)
+- **호환성 파괴:** 터미널이 아닌 환경이나 `--json`에서 `profile apply`·`sync`·`resolve`는 `--yes`가 있어야 파일을 쓴다. 없으면 64로 멈추고 `--yes`를 붙인 명령을 안내한다. 터미널에서는 계획을 출력한 뒤 확인을 받는다. `--dry-run`은 확인 없이 실행한다
+- `agctx.project.json`을 `schemaVersion` 2로 기록한다. 1로 기록된 프로젝트도 그대로 읽는다
+- 기능 인터페이스 동등성 기준을 나눴다. 특정 프로필을 다루는 명령은 CLI·TUI·프로필 관리 메뉴가 모두 필요하고, 저장소를 검사하는 `check`와 전역 명령은 CLI만 필요하다
 - 지침 항목 '리뷰'의 표시 이름을 '변경 검토'(영어 'Change review')로 바꿈. 항목 키와 CLI 옵션 `--review`는 그대로다. 규칙 내용이 변경 범위·위험 확인과 필요 시 독립 리뷰를 함께 다루기 때문이다. 기존 프로필은 `profile setup`을 다시 실행하면 guidance 블록의 제목이 `## 변경 검토`로 바뀌고, 이후 `profile sync`로 프로젝트에 반영된다.
 
 - **호환성 파괴:** 이름을 Agent Context Manager로 바꿈. 패키지는 `@isthis/agentic`에서 `agent-context-manager`로, 명령은 `agentic`·`agt`에서 `agctx` 하나로 바뀐다. 프로필은 `~/.agctx/profiles/<name>/`(`profile.json`, `AGENTS.md`), 언어 설정은 `~/.agctx/config.json`에 둔다. 환경 변수는 `AGCTX_HOME`(데이터 폴더 자체를 가리킴)과 `AGCTX_LANG`이다. 프로젝트 파일은 `agctx.project.json`, `.agctx/`, `.agents/rules/agctx.md`이고 관리 표지는 `agctx:managed`다. 이전 이름의 홈과 프로젝트 파일은 읽거나 옮기지 않으므로 프로필을 다시 만들고 프로젝트에 다시 적용한다. 근거는 [ADR 0013](docs/adr/0013-rename-agent-context-manager.md)
 - **호환성 파괴:** 기본 로케일을 영어(`en`)로 바꿈. 로케일을 지정하지 않은 비대화형 실행의 출력과 새 프로필·프로젝트의 지침이 영어로 나온다. 한국어는 `--lang ko`·`AGCTX_LANG=ko`·`agctx config lang ko`로 고르며, 첫 대화형 실행의 언어 선택 화면은 English를 먼저 보여 준다. 근거는 [ADR 0014](docs/adr/0014-default-locale-english.md)
 - 지원 Node.js 하한을 22로 낮춤(`engines.node` `>=22.0.0`). CI는 Ubuntu Node.js 22·24·26, macOS·Windows Node.js 22에서 검증한다. 저장소 개발에는 Node.js 22.18 이상이 필요하다. 근거는 [ADR 0015](docs/adr/0015-node-22-support.md)
-- 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
+- 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 2로 끝난다
 - 런타임 의존성 `diff`(jsdiff) 추가
 - 소스를 TypeScript로 옮김. 설치본은 `src/`를 컴파일한 `dist/`의 JavaScript이며 설치·실행 방법은 그대로다. 저장소 개발에는 Node.js 22.18 이상이 필요하고, `pnpm run check`가 문법 검사 대신 TypeScript 형식 검사를 실행한다. 근거는 [ADR 0012](docs/adr/0012-typescript-source.md)
 

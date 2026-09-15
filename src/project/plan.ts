@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
 import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
 import { assertSafeTextTarget, writeTextAtomic } from '../shared/fs-utils.ts';
-import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan } from '../shared/types.ts';
+import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan, VersionRecord } from '../shared/types.ts';
 
 /**
  * Plan what `profile apply`/`sync`/`resolve` would write to a project.
@@ -58,12 +58,14 @@ export interface PlanInput {
   renderedAgents: string;
   /** Parsed agctx.project.json. */
   projectConfig: ProjectConfig;
+  /** The profile version written into agctx.project.json. */
+  record: VersionRecord;
 }
 
 /**
  * @param overrides - resolved contents to plan from instead of the files on disk
  */
-export function planProject({ packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig }: PlanInput, overrides: Map<string, string | null> = new Map()): ProjectPlan {
+export function planProject({ packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig, record }: PlanInput, overrides: Map<string, string | null> = new Map()): ProjectPlan {
   const files: PlannedFile[] = [];
   const describe = (relativePath: string, kind: ManagedKind, regenerate: (existing: string | null) => string) => {
     const overridden = overrides.has(relativePath);
@@ -99,7 +101,13 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
   planFile(AGCTX_GITIGNORE, 'backups/\n');
-  planFile('agctx.project.json', JSON.stringify({ ...projectConfig, schemaVersion: 1, profile: profileName, managedHashes }, null, 2) + '\n');
+  const { schemaVersion: _schemaVersion, profile: _profile, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
+  const version = {
+    ...(record.source ? { source: record.source } : {}),
+    ...(record.pin ? { pin: true } : {}),
+    ...(record.uncommitted ? { uncommitted: true } : {})
+  };
+  planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, ...version, managedHashes }, null, 2) + '\n');
 
   return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes };
 }

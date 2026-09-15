@@ -36,7 +36,7 @@ body:
     id: environment
     attributes:
       label: 환경
-      placeholder: Node.js 24, macOS 15, pnpm 10.15.0
+      placeholder: Node.js 22, macOS 15, pnpm 10.15.0
     validations:
       required: true
   - type: textarea

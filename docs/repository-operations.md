@@ -3,7 +3,7 @@
 이 문서는 agctx 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 188f22ddde41df5e3c8bd654f69271734a49171b9871787e9d2c9724c68029bd -->
+<!-- agctx-doc-sources-sha256: a39328815175cc7fad52a77d98a7584495724e4f5b767d3f3369b29650af666d -->
 
 `agent-context-manager`는 공개 GitHub 저장소와 npm registry로 배포하는 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
@@ -54,7 +54,7 @@ flowchart TD
 
 게이트는 형식만 확인한다. 링크한 문서에 그 주장이 실제로 있는지는 확인일을 붙이는 사람이 직접 열어 확인해야 하며, 외부 링크가 살아 있는지도 검사하지 않는다.
 
-GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 24 LTS·26 Current, macOS와 Windows의 Node.js 24 LTS 조합을 고정된 pnpm 버전으로 검증한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 Node.js 24로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
+GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·24 LTS와 26 Current, macOS와 Windows의 Node.js 22 LTS 조합을 고정된 pnpm 버전으로 검증한다. 지원 하한인 22를 세 운영체제에서 모두 돌려 새 API를 실수로 쓰면 CI가 잡게 한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 같은 이유로 Node.js 22로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
 
 저장소 루트의 `.editorconfig`와 `.gitattributes`는 편집기·운영체제에 따른 인코딩, 줄바꿈, 공백 차이를 줄이는 기본 파일 형식 계약이다.
 

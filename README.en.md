@@ -3,14 +3,14 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: ae8cd2f985978e83565d1332afa67d4ee2db14acda914856aff7557beca526eb -->
+<!-- agctx-doc-sources-sha256: 42ca7414b61879f7ac423139fb4580cec6d0098eac7ca97fab154bc748f3a61b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agent-context-manager/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agent-context-manager)
 [![npm](https://img.shields.io/npm/v/agent-context-manager?logo=npm&color=cb3837)](https://www.npmjs.com/package/agent-context-manager)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Node.js 24+](https://img.shields.io/badge/Node.js-24%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
+[![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![last commit](https://img.shields.io/github/last-commit/IsthisLee/agent-context-manager)](https://github.com/IsthisLee/agent-context-manager/commits/main)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#supported-agents)
 
@@ -79,7 +79,7 @@ Individual developers can also split and reuse per-project `Personal` Profiles a
 
 > The full usage — from installation to synchronization — is documented step by step in the [usage guide](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md).
 
-> Runtime: Node.js 24 LTS or newer
+> Runtime: Node.js 22 LTS or newer
 
 ```bash
 npm install -g agent-context-manager

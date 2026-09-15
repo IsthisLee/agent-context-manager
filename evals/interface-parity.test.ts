@@ -23,7 +23,7 @@ test('the profile management menu implements an action for every per-profile com
 
 test('repository commands need only the CLI and declare the exit codes they return', () => {
   const repositoryCommands = COMMANDS.filter(command => command.surface === 'repository');
-  assert.deepEqual(repositoryCommands.map(command => command.id), ['check']);
+  assert.deepEqual(repositoryCommands.map(command => command.id), ['check', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr']);
   for (const command of repositoryCommands) {
     assert.ok(command.exitCodes.includes(0), `${command.id} must declare success`);
     assert.equal(command.profileMenu, undefined, `${command.id} is not a profile menu action`);
@@ -33,6 +33,6 @@ test('repository commands need only the CLI and declare the exit codes they retu
 test('the registry covers the complete command set', () => {
   assert.deepEqual(
     COMMANDS.map(command => command.id),
-    ['profile.create', 'profile.list', 'profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.clone', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect', 'check', 'config.lang', 'help']
+    ['profile.create', 'profile.list', 'profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.clone', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect', 'check', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr', 'config.lang', 'help']
   );
 });

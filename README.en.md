@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 807222a5fb014324ebc982cee58155cc08d94477f35481c78673b994ea71a5c1 -->
+<!-- agctx-doc-sources-sha256: 59e85af4fdeada44ab0f2f342420ff9ab661287f462f437fd1bdd42dbf5f21aa -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -110,7 +110,7 @@ Applied profile company to /path/to/project
 
 Personal Profiles are stored under `~/.agctx/profiles/<name>`. A project's domain rules are added separately in the project's `AGENTS.md` after a Profile is applied.
 
-agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, and to check repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
 
 ### Scope of verification
 
@@ -128,6 +128,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 - Generate and synchronize per-agent guidance files.
 - `agctx profile clone|status|pull|push|connect` — share Profiles through a standard Git remote; project files are never touched, and incoming guidance with hidden characters is refused.
 - `agctx check [--refresh] <project>` — report managed-area conflicts, hidden characters, and a project behind its Profile through exit codes, without changing files (for CI).
+- `agctx repos list|status|sync|pr` — check and sync every repository that uses a Profile at once, and update pinned repositories through one pull request each; a scheduled bot runs `repos pr --targets <file> --yes`.
 - Every command — a `--json` result document, exit codes that separate behind, conflict, and hidden characters, `--yes` confirmation outside a terminal, and `agctx <command> --help`.
 - `agctx config lang <ko|en>` — set the display and generation language; the default is English, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
 

@@ -3,7 +3,7 @@
 이 문서는 `agent-context-manager` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 08cae775597efe09750a882d3bf85a1602471055650c542cd8458f5b77ab9196 -->
+<!-- agctx-doc-sources-sha256: 988d015a473929416297feb4663b1063edf92e39a3b6314394e78a25ff8b406b -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agctx`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.
@@ -26,15 +26,16 @@
 2. **받기(구성원)**: `agctx profile clone <git-url>` → `agctx profile apply <name> <project>` (검토한 커밋에 머물려면 `--pin`)
 3. **갱신 반영**: 관리자가 커밋해 `profile push`하면 구성원은 `agctx profile status --refresh` → `agctx profile pull <name>` → `agctx profile sync <project>` (고정한 프로젝트는 `agctx profile apply <name> <project> --pin`)
 4. **CI 확인**: `agctx check --refresh <project>` (종료 코드 1은 뒤처짐, 2는 관리 영역 충돌, 3은 숨은 문자)
+5. **여러 저장소 갱신**: `agctx repos status`로 뒤처진 저장소를 보고, 고정하지 않은 저장소는 `agctx repos sync --profile <name>`, 고정한 저장소는 `agctx repos pr --profile <name>`으로 저장소마다 PR을 연다. 예약 봇은 `agctx repos pr --targets <file> --yes`를 쓴다
 
-절차의 설명과 CI 예시는 [사용 가이드](usage-guide.md#팀과-git으로-공유하기)에 있다.
+절차의 설명과 CI 예시는 [사용 가이드](usage-guide.md#팀과-git으로-공유하기)에, 여러 저장소 갱신은 [여러 저장소를 한 번에 맞추기](usage-guide.md#여러-저장소를-한-번에-맞추기)에 있다.
 
 ## 명령의 소유권
 
 | 주체          | 책임                                                                         |
 | ------------- | ---------------------------------------------------------------------------- |
 | 사용자        | 프로필 선택·설정 승인, 적용 대상과 변경 diff 검토, 프로젝트 도메인 지침 관리 |
-| agctx       | 프로필·지침 파일 생성, 선택된 프로필의 동기화, 포인터 산출물 제공, 적용 버전 기록·검사 |
+| agctx       | 프로필·지침 파일 생성, 선택된 프로필의 동기화, 포인터 산출물 제공, 적용 버전 기록·검사, 여러 저장소 동기화·PR 브랜치 push |
 | AI 에이전트   | 지침을 읽고 프로젝트 코드·테스트를 변경하며 결과를 보고                      |
 | 대상 프로젝트 | 비즈니스 코드·데이터·도메인 지침·검증 명령 보유                              |
 | Git 호스트    | 프로필 원격 저장소의 권한·리뷰·변경 이력                                     |

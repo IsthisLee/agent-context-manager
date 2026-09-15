@@ -4,10 +4,10 @@
 
 **작성·검증 기준:** `agent-context-manager`(게시 전) · 2026-09-15 · 아래 소스 해시 마커가 가리키는 소스
 
-> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:29-58`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
+> 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:55-86`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 08cae775597efe09750a882d3bf85a1602471055650c542cd8458f5b77ab9196 -->
+<!-- agctx-doc-sources-sha256: 988d015a473929416297feb4663b1063edf92e39a3b6314394e78a25ff8b406b -->
 
 ## 읽는 법
 
@@ -17,7 +17,7 @@
 
 ## 모듈 지도
 
-`src/`의 모듈이 서로를 어떻게 부르는지 먼저 본다. 폴더는 역할별로 나뉜다: `commands/`(명령 등록부·옵션 검사·처리기·출력·도움말), `profile/`(프로필 명령과 Git 프로필), `project/`(적용 엔진), `check.ts`(저장소 검사), `i18n/`(로케일·메시지), `tui/`(대화형 화면), `shared/`(프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입).
+`src/`의 모듈이 서로를 어떻게 부르는지 먼저 본다. 폴더는 역할별로 나뉜다: `commands/`(명령 등록부·옵션 검사·처리기·출력·도움말), `profile/`(프로필 명령과 Git 프로필), `project/`(적용 엔진), `check.ts`(저장소 검사), `repos/`(여러 저장소 목록·상태·동기화·PR), `i18n/`(로케일·메시지), `tui/`(대화형 화면), `shared/`(프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입).
 
 ```mermaid
 flowchart LR
@@ -32,6 +32,9 @@ flowchart LR
   handlers --> resolve["profile/resolve.ts<br/>resolve"]
   handlers --> gitprofile["profile/git-profile.ts<br/>clone·status·pull·push·connect"]
   handlers --> check["check.ts<br/>저장소 검사"]
+  handlers --> repos["repos/<br/>목록·상태·동기화·PR"]
+  repos --> check
+  repos --> apply
   check --> apply
   resolve --> apply
   apply --> plan["project/plan.ts<br/>변경 계획·충돌 수집·쓰기"]
@@ -73,8 +76,8 @@ const parsed = checkArguments(command, rest);
 const outcome = await HANDLERS[command.id](parsed);
 ```
 
-- **명령 찾기:** `findCommand`(`src/commands/registry.ts:75-81`)는 입력 앞부분과 단어가 가장 많이 맞는 명령을 고른다. 맞는 명령이 없으면 `unknownCommand`(`src/commands/cli.ts:23-27`)가 `suggestCommands`(`src/commands/registry.ts:84-92`)의 편집 거리 결과로 비슷한 명령을 붙여 사용법 오류(64)를 던진다.
-- **도움말:** `help()`(`src/commands/help.ts:7-18`)와 `commandHelp()`(`src/commands/help.ts:21-29`)는 등록부의 `usageLine`(`src/commands/registry.ts:69-72`)과 명령별 종료 코드 목록으로 출력한다.
+- **명령 찾기:** `findCommand`(`src/commands/registry.ts:80-86`)는 입력 앞부분과 단어가 가장 많이 맞는 명령을 고른다. 맞는 명령이 없으면 `unknownCommand`(`src/commands/cli.ts:23-27`)가 `suggestCommands`(`src/commands/registry.ts:89-97`)의 편집 거리 결과로 비슷한 명령을 붙여 사용법 오류(64)를 던진다.
+- **도움말:** `help()`(`src/commands/help.ts:7-18`)와 `commandHelp()`(`src/commands/help.ts:21-29`)는 등록부의 `usageLine`(`src/commands/registry.ts:74-77`)과 명령별 종료 코드 목록으로 출력한다.
 - **플래그 헬퍼:** `parseFlag`·`hasFlag`·`stripFlag`(`src/commands/args.ts:1-18`)는 전역 옵션을 떼어 낼 때와 `profile setup`의 수준 옵션을 읽을 때 쓴다. 명령 옵션은 `checkArguments`가 등록부를 기준으로 해석한다([12절](#12-기능-인터페이스-동등성-계약)).
 - **결과 출력:** `run()`(`src/commands/cli.ts:67-86`)은 `--json`이면 결과 문서를 stdout에 쓰고, 아니면 처리기가 돌려준 경고를 stderr에 쓴다. 오류는 `CliError`가 지닌 종료 코드를 `process.exitCode`에 넣고 `Error:`·`Next:` 두 줄(또는 JSON 문서)로 출력한다. `CliError`가 아닌 예외는 `internal` 코드와 종료 코드 70으로 바꾼다.
 
@@ -112,7 +115,7 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 
 - `--lang`·`AGCTX_LANG`의 잘못된 값은 예외이고 저장된 잘못된 값은 무시한다.
 - `resolveActiveLocale`(`src/commands/cli.ts:14-21`)은 `--json`이면 터미널이어도 `isTTY`를 거짓으로 넘겨 묻지 않는다. `null`이 오면 `promptLocale()`로 한 번 묻고 `saveLocale`로 저장한다.
-- **저장 위치:** agctx 데이터 폴더의 `config.json`이다(`configPath`, `src/shared/home.ts:20-22`). `config lang <ko|en>`은 처리기(`src/commands/handlers.ts:178-183`)가 `saveLocale`(`src/shared/home.ts:37-41`)로 같은 경로에 저장한다.
+- **저장 위치:** agctx 데이터 폴더의 `config.json`이다(`configPath`, `src/shared/home.ts:20-22`). `config lang <ko|en>`은 처리기(`src/commands/handlers.ts:279-284`)가 `saveLocale`(`src/shared/home.ts:37-41`)로 같은 경로에 저장한다.
 - `t()`는 키를 찾고 없으면 기본 로케일(`en`)로, 그것도 없으면 키 문자열을 그대로 돌려준다(`src/i18n/index.ts:57-64`). 두 카탈로그의 키 집합이 같은지와 코드가 찾는 키가 모두 있는지는 `evals/messages.test.ts`가 검사한다.
 
 ## 3. 프로필 저장소 모델
@@ -124,12 +127,14 @@ export function resolveLocale({ flag = null, env = null, saved = null, isTTY = f
 ```text
 $AGCTX_HOME 또는 ~/.agctx/      대상 프로젝트/
 ├── config.json  (locale)       ├── AGENTS.md              (프로필 영역 + 프로젝트 확장)
-└── profiles/                   ├── agctx.project.json     (profile, source, pin, managedHashes)
+└── profiles/                   ├── agctx.project.json     (profile, projectName, source, pin, managedHashes)
     └── <name>/                 ├── CLAUDE.md              (관리 블록)
         ├── .git/  (Git 프로필)  ├── .agents/rules/agctx.md
         ├── profile.json        └── .agctx/                (base/*.base · backups/ · .gitignore)
         └── AGENTS.md
 ```
+
+데이터 폴더의 `repos.json`은 이 컴퓨터에서 프로필을 적용한 저장소 목록이다([19절](#19-여러-저장소-목록과-repos-명령)).
 
 메타데이터 스키마와 프로젝트 설정의 관계를 ERD로 보면 이렇다.
 
@@ -159,6 +164,7 @@ erDiagram
   PROJECT_CONFIG {
     int schemaVersion "2"
     string profile "바인딩된 프로필 이름"
+    string projectName "AGENTS.md에 쓴 프로젝트 이름"
     object source "git·branch·commit, Git 프로필일 때만"
     bool pin "true면 기록한 커밋에 고정, 선택"
     bool uncommitted "커밋 안 한 프로필 수정이 섞였으면 true, 선택"
@@ -176,7 +182,7 @@ erDiagram
 
 - **이름 규칙:** `PROFILE_NAME` 정규식 `^[a-z0-9][a-z0-9-]{0,63}$`(`src/profile/store.ts:13`)을 `validateProfileName`(`src/profile/store.ts:19-23`)이 검사하고 틀리면 64로 멈춘다.
 - **읽기·목록:** `readProfile`(`src/profile/store.ts:35-53`)이 메타데이터·`AGENTS.md` 존재와 `isValidProfileMetadata`(`src/profile/store.ts:25-33`)를 검사한다. `getProfiles`(`src/profile/store.ts:69-82`)는 메타데이터가 올바른 프로필만 `scope:name` 순서로 돌려준다.
-- `agctx.project.json`의 `schemaVersion` 1로 기록된 프로젝트도 그대로 읽는다(`readProjectConfig`, `src/profile/apply.ts:40-49`). 다음 `apply`·`sync`가 2로 기록한다.
+- `agctx.project.json`의 `schemaVersion` 1로 기록된 프로젝트도 그대로 읽는다(`readProjectConfig`, `src/profile/apply.ts:45-54`). 다음 `apply`·`sync`가 2로 기록한다.
 
 ## 4. profile create
 
@@ -190,7 +196,7 @@ const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, getLocale() === 
 writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
 ```
 
-이름을 생략하면 처리기(`src/commands/handlers.ts:61-70`)가 `createProfileTui`(`src/tui/profile.ts:33-61`)를 부른다. 터미널에서는 이름·scope·확인을 묻고, 터미널이 아니면 stdin의 첫 줄을 이름, 둘째 줄을 scope로 읽는다(`src/tui/profile.ts:34-38`). 읽은 이름이 비었거나 `--json` 실행이면 사용법 오류(64)로 멈춘다.
+이름을 생략하면 처리기(`src/commands/handlers.ts:89-98`)가 `createProfileTui`(`src/tui/profile.ts:33-61`)를 부른다. 터미널에서는 이름·scope·확인을 묻고, 터미널이 아니면 stdin의 첫 줄을 이름, 둘째 줄을 scope로 읽는다(`src/tui/profile.ts:34-38`). 읽은 이름이 비었거나 `--json` 실행이면 사용법 오류(64)로 멈춘다.
 
 ## 5. profile setup: 지침 블록 기록
 
@@ -212,7 +218,7 @@ writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.repla
 
 ## 6. profile apply: 변경 계획과 적용
 
-`profile apply` 처리기(`src/commands/handlers.ts:91-96`)와 `profile sync` 처리기(`src/commands/handlers.ts:97-101`)는 둘 다 `applyOrSync`(`src/commands/handlers.ts:29-58`)를 부른다. 차이는 프로필 이름을 인자로 받는지(apply), 프로젝트에 기록된 이름을 쓰는지(sync)와 고정을 어떻게 다루는지뿐이다. `planFor`(`src/profile/apply.ts:115-132`)가 프로필을 읽고, 대상이 폴더인지 확인하고, `agctx.project.json`을 읽고, 쓸 프로필 내용과 버전 기록을 정한 뒤([16절](#16-적용-버전-기록과-고정)) 숨은 문자를 검사하고 `planProject`(`src/project/plan.ts:68-113`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다.
+`profile apply` 처리기(`src/commands/handlers.ts:119-124`)와 `profile sync` 처리기(`src/commands/handlers.ts:125-129`)는 둘 다 `applyOrSync`(`src/commands/handlers.ts:55-86`)를 부른다. 차이는 프로필 이름을 인자로 받는지(apply), 프로젝트에 기록된 이름을 쓰는지(sync)와 고정을 어떻게 다루는지뿐이다. `planFor`(`src/profile/apply.ts:120-137`)가 프로필을 읽고, 대상이 폴더인지 확인하고, `agctx.project.json`을 읽고, 쓸 프로필 내용과 버전 기록을 정한 뒤([16절](#16-적용-버전-기록과-고정)) 숨은 문자를 검사하고 `planProject`(`src/project/plan.ts:68-113`)에 넘긴다. 계획 계산은 충돌을 throw하지 않고 모으며, 충돌이 없을 때만 쓴다.
 
 ```mermaid
 flowchart TD
@@ -252,16 +258,18 @@ const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
 - **`agctx.project.json`의 키 순서:** 기존 설정에서 agctx가 쓰는 키를 모두 걷어 낸 뒤 같은 순서로 다시 붙인다. 그래야 바뀐 것이 없는 `sync`가 파일을 다시 쓰지 않는다(`src/project/plan.ts:104-110`).
 
 ```ts
-const { schemaVersion: _schemaVersion, profile: _profile, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
+const { schemaVersion: _schemaVersion, profile: _profile, projectName: _projectName, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
 const version = {
   ...(record.source ? { source: record.source } : {}),
   ...(record.pin ? { pin: true } : {}),
   ...(record.uncommitted ? { uncommitted: true } : {})
 };
-planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, ...version, managedHashes }, null, 2) + '\n');
+planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, projectName, ...version, managedHashes }, null, 2) + '\n');
 ```
 
-- **출력과 경고:** `printPlan`(`src/profile/apply.ts:134-142`)이 계획 요약과 파일별 상태를 한 줄씩 출력한다. 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다(`src/commands/handlers.ts:33-36`). `--json`이면 경고를 결과 문서의 `warnings`에 담는다.
+- **프로젝트 이름:** `AGENTS.md`에 쓰는 프로젝트 이름은 `package.json`의 `name`, 기록한 `projectName`, 폴더 이름 순서로 정하고 적용할 때 기록한다(`getProjectName`, `src/profile/apply.ts:26-35`). 팀원이 다른 이름의 폴더로 clone하거나 `repos pr`이 임시 worktree에서 렌더링해도 같은 파일이 나온다.
+- **저장소 목록:** 파일을 썼거나 이미 최신이면 `repos.json`에 경로·프로필·고정 여부를 기록한다(`remember`, `src/commands/handlers.ts:30-38`). 목록을 쓰지 못해도 적용은 성공으로 끝나고 경고만 남긴다. dry-run과 확인 거절은 기록하지 않는다.
+- **출력과 경고:** `printPlan`(`src/profile/apply.ts:139-147`)이 계획 요약과 파일별 상태를 한 줄씩 출력한다. 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다(`src/commands/handlers.ts:59-62`). `--json`이면 경고를 결과 문서의 `warnings`에 담는다.
 
 ## 7. 관리 영역 병합과 hash
 
@@ -306,7 +314,7 @@ return LEADING_FRONTMATTER.test(existingContent) ? merged : withFrontmatter(merg
 
 ## 8. profile sync
 
-`profile sync` 처리기(`src/commands/handlers.ts:97-101`)는 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.** 전환은 `apply`의 몫이다.
+`profile sync` 처리기(`src/commands/handlers.ts:125-129`)는 프로젝트가 이미 바인딩된 프로필을 다시 적용하되 **프로필을 절대 바꾸지 않는다.** 전환은 `apply`의 몫이다.
 
 ```ts
 const targetDir = projectDir(parsed.positional[0]);
@@ -315,7 +323,7 @@ return applyOrSync(parsed, name, targetDir, 'keep', `agctx profile sync ${target
 ```
 
 - **전환 거부:** 등록부에서 `profile sync`의 위치 인자는 `[<project>]` 하나이고 `--profile` 옵션이 없다. 그래서 `sync <name> <project>`나 `sync --profile x`는 `checkArguments`가 64로 멈추며, 이 명령에 등록한 `misuseHint`가 `apply`로 전환하라고 안내한다(`src/commands/options.ts:32-36`, `48-50`).
-- **바인딩 없음:** `boundProfile`(`src/profile/apply.ts:164-168`)이 `agctx.project.json`에서 프로필 이름을 찾지 못하면 먼저 `apply`하라는 사용법 오류(64)를 던진다.
+- **바인딩 없음:** `boundProfile`(`src/profile/apply.ts:169-173`)이 `agctx.project.json`에서 프로필 이름을 찾지 못하면 먼저 `apply`하라는 사용법 오류(64)를 던진다.
 - **고정 유지:** `pin`에 `'keep'`을 넘기므로 고정한 프로젝트는 기록한 커밋의 내용으로, 고정하지 않은 프로젝트는 보관함의 현재 내용으로 다시 만든다([16절](#16-적용-버전-기록과-고정)).
 
 ```mermaid
@@ -366,8 +374,8 @@ try {
 
 ## 10. dry-run · 로그 · 종료 코드
 
-- **dry-run:** `apply`/`sync`에 `--dry-run`을 주면 계획을 출력하고 확인 단계 전에 돌아간다(`src/commands/handlers.ts:43-46`). 충돌이 있으면 계획 뒤에 diff를 출력하고 종료 코드 2로 끝난다([14절](#14-관리-영역-충돌-표시와-profile-resolve)). `resolve`·`pull`·`push`의 `--dry-run`도 쓰기 전에 돌아간다.
-- **로그:** `printPlan`(`src/profile/apply.ts:134-142`)이 계획 요약과 파일별 `create`/`update`/`unchanged`/`conflict` 상태를 한 줄씩 출력한다. 사람용 문장은 `say()`(`src/commands/output.ts:20-22`)가 쓰며 `--json`이면 stderr로 보낸다. 경고는 `warn()`(`src/commands/output.ts:25-27`)이 항상 stderr에 쓴다.
+- **dry-run:** `apply`/`sync`에 `--dry-run`을 주면 계획을 출력하고 확인 단계 전에 돌아간다(`src/commands/handlers.ts:69-72`). 충돌이 있으면 계획 뒤에 diff를 출력하고 종료 코드 2로 끝난다([14절](#14-관리-영역-충돌-표시와-profile-resolve)). `resolve`·`pull`·`push`의 `--dry-run`도 쓰기 전에 돌아간다.
+- **로그:** `printPlan`(`src/profile/apply.ts:139-147`)이 계획 요약과 파일별 `create`/`update`/`unchanged`/`conflict` 상태를 한 줄씩 출력한다. 사람용 문장은 `say()`(`src/commands/output.ts:20-22`)가 쓰며 `--json`이면 stderr로 보낸다. 경고는 `warn()`(`src/commands/output.ts:25-27`)이 항상 stderr에 쓴다.
 - **결과 문서:** `--json`이면 `run()`이 `envelope()`(`src/commands/output.ts:45-55`)의 결과를 stdout에 한 번만 쓴다.
 
 ```ts
@@ -386,11 +394,12 @@ return {
 
 ## 11. TUI 흐름 배선
 
-화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`src/tui/profile.ts:3`). 프롬프트는 사용자가 취소하면 심볼을 돌려주는데 clack의 `isCancel`은 자기 취소 심볼만 타입에서 걷어 낸다. 그래서 모든 화면은 심볼 전체를 걷어 내는 `cancelled`(`src/tui/cancel.ts`)로 취소를 검사한다. 인자가 없고 TTY이면 `mainTui`(`src/tui/main.ts:9-33`) 루프가 열린다. 각 단계는 `runTuiStep`(`src/tui/profile.ts:18-25`)으로 감싸 `CliError`를 화면에 보여 주고 메뉴로 돌아온다.
+화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`src/tui/profile.ts:3`). 프롬프트는 사용자가 취소하면 심볼을 돌려주는데 clack의 `isCancel`은 자기 취소 심볼만 타입에서 걷어 낸다. 그래서 모든 화면은 심볼 전체를 걷어 내는 `cancelled`(`src/tui/cancel.ts`)로 취소를 검사한다. 인자가 없고 TTY이면 `mainTui`(`src/tui/main.ts:17-43`) 루프가 열린다. 각 단계는 `runTuiStep`(`src/tui/profile.ts:18-25`)으로 감싸 `CliError`를 화면에 보여 주고 메뉴로 돌아온다.
 
 ```mermaid
 flowchart TD
-  M["mainTui 루프<br/>src/tui/main.ts:9-33"] --> C1["새 프로필 생성"]
+  M["mainTui 루프<br/>src/tui/main.ts:17-43"] --> C1["새 프로필 생성"]
+  M --> RS["저장소 상태 → repos status<br/>src/tui/main.ts:12-15"]
   M --> CL["프로필 가져오기 → cloneProfileTui<br/>src/tui/profile.ts:63-70"]
   M --> C2["프로필 지침 설정"]
   M --> C3["언어 변경"]
@@ -414,7 +423,7 @@ flowchart TD
 
 ## 12. 기능 인터페이스 동등성 계약
 
-명령 목록의 정본은 `COMMANDS`(`src/commands/registry.ts:47-64`)다. 항목마다 `CommandSpec`(`src/commands/registry.ts:26-41`)의 필드를 채운다.
+명령 목록의 정본은 `COMMANDS`(`src/commands/registry.ts:48-69`)다. 항목마다 `CommandSpec`(`src/commands/registry.ts:26-41`)의 필드를 채운다.
 
 ```ts
 { id: 'profile.apply', words: ['profile', 'apply'], args: ['<name>', '[<project>]'], options: [dryRun, { name: 'pin' }, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.apply.label', profileMenu: 'actions.apply.label' },
@@ -452,7 +461,8 @@ export async function confirmChange(parsed: ParsedArguments, question: string, r
 | 종료 코드·`--json`·`--yes`·`--help`(10절·12절) | `evals/command-contract.test.ts` |
 | 프로필 생성·설정·apply/sync | `evals/profile.test.ts` |
 | Git 프로필·버전 기록·고정([15절](#15-git-프로필-명령)·[16절](#16-적용-버전-기록과-고정)) | `evals/git-profile.test.ts` |
-| check([17절](#17-check)) | `evals/command-contract.test.ts`, `evals/git-profile.test.ts` |
+| check([17절](#17-check)) | `evals/command-contract.test.ts`, `evals/git-profile.test.ts`, `evals/repos.test.ts` |
+| 여러 저장소 목록·상태·동기화·PR([19절](#19-여러-저장소-목록과-repos-명령)) | `evals/repos.test.ts` |
 | 숨은 문자([18절](#18-숨은-문자-검사)) | `evals/hidden-chars.test.ts`, `evals/git-profile.test.ts` |
 | 충돌 표시·base·resolve([14절](#14-관리-영역-충돌-표시와-profile-resolve)) | `evals/conflict-resolve.test.ts`, `evals/conflicts.test.ts` |
 | 로케일 해석([2절](#2-로케일-해석과-저장)) | `evals/i18n.test.ts` |
@@ -464,7 +474,7 @@ export async function confirmChange(parsed: ParsedArguments, question: string, r
 충돌 판정과 복구는 세 모듈이 나눠 맡는다. `src/project/plan.ts`가 충돌을 모으고, `src/project/conflicts.ts`가 편집을 추출·재배치하며, `src/project/merge-editor.ts`가 VS Code를 연다. 이 셋을 부르는 명령은 `src/profile/resolve.ts`다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이고 종료 코드는 [ADR 0016](../adr/0016-command-contract.md)을 따른다.
 
 - **마지막 적용본(base):** `planProject`는 관리 파일마다 `.agctx/base/<경로>.base`(`baseFilePath`, `src/project/conflicts.ts:16-18`)와 `.agctx/.gitignore`를 계획에 넣는다(`src/project/plan.ts:100-103`). 충돌이 나면 `knownBase`(`src/project/plan.ts:45-50`)가 base 파일 hash가 기록과 같은지, 아니면 지금 다시 만든 관리 영역 hash가 기록과 같은지 확인해 base를 돌려준다. 둘 다 아니면 `null`이다. 기록 키는 운영체제와 관계없이 `/`로 구분한 경로다(`recordedHashFor`, `src/project/plan.ts:37-39`).
-- **표시:** 실제 `apply`·`sync`는 `conflictError`(`src/profile/apply.ts:53-59`)가 만든 `project.conflict` 오류(종료 코드 2)를 던진다. 메시지에는 충돌 파일 목록이, 다음 단계에는 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`src/profile/apply.ts:144-161`)가 diff를 출력한 뒤 같은 오류를 던진다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`src/project/conflicts.ts:77-79`)가 만든다.
+- **표시:** 실제 `apply`·`sync`는 `conflictError`(`src/profile/apply.ts:58-64`)가 만든 `project.conflict` 오류(종료 코드 2)를 던진다. 메시지에는 충돌 파일 목록이, 다음 단계에는 `profile sync --dry-run`·`profile resolve` 명령이 들어간다. `--dry-run`은 `printPlan`이 충돌 파일을 `conflict`로 표시하고 `printConflicts`(`src/profile/apply.ts:149-166`)가 diff를 출력한 뒤 같은 오류를 던진다. diff는 jsdiff `createTwoFilesPatch`를 감싼 `formatDiff`(`src/project/conflicts.ts:77-79`)가 만든다.
 - **resolve:** `resolveProject`(`src/profile/resolve.ts:68-126`)는 충돌 파일마다 복구 내용을 정해 `overrides`에 담는다. 풀 수 없는 파일이 하나라도 있으면 쓰기 전에 `resolve.unknown-base` 오류(2)를 던지고(`src/profile/resolve.ts:107-110`), 파일마다 할 일을 출력한 뒤 확인을 받는다(`src/profile/resolve.ts:111-119`). 승인하면 같은 `planFor`로 계획을 다시 세워 쓴다. override한 파일은 기록 hash와 비교하지 않으므로 두 번째 계획에는 충돌이 없다.
 
 ```mermaid
@@ -522,11 +532,12 @@ if (result.error) {
 - 셸 문자열을 만들지 않고 인자 배열로 실행하므로 URL이나 브랜치 이름이 셸에서 해석되지 않는다. 사용자의 Git 설정·credential helper를 그대로 쓴다.
 - 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)).
 - `isGitRoot`(`src/shared/git.ts:41-52`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-toplevel`을 실행하고 실제 경로를 비교한다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
-- `sanitizeRemoteUrl`(`src/shared/git.ts:55-65`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
+- `resolveRemoteLocation`(`src/shared/git.ts:58-61`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
+- `sanitizeRemoteUrl`(`src/shared/git.ts:64-74`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
 
-**status.** `profileGitState`(`src/profile/git-profile.ts:43-72`)는 브랜치, HEAD 커밋, `git status --porcelain` 결과, 원격 URL을 읽는다. `--refresh`일 때만 `git fetch`로 네트워크에 접속한다. `branch.<브랜치>.remote`·`merge` 설정이 가리키는 원격 추적 ref가 있으면 `git rev-list --left-right --count HEAD...<ref>`로 앞섬·뒤처짐을 센다. 처리기(`src/commands/handlers.ts:125-134`)는 뒤처졌으면 `profile pull`을, 앞섰으면 `profile push`를 다음 명령으로 출력한다.
+**status.** `profileGitState`(`src/profile/git-profile.ts:43-72`)는 브랜치, HEAD 커밋, `git status --porcelain` 결과, 원격 URL을 읽는다. `--refresh`일 때만 `git fetch`로 네트워크에 접속한다. `branch.<브랜치>.remote`·`merge` 설정이 가리키는 원격 추적 ref가 있으면 `git rev-list --left-right --count HEAD...<ref>`로 앞섬·뒤처짐을 센다. 처리기(`src/commands/handlers.ts:153-162`)는 뒤처졌으면 `profile pull`을, 앞섰으면 `profile push`를 다음 명령으로 출력한다.
 
-**clone.** `cloneProfile`(`src/profile/git-profile.ts:74-104`)은 받은 저장소를 검증한 뒤에만 등록한다.
+**clone.** `cloneProfile`(`src/profile/git-profile.ts:74-105`)은 받은 저장소를 검증한 뒤에만 등록한다.
 
 ```mermaid
 flowchart TD
@@ -548,11 +559,11 @@ flowchart TD
 
 이름은 받은 `profile.json`의 `name`을 쓴다. 등록 전에 실패하면 임시 폴더만 지우므로 `profiles/`에 반쯤 받은 프로필이 남지 않는다.
 
-**pull.** `pullProfile`(`src/profile/git-profile.ts:123-144`)은 fetch한 뒤 순서대로 멈춘다: 연결되지 않았거나 추적 브랜치가 없으면 64, 커밋하지 않은 변경이 있으면 2, 앞서면서 뒤처졌으면(갈라짐) 2. 들어올 커밋과 파일 목록을 구하고, `git show <upstream>:profile.json`·`AGENTS.md`로 받을 내용을 먼저 검증·검사한다. `--dry-run`이면 여기서 돌아가고, 아니면 `git merge --ff-only`만 실행한다. 처리기는 받은 뒤 `profile sync`와 고정한 프로젝트의 `apply --pin`을 안내한다(`src/commands/handlers.ts:135-145`).
+**pull.** `pullProfile`(`src/profile/git-profile.ts:124-145`)은 fetch한 뒤 순서대로 멈춘다: 연결되지 않았거나 추적 브랜치가 없으면 64, 커밋하지 않은 변경이 있으면 2, 앞서면서 뒤처졌으면(갈라짐) 2. 들어올 커밋과 파일 목록을 구하고, `git show <upstream>:profile.json`·`AGENTS.md`로 받을 내용을 먼저 검증·검사한다. `--dry-run`이면 여기서 돌아가고, 아니면 `git merge --ff-only`만 실행한다. 처리기는 받은 뒤 `profile sync`와 고정한 프로젝트의 `apply --pin`을 안내한다(`src/commands/handlers.ts:163-173`).
 
-**push.** `planPush`(`src/profile/git-profile.ts:153-162`)는 fetch한 뒤 분리된 HEAD면 64, 커밋하지 않은 변경이 있으면 2, 원격보다 뒤처졌으면 2로 멈추고 보낼 커밋 목록을 만든다. 처리기(`src/commands/handlers.ts:146-163`)가 목록을 출력하고 확인을 받으면 `pushProfile`(`src/profile/git-profile.ts:164-170`)이 `git push <remote> HEAD:refs/heads/<branch>`를 실행한다. agctx는 `git add`·`git commit`을 실행하지 않는다.
+**push.** `planPush`(`src/profile/git-profile.ts:154-163`)는 fetch한 뒤 분리된 HEAD면 64, 커밋하지 않은 변경이 있으면 2, 원격보다 뒤처졌으면 2로 멈추고 보낼 커밋 목록을 만든다. 처리기(`src/commands/handlers.ts:174-191`)가 목록을 출력하고 확인을 받으면 `pushProfile`(`src/profile/git-profile.ts:165-171`)이 `git push <remote> HEAD:refs/heads/<branch>`를 실행한다. agctx는 `git add`·`git commit`을 실행하지 않는다.
 
-**connect.** `connectProfile`(`src/profile/git-profile.ts:172-188`)은 프로필 폴더가 Git 저장소가 아니면 `git init`·`add`·`commit` 명령을 안내하고 64로 멈춘다. `origin`이 다른 URL을 가리키면 64로 멈추고, `git ls-remote --heads`로 원격에 접근할 수 있는지 확인한 뒤 `origin`과 `branch.<브랜치>.remote`·`merge`를 설정한다.
+**connect.** `connectProfile`(`src/profile/git-profile.ts:173-190`)은 프로필 폴더가 Git 저장소가 아니면 `git init`·`add`·`commit` 명령을 안내하고 64로 멈춘다. `origin`이 다른 URL을 가리키면 64로 멈추고, `git ls-remote --heads`로 원격에 접근할 수 있는지 확인한 뒤 `origin`과 `branch.<브랜치>.remote`·`merge`를 설정한다.
 
 ```mermaid
 sequenceDiagram
@@ -577,7 +588,7 @@ sequenceDiagram
 
 ## 16. 적용 버전 기록과 고정
 
-`profileVersion`(`src/profile/apply.ts:74-104`)이 `apply`·`sync`가 쓸 프로필 내용과 기록할 버전을 정한다.
+`profileVersion`(`src/profile/apply.ts:79-109`)이 `apply`·`sync`가 쓸 프로필 내용과 기록할 버전을 정한다.
 
 | 경우 | 쓰는 `AGENTS.md` | `agctx.project.json`에 기록하는 것 |
 | --- | --- | --- |
@@ -600,11 +611,11 @@ if (pin === 'keep' && projectConfig.pin === true) {
 
 - `agctx.project.json`은 저장소에 커밋되는 파일이므로 기록한 커밋 값을 믿지 않는다. 16진수 커밋 이름일 때만 `git show`에 넘기고, 아니면 커밋이 없는 경우와 같이 69로 멈춘다. `--`로 시작하는 값이 `git` 옵션으로 해석되지 않게 하려는 것이다.
 - 고정한 프로젝트를 새 커밋으로 옮기는 명령은 `apply --pin`뿐이다. `sync`는 고정 커밋을 바꾸지 않고, `--pin` 없는 `apply`는 고정을 푼다([6절](#6-profile-apply-변경-계획과-적용)의 경고).
-- `source.git`에는 `sanitizeRemoteUrl`로 인증 정보를 지운 URL을 기록한다. 기록 결과는 `planProject`가 `record`로 받아 파일에 쓴다(`src/profile/apply.ts:129`, `src/project/plan.ts:104-110`).
+- `source.git`에는 `sanitizeRemoteUrl`로 인증 정보를 지운 URL을 기록한다. 기록 결과는 `planProject`가 `record`로 받아 파일에 쓴다(`src/profile/apply.ts:134`, `src/project/plan.ts:104-110`).
 
 ## 17. check
 
-`checkProject`(`src/check.ts:39-98`)는 파일을 바꾸지 않고 저장소가 기록한 버전과 맞는지 판정한다. 처리기(`src/commands/handlers.ts:172-177`)는 결과를 `종류 파일 설명` 한 줄씩 출력하고 보고서의 종료 코드를 돌려준다.
+`checkProject`(`src/check.ts:61-126`)는 파일을 바꾸지 않고 저장소가 기록한 버전과 맞는지 판정한다. 처리기(`src/commands/handlers.ts:200-205`)는 결과를 `종류 파일 설명` 한 줄씩 출력하고 보고서의 종료 코드를 돌려준다.
 
 ```mermaid
 flowchart TD
@@ -619,7 +630,7 @@ flowchart TD
   U -->|"예"| B1["behind: 재현할 수 없음"]
   U -->|"아니오"| STORE
   B1 --> STORE{"보관함에 프로필 있고 conflict 없음?"}
-  STORE -->|"예"| PLAN["planFor(profile, 'keep')<br/>다시 만든 내용과 다르면 behind"]
+  STORE -->|"예"| PLAN["planFor(profile, 'keep')<br/>다시 만든 내용과 다르면 behind<br/>고정이면 보관함 커밋이 앞설 때도 behind"]
   STORE -->|"아니오 · --refresh 없음"| WARN["경고: --refresh로 원천과 비교하라"]
   PLAN --> REF{"--refresh이고 source.git 있음?"}
   WARN --> REF
@@ -628,8 +639,10 @@ flowchart TD
   LS --> OUT
 ```
 
-- 보관함의 프로필과 비교할 때는 `apply`와 같은 `planFor`를 `'keep'`으로 부르므로 고정한 프로젝트는 기록한 커밋으로 다시 만든 결과와 비교한다(`src/check.ts:69-77`).
-- CI처럼 보관함이 없는 곳에서는 `--refresh`가 `git ls-remote -- <source.git> refs/heads/<branch>`를 실행한다(`src/check.ts:79-86`). 원격 접근이 실패하면 `git()`이 69를 던진다.
+- 보관함의 프로필과 비교할 때는 `apply`와 같은 `planFor`를 `'keep'`으로 부르므로 고정한 프로젝트는 기록한 커밋으로 다시 만든 결과와 비교한다(`src/check.ts:95`).
+- 고정한 프로젝트는 보관함 프로필의 HEAD가 기록한 커밋보다 앞서 있으면(`git merge-base --is-ancestor`) 뒤처짐으로 판정한다(`newerStoreCommit`, `src/check.ts:48-53`). `profile pull`로 새 커밋을 받은 구성원이 `check`로 바로 알 수 있게 하려는 것이며, 설계안의 뒤처짐 정의(적용한 뒤 보관함의 프로필이 바뀜)를 따른다.
+- CI처럼 보관함이 없는 곳에서는 `--refresh`가 `git ls-remote -- <source.git> refs/heads/<branch>`를 실행한다(`src/check.ts:109`). 원격 접근이 실패하면 `git()`이 69를 던진다.
+- 원격 조회 방법은 `CheckOptions.remoteHead`(`src/check.ts:55-59`)로 바꿀 수 있다. `repos status`는 이것으로 같은 원천·브랜치를 한 번만 조회한다.
 - 결과는 `CheckReport`(`src/check.ts:26-35`)로 돌려주며 `--json`이면 이 보고서가 결과 문서의 `data`가 된다.
 
 ## 18. 숨은 문자 검사
@@ -649,9 +662,72 @@ const RANGES: ReadonlyArray<readonly [from: number, to: number, kind: HiddenChar
 ```
 
 - `describeHiddenCharacters`(`src/shared/hidden-chars.ts:61-63`)가 `파일:줄:열 U+XXXX 종류` 형식으로 바꾼다.
-- `assertNoHiddenCharacters`(`src/profile/git-profile.ts:36-41`)는 찾은 것이 있으면 `profile.hidden-characters` 오류(3)를 던진다. clone(`src/profile/git-profile.ts:94`)과 pull(`src/profile/git-profile.ts:140`)은 받을 `profile.json`·`AGENTS.md`를, `planFor`(`src/profile/apply.ts:120`)는 프로젝트에 쓸 프로필 내용을 검사한다.
-- `check`는 오류를 던지지 않고 관리 파일 전체에서 찾은 위치를 `hidden-characters` 결과로 모은다(`src/check.ts:57-59`). 관리 영역 밖 사람이 쓴 부분도 에이전트가 읽기 때문이다.
+- `assertNoHiddenCharacters`(`src/profile/git-profile.ts:36-41`)는 찾은 것이 있으면 `profile.hidden-characters` 오류(3)를 던진다. clone(`src/profile/git-profile.ts:95`)과 pull(`src/profile/git-profile.ts:141`)은 받을 `profile.json`·`AGENTS.md`를, `planFor`(`src/profile/apply.ts:125`)는 프로젝트에 쓸 프로필 내용을 검사한다.
+- `check`는 오류를 던지지 않고 관리 파일 전체에서 찾은 위치를 `hidden-characters` 결과로 모은다(`src/check.ts:79-81`). 관리 영역 밖 사람이 쓴 부분도 에이전트가 읽기 때문이다.
 - 범위를 고른 근거와 확인하지 못한 부분은 [외부 근거](../references.md#cli-계약과-지침-공급망-근거)에 있다.
+
+## 19. 여러 저장소 목록과 repos 명령
+
+`repos` 명령은 이 컴퓨터에서 프로필을 적용한 저장소들을 한 번에 다룬다. 저장소 단위 기능이라 표면은 `repository`이고, TUI 메인 메뉴에는 읽기 전용 `저장소 상태`만 둔다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
+
+**목록.** 목록 파일은 `$AGCTX_HOME/repos.json`이다. `recordRepo`(`src/repos/registry.ts:58-62`)는 폴더의 실제 경로(`repoKey`, `src/repos/registry.ts:50-56`)를 키로 항목 하나만 남기고 경로 순으로 원자적으로 쓴다. 파일 형식이 깨졌으면 `readRepos`(`src/repos/registry.ts:26-41`)가 64로 멈추고, `pruneRepos`(`src/repos/registry.ts:70-75`)는 폴더가 없어진 항목만 지운다.
+
+**status.** `reposStatus`(`src/repos/status.ts:29-57`)는 항목마다 `checkProject`를 부르고 보고서의 종료 코드를 상태(`ok`·`behind`·`conflict`·`hidden-characters`)로 바꾼다. 폴더가 없으면 `missing`(0), 검사가 오류를 던지면 `error`와 그 종료 코드를 남긴다. `--refresh`의 원격 조회는 원천 URL과 브랜치 쌍마다 한 번만 한다. 처리기(`src/commands/handlers.ts:217-233`)는 뒤처진 저장소가 고정됐는지에 따라 `repos sync` 또는 `profile pull` 후 `repos pr`을 다음 명령으로 안내하고, 전체 종료 코드는 가장 심각한 값이다.
+
+**sync.** `planReposSync`(`src/repos/sync.ts:55-85`)가 모든 저장소의 계획을 먼저 세운다.
+
+```mermaid
+flowchart TD
+  E["목록의 저장소마다"] --> M{"폴더가 있는가?"}
+  M -->|"없음"| MISS["missing · 0"]
+  M -->|"있음"| P{"pin: true?"}
+  P -->|"예"| PIN["pinned · 0<br/>repos pr 안내"]
+  P -->|"아니오"| D{"관리 파일에<br/>커밋하지 않은 변경?"}
+  D -->|"예"| DIRTY["dirty · 1"]
+  D -->|"아니오"| PL["planFor(profile, 'keep')"]
+  PL --> C{"충돌?"}
+  C -->|"예"| CON["conflict · 2"]
+  C -->|"아니오"| U{"바뀌는 파일?"}
+  U -->|"없음"| OK["up-to-date · 0"]
+  U -->|"있음"| UP["update"]
+  UP --> Q["계획을 모두 출력한 뒤<br/>confirmChange 한 번"]
+  Q --> W["applyReposSync<br/>저장소마다 writePlan · 목록 기록<br/>한 곳이 실패해도 계속"]
+```
+
+- `uncommittedManagedFiles`(`src/repos/sync.ts:38-43`)는 저장소가 Git 작업 트리 안에 있을 때만 `git status --porcelain --untracked-files=no`로 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`·`agctx.project.json`을 본다. 추적하지 않는 파일은 막지 않고, Git 저장소가 아니면 `git`을 실행하지 않는다.
+- `applyReposSync`(`src/repos/sync.ts:88-99`)는 저장소마다 쓰기와 목록 기록을 하고, 한 저장소의 오류를 그 항목의 `error`로 남긴 채 다음 저장소로 넘어간다. 처리기(`src/commands/handlers.ts:234-255`)는 계획을 출력하고 한 번 확인한 뒤 결과가 바뀐 항목만 다시 출력한다.
+
+**pr.** `prepareReposPrs`(`src/repos/pr.ts:232-266`)가 대상마다 임시 작업 공간을 만들어 계획하고, 확인을 받은 뒤 `openPullRequests`(`src/repos/pr.ts:289-312`)가 커밋·push·PR을 만든다.
+
+```mermaid
+sequenceDiagram
+  participant H as repos pr 처리기
+  participant W as 임시 worktree 또는 clone
+  participant O as origin
+  participant G as gh
+  H->>O: git fetch origin +refs/heads/base:refs/remotes/origin/base
+  H->>W: git worktree add --detach (URL 대상이면 git clone)
+  H->>W: planFor(고정이면 true, 아니면 'keep')
+  alt 바뀌는 파일 없음
+    H->>W: 작업 공간 삭제 · up-to-date
+  else 바뀜
+    H->>G: gh pr list --head agctx/프로필-커밋 --state open
+    H->>O: git ls-remote --heads (같은 브랜치가 있는가)
+    H-->>H: 확인(터미널이 아니면 --yes)
+    H->>W: writePlan · 분리된 HEAD에서 git commit
+    H->>O: git push origin HEAD:refs/heads/agctx/프로필-커밋
+    H->>G: gh pr create --base --head --title --body-file
+    G-->>H: PR 주소, 또는 실패(push까지 하고 안내)
+  end
+  H->>W: git worktree remove --force · git worktree prune
+```
+
+- `worktreeFor`(`src/repos/pr.ts:108-138`)는 사용자 작업 폴더에 연결된 분리 worktree를 임시 폴더에 만들고 원격 base 브랜치를 체크아웃한다. base는 `--base`, `origin/HEAD`, 현재 브랜치의 추적 브랜치, 현재 브랜치 순서로 정한다(`defaultBase`, `src/repos/pr.ts:97-105`). 커밋은 분리된 HEAD에서 만들고 `HEAD:refs/heads/<브랜치>`로 push하므로 사용자 저장소의 작업 폴더·체크아웃·로컬 브랜치는 바뀌지 않는다.
+- `--targets` 파일의 줄은 대상 파일이 있는 폴더 기준으로 경로를 푼다. 작업 폴더(`.git`이 있는 폴더)는 그대로 쓰고, bare 저장소 경로와 URL은 `cloneFor`(`src/repos/pr.ts:141-154`)가 임시 폴더에 clone한다(`targetsFrom`, `src/repos/pr.ts:76-91`). 임시 clone은 저장소 목록에 기록하지 않는다.
+- `planTarget`(`src/repos/pr.ts:194-223`)은 고정한 저장소를 `planFor(..., true)`로 프로필의 현재 커밋에 다시 고정하고, 고정하지 않은 저장소는 보관함 내용으로 동기화한다. 브랜치 이름은 `agctx/<프로필>-<커밋 7자리>`이고 Git에 연결하지 않은 프로필이면 내용 해시로 만든다. 같은 브랜치에 열린 PR이 있거나 원격에 같은 브랜치가 있으면 만들지 않으므로, 예약 봇이 매일 실행해도 PR이 쌓이지 않는다.
+- `gh`(`src/repos/pr.ts:163-170`)는 `GH_PROMPT_DISABLED=1`로 질문 없이 실행하고, Windows에서는 `gh.exe`와 `.cmd` 래퍼를 모두 찾도록 셸을 거친다. `gh`가 없거나 GitHub 저장소가 아니어서 PR을 만들지 못하면 push까지 한 상태를 `pushed`로 남기고, 원격이 GitHub이면 비교 페이지 주소를 함께 알려 준다.
+- PR 본문(`pullRequestBody`, `src/repos/pr.ts:274-286`)에는 프로필·원천·버전 범위·고정 여부·프로필 커밋 목록(`git log --oneline <기록>..<새 커밋>`)·바뀐 파일을 적는다.
+- 모든 임시 worktree와 clone은 처리기의 `finally`에서 지운다(`src/commands/handlers.ts:256-278`).
 
 ## 관련 문서
 

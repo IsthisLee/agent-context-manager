@@ -37,6 +37,11 @@ export class CliError extends Error {
   }
 }
 
+/** Any thrown value as a CliError; unexpected errors become exit code 70. */
+export function toCliError(error: unknown): CliError {
+  return error instanceof CliError ? error : new CliError('internal', error instanceof Error ? error.message : String(error));
+}
+
 export function usageError(code: string, message: string, hint: string | null = null): CliError {
   return new CliError(code, message, { exitCode: EXIT.usage, hint });
 }

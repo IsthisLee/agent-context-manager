@@ -101,13 +101,13 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
   planFile(AGCTX_GITIGNORE, 'backups/\n');
-  const { schemaVersion: _schemaVersion, profile: _profile, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
+  const { schemaVersion: _schemaVersion, profile: _profile, projectName: _projectName, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
   const version = {
     ...(record.source ? { source: record.source } : {}),
     ...(record.pin ? { pin: true } : {}),
     ...(record.uncommitted ? { uncommitted: true } : {})
   };
-  planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, ...version, managedHashes }, null, 2) + '\n');
+  planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, projectName, ...version, managedHashes }, null, 2) + '\n');
 
   return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes };
 }

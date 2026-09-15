@@ -5,6 +5,14 @@ import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
 import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
+import { HANDLERS } from '../commands/handlers.ts';
+import { say } from '../commands/output.ts';
+
+/** Read-only status of every listed repository, with the next commands to run. */
+async function showRepoStatus(): Promise<void> {
+  const outcome = await HANDLERS['repos.status']({ positional: [], options: {}, raw: [] });
+  for (const hint of outcome.warnings ?? []) say(hint);
+}
 
 export async function mainTui(): Promise<void> {
   intro(_('main.intro'));
@@ -13,6 +21,7 @@ export async function mainTui(): Promise<void> {
       message: _('main.message'),
       options: [
         { value: 'manage', label: _('main.manage.label'), hint: _('main.manage.hint') },
+        { value: 'repos', label: _('main.repos.label'), hint: _('main.repos.hint') },
         { value: 'create', label: _('main.create.label'), hint: _('main.create.hint') },
         { value: 'clone', label: _('main.clone.label'), hint: _('main.clone.hint') },
         { value: 'setup', label: _('main.setup.label'), hint: _('main.setup.hint') },
@@ -23,6 +32,7 @@ export async function mainTui(): Promise<void> {
     });
     if (cancelled(action) || action === 'exit') break;
     if (action === 'manage') await runTuiStep(() => listProfiles());
+    else if (action === 'repos') await runTuiStep(() => showRepoStatus());
     else if (action === 'create') await runTuiStep(() => createProfileTui());
     else if (action === 'clone') await runTuiStep(() => cloneProfileTui());
     else if (action === 'setup') await runTuiStep(() => setupProfileTui());

@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { _, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { checkProject } from '../check.ts';
@@ -7,7 +8,11 @@ import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
 import { createProfile, getProfiles, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
-import { EXIT, usageError } from '../shared/errors.ts';
+import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
+import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
+import { reposStatus } from '../repos/status.ts';
+import { applyReposSync, planReposSync, type SyncItem } from '../repos/sync.ts';
+import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
 import { saveLocale } from '../shared/home.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
 import { confirmChange, type ParsedArguments } from './options.ts';
@@ -18,6 +23,27 @@ type Handler = (parsed: ParsedArguments) => Promise<CommandOutcome>;
 const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode: EXIT.ok, data, warnings });
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
+const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
+const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw, '--yes'].join(' ');
+
+/** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
+function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {
+  try {
+    recordRepo(targetDir, profile, pinned);
+  } catch (error) {
+    const message = _('repos.warn.record', { detail: error instanceof Error ? error.message : String(error) });
+    warnings.push(message);
+    if (!isJsonMode()) warn(message);
+  }
+}
+
+function printSyncItems(items: readonly SyncItem[]): void {
+  for (const item of items) say(`${item.state.padEnd(11)} ${item.path}  ${item.detail}`);
+}
+
+function printPrItems(items: readonly PrItem[]): void {
+  for (const item of items) say(`${item.state.padEnd(13)} ${item.target}  ${item.detail}`);
+}
 
 function requirePositional(parsed: ParsedArguments, index: number, usage: string): string {
   const value = parsed.positional[index];
@@ -46,6 +72,7 @@ async function applyOrSync(parsed: ParsedArguments, name: string, targetDir: str
   }
   if (!changed.length) {
     say(_('plan.up-to-date', { project: targetDir }));
+    remember(targetDir, name, version.pin, warnings);
     return done(false);
   }
   if (!(await confirmChange(parsed, _('confirm.apply', { count: changed.length, project: targetDir }), retry))) {
@@ -54,6 +81,7 @@ async function applyOrSync(parsed: ParsedArguments, name: string, targetDir: str
   }
   writePlan(plan.changes, targetDir);
   say(_('apply.done', { profile: name, project: targetDir }));
+  remember(targetDir, name, version.pin, warnings);
   return done(true);
 }
 
@@ -174,6 +202,79 @@ export const HANDLERS: Record<string, Handler> = {
     for (const finding of report.findings) say(`${finding.kind.padEnd(17)} ${finding.file ?? '-'}  ${finding.detail}`);
     if (!report.findings.length) say(_('check.ok', { project: report.project }));
     return { exitCode: report.exitCode, data: report, warnings: report.warnings };
+  },
+  'repos.list': async parsed => {
+    if (flag(parsed, 'prune')) {
+      const removed = pruneRepos();
+      say(_('repos.pruned', { count: removed.length }));
+      for (const entry of removed) say(`  ${entry.path}`);
+    }
+    const repos = selectRepos(text(parsed, 'profile')).map(entry => ({ ...entry, missing: !fs.existsSync(entry.path) }));
+    if (!repos.length) say(_('repos.none'));
+    for (const repo of repos) say(`${(repo.missing ? 'missing' : 'ok').padEnd(8)} ${repo.profile.padEnd(16)} ${(repo.pinned ? 'pinned' : '-').padEnd(6)} ${repo.path}`);
+    return ok({ repos }, repos.some(repo => repo.missing) ? [_('repos.hint.prune')] : []);
+  },
+  'repos.status': async parsed => {
+    const statuses = reposStatus({ profile: text(parsed, 'profile'), refresh: flag(parsed, 'refresh') });
+    if (!statuses.length) say(_('repos.none'));
+    const hints = new Set<string>();
+    for (const status of statuses) {
+      const version = status.commit
+        ? `${status.commit.slice(0, 7)}${status.latestCommit && status.latestCommit !== status.commit ? `→${status.latestCommit.slice(0, 7)}` : ''}`
+        : '-';
+      say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
+      if (status.error) say(`  ${status.error.message}`);
+      if (status.state === 'behind') hints.add(status.pinned ? _('repos.next.pr', { profile: status.profile }) : _('repos.next.sync', { profile: status.profile }));
+      if (status.state === 'conflict') hints.add(_('repos.next.resolve', { project: status.path }));
+      if (status.state === 'missing') hints.add(_('repos.hint.prune'));
+      if (status.error?.hint) hints.add(`${_('output.next')}: ${status.error.hint}`);
+    }
+    return { exitCode: worstExitCode(statuses.map(status => status.exitCode)), data: { repos: statuses }, warnings: [...hints] };
+  },
+  'repos.sync': async parsed => {
+    const planned = planReposSync(text(parsed, 'profile'));
+    if (!planned.length) say(_('repos.none'));
+    printSyncItems(planned);
+    const summary = (items: readonly SyncItem[]) => ({
+      exitCode: worstExitCode(items.map(item => item.exitCode)),
+      data: { repos: items.map(({ plan: _plan, ...item }) => item) }
+    });
+    const updates = planned.filter(item => item.state === 'update');
+    if (flag(parsed, 'dry-run')) {
+      say(_('plan.dry-run.done'));
+      return summary(planned);
+    }
+    if (!updates.length) return summary(planned);
+    if (!(await confirmChange(parsed, _('confirm.repos-sync', { count: updates.length }), retryWithYes('repos sync', parsed)))) {
+      say(_('confirm.declined'));
+      return summary(planned);
+    }
+    const synced = applyReposSync(planned);
+    printSyncItems(synced.filter((item, index) => item.state !== planned[index].state));
+    return summary(synced);
+  },
+  'repos.pr': async parsed => {
+    const options: PrOptions = { profile: text(parsed, 'profile'), targets: text(parsed, 'targets'), base: text(parsed, 'base'), draft: flag(parsed, 'draft'), message: text(parsed, 'message') };
+    const dryRun = flag(parsed, 'dry-run');
+    const prepared = prepareReposPrs(options, dryRun);
+    try {
+      if (!prepared.items.length) say(_('repos.none'));
+      printPrItems(prepared.items);
+      let items = prepared.items;
+      if (dryRun) say(_('plan.dry-run.done'));
+      else if (prepared.candidates.length) {
+        if (!(await confirmChange(parsed, _('confirm.repos-pr', { count: prepared.candidates.length }), retryWithYes('repos pr', parsed)))) {
+          say(_('confirm.declined'));
+        } else {
+          const opened = openPullRequests(prepared.candidates, options);
+          printPrItems(opened);
+          items = items.map(item => opened.find(result => result.target === item.target) ?? item);
+        }
+      }
+      return { exitCode: worstExitCode(items.map(item => item.exitCode)), data: { repos: items } };
+    } finally {
+      prepared.cleanup();
+    }
   },
   'config.lang': async parsed => {
     const value = requirePositional(parsed, 0, `agctx config lang <${SUPPORTED_LOCALES.join('|')}>`);

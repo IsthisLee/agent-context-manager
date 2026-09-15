@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { _ } from '../i18n/index.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
-import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
+import { git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
 import { isValidProfileMetadata, readProfile } from './store.ts';
 
@@ -71,7 +71,8 @@ export function profileGitState(name: string, options: { refresh?: boolean } = {
   return state;
 }
 
-export function cloneProfile(url: string, options: { branch?: string | null } = {}): ProfileGitState {
+export function cloneProfile(location: string, options: { branch?: string | null } = {}): ProfileGitState {
+  const url = resolveRemoteLocation(location);
   const home = profileHome();
   fs.mkdirSync(home, { recursive: true });
   const temporary = path.join(home, `.clone-${randomUUID()}`);
@@ -169,7 +170,8 @@ export function pushProfile(plan: PushPlan): PushPlan {
   return { state: profileGitState(plan.state.name), commits: plan.commits, pushed: true };
 }
 
-export function connectProfile(name: string, url: string, options: { branch?: string | null } = {}): ProfileGitState {
+export function connectProfile(name: string, location: string, options: { branch?: string | null } = {}): ProfileGitState {
+  const url = resolveRemoteLocation(location);
   const { profileDir: dir } = readProfile(name);
   if (!isGitRoot(dir)) {
     throw usageError('connect.not-git', _('error.connect.not-git', { name }), _('hint.connect.init', { dir, name }));

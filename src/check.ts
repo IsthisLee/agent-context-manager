@@ -4,7 +4,7 @@ import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, planFor, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
 import { managedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
-import { git } from './shared/git.ts';
+import { git, isGitRoot } from './shared/git.ts';
 import { profileHome } from './shared/home.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-chars.ts';
 import type { ManagedKind } from './shared/types.ts';
@@ -36,7 +36,29 @@ export interface CheckReport {
 
 const CODE: Record<FindingKind, number> = { 'hidden-characters': EXIT.hiddenCharacters, conflict: EXIT.conflict, behind: EXIT.behind };
 
-export function checkProject(targetDir: string, options: { refresh?: boolean } = {}): CheckReport {
+const COMMIT = /^[0-9a-f]{7,64}$/i;
+
+/** The newest commit of a remote branch, or null when the branch does not exist. */
+export function remoteHeadCommit(url: string, branch: string): string | null {
+  const line = git(['ls-remote', '--', url, `refs/heads/${branch}`]).stdout.trim();
+  return line.split(/\s+/)[0] || null;
+}
+
+/** The profile store's commit when a pinned project recorded an older commit of the same history. */
+function newerStoreCommit(profileDir: string, recorded: string | null): string | null {
+  if (!recorded || !COMMIT.test(recorded) || !isGitRoot(profileDir)) return null;
+  const head = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: profileDir, allowFailure: true }).stdout.trim();
+  if (!head || head === recorded) return null;
+  return git(['merge-base', '--is-ancestor', recorded, head], { cwd: profileDir, allowFailure: true }).status === 0 ? head : null;
+}
+
+export interface CheckOptions {
+  refresh?: boolean;
+  /** How to read a remote branch's newest commit; `repos status` shares one lookup per source. */
+  remoteHead?: (url: string, branch: string) => string | null;
+}
+
+export function checkProject(targetDir: string, options: CheckOptions = {}): CheckReport {
   assertProjectDirectory(targetDir);
   const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
   if (!fs.existsSync(configPath)) {
@@ -67,19 +89,25 @@ export function checkProject(targetDir: string, options: { refresh?: boolean } =
   if (config.uncommitted) findings.push({ kind: 'behind', file: null, detail: _('check.uncommitted') });
 
   const hasConflict = findings.some(finding => finding.kind === 'conflict');
-  if (profile && fs.existsSync(path.join(profileHome(), profile)) && !hasConflict) {
+  const profileDir = profile ? path.join(profileHome(), profile) : null;
+  const inStore = Boolean(profileDir && fs.existsSync(profileDir));
+  let latestCommit: string | null = null;
+  if (profile && profileDir && inStore && !hasConflict) {
     const { plan } = planFor(profile, targetDir, 'keep');
     for (const file of plan.files) {
       if (file.existing !== file.regenerated) findings.push({ kind: 'behind', file: file.rel, detail: _('check.profile-changed') });
     }
-  } else if (profile && !options.refresh) {
+    const storeCommit = config.pin ? newerStoreCommit(profileDir, source?.commit ?? null) : null;
+    if (storeCommit) {
+      latestCommit = storeCommit;
+      findings.push({ kind: 'behind', file: null, detail: _('check.profile-newer', { commit: storeCommit.slice(0, 7) }) });
+    }
+  } else if (profile && !inStore && !options.refresh) {
     warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
   }
 
-  let latestCommit: string | null = null;
   if (options.refresh && source?.git && source.branch) {
-    const line = git(['ls-remote', '--', source.git, `refs/heads/${source.branch}`]).stdout.trim();
-    latestCommit = line.split(/\s+/)[0] || null;
+    latestCommit = (options.remoteHead ?? remoteHeadCommit)(source.git, source.branch);
     if (latestCommit && latestCommit !== source.commit) {
       findings.push({ kind: 'behind', file: null, detail: _('check.remote-newer', { commit: latestCommit.slice(0, 7) }) });
     }

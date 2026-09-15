@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { makeWorkspace } from './support/git-workspace.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
@@ -138,3 +139,24 @@ test('a pinned sync never passes a recorded commit that is not an object name to
   assert.equal(fs.existsSync(path.join(team.member.profileDir('team-backend'), 'injected.txt')), false);
   assert.equal(fs.existsSync(path.join(team.root, 'injected.txt')), false);
 });
+
+test('connect and clone read a local remote path relative to the current folder, not the profile folder', t => {
+  const { root, person } = makeWorkspace(t, 'agctx-relative-remote-');
+  const admin = person('admin');
+  const member = person('member');
+  fs.mkdirSync(path.join(root, 'remotes'));
+  gitIn(root, 'init', '--bare', '--quiet', '--initial-branch=main', path.join('remotes', 'team-backend.git'));
+  admin.ok(['profile', 'create', 'team-backend', '--scope', 'team']);
+  const dir = admin.profileDir('team-backend');
+  gitIn(dir, 'init', '--quiet', '--initial-branch=main');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '--quiet', '-m', 'Add profile');
+
+  // The workspace runs agctx from its root, so this path is relative to the current folder.
+  admin.ok(['profile', 'connect', 'team-backend', path.join('remotes', 'team-backend.git')]);
+  assert.equal(fs.realpathSync(gitIn(dir, 'remote', 'get-url', 'origin')), fs.realpathSync(path.join(root, 'remotes', 'team-backend.git')));
+  admin.ok(['profile', 'push', 'team-backend', '--yes']);
+  member.ok(['profile', 'clone', path.join('remotes', 'team-backend.git')]);
+  assert.ok(fs.existsSync(path.join(member.profileDir('team-backend'), 'AGENTS.md')));
+});
+

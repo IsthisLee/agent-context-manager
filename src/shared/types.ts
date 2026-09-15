@@ -43,6 +43,8 @@ export interface VersionRecord {
 export interface ProjectConfig {
   schemaVersion?: number;
   profile?: string;
+  /** The project name AGENTS.md was rendered with. */
+  projectName?: string;
   source?: ProjectSource;
   pin?: boolean;
   uncommitted?: boolean;

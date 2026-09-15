@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: 807222a5fb014324ebc982cee58155cc08d94477f35481c78673b994ea71a5c1 -->
+<!-- agctx-doc-sources-sha256: 59e85af4fdeada44ab0f2f342420ff9ab661287f462f437fd1bdd42dbf5f21aa -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -114,7 +114,7 @@ Applied profile company to /path/to/project
 
 개인 프로필은 `~/.agctx/profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
-프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
+프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사, 여러 저장소 동기화·PR 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
 
 ### 검증의 범위
 
@@ -132,6 +132,7 @@ Applied profile company to /path/to/project
 - 에이전트별 지침 파일 생성·동기화
 - `agctx profile clone|status|pull|push|connect` — 표준 Git 원격으로 프로필 공유; 프로젝트 파일은 건드리지 않고, 받을 지침에 숨은 문자가 있으면 멈춤
 - `agctx check [--refresh] <project>` — 관리 영역 충돌·숨은 문자·뒤처짐을 파일을 바꾸지 않고 종료 코드로 확인(CI용)
+- `agctx repos list|status|sync|pr` — 프로필을 적용한 저장소들을 한 번에 확인·동기화하고, 고정한 저장소는 저장소마다 PR로 갱신; 예약 봇은 `repos pr --targets <file> --yes`
 - 모든 명령 — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, 터미널이 아니면 `--yes` 확인, `agctx <명령> --help`
 - `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 영어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 

@@ -43,6 +43,7 @@ export interface CommandSpec {
 const common = [EXIT.ok, EXIT.usage, EXIT.software];
 const dryRun: OptionSpec = { name: 'dry-run' };
 const yes: OptionSpec = { name: 'yes' };
+const profileFilter: OptionSpec = { name: 'profile', value: '<name>' };
 
 export const COMMANDS: readonly CommandSpec[] = [
   { id: 'profile.create', words: ['profile', 'create'], args: ['[<name>]'], options: [{ name: 'scope', value: '<scope>' }], exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'main.create.label', profileMenu: 'list.create.label' },
@@ -59,6 +60,10 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'profile.push', words: ['profile', 'push'], args: ['<name>'], options: [dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.unavailable], surface: 'profile', changes: 'remote', tui: 'actions.push.label', profileMenu: 'actions.push.label' },
   { id: 'profile.connect', words: ['profile', 'connect'], args: ['<name>', '<git-url>'], options: [{ name: 'branch', value: '<branch>' }], exitCodes: [...common, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.connect.label', profileMenu: 'actions.connect.label' },
   { id: 'check', words: ['check'], args: ['[<project>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none' },
+  { id: 'repos.list', words: ['repos', 'list'], args: [], options: [profileFilter, { name: 'prune' }], exitCodes: common, surface: 'repository', changes: 'profile-store' },
+  { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'main.repos.label' },
+  { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository' },
+  { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote' },
   { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label' },
   { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label' }
 ];

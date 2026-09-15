@@ -7,7 +7,7 @@
 > 이 가이드는 CLI 동작을 서술하므로 소스 해시 게이트가 걸려 있다([공개 저장소 운영](repository-operations.md)의 "문서 소스 해시 게이트" 참고). 명령·옵션의 세부 규칙은 [CLI Reference](cli-reference.md)가 정본이며 여기서는 흐름 설명에 필요한 만큼만 인용한다.
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 08cae775597efe09750a882d3bf85a1602471055650c542cd8458f5b77ab9196 -->
+<!-- agctx-doc-sources-sha256: 988d015a473929416297feb4663b1063edf92e39a3b6314394e78a25ff8b406b -->
 
 > [!TIP]
 > 명령만 빠르게 실행하려면 [사용자 워크플로](workflow.md)의 절차 요약을 보세요. 이 가이드는 개념과 설명까지 처음부터 끝까지 다룹니다.
@@ -262,6 +262,91 @@ jobs:
 - 프로필 저장소가 비공개면 `--refresh`의 `git ls-remote`가 그 저장소를 읽을 수 있어야 한다. 배포 키나 토큰을 Git 설정으로 제공하지 않으면 종료 코드 69로 끝난다.
 - 뒤처짐을 실패가 아니라 알림으로만 쓰려면 이 단계에 `continue-on-error: true`를 둔다. 충돌(2)과 숨은 문자(3)까지 무시하게 되므로 종료 코드를 나눠 처리하려면 `--json` 결과의 `exitCode`를 읽는다.
 
+## 여러 저장소를 한 번에 맞추기
+
+프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](adr/0018-multi-repository-sync.md)에 있다.
+
+```mermaid
+flowchart LR
+  PULL["profile pull<br/>또는 프로필 편집"] --> STATUS["repos status<br/>뒤처진 저장소 확인"]
+  STATUS -->|"고정하지 않은 저장소"| SYNC["repos sync<br/>바로 반영 · 커밋은 사람이"]
+  STATUS -->|"고정한 저장소"| PR["repos pr<br/>저장소마다 브랜치·PR"]
+  PR --> REVIEW["각 저장소 CI의 check와 리뷰 뒤 병합"]
+```
+
+고정하지 않은 저장소는 보관함을 따라 바로 바뀌고, 고정한 저장소는 PR을 검토하고 병합해야 새 버전을 쓴다.
+
+### 뒤처진 저장소 보기
+
+```bash
+$ agctx repos status
+behind            personal         -      -               /work/blog
+ok                client-a         -      -               /work/client-a-api
+behind            personal         -      -               /work/notes
+Next: agctx repos sync --profile personal
+```
+
+위 출력은 실제 실행 결과에서 경로만 바꿨다. 옮기거나 지운 폴더는 `missing`으로 나오고 `agctx repos list --prune`으로 목록에서 지운다.
+
+### 고정하지 않은 저장소 동기화
+
+```bash
+agctx repos sync --profile personal --dry-run
+agctx repos sync --profile personal
+```
+
+`repos sync`는 모든 저장소의 계획을 보여 준 뒤 한 번만 묻는다. 고정한 저장소(`pinned`), 관리 파일에 커밋하지 않은 변경이 있는 저장소(`dirty`), 관리 영역을 밖에서 고친 저장소(`conflict`)는 건너뛰고 나머지를 계속한다. 쓴 파일의 커밋은 저장소마다 사람이 한다.
+
+### 고정한 저장소를 PR로 갱신
+
+```bash
+agctx profile pull team-backend
+agctx repos pr --profile team-backend --dry-run
+agctx repos pr --profile team-backend
+```
+
+`repos pr`은 사용자의 작업 폴더를 건드리지 않는다. 저장소마다 원격 base 브랜치를 임시 worktree에 꺼내 새 커밋으로 다시 고정하고, `agctx/<프로필>-<커밋>` 브랜치로 push한 뒤 `gh`로 PR을 연다. 같은 브랜치에 열린 PR이 있거나 그 브랜치가 이미 원격에 있으면 새로 만들지 않는다. `gh`가 없거나 GitHub가 아닌 원격이면 push까지 하고 PR을 직접 열도록 안내한다. 옵션과 실제 출력은 [CLI Reference](cli-reference.md#repos-pr)에 있다.
+
+### 예약 봇으로 PR 열기
+
+봇은 저장소 목록 대신 `--targets` 파일을 쓴다. 파일에는 한 줄에 저장소 하나씩 clone URL이나 경로를 적고, 봇이 실행될 때마다 임시 폴더에 clone해 처리한다. 프로필에 새 커밋이 없으면 아무것도 바꾸지 않고, 이미 연 PR은 다시 만들지 않는다.
+
+```text
+# repos.txt: team-backend 프로필을 쓰는 저장소
+https://github.com/acme/orders-api.git
+https://github.com/acme/billing-api.git
+```
+
+아래는 GitHub Actions 예약 워크플로 예시다. 이 저장소에서 실행해 본 설정은 아니다.
+
+```yaml
+name: agctx profile update
+on:
+  schedule:
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.AGCTX_BOT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: |
+          gh auth setup-git
+          git config --global user.name "agctx-bot"
+          git config --global user.email "agctx-bot@users.noreply.github.com"
+      - run: npx --yes agent-context-manager profile clone https://github.com/acme/team-backend-profile.git
+      - run: npx --yes agent-context-manager repos pr --targets repos.txt --profile team-backend --yes
+```
+
+- 토큰은 프로필 저장소를 읽고 대상 저장소에 브랜치를 push하고 PR을 열 수 있어야 한다. `GH_TOKEN`은 gh가 인증에 쓰는 토큰이고, `gh auth setup-git`은 git이 gh를 인증 도우미로 쓰게 설정한다([외부 근거](references.md#cli-계약과-지침-공급망-근거)). `GH_TOKEN`만 둔 환경에서 `gh auth setup-git`이 성공하는지는 직접 확인하지 못했으므로, 처음 적용할 때 `workflow_dispatch`로 한 번 실행해 확인한다.
+- 커밋 작성자는 실행 환경의 Git 설정을 따르므로 봇 이름과 메일을 설정한다.
+- 봇이 연 PR은 각 저장소의 CI에서 `agctx check`로 검사한 뒤 리뷰해 병합한다([CI에서 확인하기](#ci에서-확인하기)).
+
 ## 자동화와 CI에서 쓰기
 
 TUI가 없는 환경에서는 옵션을 플래그로 직접 넘긴다. 파일을 바꾸는 명령은 터미널이 아니면 묻지 않으므로 `--yes`를 붙인다.
@@ -315,6 +400,9 @@ flowchart TD
 - **`is not a Git repository yet`**: 로컬 프로필을 원격에 연결하려 했다. `Next:` 줄의 `git init`·`add`·`commit`을 실행한 뒤 다시 `profile connect`한다.
 - **`pull`·`push`가 커밋하지 않은 변경으로 멈춤**: 프로필 폴더에서 `git status`로 확인하고 커밋하거나 되돌린 뒤 다시 실행한다.
 - **CI의 `check`가 1로 실패**: 프로필 원격에 새 커밋이 있다. `agctx profile pull <name>` 후 고정하지 않은 프로젝트는 `profile sync`, 고정한 프로젝트는 `profile apply <name> <project> --pin`을 실행하고 결과를 커밋한다.
+- **`repos sync`가 `dirty`로 건너뜀**: 그 저장소의 관리 파일에 커밋하지 않은 변경이 있다. 커밋하거나 stash한 뒤 다시 실행한다.
+- **`repos pr`이 `branch-exists`로 끝남**: 같은 이름의 브랜치가 원격에 남아 있다. PR로 병합하거나, 닫힌 PR의 브랜치라면 지운 뒤 다시 실행한다.
+- **`repos pr`이 `pushed`로 끝남**: 브랜치는 올라갔지만 `gh`가 PR을 만들지 못했다. `gh auth status`로 인증을 확인하거나 안내된 브랜치로 PR을 직접 연다.
 - **`Git is not installed`**(종료 코드 69): Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. 로컬 프로필만 쓰면 `git` 없이 동작한다.
 
 ## 더 알아보기

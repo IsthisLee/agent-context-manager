@@ -58,7 +58,7 @@ agctx는 공통 지침을 프로젝트까지 전달하는 데서 멈춘다. 에�
 
 프로필의 공통 지침과 프로젝트의 도메인 지침은 서로 다른 소유 영역이다. 선택한 프로필을 적용해 생성된 프로젝트 `AGENTS.md`는 에이전트가 읽는 최종 파일이지만, 프로젝트 지침이 프로필에 역으로 기록되지는 않는다.
 
-프로필은 로컬에 두거나 표준 Git 원격으로 공유한다. 팀은 `profile clone`·`pull`·`push`로 프로필을 주고받고, 프로젝트에 적용한 버전은 `agctx.project.json`에 기록해 `agctx check`로 CI에서도 확인한다. Git 호스트의 권한·리뷰는 agctx가 대신하지 않는다. 결정은 [ADR 0017](adr/0017-git-profile-sharing.md)에 있다.
+프로필은 로컬에 두거나 표준 Git 원격으로 공유한다. 팀은 `profile clone`·`pull`·`push`로 프로필을 주고받고, 프로젝트에 적용한 버전은 `agctx.project.json`에 기록해 `agctx check`로 CI에서도 확인한다. Git 호스트의 권한·리뷰는 agctx가 대신하지 않는다. 결정은 [ADR 0017](adr/0017-git-profile-sharing.md)에 있다. 한 프로필을 여러 저장소가 쓰면 `repos` 명령으로 한 번에 상태를 보고 동기화하며, 고정한 저장소는 저장소마다 PR로 새 버전을 들인다. PR의 리뷰와 병합은 각 저장소의 절차를 따른다([ADR 0018](adr/0018-multi-repository-sync.md)).
 
 ## 로케일 정책
 

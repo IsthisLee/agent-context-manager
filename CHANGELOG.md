@@ -16,6 +16,7 @@
 - **호환성 파괴:** 프로필 저장 위치를 `~/.agentic/profiles/<name>`로, 언어 설정을 `~/.agentic/config.json`으로 옮김. 이전 `~/.agentic-cores`·`~/.agentic-profiles`는 최초 실행 때 새 위치로 자동 이관하고 `config.json`을 `~/.agentic/`로 올린다. 근거는 [ADR 0007](docs/adr/0007-profile-home-layout.md)
 - 관리 영역 충돌로 `apply`·`sync`가 멈출 때 충돌 파일 전체와 차이를 볼 명령·푸는 명령을 함께 출력. `--dry-run`은 충돌이 있어도 계획을 끝까지 출력하고 충돌 파일을 `conflict`로 표시해 diff를 보여 준 뒤 종료 코드 1로 끝난다(종료 코드는 이전과 같음)
 - 런타임 의존성 `diff`(jsdiff) 추가
+- 소스를 TypeScript로 옮김. 설치본은 `src/`를 컴파일한 `dist/`의 JavaScript이며 설치·실행 방법은 그대로다. 저장소 개발에는 Node.js 22.18 이상이 필요하고, `pnpm run check`가 문법 검사 대신 TypeScript 형식 검사를 실행한다. 근거는 [ADR 0012](docs/adr/0012-typescript-source.md)
 
 ### Removed
 

@@ -1,7 +1,7 @@
 # Agentic — 프로필 기반 AI 에이전트 개발 지침 관리
 
-<!-- agentic-doc-sources: bin, lib, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 36caa7651885b27935914011a7b8336cd34a94a45b8bdccd67e7251d027f1cc5 -->
+<!-- agentic-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
+<!-- agentic-doc-sources-sha256: 14ed812cbd5ef5b572761f7c0112cec2a107da043fcf8ba9cce394252bccc9a6 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -110,7 +110,7 @@ agt profile apply company /path/to/project
 
 ### 검증의 범위
 
-저장소 개발자는 `pnpm run check`로 Agentic 자체의 문법·문서 계약·CLI 평가를 확인합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하거나 에이전트의 코드 품질을 보증하는 명령이 아닙니다. 대상 프로젝트의 실제 검증은 해당 프로젝트가 제공하는 명령을 에이전트가 실행하며, 프로필에는 그 검증을 요구하는 지침만 선택해 기록할 수 있습니다.
+저장소 개발자는 `pnpm run check`로 Agentic 자체의 형식 검사·문서 계약·CLI 평가를 확인합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하거나 에이전트의 코드 품질을 보증하는 명령이 아닙니다. 대상 프로젝트의 실제 검증은 해당 프로젝트가 제공하는 명령을 에이전트가 실행하며, 프로필에는 그 검증을 요구하는 지침만 선택해 기록할 수 있습니다.
 
 ## 핵심 기능
 

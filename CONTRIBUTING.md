@@ -15,7 +15,7 @@ pnpm install
 pnpm run check
 ```
 
-`pnpm run check`는 문서 계약 검사와 Node.js 테스트 러너 기반 평가를 실행합니다. 패키지에 포함될 파일은 다음으로 확인할 수 있습니다.
+`pnpm run check`는 TypeScript 형식 검사, 문서 계약 검사, Node.js 테스트 러너 기반 평가를 실행합니다. 소스는 `src/`의 TypeScript이며, 저장소에서는 `node src/agentic.ts help`처럼 컴파일하지 않고 바로 실행할 수 있습니다. 패키지에 포함될 파일은 다음으로 확인할 수 있습니다. 이 명령은 `prepack`으로 `src/`를 `dist/`에 먼저 빌드합니다.
 
 ```bash
 pnpm run pack:check
@@ -24,7 +24,7 @@ pnpm run pack:check
 ## 변경 규칙
 
 - 변경 전에 관련 제품 방향·아키텍처·워크플로 문서의 정본을 확인합니다.
-- 새 기능은 CLI·TUI·`agt core list`의 인터페이스 계약을 함께 검토합니다.
+- 새 기능은 CLI·TUI·`agt profile list`의 인터페이스 계약을 함께 검토합니다.
 - 코드 변경은 실패하는 평가를 먼저 추가하는 Red-Green-Refactor 흐름을 따릅니다.
 - 사용자에게 보이는 계약·파일 형식·보안 경계가 바뀌면 같은 변경에서 문서를 갱신합니다.
 - 장기적이거나 되돌리기 어려운 결정은 `docs/adr/`에 기록합니다.

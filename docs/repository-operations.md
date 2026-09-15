@@ -2,8 +2,8 @@
 
 이 문서는 Agentic 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture/`](architecture/), 외부 근거는 [`references.md`](references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
-<!-- agentic-doc-sources: package.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/check-docs.mjs, tools/package-smoke.mjs -->
-<!-- agentic-doc-sources-sha256: 1cd740dafffd346b027773c8b050d9debf184d5fdf39dfaa36599b91fcf8bd1f -->
+<!-- agentic-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, .github/CODEOWNERS, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
+<!-- agentic-doc-sources-sha256: 22ee4313e8784eb227130025398bbd08d4f12509f0b658216f9f4073c8a94dc3 -->
 
 `@isthis/agentic`은 공개 GitHub 저장소와 npm registry에 배포된 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
@@ -19,7 +19,7 @@ pnpm run package:smoke
 pnpm run audit
 ```
 
-`pnpm run check`는 Node.js 문법 검사, 문서 계약 검사, Node.js 테스트 러너 기반 평가를 실행한다. `pnpm run pack:check`는 npm tarball에 들어갈 파일 목록을 확인해 개발 문서·평가·로컬 파일이 배포물에 섞이지 않는지 검토한다. 배포물에 포함되는 README의 저장소 문서 링크는 GitHub 절대 링크를 사용해 npm 페이지에서도 깨지지 않도록 유지한다. 이 검사는 패키지 동작과 저장소 문서 계약을 확인하지만 모든 제품 요구사항·보안·사용자 경험을 증명하지는 않는다.
+`pnpm run check`는 TypeScript 형식 검사(`tsc -p tsconfig.json`, strict), 문서 계약 검사, Node.js 테스트 러너 기반 평가를 실행한다. 형식 검사는 `src`·`evals`·`tools`를 모두 대상으로 하고 파일을 만들지 않는다. `pnpm run pack:check`는 `prepack`으로 `src/`를 `dist/`에 컴파일한 뒤 npm tarball에 들어갈 파일 목록을 확인해 개발 문서·평가·로컬 파일이 배포물에 섞이지 않는지 검토한다. 배포물에 포함되는 README의 저장소 문서 링크는 GitHub 절대 링크를 사용해 npm 페이지에서도 깨지지 않도록 유지한다. 이 검사는 패키지 동작과 저장소 문서 계약을 확인하지만 모든 제품 요구사항·보안·사용자 경험을 증명하지는 않는다.
 `pnpm run package:smoke`는 실제 npm tarball을 임시 소비자 프로젝트에 설치하고 설치된 `agt help`, 프로필 생성·설정, 프로젝트 `profile apply`·`profile sync`까지 실행한다. 저장소 소스가 아니라 배포 산출물의 설치와 핵심 실행 경로를 확인하는 검사다. 적용·동기화 기능이 현재 무엇을 보장하는지는 [현재 아키텍처](architecture/)가 정본이다.
 `pnpm run audit`는 의존성 취약점이 high 이상으로 보고되는 경우 실패한다. 이 검사는 알려진 취약점 신호이며 악성 코드·설정 오류·런타임 전체의 안전을 보증하지 않는다.
 
@@ -29,25 +29,25 @@ pnpm run audit
 
 ```mermaid
 flowchart TD
-  SRC["핀한 소스 변경<br/>bin · package.json · workflow 등"] --> CHECK["pnpm run check<br/>check:docs가 소스를 다시 해싱"]
+  SRC["핀한 소스 변경<br/>src · package.json · workflow 등"] --> CHECK["pnpm run check<br/>check:docs가 소스를 다시 해싱"]
   CHECK --> CMP{"기록된 sha256과 같은가?"}
   CMP -->|"같음"| PASS["통과"]
   CMP -->|"다름"| FAIL["실패: doc sources changed"]
   FAIL --> READ["문서를 다시 읽고<br/>인용한 줄 번호·서술을 고침"]
-  READ --> STAMP["node tools/check-docs.mjs --stamp"]
+  READ --> STAMP["node tools/check-docs.ts --stamp"]
   STAMP --> CHECK
 ```
 
 게이트는 소스가 바뀌었다는 사실만 알린다. 문서를 고치는 단계를 건너뛰고 `--stamp`만 실행해도 다시 통과하므로, 문서가 정확한지는 사람이 확인해야 한다.
 
 - 마커는 `<!-- agentic-doc-sources: <쉼표로 구분한 경로> -->`와 `<!-- agentic-doc-sources-sha256: <64자리 hex> -->` 두 줄이다. 경로에는 파일뿐 아니라 디렉터리도 넣을 수 있다. 디렉터리를 넣으면 그 아래 모든 파일을 해싱하므로 안에서 파일이 추가·삭제·수정되면 목록을 고치지 않아도 게이트가 걸린다.
-- 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.mjs --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
+- 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.ts --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
 - 인용하는 소스가 늘거나 줄면 마커의 목록도 같은 변경에서 갱신한다. 다만 디렉터리로 고정한 범위 안에서 파일이 늘거나 줄면 목록 갱신 없이 자동 반영된다.
 - stamp만 다시 기록한 변경을 자동으로 잡아내는 리뷰는 아직 구현되지 않았다. 계획은 [문서 정확성 자동 리뷰 논의](discussion/architecture/topics/doc-accuracy-review.md)에 있다.
 
 ### 문서 근거 게이트
 
-외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정이 근거를 밝히도록 `check:docs`가 두 가지를 검사한다. 검사 로직은 `tools/doc-evidence.mjs`에 있다.
+외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정이 근거를 밝히도록 `check:docs`가 두 가지를 검사한다. 검사 로직은 `tools/doc-evidence.ts`에 있다.
 
 - **확인일:** `docs/references.md`에서 코드 블록 밖의 외부 링크(`http`·`https`)가 들어 있는 줄은 같은 줄에 `확인일: YYYY-MM-DD`가 있어야 한다. 목록 항목은 줄 끝에, 표 행은 마지막 칸 안에 붙인다.
 - **ADR 근거:** 번호가 0009 이상인 ADR은 머리말에 `* **근거:**`(또는 `* **Evidence:**`)가 있어야 한다. 값에는 링크를 두거나, 외부 사실에 기대지 않는 결정이면 `외부 근거 없음: <이유>`(또는 `No external evidence: <reason>`)를 적는다. 0008 이전 ADR은 검사하지 않는다.

@@ -2,8 +2,8 @@
 
 이 문서는 `@isthis/agentic` 사용 절차를 순서와 소유권 중심으로 요약한다. 개념과 설명은 [사용 가이드](usage-guide.md)에, 명령·옵션의 세부 문법은 [CLI Reference](cli-reference.md)에 있다.
 
-<!-- agentic-doc-sources: bin, lib -->
-<!-- agentic-doc-sources-sha256: 7db9e2be89916c984cc569bd73e6128c4afb24d4c6fe872372896329af8cabef -->
+<!-- agentic-doc-sources: src -->
+<!-- agentic-doc-sources-sha256: 01e7b7606f0955f4b27a9f74e42a19458745ba142b7a03257808732d114107a2 -->
 
 > [!TIP]
 > 가장 간단한 사용법은 `agt` 또는 `agentic`만 입력해 메인 TUI를 여는 것이다. 메인 메뉴에서 프로필 관리·생성·설정과 도움말에 접근할 수 있다.

@@ -1,7 +1,7 @@
 # Agentic — Profile-based AI Agent development guidance
 
-<!-- agentic-doc-sources: bin, lib, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agentic-doc-sources-sha256: 36caa7651885b27935914011a7b8336cd34a94a45b8bdccd67e7251d027f1cc5 -->
+<!-- agentic-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
+<!-- agentic-doc-sources-sha256: 14ed812cbd5ef5b572761f7c0112cec2a107da043fcf8ba9cce394252bccc9a6 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agentic/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agentic/actions/workflows/codeql.yml)
@@ -107,7 +107,7 @@ Agentic provides commands to create, set up, apply, and synchronize Profiles. Fo
 
 ### Scope of verification
 
-Repository developers run `pnpm run check` to verify Agentic's own syntax, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
+Repository developers run `pnpm run check` to verify Agentic's own types, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
 
 ## Core features
 

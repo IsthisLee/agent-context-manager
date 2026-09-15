@@ -70,6 +70,22 @@
 - GitHub는 공개 저장소에서 Dependabot alerts, secret scanning, push protection, code scanning을 최소 보안 기준으로 권장하고, Dependency Review는 PR에 새 취약 의존성이 들어오는 것을 확인하는 게이트로 사용할 수 있다고 설명한다. [GitHub security settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-security-and-analysis-settings-for-your-repository), [GitHub dependency review](https://docs.github.com/en/code-security/concepts/supply-chain-security/dependency-review) (확인일: 2026-09-14)
 - Node.js의 내장 `node:test`는 지원되는 LTS 런타임에서 안정적인 테스트 러너로 제공된다. Agentic은 Node.js 24 LTS 이상을 지원 기준으로 삼고, 저장소 평가는 별도 테스트 프레임워크 없이 이 러너로 실행한다. [Node.js test runner](https://nodejs.org/api/test.html), [Node.js 릴리스 일정](https://nodejs.org/en/about/previous-releases) (확인일: 2026-09-14)
 
+## TypeScript 실행과 배포 근거
+
+- Node.js는 v22.18.0·v23.6.0부터 TypeScript 파일의 타입 제거(type stripping)를 기본으로 켰고, v24.12.0·v25.2.0부터 이 기능을 안정(Stable)으로 표시한다. 인라인 타입을 공백으로 바꿔 실행하므로 JavaScript 코드 생성이 필요한 문법은 지원하지 않는다. `.ts` 파일의 모듈 방식은 `.js` 파일과 같은 규칙으로 정해지고, `import`에는 파일 확장자(`./file.ts`)를 붙여야 한다. 권장 `tsconfig`로 `erasableSyntaxOnly`, `verbatimModuleSyntax`, `rewriteRelativeImportExtensions`, `noEmit`을 제시한다. [Node.js TypeScript 문서](https://nodejs.org/api/typescript.html) (확인일: 2026-09-15)
+- 같은 문서는 `node_modules` 아래의 TypeScript 파일을 처리하지 않는다고 밝힌다. 그래서 npm으로 배포하는 코드는 JavaScript로 컴파일해야 한다.
+
+  > "To discourage package authors from publishing packages written in TypeScript, Node.js refuses to handle TypeScript files inside folders under a `node_modules` path."
+  >
+  > 번역: 패키지 작성자가 TypeScript로 작성된 패키지를 게시하지 않도록, Node.js는 `node_modules` 경로 아래 폴더에 있는 TypeScript 파일을 처리하지 않습니다.
+
+- TypeScript 컴파일러 옵션 `rewriteRelativeImportExtensions`(5.7부터)는 출력 파일에서 상대 import 경로의 `.ts` 확장자를 JavaScript 확장자로 바꾼다. `allowImportingTsExtensions`(5.0부터)는 `.ts` 확장자로 서로 import하게 허용하며 `noEmit`이나 `emitDeclarationOnly`일 때만 쓸 수 있다. [TypeScript tsconfig 참조](https://www.typescriptlang.org/tsconfig/) (확인일: 2026-09-15)
+- 직접 실험(2026-09-15): `package.json`에 `{"type":"module"}`만 둔 임시 폴더에 `main.ts`(`const n: number = 1; console.log("ran", n);`)를 만들고 실행했다.
+  - `node main.ts`(Node.js v24.21.0)와 `npx -p node@22.18.0 node main.ts`는 `ran 1`을 출력했다.
+  - `npx -p node@22.17.1 node main.ts`는 `ERR_UNKNOWN_FILE_EXTENSION`으로 실패했다.
+  - `node_modules/dep/index.ts`를 `exports`로 가리키는 패키지를 import한 `use-dep.ts`는 Node.js v24.21.0에서 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`으로 실패했다.
+  - TypeScript 7.0.2의 `tsc -p tsconfig.build.json`으로 만든 `dist/agentic.js`는 첫 줄 `#!/usr/bin/env node`를 유지했고, 소스의 `import { run } from './commands/cli.ts'`를 `./commands/cli.js`로 바꿨다.
+
 ## 비교 대상
 
 비교의 기준은 “에이전트가 무엇을 잘하게 하는가”와 “여러 프로젝트·에이전트에 공통 지침을 어떻게 배포하고 관리하는가”를 분리하는 것이다. Agentic은 후자에 초점을 둔다. 따라서 아래 도구들은 일부 기능이 겹쳐도 목적과 책임 범위가 다르며, 함께 사용할 수 있다.

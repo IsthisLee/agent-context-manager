@@ -27,6 +27,7 @@
     - [ADR 0009: 에이전트 규칙 파일의 frontmatter를 파일 맨 앞에 두고 Antigravity 규칙을 항상 적용](adr/0009-agent-rule-frontmatter.md) (일부 대체: ADR 0011)
     - [ADR 0010: resolve --edit은 merge 결과에서 관리 영역 밖만 적용](adr/0010-edit-merge-regenerates-managed-area.md)
     - [ADR 0011: 지원 에이전트를 Codex·Claude Code·Antigravity로 좁힘](adr/0011-supported-agents.md)
+    - [ADR 0012: 소스를 TypeScript로 쓰고 컴파일한 JavaScript로 배포](adr/0012-typescript-source.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

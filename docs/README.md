@@ -16,7 +16,7 @@
 8. [공개 저장소 운영](repository-operations.md): 품질 게이트·릴리스·보안·기여 정책
 9. [외부 참고 문헌](references.md): 연구·사례·비교 도구
 10. [결정 기록](adr/): 확정된 장기 결정
-    - [ADR 0001: 제품 범위](adr/0001-product-scope.md)
+    - [ADR 0001: 제품 범위](adr/0001-product-scope.md) (일부 대체: ADR 0019)
     - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md) (일부 대체: ADR 0014)
     - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md) (일부 대체: ADR 0013)
     - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md) (일부 정정: ADR 0009, 일부 대체: ADR 0013)
@@ -34,6 +34,7 @@
     - [ADR 0016: 명령 등록부와 종료 코드·JSON 출력·변경 확인 계약](adr/0016-command-contract.md)
     - [ADR 0017: 프로필을 Git 원격으로 공유하고 적용한 버전을 기록](adr/0017-git-profile-sharing.md)
     - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md)
+    - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

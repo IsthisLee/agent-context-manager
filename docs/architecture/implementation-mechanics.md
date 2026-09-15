@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:55-86`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([공개 저장소 운영](../repository-operations.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src -->
-<!-- agctx-doc-sources-sha256: 0150abd1bcd86d8cd8cc0f7d14c8bd01df7175e62bfcdf537c5db20eef6ac2cd -->
+<!-- agctx-doc-sources-sha256: 71b1341279d847f31e8382eb5c026acf94d5d5cc1918e8adc72836bd6146b8d7 -->
 
 ## 읽는 법
 
@@ -17,7 +17,7 @@
 
 ## 모듈 지도
 
-`src/`의 모듈이 서로를 어떻게 부르는지 먼저 본다. 폴더는 역할별로 나뉜다: `commands/`(명령 등록부·옵션 검사·처리기·출력·도움말), `profile/`(프로필 명령과 Git 프로필), `project/`(적용 엔진), `check.ts`(저장소 검사), `repos/`(여러 저장소 목록·상태·동기화·PR), `i18n/`(로케일·메시지), `tui/`(대화형 화면), `shared/`(프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입).
+`src/`의 모듈이 서로를 어떻게 부르는지 먼저 본다. 폴더는 역할별로 나뉜다: `commands/`(명령 등록부·옵션 검사·처리기·출력·도움말), `profile/`(프로필 명령과 Git 프로필), `project/`(적용 엔진), `check.ts`(저장소 검사), `explain.ts`(에이전트별 지침 로드 판정), `verify/`(세션 기록 판독·probe), `repos/`(여러 저장소 목록·상태·동기화·PR), `i18n/`(로케일·메시지), `tui/`(대화형 화면), `shared/`(프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입).
 
 ```mermaid
 flowchart LR
@@ -33,6 +33,11 @@ flowchart LR
   handlers --> gitprofile["profile/git-profile.ts<br/>clone·status·pull·push·connect"]
   handlers --> check["check.ts<br/>저장소 검사"]
   handlers --> repos["repos/<br/>목록·상태·동기화·PR"]
+  handlers --> explain["explain.ts<br/>에이전트별 로드 판정"]
+  handlers --> verify["verify/<br/>세션 기록 판독·probe"]
+  verify --> explain
+  explain --> apply
+  verify --> gitrun
   repos --> check
   repos --> apply
   check --> apply
@@ -728,6 +733,107 @@ sequenceDiagram
 - `gh`(`src/repos/pr.ts:163-170`)는 `GH_PROMPT_DISABLED=1`로 질문 없이 실행하고, Windows에서는 `gh.exe`와 `.cmd` 래퍼를 모두 찾도록 셸을 거친다. `gh`가 없거나 GitHub 저장소가 아니어서 PR을 만들지 못하면 push까지 한 상태를 `pushed`로 남기고, 원격이 GitHub이면 비교 페이지 주소를 함께 알려 준다.
 - PR 본문(`pullRequestBody`, `src/repos/pr.ts:274-286`)에는 프로필·원천·버전 범위·고정 여부·프로필 커밋 목록(`git log --oneline <기록>..<새 커밋>`)·바뀐 파일을 적는다.
 - 모든 임시 worktree와 clone은 처리기의 `finally`에서 지운다(`src/commands/handlers.ts:256-278`).
+
+## 20. explain: 에이전트별 지침 로드 판정
+
+`explainPath`(`src/explain.ts:337-356`)는 시작 폴더의 실제 경로와 그 위의 Git 루트(`projectRoot`, `src/explain.ts:72-77`)를 구하고, 에이전트마다 수집기에 파일과 판정을 모은다. `agctx.project.json`의 관리 영역 hash 키에 있는 파일은 `origin: 'agctx-managed'`로 표시한다(`add`, `src/explain.ts:175-189`). 처리기(`src/commands/handlers.ts:214-228`)는 에이전트마다 파일과 판정을 한 줄씩 출력하고 보고서의 종료 코드를 돌려준다.
+
+```mermaid
+flowchart TD
+  S["explain <path>"] --> R["시작 폴더 실제 경로 · Git 루트"]
+  R --> C["explainCodex<br/>루트부터 시작 폴더까지 폴더마다 override 또는 AGENTS.md<br/>32 KiB 초과 · 시작 폴더 아래는 not-read와 경고"]
+  R --> L["explainClaude<br/>관리 정책·사용자·조상 폴더 CLAUDE.md와 rules<br/>가져오기 4단계 · 가져오지 않은 AGENTS.md는 missing"]
+  R --> A["explainAntigravity<br/>루트 AGENTS.md·GEMINI.md · .agents/rules의 trigger<br/>하위 폴더 AGENTS.md는 conditional과 경고"]
+  C --> U["다른 도구 규칙 목록 · missing이 있으면 4"]
+  L --> U
+  A --> U
+```
+
+- **Codex**(`explainCodex`, `src/explain.ts:191-222`): `CODEX_HOME`의 `AGENTS.override.md`나 `AGENTS.md`를 사용자 파일로 넣는다. `chain`(`src/explain.ts:80-83`)이 만든 루트부터 시작 폴더까지의 폴더마다 비지 않은 `AGENTS.override.md`를, 없으면 `AGENTS.md`를 고르고 크기를 더한다. 합이 `CODEX_MAX_BYTES`(32 KiB)를 넘는 파일은 `not-read`와 경고로 둔다. 시작 폴더 아래의 `AGENTS.md`는 `filesBelow`(`src/explain.ts:95-118`)로 찾아 `not-read`와 "그 폴더에서 시작해야 읽는다"는 경고를 붙인다. `filesBelow`는 `.git`·`node_modules`·`dist` 같은 폴더를 건너뛰고 폴더 5000개까지만 본다.
+- **Claude Code**(`explainClaude`, `src/explain.ts:230-296`): 관리 정책 파일, `CLAUDE_CONFIG_DIR`의 `CLAUDE.md`와 `rules/`, 시작 폴더와 모든 조상 폴더의 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`, 루트부터 시작 폴더까지의 `.claude/rules/`를 시작할 때 읽는 파일로 넣는다. `paths` frontmatter가 있는 규칙은 `conditional`이다. 그다음 가져오기를 따라간다(`src/explain.ts:260-283`).
+
+```ts
+const trusted = (file: string) => file.startsWith(configDir + path.sep) || file === managedPolicyClaudeFile();
+// …
+const external = item.status === 'read' && !item.trusted && !imported.startsWith(target + path.sep);
+const scope: FileScope = imported.startsWith(collector.root + path.sep) ? 'project' : 'user';
+const reason = external ? _('explain.reason.claude.external-import', { file: importer }) : _('explain.reason.claude.import', { file: importer });
+const entry = add(collector, imported, external ? 'conditional' : item.status, scope, reason);
+```
+
+  - `claudeImports`(`src/explain.ts:153-161`)는 코드 블록과 코드 스팬을 지운 뒤 `@경로`를 찾아 가져오는 파일 기준으로 풀고, 실제로 있는 파일만 돌려준다. 가져오기는 `CLAUDE_IMPORT_DEPTH`(4)단계까지 따라간다.
+  - 사용자 수준 파일과 관리 정책 파일에서 시작한 가져오기는 믿는다. 프로젝트 수준 파일이 시작 폴더 밖을 가져오면 `conditional`과 경고로 두고, 그 파일이 다시 가져오는 파일도 `conditional`을 이어받는다.
+  - 시작 폴더 아래의 `CLAUDE.md`는 `on-demand`로 넣고 그 가져오기도 `on-demand`로 따라간다. 마지막으로 루트부터 시작 폴더까지와 그 아래의 비지 않은 `AGENTS.md` 가운데 아직 목록에 없는 파일을 `not-read`와 `missing`으로 둔다(`src/explain.ts:289-295`).
+- **Antigravity**(`explainAntigravity`, `src/explain.ts:298-325`): `~/.gemini/GEMINI.md`와 루트 `AGENTS.md`·`GEMINI.md`를 읽는 파일로 넣는다. 루트 `.agents/rules/*.md`는 `frontmatter`(`src/explain.ts:135-150`)가 읽은 `trigger`로 나눈다. `always_on`은 `read`, `glob`과 `trigger` 없음은 `not-read`와 `missing`, 그 밖의 값은 `conditional`이다. 루트 아래 폴더의 `AGENTS.md`는 `conditional`과 경고로 둔다.
+- 다른 도구의 규칙 위치는 `UNSUPPORTED`(`src/explain.ts:59`) 가운데 루트에 있는 것만 보고한다(`src/explain.ts:353`). 어느 에이전트에든 `missing`이 있으면 종료 코드는 `EXIT.deliveryMissing`(4)이다(`src/explain.ts:354-355`).
+- 로드 규칙의 근거는 [외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)에 있다. 이유 문구에 `(measured)`가 붙은 판정은 공식 문서가 아니라 실측에 기댄다.
+
+## 21. verify: 세션 기록 판독과 probe
+
+`verifyPath`(`src/verify/index.ts:53-80`)는 `explainPath`를 먼저 부르고, 에이전트마다 상태가 `read`인 프로젝트 파일을 기대 파일로, `conditional`·`on-demand`인 프로젝트 파일을 선택 파일로 나눈다. `judged`(`src/verify/index.ts:37-41`)가 받았는지 판정하는 함수로 결과를 만든다.
+
+```ts
+function judged(base: AgentVerification, expected: ExplainedFile[], optional: ExplainedFile[], received: (file: ExplainedFile) => boolean): AgentVerification {
+  const delivered = [...expected, ...optional].filter(received).map(file => file.path);
+  const missing = expected.filter(file => !received(file)).map(file => file.path);
+  return { ...base, delivered, missing, status: missing.length ? 'fail' : 'pass', exitCode: missing.length ? EXIT.deliveryMissing : EXIT.ok };
+}
+```
+
+**세션 기록.** `fromSessionLog`(`src/verify/index.ts:43-51`)는 기록을 찾은 뒤, 기대 파일 가운데 수정 시각이 기록이 지침을 불러온 시각보다 늦은 파일이 있으면 판정하지 않고 `stale`로 남긴다.
+
+```mermaid
+sequenceDiagram
+  participant V as verifyPath
+  participant E as evidence.ts
+  participant L as 세션 기록 JSONL
+  V->>E: codexSessionEvidence 또는 claudeSessionEvidence(시작 폴더)
+  E->>L: 가장 새 기록 300개를 수정 시각 순으로 읽음
+  L-->>E: cwd가 시작 폴더인 첫 기록
+  E-->>V: 기록 경로 · 마지막으로 지침을 불러온 시각 · 받은 본문 또는 경로
+  alt 기대 파일이 그 시각 뒤에 바뀜
+    V-->>V: no-evidence · stale
+  else 바뀌지 않음
+    V-->>V: judged(기대 파일, 선택 파일, 받았는가)
+  end
+```
+
+- Codex(`codexSessionEvidence`, `src/verify/evidence.ts:90-118`)는 `session_meta`·`turn_context`의 `cwd`로 기록을 고르고, `world_state`의 `agents_md.text`나 `# AGENTS.md instructions`를 담은 메시지 가운데 마지막 것을 받은 지침으로 본다. `codexReceived`(`src/verify/evidence.ts:167-173`)는 공백을 하나로 모은 뒤 파일 내용이 그 본문에 있는지 보고, 1200자를 넘는 파일은 앞 600자와 끝 400자로 본다.
+- Claude Code(`claudeSessionEvidence`, `src/verify/evidence.ts:121-162`)는 `CLAUDE_CONFIG_DIR/projects` 아래에서 시작 폴더 경로의 영숫자가 아닌 문자를 `-`로 바꾼 폴더를 찾고, 없으면 마지막 경로 조각이 같은 폴더를 본다. `instructions` 첨부가 나올 때마다 받은 목록을 새로 만들고 그 뒤의 `nested_memory` 경로를 더하므로, 대화를 압축해 지침을 다시 불러온 세션은 마지막 목록으로 판정한다.
+- 기록 형식은 공개 계약이 아니므로 판독기는 `evals/verify.test.ts`의 fixture가 고정한 필드만 쓴다. Antigravity는 판독기가 없어 기록 증거가 없다.
+
+**probe.** `probeAgent`(`src/verify/probe.ts:41-76`)는 임시 폴더에 `git init`한 사본 저장소를 만들고, `explain`이 본 프로젝트 파일마다 표지 줄을 붙여 복사한다.
+
+```ts
+explanation.files.filter(file => file.scope === 'project').forEach((file, index) => {
+  const copy = path.join(scratchRoot, path.relative(root, file.absolutePath));
+  fs.mkdirSync(path.dirname(copy), { recursive: true });
+  const marker = `AGCTX-PROBE-${token}-${index + 1}`;
+  markers.set(marker, file.path);
+  fs.writeFileSync(copy, `${fs.readFileSync(file.absolutePath, 'utf8').trimEnd()}\n\n${MARKER} ${marker}\n`);
+});
+```
+
+- `commandFor`(`src/verify/probe.ts:28-32`)가 에이전트별 명령을 만들고, `run`(`src/verify/probe.ts:34-39`)이 사본의 시작 폴더에서 5분 제한으로 실행한다. Windows에서는 npm이 설치한 `.cmd` 파일을 실행하려고 셸을 거친다.
+- 실행 파일이 없으면(`ENOENT`) `verify.agent-missing`을, 0이 아닌 코드로 끝나면 `verify.agent-failed`를 종료 코드 69로 던지고, `verifyPath`가 이를 그 에이전트의 `error`로 담는다. 표지가 stdout에 나온 파일만 받은 것으로 보며, 사본은 `finally`에서 지운다.
+- 처리기(`src/commands/handlers.ts:229-265`)는 `--probe`면 실행 전에 확인을 받는다. 터미널이 아니고 `--yes`도 없으면 `--dry-run`을 안내하는 공통 확인 오류 대신, 에이전트 사용량을 쓴다고 알리는 오류를 같은 `confirm.required` 코드로 던진다. 결과를 출력한 뒤에는 `no-evidence`인 Codex·Claude Code의 다음 단계를 한 줄로 묶고, Antigravity의 다음 단계는 따로 경고로 돌려준다.
+
+## 22. 에이전트용 스킬 생성
+
+`skills/agctx/SKILL.md`와 `skills/agctx-author/SKILL.md`의 본문은 사람이 쓰고, `<!-- agctx:commands:start -->`와 `<!-- agctx:commands:end -->` 사이의 명령 목록만 `tools/generate-skills.ts`가 만든다.
+
+```ts
+export function commandList(ids: readonly string[] | null): string {
+  return COMMANDS
+    .filter(command => command.id !== 'help' && (!ids || ids.includes(command.id)))
+    .map(command => `- \`${usageLine(command)}\`: ${summaries[`command.${command.id}.summary`]}`)
+    .join('\n');
+}
+```
+
+- `SKILLS`(`tools/generate-skills.ts:25-28`)가 스킬마다 넣을 명령을 정한다. `agctx`는 `help`를 뺀 모든 명령, `agctx-author`는 프로필 조회·설정·상태·받기·올리기와 `check`·`repos status`·`repos sync`·`repos pr`이다. 줄은 등록부의 `usageLine`과 영어 메시지 카탈로그의 명령 요약으로 만든다(`commandList`, `tools/generate-skills.ts:32-37`).
+- `renderSkill`(`tools/generate-skills.ts:39-44`)은 표지 사이만 바꾼다. `node tools/generate-skills.ts`는 파일을 다시 쓰고 `--check`는 목록이 다르면 1로 끝난다. `evals/skills.test.ts`가 같은 함수로 최신인지 검사하므로, 등록부를 바꾸고 목록을 다시 만들지 않으면 `pnpm run check`가 실패한다.
+- 호출 정책은 스킬 파일에 있다. `agctx-author`의 frontmatter `disable-model-invocation: true`는 Claude Code가, `agents/openai.yaml`의 `policy.allow_implicit_invocation: false`는 Codex가 읽는다. `tools/skills-smoke.ts`는 skills CLI로 임시 프로젝트에 설치해 두 파일이 설치 위치에 함께 들어가는지 확인한다.
 
 ## 관련 문서
 

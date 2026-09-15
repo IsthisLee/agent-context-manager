@@ -28,7 +28,7 @@
 | 후속 제안 | 원격 업데이트 알림·프로젝트 업데이트 PR 자동화(별도 제안), profile revision pinning·release 정책 |
 | 연관 제안 | [프로젝트 적용](project-application.md), [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md), [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md) |
 | 후속 작업 | CLI·TUI·프로필 목록 메뉴 동등성, 원격 변경 비교 UI, 적용 revision 기록, Git host별 선택적 자동화 검토 |
-| 권장 다음 작업 | 에이전트가 지침 파일을 실제로 읽었는지 확인하는 기능에서 적용 버전 기록을 기대값으로 쓴다. |
+| 권장 다음 작업 | 없음. 지침 전달 확인은 [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 `explain`·`verify`로 구현했고, 적용 버전 기록 대신 지금 저장소에 있는 지침 파일을 기대값으로 삼았다. |
 
 ## 목차
 

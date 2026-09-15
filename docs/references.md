@@ -62,6 +62,51 @@
   - 수정 전 코드가 만든 `.cursor/rules/agentic.mdc`는 첫 줄이 관리 마커이고 `alwaysApply: true` frontmatter가 둘째 줄부터 시작했다. Cursor CLI는 이 파일을 로드하지 않았다. ADR 0009를 반영한 코드로 frontmatter가 첫 줄에 오게 적용한 프로젝트에서는 규칙 파일 제목을 보았다.
   - Cursor CLI는 신뢰하지 않은 폴더에서 확인 화면을 띄우고 멈추므로, 실험에서는 실행마다 `--trust`를 붙였다.
 
+## 에이전트 지침 로드와 전달 확인 근거
+
+`agctx explain`의 로드 규칙, `agctx verify`의 세션 기록 판독과 probe, 에이전트용 스킬 배포([ADR 0019](adr/0019-explain-verify-and-agent-skills.md))가 기대는 외부 사실이다. Antigravity 규칙 파일의 `trigger` 실측은 [에이전트 규칙 파일 로드 근거](#에이전트-규칙-파일-로드-근거)에 있다.
+
+- **공식 문서(Codex 지침 파일):** Codex는 Codex 홈(기본 `~/.codex`)에서 `AGENTS.override.md`가 있으면 그것을, 없으면 `AGENTS.md`를 읽는다. 프로젝트에서는 Git 저장소 루트부터 현재 작업 폴더까지 내려가며 폴더마다 `AGENTS.override.md`, `AGENTS.md`, `project_doc_fallback_filenames`에 적은 이름 순서로 찾고, 한 폴더에서 파일을 최대 하나만 넣는다. 파일은 루트부터 차례로 이어 붙이며 합산 크기가 `project_doc_max_bytes`(기본 32 KiB)에 닿으면 더 넣지 않는다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-15)
+- **공식 문서(Claude Code 지침 파일):** 작업 폴더와 그 위 모든 폴더의 `CLAUDE.md`·`CLAUDE.local.md`를 시작할 때 읽고, 작업 폴더 아래 폴더의 파일은 Claude가 그 폴더의 파일을 읽을 때 넣는다. 프로젝트 지침은 `./CLAUDE.md` 또는 `./.claude/CLAUDE.md`, 사용자 지침은 `~/.claude/CLAUDE.md`, 관리 정책 파일은 macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`, Linux·WSL `/etc/claude-code/CLAUDE.md`, Windows `C:\Program Files\ClaudeCode\CLAUDE.md`에 둔다. `.claude/rules/`에서 `paths` frontmatter가 없는 규칙은 시작할 때, 있는 규칙은 맞는 파일을 읽을 때 들어간다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
+- **공식 문서(Claude Code 가져오기):** `@path` 가져오기는 가져오는 파일 기준 상대 경로로 풀리고 최대 네 단계까지 이어진다. 코드 블록과 코드 스팬 안의 `@`는 가져오지 않는다. 프로젝트 수준 파일이 작업 폴더 밖을 가져오면 처음 한 번 승인 창을 띄우며, 사용자 수준 파일(`~/.claude/CLAUDE.md`, `~/.claude/rules/`)의 가져오기는 묻지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
+
+  > "An import in a project-level memory file is external when its path resolves outside your working directory, like the home directory import above. The first time Claude Code encounters external imports in a project, it shows an approval dialog listing the files. If you decline, the imports stay disabled and the dialog doesn't appear again."
+  >
+  > 번역: 프로젝트 수준 메모리 파일의 가져오기는 그 경로가 작업 폴더 밖으로 풀리면 외부 가져오기입니다. 위의 홈 폴더 가져오기가 그 예입니다. Claude Code는 한 프로젝트에서 외부 가져오기를 처음 만나면 파일 목록과 함께 승인 창을 보여 줍니다. 거절하면 그 가져오기는 꺼진 채로 남고 승인 창은 다시 나타나지 않습니다.
+
+- **공식 문서(Claude Code 압축과 확인 수단):** `/compact` 뒤에는 프로젝트 루트 `CLAUDE.md`를 디스크에서 다시 읽어 넣고, 하위 폴더 `CLAUDE.md`와 `paths` 규칙은 맞는 파일을 읽을 때 다시 들어간다. 어떤 지침 파일이 언제 왜 들어갔는지 기록하려면 `InstructionsLoaded` 훅을 쓰라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
+- **공식 문서(Claude Code 세션 기록):** 세션 기록은 `~/.claude/projects/<project>/<session-id>.jsonl`에 JSONL로 저장되고, `<project>`는 작업 폴더 경로의 영숫자가 아닌 문자를 `-`로 바꾼 이름이다. 바꾼 이름이 200자를 넘으면 200자로 자르고 전체 경로의 해시를 붙인다. `CLAUDE_CONFIG_DIR`로 저장 위치를, `CLAUDE_CODE_PROJECT_DIR_NAME`으로 폴더 이름을 바꿀 수 있다. [Claude Code sessions](https://code.claude.com/docs/en/sessions) (확인일: 2026-09-15)
+
+  > "The entry format is internal to Claude Code and changes between versions, so scripts that parse these files directly can break on any release."
+  >
+  > 번역: 항목 형식은 Claude Code 내부용이며 버전마다 바뀌므로, 이 파일을 직접 파싱하는 스크립트는 어느 릴리스에서든 깨질 수 있습니다.
+
+- **공식 문서(Claude Code CLI):** `--print`·`-p`는 대화형 모드 없이 응답을 출력한다. `--no-session-persistence`는 세션을 디스크에 저장하지 않으며 print 모드에서만 쓴다. [Claude Code CLI reference](https://code.claude.com/docs/en/cli-reference) (확인일: 2026-09-15)
+- **공식 문서(Claude Code 스킬):** `disable-model-invocation: true`는 Claude가 스킬을 스스로 불러오지 못하게 하고 사용자가 `/이름`으로 부를 때만 쓰게 한다. 스킬 목록에서 `description`과 `when_to_use`를 합친 글은 1,536자에서 잘린다. 프로젝트 스킬은 `.claude/skills/<skill-name>/SKILL.md`에 둔다. [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-15)
+- **공식 문서(Codex 스킬):** Codex는 현재 폴더부터 저장소 루트까지의 `.agents/skills`에서 스킬을 찾고, `SKILL.md`에는 `name`과 `description`이 있어야 한다. `agents/openai.yaml`의 `policy.allow_implicit_invocation`을 `false`로 두면 명시적으로 부를 때만 쓴다. 처음 넣는 스킬 목록은 모델 컨텍스트 창의 2%, 창 크기를 모르면 8,000자까지만 쓴다. [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-15)
+
+  > "Codex won't implicitly invoke the skill based on user prompt; explicit `$skill` invocation still works."
+  >
+  > 번역: Codex는 사용자 프롬프트를 보고 스킬을 암묵적으로 호출하지 않지만, `$skill`로 명시해 호출하는 방식은 여전히 동작합니다.
+
+- **비공식 자료(skills CLI):** skills CLI는 저장소의 `skills/` 등에서 스킬을 찾고, `add`의 `--skill`(`'*'`는 전부), `-a`·`--agent`, `-g`·`--global`, `-y`·`--yes`, `--list`로 설치 대상을 고른다. 프로젝트 설치 위치는 Claude Code `.claude/skills/`, Codex와 Antigravity `.agents/skills/`다. 익명 사용 통계를 모으며 `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`로 끈다. [vercel-labs/skills](https://github.com/vercel-labs/skills) (확인일: 2026-09-15)
+
+  > "This CLI collects anonymous usage data to help improve the tool. No personal information is collected."
+  >
+  > 번역: 이 CLI는 도구를 개선하려고 익명 사용 데이터를 수집합니다. 개인 정보는 수집하지 않습니다.
+
+- **직접 실험(CLI 도움말, 2026-09-15):** probe가 쓰는 옵션이 설치된 CLI에 있는지 확인했다. `codex exec --help`(codex-cli 0.154.0)에는 `-s`·`--sandbox`, `-C`·`--cd`, `--skip-git-repo-check`, `--ephemeral`이, `claude --help`(Claude Code 2.1.272)에는 `-p`·`--print`, `--tools`, `--no-session-persistence`가, `agy --help`(1.2.2)에는 `-p`·`--print`, `--add-dir`, `--print-timeout`(기본 5m0s)이 있다.
+- **직접 실험(세션 기록 구조, 2026-09-15):** 이 컴퓨터에서 가장 최근 기록 20개씩의 필드 구조만 셌다. 대화 내용은 출력하지 않았다.
+  - Codex `~/.codex/sessions/**/rollout-*.jsonl`: 20개 모두 `session_meta.payload.cwd`가 있고, 19개에 `world_state.payload.state.agents_md.text`와 `# AGENTS.md instructions`를 담은 `response_item` 메시지가 있다.
+  - Claude Code `~/.claude/projects/*/*.jsonl`: 20개 모두 `attachment.type`이 `instructions`이고 `attachment.files[].path`가 있는 기록을 가지며, 7개는 이 기록이 두 번 이상 나온다. 6개에 `nested_memory` 기록의 `attachment.path`가 있다.
+- **직접 확인(skills CLI 코드, 2026-09-16):** 설치된 skills@1.5.26의 `dist/cli.mjs`에서 `isEnabled()`는 `DISABLE_TELEMETRY`와 `DO_NOT_TRACK`이 모두 없을 때만 참을 돌려주고, 사용 통계를 보내는 `track()`과 감사 데이터를 받는 `fetchAuditData()`는 이 값이 거짓이면 바로 끝난다. 네트워크 요청을 직접 관찰하지는 않았다.
+- **직접 실험(skills CLI 설치, 2026-09-15):** `node tools/skills-smoke.ts`가 임시 프로젝트에서 `npx -y skills@1.5.26 add <사본> --list`와 `add <사본> --skill '*' -a claude-code -a codex -a antigravity -y`를 `DISABLE_TELEMETRY=1`, `DO_NOT_TRACK=1`로 실행했다. 두 스킬이 `.agents/skills/`와 `.claude/skills/`에 설치됐고, `agctx-author`에는 `disable-model-invocation: true`와 `agents/openai.yaml`이 함께 들어갔다.
+- **직접 실험(verify --probe, 2026-09-15~16):** 빈 Git 저장소에 `team-backend` 프로필을 적용하고 `services/payments/AGENTS.md`, `trigger: glob` 규칙 `.agents/rules/payments.md`, `.cursorrules`를 더한 뒤 `agctx verify services/payments --probe --yes`를 실행했다(codex-cli 0.154.0, Claude Code 2.1.272, agy 1.2.2). 세 에이전트를 차례로 실행하는 데 약 48초가 걸렸다.
+  - Codex는 루트 `AGENTS.md`와 `services/payments/AGENTS.md`의 표지 줄을 모두 되풀이했다.
+  - Claude Code는 루트 `CLAUDE.md`의 표지 줄만 되풀이하고, 그 파일이 `@AGENTS.md`로 가져오는 루트 `AGENTS.md`의 표지 줄은 되풀이하지 않았다. 새로 만든 사본이라 외부 가져오기를 승인한 적이 없고 루트 `AGENTS.md`가 시작 폴더 밖에 있으므로, 위 공식 문서의 외부 가져오기 규칙과 맞는 결과다. 이 결과에 따라 `explain`이 이 파일을 `conditional`로 판정하게 바꿨다.
+  - Antigravity는 루트 `AGENTS.md`와 `trigger: always_on`인 `.agents/rules/agctx.md`의 표지 줄을 되풀이했고, `trigger: glob` 규칙과 `services/payments/AGENTS.md`의 표지 줄은 되풀이하지 않았다. 같은 사본에 루트 `GEMINI.md`와 `trigger: model_decision` 규칙을 더해 `--agent antigravity`로 다시 실행하자 `GEMINI.md`의 표지 줄은 되풀이했고 `model_decision` 규칙의 표지 줄은 되풀이하지 않았다.
+  - 판정은 에이전트가 출력한 표지 줄로만 한다. Codex는 `--sandbox read-only`, Claude Code는 `--tools ""`로 도구를 막았지만 Antigravity CLI에는 같은 옵션이 없어 프롬프트의 지시에만 기댄다.
+
 ## 공개 npm·GitHub 저장소 운영 근거
 
 - npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/) (확인일: 2026-09-14)

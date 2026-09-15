@@ -3,7 +3,7 @@
 **AI 코딩 에이전트를 위한 프로필 기반 컨텍스트 관리 도구입니다.**
 
 <!-- agctx-doc-sources: src, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics -->
-<!-- agctx-doc-sources-sha256: b6df9710a0b4f893fdb11260192dd8c407363fa2e6d42c34d03f93cb090de777 -->
+<!-- agctx-doc-sources-sha256: 14226c93005e15f73378623e75039e4e0027bd110a0bf6da5d132ffc613babe0 -->
 
 ![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)
 ![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)
@@ -114,7 +114,17 @@ Applied profile company to /path/to/project
 
 개인 프로필은 `~/.agctx/profiles/<name>`에 저장됩니다. 프로젝트의 도메인 지침은 적용 후 프로젝트의 `AGENTS.md`에 별도로 추가합니다.
 
-프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사, 여러 저장소 동기화·PR 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
+프로필 생성·setup·적용·동기화, Git 공유, 저장소 검사, 에이전트 전달 확인, 여러 저장소 동기화·PR 명령을 제공합니다. 세부 계약과 구현 기록은 [현재 아키텍처](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/architecture/)와 [구현 계획](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인합니다.
+
+### 에이전트에게 맡기기
+
+에이전트용 스킬을 설치하면 "이 저장소 지침이 최신인지 확인해 줘"처럼 말로 agctx를 맡길 수 있습니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필 게시·PR용 `agctx-author` 스킬은 이름으로 부를 때만 쓰입니다.
+
+```bash
+DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+```
+
+skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [사용 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/usage-guide.md#에이전트에게-agctx를-맡기기)에 있습니다.
 
 ### 검증의 범위
 
@@ -133,6 +143,9 @@ Applied profile company to /path/to/project
 - `agctx profile clone|status|pull|push|connect` — 표준 Git 원격으로 프로필 공유; 프로젝트 파일은 건드리지 않고, 받을 지침에 숨은 문자가 있으면 멈춤
 - `agctx check [--refresh] <project>` — 관리 영역 충돌·숨은 문자·뒤처짐을 파일을 바꾸지 않고 종료 코드로 확인(CI용)
 - `agctx repos list|status|sync|pr` — 프로필을 적용한 저장소들을 한 번에 확인·동기화하고, 고정한 저장소는 저장소마다 PR로 갱신; 예약 봇은 `repos pr --targets <file> --yes`
+- `agctx explain [<path>]` — 그 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 이유를 보여 주고, 어느 에이전트에도 닿지 않는 파일이 있으면 종료 코드 4
+- `agctx verify [--probe] [<path>]` — 에이전트 세션 기록으로 지침 파일이 실제로 들어갔는지 확인; `--probe`는 승인 뒤 임시 사본에서 에이전트를 한 번씩 실행
+- 에이전트용 스킬 `agctx`·`agctx-author` — 에이전트에게 말로 agctx를 맡길 때 명령과 승인 규칙을 알려 줌
 - 모든 명령 — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, 터미널이 아니면 `--yes` 확인, `agctx <명령> --help`
 - `agctx config lang <ko|en>` — 표시·생성 언어 설정; 기본은 영어이고 `--lang`·`AGCTX_LANG`로도 지정, 첫 대화형 실행에서 한 번 선택해 저장
 
@@ -148,6 +161,8 @@ Applied profile company to /path/to/project
 | Antigravity            | `.agents/rules/agctx.md`        |
 
 적용하면 마지막으로 쓴 관리 영역 원문도 `.agctx/base/`에 함께 기록합니다. 관리 영역 충돌을 풀 때 기준이 되므로 git에 커밋하세요.
+
+에이전트가 파일을 실제로 읽는지는 시작한 폴더에 따라 달라집니다. Codex는 하위 폴더의 `AGENTS.md`를 그 폴더에서 시작할 때만 읽고, Claude Code는 `CLAUDE.md`가 가져오지 않는 `AGENTS.md`를 읽지 않습니다. 모노레포라면 `agctx explain <폴더>`로 확인하세요.
 
 
 ## 지원하지 않는 기능
@@ -176,9 +191,9 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 | [setup과 지침 옵션](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/setup-and-guidance.md)         | 사용자·CLI가 프로필의 TDD·변경 검토·검증·문서화·보안 지침을 선택 구성           | High · Implemented      | preset·설정 diff 고도화  |
 | [프로젝트 적용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/project-application.md)             | 선택한 프로필을 프로젝트에 적용하고 도메인 지침을 분리 보존                  | Critical · Implemented  | 충돌·복구 확정            |
 | [에이전트 산출물 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-sync.md)                 | 프로필에서 관리 블록만 에이전트별 지침 파일에 생성·동기화                   | High · Implemented      | manifest·drift 고도화  |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Implementing     | 에이전트용 스킬·지침 전달 확인 |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md)      | 사용자·AI 에이전트·TUI·CLI의 책임과 안전한 자동화 경계                | High · Implementing     | 배포 패키지 기준 에이전트 시나리오 평가 |
 | [관리 산출물의 안전한 동기화](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 파일은 부분 갱신하고 사용자 수정·충돌·복구를 보장                    | Critical · Implementing | 충돌 시각화·복구           |
-| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 팀·조직이 표준 Git 원격으로 프로필을 공유하고 적용한 버전을 기록·확인 | Critical · Implemented | 여러 저장소 일괄 동기화·PR |
+| [Git 기반 프로필 관리](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/git-profile-management.md) | 팀·조직이 표준 Git 원격으로 프로필을 공유하고 적용한 버전을 기록·확인 | Critical · Implemented | 없음 |
 | [스코프 확장과 지침 합성](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/scope-composition.md)         | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합               | Medium · Proposed       | 검증 후 합성 최소 프로토타입    |
 
 
@@ -212,7 +227,7 @@ agctx의 구현은 “공통 지침을 어디에 두고, 누가 무엇을 변경
 
 | 주제                                                                                                                          | 목적·대상 계층                                                             | 중요도·상태          | 결정할 것과 관계                                     |
 | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------- | --------------------------------------------- |
-| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Implementing | 명시적 대상·기계 판독 결과·승인·종료 코드 구현; 에이전트용 스킬과 전달 확인이 다음 작업 |
+| [자연어 요청을 통한 사용](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/discussion/architecture/topics/agent-mediated-usage.md) | AI 에이전트가 모호한 요청으로 잘못된 대상을 변경하지 않게 함 · 사용자 ↔ AI 에이전트 ↔ CLI/TUI ↔ 프로젝트 | High · Implementing | 명시적 대상·기계 판독 결과·승인·종료 코드, 에이전트용 스킬과 전달 확인 구현; 배포 패키지 기준 에이전트 시나리오 평가가 다음 작업 |
 
 
 현재의 선행 구조는 프로필 생성 → 지침 설정 → 프로젝트 적용 → 에이전트 산출물 동기화입니다. 각 제안의 상태, 선행·후속·연관 제안, 후속 작업, 권장 다음 작업, 결정할 사항은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에서 확인할 수 있습니다.

@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { _, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { checkProject } from '../check.ts';
+import { explainPath, parseAgents, type AgentId } from '../explain.ts';
+import { verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
 import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, pushProfile } from '../profile/git-profile.ts';
 import { resolveProject } from '../profile/resolve.ts';
@@ -15,7 +17,7 @@ import { applyReposSync, planReposSync, type SyncItem } from '../repos/sync.ts';
 import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
 import { saveLocale } from '../shared/home.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
-import { confirmChange, type ParsedArguments } from './options.ts';
+import { canPrompt, confirmChange, type ParsedArguments } from './options.ts';
 import { isJsonMode, say, warn, type CommandOutcome } from './output.ts';
 
 type Handler = (parsed: ParsedArguments) => Promise<CommandOutcome>;
@@ -35,6 +37,12 @@ function remember(targetDir: string, profile: string, pinned: boolean, warnings:
     warnings.push(message);
     if (!isJsonMode()) warn(message);
   }
+}
+
+function agentName(agent: AgentId): string {
+  if (agent === 'codex') return _('explain.agent.codex');
+  if (agent === 'claude') return _('explain.agent.claude');
+  return _('explain.agent.antigravity');
 }
 
 function printSyncItems(items: readonly SyncItem[]): void {
@@ -202,6 +210,58 @@ export const HANDLERS: Record<string, Handler> = {
     for (const finding of report.findings) say(`${finding.kind.padEnd(17)} ${finding.file ?? '-'}  ${finding.detail}`);
     if (!report.findings.length) say(_('check.ok', { project: report.project }));
     return { exitCode: report.exitCode, data: report, warnings: report.warnings };
+  },
+  explain: async parsed => {
+    const report = explainPath(projectDir(parsed.positional[0]), parseAgents(text(parsed, 'agent')));
+    for (const agent of report.agents) {
+      say(`${agentName(agent.agent)} · ${_('explain.started-in', { dir: agent.startDir === '.' ? _('explain.project-root') : agent.startDir })}`);
+      if (!agent.files.length) say(`  ${_('explain.none')}`);
+      for (const file of agent.files) say(`  ${file.status.padEnd(12)} ${file.path}  ${file.reason}`);
+      for (const finding of agent.findings) say(`  ${finding.kind.padEnd(12)} ${finding.message}`);
+      say('');
+    }
+    if (report.unsupported.length) {
+      say(_('explain.unsupported.title'));
+      for (const file of report.unsupported) say(`  ${file.path}  ${file.reason}`);
+    }
+    return { exitCode: report.exitCode, data: report };
+  },
+  verify: async parsed => {
+    const agents = parseAgents(text(parsed, 'agent'));
+    const probe = flag(parsed, 'probe');
+    const names = agents.map(agentName).join(', ');
+    // A probe changes no files but spends agent usage, so the refusal names that cost instead of a dry run.
+    if (probe && parsed.options.yes !== true && !canPrompt()) {
+      throw usageError('confirm.required', _('error.verify.probe-confirm', { agents: names }), _('hint.verify.probe-yes', { command: retryWithYes('verify', parsed) }));
+    }
+    if (probe && !(await confirmChange(parsed, _('confirm.verify-probe', { agents: names }), retryWithYes('verify', parsed)))) {
+      say(_('confirm.declined'));
+      return ok();
+    }
+    const report = verifyPath(projectDir(parsed.positional[0]), agents, { probe });
+    const unstarted: string[] = [];
+    const stale: string[] = [];
+    const errors: string[] = [];
+    for (const agent of report.agents) {
+      const evidence = agent.evidence === 'session-log'
+        ? _('verify.evidence.session-log', { source: agent.source ?? '' })
+        : agent.evidence === 'probe' ? _('verify.evidence.probe', { command: agent.source ?? '' })
+          : agent.agent === 'antigravity' ? _('verify.evidence.unreadable') : _('verify.evidence.none');
+      say(`${agent.agent.padEnd(12)} ${agent.status.padEnd(12)} ${evidence}`);
+      for (const file of agent.delivered) say(`  ${'delivered'.padEnd(10)} ${file}`);
+      for (const file of agent.missing) say(`  ${'missing'.padEnd(10)} ${file}`);
+      for (const file of agent.stale) say(`  ${'stale'.padEnd(10)} ${file}`);
+      if (agent.error) say(`  ${agent.error.message}`);
+      if (agent.status === 'no-evidence' && agent.agent !== 'antigravity') (agent.stale.length ? stale : unstarted).push(agentName(agent.agent));
+      if (agent.error?.hint) errors.push(`${_('output.next')}: ${agent.error.hint}`);
+    }
+    const hints = [
+      ...(unstarted.length ? [_('verify.hint.start', { agents: unstarted.join(', ') })] : []),
+      ...(stale.length ? [_('verify.hint.stale', { agents: stale.join(', ') })] : []),
+      ...(report.agents.some(agent => agent.agent === 'antigravity' && agent.status === 'no-evidence') ? [_('verify.hint.antigravity')] : []),
+      ...errors
+    ];
+    return { exitCode: report.exitCode, data: report, warnings: hints };
   },
   'repos.list': async parsed => {
     if (flag(parsed, 'prune')) {

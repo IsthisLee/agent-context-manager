@@ -1,6 +1,6 @@
 # 에이전트 규칙 위치 탐지 (Discovery)
 
-**상태:** Proposed
+**상태:** Implemented
 
 ## 제안 요약
 
@@ -30,7 +30,7 @@
 | 후속 제안 | 모델링되지 않은 경로 채택(adopt) 정책, 도구별 경로 레지스트리 |
 | 연관 제안 | [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)의 기계 판독 보고 스키마 |
 | 후속 작업 | 스캔 대상 경로 레지스트리를 확정하고, 보고 스키마와 평가 시나리오를 만든다. |
-| 권장 다음 작업 | 읽기 전용 스캔·보고를 먼저 만들고, 모델링되지 않은 경로에 쓰는 동작은 별도 결정으로 분리한다. |
+| 권장 다음 작업 | 읽기 전용 스캔·보고는 `agctx explain`으로 구현했다. 모델링되지 않은 경로에 쓰는 채택(adopt) 정책은 수요가 확인되면 별도 논의로 연다. |
 
 ## 목차
 
@@ -40,6 +40,7 @@
 - [계층별 책임](#계층별-책임)
 - [비범위와 금지할 접근](#비범위와-금지할-접근)
 - [결정·검증 항목](#결정검증-항목)
+- [구현 기록](#구현-기록)
 
 ## 현재 동작과 한계
 
@@ -124,3 +125,17 @@ flowchart TD
 - 사람용·기계 판독 보고 스키마
 - `--dry-run`에 통합할지, 별도 명령으로 둘지
 - 실제 배포 패키지 기준으로 기존 규칙이 있는 프로젝트에 적용하는 평가 시나리오
+
+## 구현 기록
+
+#### 구현 기록: explain의 읽기 전용 규칙 위치 보고 (2026-09-16)
+
+* **결정:** [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md). 스캔은 `apply`의 한 단계가 아니라 별도 명령 `agctx explain`으로 둔다. 에이전트마다 실제로 읽는 위치와 함께, Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 위치를 보고한다. 모델링되지 않은 경로에는 쓰지 않는다.
+* **구현:** `src/explain.ts`의 에이전트별 판정과 `UNSUPPORTED` 목록(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`). 사람용 출력의 `Not read by Codex, Claude Code, or Antigravity:` 목록과 `--json`의 `data.unsupported`로 보고한다. 사용법은 [CLI Reference](../../../cli-reference.md#explain)에 있다.
+* **평가:** `evals/explain.test.ts`가 `.cursorrules`와 `trigger: glob` 규칙이 있는 모노레포에서 보고 내용과 종료 코드를 검사한다.
+* **계획과 달라진 점:**
+  - "결정·검증 항목"의 `--dry-run` 통합 여부는 별도 명령으로 정했다. 적용하기 전뿐 아니라 적용한 뒤와 CI에서도 같은 보고가 필요하기 때문이다.
+  - 스캔 경로 목록의 정본은 별도 레지스트리 파일이 아니라 `src/explain.ts`의 상수다.
+  - 위치만 보고하지 않고, 에이전트가 그 위치의 파일을 읽는지(`read`·`conditional`·`not-read`)와 이유까지 보고한다.
+* **제약:** 다른 도구 규칙의 내용이 agctx 산출물과 겹치는지는 비교하지 않는다. `apply` 화면에는 이 보고가 나오지 않으므로 적용 전에 `explain`을 따로 실행해야 한다.
+* **다음 단계:** 없음. 모델링되지 않은 경로의 채택 정책은 후속 제안으로 남긴다.

@@ -1,7 +1,7 @@
 # 갱신 방식 고르기: 고정과 예약 봇
 
 <!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts, src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 70d1ad26f6c2d7320e2bfb0ffb9335ec22dce0284716ca9f24a04d8819f2f51e -->
+<!-- agctx-doc-sources-sha256: 94df91799f0db50fe846883c2fda0850920a2a0b2d82ac0477179ee370d2a8d8 -->
 
 프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않음이다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
 
@@ -51,7 +51,7 @@ flowchart LR
 
 - **고정하려면:** 프로필이 Git 원격에 연결되어 있고, 프로필 폴더에 커밋하지 않은 수정이 없어야 한다.
 - **`repos pr`로 PR까지 열려면:** GitHub CLI `gh`가 설치되어 있고 로그인되어 있어야 한다. 없으면 브랜치 push까지만 하고 PR은 직접 열도록 안내한다.
-- **TUI:** 동기화는 TUI의 **Sync a project**로, 고정 적용은 **Apply to a project**에서 고정 질문에 **Yes**를 골라서도 할 수 있다. `repos` 명령은 CLI로만 실행한다([TUI로 쓰기](tui.md#프로젝트에-적용하기)).
+- **TUI:** 동기화는 TUI의 **Sync a project**로, 고정 적용은 **Apply to a project**에서 고정 질문에 **Yes**를 골라서도 할 수 있다. 여러 저장소의 `repos sync`·`repos pr`은 첫 화면의 **Repositories** 메뉴에서 실행한다([TUI로 쓰기](tui.md#여러-저장소-다루기)).
 
 ## 두 방식의 차이 확인하기
 

@@ -29,6 +29,7 @@ function usedKeys(): Set<string> {
     used.add(`command.${command.id}.summary`);
     for (const code of command.exitCodes) used.add(`exit.${code}`);
     if (command.tui) used.add(command.tui);
+    if (command.tui && /^(project|repos)\.menu\./.test(command.tui)) used.add(command.tui.replace(/\.label$/, '.hint'));
     if (command.profileMenu) {
       used.add(command.profileMenu);
       if (command.profileMenu.startsWith('actions.')) used.add(command.profileMenu.replace(/\.label$/, '.hint'));

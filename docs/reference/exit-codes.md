@@ -1,7 +1,7 @@
 # 종료 코드
 
 <!-- agctx-doc-sources: src/shared/errors.ts, src/commands/registry.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 0cd6d2feec7d1f6c4855b36ca03bb232903ab0637a9f75704b0a119dd15dd70e -->
+<!-- agctx-doc-sources-sha256: 23730607ef6a723ef4fb04873ca2ed32eb16372b49f8e420ecba668f2212bafb -->
 
 모든 명령은 결과를 종료 코드로 알린다. 스크립트·CI·에이전트는 출력 문구 대신 종료 코드와 `--json` 결과 문서의 `exitCode`를 읽는다.
 

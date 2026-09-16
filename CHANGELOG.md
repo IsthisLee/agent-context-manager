@@ -7,10 +7,13 @@
 ### Added
 
 - TUI의 **Apply to a project**(프로젝트에 적용)가 Git 프로필이면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. Yes는 `profile apply --pin`과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있어, 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. 지금까지는 TUI로 적용하면 항상 고정 없이 적용했다
+- TUI 첫 화면에 **Check a project**(`check`·`explain`·`verify`)와 **Repositories**(`repos list`·`status`·`sync`·`pr`) 메뉴를 더했다. 이제 모든 명령을 TUI에서 실행할 수 있다. 원격 확인·에이전트·probe·프로필·없는 폴더 정리·PR 대상 파일·base 브랜치·초안·메시지는 질문으로 고른다. 답은 CLI와 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다
+- TUI의 **Help**에서 명령 하나를 골라 사용법·설명·종료 코드를 본다. **Clone a profile**과 **Connect to Git**은 브랜치를 묻는다(비워 두면 `--branch` 없음)
 - 사용 가이드 [TUI로 쓰기](docs/guides/tui.md)를 더했다. 키 조작, 확인 질문의 기본값, 취소 키, 메뉴와 CLI 명령의 대응(영어·한국어 메뉴 이름)을 실제 화면으로 보여 준다
 
 ### Changed
 
+- TUI 첫 화면의 **Repository status**(저장소 상태)를 **Repositories**(여러 저장소) > **Status**(상태 보기)로 옮겼다
 - **호환성 파괴:** `profile setup`의 지침 항목 두 개의 이름과 옵션을 바꿨다. `--harness`는 `--workflow`(작업 흐름)로, `--documentation`은 `--instructions`(지침 파일)로 바뀌었다. 옛 옵션은 남기지 않으므로 옛 이름을 쓰던 스크립트는 사용법 오류(64)로 멈춘다. 프로필에 저장된 `harness`·`documentation` 값도 읽지 않으므로 두 항목은 다시 고르기 전까지 기본값 `recommended`로 만들어진다. 근거는 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)
 - 배포되는 기본 지침 6개 항목의 문구를 공식 문서·표준 근거에 맞춰 다시 썼다. 작업 흐름은 계획·범위·중단 기준을, TDD는 Red → Green → Refactor 각 단계와 테스트를 지키는 규칙을, 변경 검토는 새 맥락에서의 diff 검토를, 검증은 실행한 명령과 결과를 증거로 보이는 방식을, 지침 파일은 무엇을 두고 언제 고칠지를, 보안은 비밀값·권한·승인·믿을 수 없는 입력을 담는다. 문장마다 원문 인용과 확인일을 [docs/references.md](docs/references.md)에 기록했고 [지침 카탈로그](docs/contributing/guidance-catalog.md)가 그 절로 링크한다. 기존 프로필은 자동으로 바뀌지 않는다. `agctx profile setup <name>`을 다시 실행하면 guidance 블록이 바뀌고 `agctx profile sync <project>`로 프로젝트에 반영되며, 블록 밖에 쓴 내용은 그대로 남는다
 

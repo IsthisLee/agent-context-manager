@@ -26,11 +26,8 @@ const CHANGES: Record<CommandSpec['changes'], string> = {
   remote: 'Git 원격'
 };
 
-const SURFACES: Record<CommandSpec['surface'], string> = {
-  profile: 'CLI · TUI · 프로필 메뉴',
-  repository: 'CLI',
-  global: 'CLI'
-};
+/** Where a command runs: always the CLI, plus the TUI and the profile management menu when the registry names an entry there. */
+const interfaces = (command: CommandSpec) => ['CLI', ...(command.tui ? ['TUI'] : []), ...(command.profileMenu ? ['프로필 메뉴'] : [])].join(' · ');
 
 export const documentedCommands = (): CommandSpec[] => COMMANDS.filter(command => command.id !== 'help');
 
@@ -55,7 +52,7 @@ export function commandTable(): string {
   return [
     '| 명령 | 하는 일 | 바꾸는 것 | 쓸 수 있는 곳 |',
     '| --- | --- | --- | --- |',
-    ...documentedCommands().map(command => `| [\`${heading(command)}\`](#${anchor(command)}) | ${messages[`command.${command.id}.summary`]} | ${CHANGES[command.changes]} | ${SURFACES[command.surface]} |`)
+    ...documentedCommands().map(command => `| [\`${heading(command)}\`](#${anchor(command)}) | ${messages[`command.${command.id}.summary`]} | ${CHANGES[command.changes]} | ${interfaces(command)} |`)
   ].join('\n');
 }
 

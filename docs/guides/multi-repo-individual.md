@@ -1,7 +1,7 @@
 # 성격이 다른 저장소 여럿에 프로필 나눠 쓰기
 
 <!-- agctx-doc-sources: src/repos, src/profile/git-profile.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: abe5108158e99154608b91fdbc9b47ffd80f737ef5dc2035fde943ff01b6e885 -->
+<!-- agctx-doc-sources-sha256: ba70e00041c8788c8e1be91e81853dd3800e1838ebfe1a0f9ec39fbe07ae6a76 -->
 
 개인 블로그와 사이드 프로젝트에는 내 작업 습관을, 회사 API 서버에는 회사 규칙을 적용하는 경우다. 사용자 수준 지침 파일(`~/.claude/CLAUDE.md` 등)은 저장소를 구분하지 못하므로, 저장소마다 프로필을 골라 적용한다.
 
@@ -33,7 +33,7 @@ flowchart LR
 
 - **agctx:** 설치는 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 - **프로필:** 아래 예시는 `company` 프로필을 이미 만들었거나 `profile clone`으로 받았다고 가정한다.
-- **CLI:** `repos` 명령은 CLI로만 실행한다. 프로필 만들기와 저장소 하나씩 적용하는 일은 TUI로도 할 수 있다([TUI로 쓰기](tui.md)).
+- **TUI:** 프로필 만들기와 적용은 **Manage profiles**에서, `repos` 명령은 첫 화면의 **Repositories** 메뉴에서 실행할 수 있다([TUI로 쓰기](tui.md#여러-저장소-다루기)).
 
 ## 저장소마다 프로필 적용
 

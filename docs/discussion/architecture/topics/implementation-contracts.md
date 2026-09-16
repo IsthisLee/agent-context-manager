@@ -22,6 +22,8 @@ flowchart LR
   EVAL["evals/interface-parity.test.ts"] -.->|"profile 명령에 경로가 빠지면 실패"| REG
 ```
 
+표의 필수 경로는 최소 기준이다. 2026-09-17 기준으로는 `repository`·`global` 명령도 모두 TUI 항목이 있다. 저장소 명령은 첫 화면의 프로젝트 점검·여러 저장소 메뉴에서 실행하고, `evals/tui-commands.test.ts`가 명령마다 TUI 동작이 있는지 검사한다.
+
 기능을 추가하면 등록부에 항목을 하나 넣고 표면을 정한다. 평가가 등록부를 기준으로 `profile` 명령의 TUI 항목과 관리 메뉴 동작을 확인하므로 한 경로만 구현한 프로필 기능은 검사에서 걸린다.
 
 각 단계는 다음 순서를 따른다.

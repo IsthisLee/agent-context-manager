@@ -16,7 +16,8 @@ export interface OptionSpec {
 /**
  * `profile` commands belong to a profile and must be reachable from the CLI,
  * the TUI, and the profile management menu. `repository` commands work on a
- * repository or CI and need the CLI only.
+ * repository or CI and need the CLI only; the TUI also offers them under the
+ * main menu's project check and repositories entries.
  */
 export type Surface = 'profile' | 'repository' | 'global';
 
@@ -59,13 +60,13 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'profile.pull', words: ['profile', 'pull'], args: ['<name>'], options: [dryRun], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.pull.label', profileMenu: 'actions.pull.label' },
   { id: 'profile.push', words: ['profile', 'push'], args: ['<name>'], options: [dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.unavailable], surface: 'profile', changes: 'remote', tui: 'actions.push.label', profileMenu: 'actions.push.label' },
   { id: 'profile.connect', words: ['profile', 'connect'], args: ['<name>', '<git-url>'], options: [{ name: 'branch', value: '<branch>' }], exitCodes: [...common, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.connect.label', profileMenu: 'actions.connect.label' },
-  { id: 'check', words: ['check'], args: ['[<project>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none' },
-  { id: 'explain', words: ['explain'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }], exitCodes: [...common, EXIT.deliveryMissing], surface: 'repository', changes: 'none' },
-  { id: 'verify', words: ['verify'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }, { name: 'probe' }, yes], exitCodes: [...common, EXIT.deliveryMissing, EXIT.unavailable], surface: 'repository', changes: 'none' },
-  { id: 'repos.list', words: ['repos', 'list'], args: [], options: [profileFilter, { name: 'prune' }], exitCodes: common, surface: 'repository', changes: 'profile-store' },
-  { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'main.repos.label' },
-  { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository' },
-  { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote' },
+  { id: 'check', words: ['check'], args: ['[<project>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'project.menu.check.label' },
+  { id: 'explain', words: ['explain'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }], exitCodes: [...common, EXIT.deliveryMissing], surface: 'repository', changes: 'none', tui: 'project.menu.explain.label' },
+  { id: 'verify', words: ['verify'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }, { name: 'probe' }, yes], exitCodes: [...common, EXIT.deliveryMissing, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'project.menu.verify.label' },
+  { id: 'repos.list', words: ['repos', 'list'], args: [], options: [profileFilter, { name: 'prune' }], exitCodes: common, surface: 'repository', changes: 'profile-store', tui: 'repos.menu.list.label' },
+  { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'repos.menu.status.label' },
+  { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository', tui: 'repos.menu.sync.label' },
+  { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote', tui: 'repos.menu.pr.label' },
   { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label' },
   { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label' }
 ];

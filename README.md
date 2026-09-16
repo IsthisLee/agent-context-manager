@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 3fdf4ef87cc22e18771ca20527e766eb93fd7d09ee6fcda215edf157526afb30 -->
+<!-- agctx-doc-sources-sha256: ab14a122a670c4a5ed7d802f1b4d9b50b22b2972cd9979ba767368cda403f1b8 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -72,7 +72,7 @@ Applied profile company to /path/to/project
 ```
 
 > [!Tip]
-> 터미널에서 `agctx`를 입력하면 명령을 외우지 않고 TUI 메뉴에서 프로필 만들기·지침 설정·적용·동기화·Git 공유를 진행할 수 있습니다. 저장소 검사(`check`·`explain`·`verify`)와 여러 저장소 처리(`repos`)는 명령으로 실행합니다.
+> 터미널에서 `agctx`를 입력하면 명령을 외우지 않고 TUI 메뉴에서 모든 명령을 실행할 수 있습니다. 프로필 만들기·지침 설정·적용·동기화·Git 공유부터 프로젝트 점검과 여러 저장소 처리까지 메뉴로 진행합니다.
 >
 > 옵션을 직접 전달하는 방식은 자동화나 반복 실행에 사용할 수 있습니다.
 

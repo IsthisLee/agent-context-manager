@@ -1,7 +1,7 @@
 # 모노레포에서 쓰기
 
 <!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts, templates/CLAUDE.link.md, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 8cc148eb95e1811f5d023225b13339d22b85afe88b941b5dd11c7f3b8a2d0a41 -->
+<!-- agctx-doc-sources-sha256: 49dfc130df5635c92702e14e77cc4bd43d9c2d613a297f83700c34ddfee1afb1 -->
 
 모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일(그 폴더의 `AGENTS.md`를 `@AGENTS.md`로 가져오는 `CLAUDE.md`)을 챙긴다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문이다. 결정과 근거는 [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
 
@@ -78,7 +78,7 @@ Dry-run: no files were changed.
 
 ## 확인하기
 
-에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
+에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 
 사람이 둔 `packages/web/CLAUDE.md`가 `AGENTS.md`를 가져오지 않으면 `missing` 줄이 나오고 종료 코드 4로 끝난다.
 

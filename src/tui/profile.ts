@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { cancel, confirm, intro, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { cancelled } from './cancel.ts';
+import { runFromTui } from './commands.ts';
 import { HANDLERS } from '../commands/handlers.ts';
 import { canPrompt, type ParsedArguments } from '../commands/options.ts';
 import { COMMANDS } from '../commands/registry.ts';
@@ -67,7 +68,9 @@ export async function cloneProfileTui(): Promise<void> {
   intro(_('clone.intro'));
   const url = await text({ message: _('clone.url.message'), placeholder: 'git@github.com:acme/agent-profile.git', validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid')) });
   if (cancelled(url)) return cancel(_('clone.cancel'));
-  await HANDLERS['profile.clone'](args([url.trim()]));
+  const branch = await text({ message: _('clone.branch.message') });
+  if (cancelled(branch)) return cancel(_('clone.cancel'));
+  await runFromTui('profile.clone', [url.trim()], { branch: (branch ?? '').trim() });
   outro(_('clone.outro'));
 }
 
@@ -196,7 +199,9 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.connect': async name => {
     const url = await text({ message: _('connect.url.message'), placeholder: 'git@github.com:acme/agent-profile.git', validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid')) });
     if (cancelled(url)) return cancel(_('actions.project.cancel'));
-    await HANDLERS['profile.connect'](args([name, url.trim()]));
+    const branch = await text({ message: _('connect.branch.message') });
+    if (cancelled(branch)) return cancel(_('actions.project.cancel'));
+    await runFromTui('profile.connect', [name, url.trim()], { branch: (branch ?? '').trim() });
   }
 };
 

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: b774c8e402fb058cc65ab0c1b85b2948a9313dad8b3c4732d28b8539ca106f23 -->
+<!-- agctx-doc-sources-sha256: e77bd155567651ff07a6a1f1fcc4f4efaa05460d8e11c305162322447f997c4a -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -72,7 +72,7 @@ Applied profile company to /path/to/project
 ```
 
 > [!Tip]
-> Type `agctx` in your terminal to create, configure, apply, sync, and share Profiles over Git from TUI menus without memorizing commands. Repository checks (`check`, `explain`, `verify`) and multi-repository work (`repos`) run as commands.
+> Type `agctx` in your terminal to run every command from TUI menus without memorizing commands: create, configure, apply, sync, and share Profiles over Git, check a project, and work on many repositories at once.
 >
 > Passing options directly is useful for automation or repeated runs.
 

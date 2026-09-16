@@ -1,7 +1,7 @@
 # 문제 해결
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts, src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: ea42c9dc68db4e002623591f9b6e353c55293673ac15b2b587771fa5ea6b8a33 -->
+<!-- agctx-doc-sources-sha256: 8df184bd395f497ff87f3e435986b5469a06f41719c3f756b5aabf48122be5ef -->
 
 agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로 실행할 명령)을 함께 출력한다. `Next:` 줄로 풀리지 않을 때 아래를 본다. 종료 코드의 뜻은 [종료 코드](exit-codes.md)에 있다.
 
@@ -11,7 +11,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 
 ## 그 밖의 오류
 
-- **TUI에서 적용·동기화했는데 `Nothing was changed.`만 나옴**: 파일을 쓰는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
+- **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
 - **`profile sync requires a project already applied`**: 아직 `apply`하지 않은 프로젝트다. 먼저 `agctx profile apply <name> <project>`를 실행한다.
 - **`Profile not found`**: 이름이 틀렸거나 다른 `AGCTX_HOME`을 쓰고 있다. `agctx profile list`로 확인한다.

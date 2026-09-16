@@ -1,7 +1,7 @@
 # 에이전트가 읽는 지침 파일
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ee7f04a50defa3473befd4d7bd119f147be367f9e2cf9512fd2e71b88d6f6023 -->
+<!-- agctx-doc-sources-sha256: b8bab699e2098b4e32d4e968287f09bc5c30d42eeab6fe92814b37f5f91af38c -->
 
 파일을 만들었다고 해서 에이전트가 그 파일을 읽는 것은 아니다. 에이전트마다 지침 파일을 찾는 규칙이 다르고, 같은 에이전트도 시작한 폴더에 따라 읽는 파일이 달라진다. 하위 폴더마다 `AGENTS.md`를 두는 모노레포에서 특히 차이가 크다. 결정과 근거는 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)에 있다.
 

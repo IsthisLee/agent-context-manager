@@ -29,7 +29,7 @@ flowchart LR
 
 - **agctx:** 설치는 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 - **고객사 저장소 접근 권한:** 고객사마다 `git ls-remote <주소>`가 오류 없이 끝나는지 확인한다.
-- **CLI:** 3단계의 `repos` 명령은 CLI로만 실행한다. 1·2단계는 TUI의 **Clone a profile**과 **Apply to a project**로도 할 수 있다([TUI로 쓰기](tui.md)).
+- **TUI:** 1·2단계는 **Clone a profile**과 **Apply to a project**로, 3·4단계의 `repos` 명령은 **Repositories** 메뉴에서 프로필로 `client-a`를 골라 실행할 수 있다([TUI로 쓰기](tui.md#여러-저장소-다루기)).
 
 ## 1. 고객사 프로필 받기
 

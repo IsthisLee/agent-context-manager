@@ -1,7 +1,7 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 4b32eacbfb181faeae7e40096260f3af98d0725dc5caca122a6d720ba56b763d -->
+<!-- agctx-doc-sources-sha256: b2a4269a83cd88a439e451ee6da6d8026ca5b305c60ec69cb581d6714bfdcd39 -->
 
 agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md)에, 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 
@@ -122,7 +122,7 @@ Applied profile team-backend to /work/shop
 
 ## 4. 저장소 확인하기
 
-`check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다.
+`check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 
 ```bash
 $ agctx check shop

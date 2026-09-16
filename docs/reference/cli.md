@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 14b7617d0ee8c687216993bc4e90532923d33dc9aae8817ee6a71da3216e7b36 -->
+<!-- agctx-doc-sources-sha256: 40831fbda1e8d5933562d49828456e36d3512bb66402afb5e4b1e52270ca919a -->
 
 ## 설치와 실행
 
@@ -118,12 +118,17 @@ agctx
 
 인자 없이 터미널에서 실행하면 메인 TUI(명령 대신 메뉴에서 골라 진행하는 터미널 화면)가 열린다.
 
-- **첫 화면:** 프로필 관리, 저장소 상태, 새 프로필 생성, Git에서 프로필 가져오기, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
+- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
+- **프로젝트 점검:** 경로를 고른 뒤 `check`·`explain`·`verify`를 실행한다. 원격 확인(`--refresh`), 에이전트(`--agent`), probe(`--probe`)는 질문으로 고른다.
+- **여러 저장소:** `repos list`·`status`·`sync`·`pr`을 실행한다. 목록에 프로필이 둘 이상이면 프로필(`--profile`)을 먼저 고르고, PR은 대상 파일·base 브랜치·초안·메시지를 묻는다.
+- **도움말:** 전체 사용법이나 명령 하나의 사용법·종료 코드를 보여 준다.
 - **프로필 관리 메뉴:** 프로필을 고른 뒤 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제를 실행한다. Git 프로필이면 Git 상태 보기·받기(pull)·올리기(push)·원격 연결도 여기서 한다.
 
 ```bash
 agctx --tui
 ```
+
+메뉴의 답은 CLI 옵션으로 바뀌어 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다. 메뉴와 명령의 대응은 [TUI로 쓰기](../guides/tui.md#메뉴와-명령-대응표)에 있다.
 
 `--tui`는 메인 TUI를 명시적으로 여는 선택적 플래그다. 터미널이 아니거나 `--json`을 주면 TUI 대신 도움말을 출력한다. 자동화 환경에서는 아래 CLI 명령과 옵션을 사용한다.
 
@@ -147,14 +152,14 @@ agctx --tui
 | [`profile pull`](#profile-pull) | 프로필을 원격까지 fast-forward합니다. 저장소 파일은 바뀌지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile push`](#profile-push) | 이미 만든 커밋을 프로필의 원격으로 보냅니다. | Git 원격 | CLI · TUI · 프로필 메뉴 |
 | [`profile connect`](#profile-connect) | 이미 Git 저장소인 프로필을 원격에 연결합니다. 커밋이나 push는 하지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
-| [`check`](#check) | 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다. | 없음 | CLI |
-| [`explain`](#explain) | 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
-| [`verify`](#verify) | explain이 기대하는 프로젝트 지침 파일을 Codex·Claude Code·Antigravity가 실제로 받았는지 세션 기록이나 --probe로 확인하고, 받지 못한 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
-| [`repos list`](#repos-list) | 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 줍니다. --prune은 없어진 폴더를 목록에서 지웁니다. | 프로필 보관함 | CLI |
-| [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI |
-| [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI |
-| [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI |
-| [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI |
+| [`check`](#check) | 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다. | 없음 | CLI · TUI |
+| [`explain`](#explain) | 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI · TUI |
+| [`verify`](#verify) | explain이 기대하는 프로젝트 지침 파일을 Codex·Claude Code·Antigravity가 실제로 받았는지 세션 기록이나 --probe로 확인하고, 받지 못한 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI · TUI |
+| [`repos list`](#repos-list) | 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 줍니다. --prune은 없어진 폴더를 목록에서 지웁니다. | 프로필 보관함 | CLI · TUI |
+| [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI · TUI |
+| [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI · TUI |
+| [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI · TUI |
+| [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI · TUI |
 <!-- agctx:generated:commands:end -->
 
 ### `profile create`
@@ -450,7 +455,7 @@ agctx profile clone [--branch <branch>] <git-url>
 - 두 파일에 숨은 문자가 있으면 등록하지 않고 종료 코드 3으로 멈춘다.
 - 프로필 이름은 `profile.json`의 `name`을 쓴다. 같은 이름의 프로필이 이미 있으면 종료 코드 64로 멈춘다. 저장소 하나에 프로필 하나를 둔다.
 - 인증은 사용자의 Git 설정(SSH 키·credential helper)을 그대로 쓴다. 터미널이 아니면 인증 질문을 띄우지 않으므로 인증이 없으면 종료 코드 69로 끝난다.
-- TUI에서는 메인 화면의 `프로필 가져오기`나 프로필 목록의 `Git에서 프로필 가져오기`에서 주소를 입력한다.
+- TUI에서는 메인 화면의 `프로필 가져오기`나 프로필 목록의 `Git에서 프로필 가져오기`에서 주소와 브랜치를 입력한다. 브랜치를 비워 두면 `--branch`를 주지 않은 것과 같다.
 
 ```bash
 $ agctx profile clone /work/team-backend.git
@@ -559,6 +564,7 @@ agctx profile connect [--branch <branch>] <name> <git-url>
 | `<git-url>` | 원격 저장소 주소 |
 | `--branch <branch>` | 추적할 브랜치; 생략하면 현재 브랜치 |
 
+- TUI의 `Git에 연결`은 주소와 브랜치를 묻는다. 브랜치를 비워 두면 현재 브랜치를 쓴다.
 - 프로필 폴더가 Git 저장소가 아니면 첫 커밋을 만드는 명령을 알려 주고 종료 코드 64로 멈춘다.
 
   ```bash
@@ -581,7 +587,7 @@ Next: agctx profile push team-backend
 
 ### `check`
 
-프로젝트가 기록한 프로필 버전과 지금 파일이 맞는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
+프로젝트가 기록한 프로필 버전과 지금 파일이 맞는지 확인한다. 파일을 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **프로필 버전**으로 실행한다.
 
 <!-- agctx:generated:usage:check:start -->
 ```bash
@@ -621,7 +627,7 @@ behind            -  the source repository has a newer commit (ddf3742)
 
 ### `explain`
 
-한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않으며, CLI로만 제공한다.
+한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **에이전트가 읽는 지침 파일**로 실행한다.
 
 <!-- agctx:generated:usage:explain:start -->
 ```bash
@@ -740,7 +746,7 @@ $ agctx explain --json --agent claude services/payments
 
 ### `verify`
 
-`explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
+`explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **에이전트 전달 확인**으로 실행하고, 증거로 세션 기록이나 probe를 고른다.
 
 <!-- agctx:generated:usage:verify:start -->
 ```bash
@@ -851,7 +857,7 @@ ok       client-a         -      /work/client-a-api
 
 ### `repos status`
 
-목록의 저장소마다 `check`를 실행해 한 줄씩 보여 준다. 파일은 바꾸지 않으며 TUI 메인 메뉴의 `저장소 상태`도 같은 내용을 보여 준다.
+목록의 저장소마다 `check`를 실행해 한 줄씩 보여 준다. 파일은 바꾸지 않는다. TUI에서는 **여러 저장소** > **상태 보기**로 실행한다.
 
 <!-- agctx:generated:usage:repos.status:start -->
 ```bash

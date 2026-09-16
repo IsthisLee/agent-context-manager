@@ -24,6 +24,8 @@
 5. **Git 워크플로.**
   - 사용자 승인 없는 `git push --force` 및 파괴적 명령 금지.
   - 커밋 메시지는 Conventional Commits 형식을 따르고 제목과 본문을 한국어로 쓴다. 타입(`feat`, `fix`, `docs` 등)과 코드 식별자·명령은 원문 그대로 둔다. 예: `docs: README 상단에 가로 목차 추가`
+  - 브랜치는 squash로 병합되므로 `main`의 커밋 하나가 PR 하나다. PR은 되돌릴 단위로 끊고 관련 없는 정리는 다른 PR로 뺀다. 병합 절차와 저장소 설정의 정본은 [릴리스와 저장소 운영](docs/contributing/releasing.md)이다.
+  - 커밋이 여러 개인 PR은 PR 제목이 `main` 커밋 제목이 되므로 제목도 Conventional Commits 형식으로 쓴다.
 
 ---
 

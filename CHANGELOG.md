@@ -4,6 +4,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- TUI의 **Apply to a project**(프로젝트에 적용)가 Git 프로필이면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. Yes는 `profile apply --pin`과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있어, 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. 지금까지는 TUI로 적용하면 항상 고정 없이 적용했다
+
 ### Changed
 
 - **호환성 파괴:** `profile setup`의 지침 항목 두 개의 이름과 옵션을 바꿨다. `--harness`는 `--workflow`(작업 흐름)로, `--documentation`은 `--instructions`(지침 파일)로 바뀌었다. 옛 옵션은 남기지 않으므로 옛 이름을 쓰던 스크립트는 사용법 오류(64)로 멈춘다. 프로필에 저장된 `harness`·`documentation` 값도 읽지 않으므로 두 항목은 다시 고르기 전까지 기본값 `recommended`로 만들어진다. 근거는 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)

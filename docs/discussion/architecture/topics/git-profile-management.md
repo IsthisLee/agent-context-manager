@@ -234,3 +234,12 @@ GitHub·GitLab 등 특정 호스트의 CI가 Profile 변경을 감지해 프로�
 * **제약:** 목록은 컴퓨터마다 따로 있고 잠금이 없다. GitHub가 아닌 호스트에서는 push까지만 한다. 실제 GitHub PR 생성은 가짜 gh 평가와 로컬 원격 실행으로만 확인했다.
 * **다음 단계:** 적용 버전 기록을 에이전트 전달 확인의 기대값으로 쓴다.
 
+#### 구현 기록: TUI 적용의 커밋 고정 질문 (2026-09-17)
+
+* **결정:** [ADR 0016](../../../adr/0016-command-contract.md)의 동등성 기준. `profile apply`는 `profile` 표면 명령이므로 `--pin`도 TUI와 관리 메뉴에서 고를 수 있어야 한다. 그동안 TUI 적용은 항상 `--pin` 없이 실행해, 고정한 프로젝트를 메뉴에서 다시 적용하면 고정이 풀렸다. 그래서 질문의 기본값을 프로젝트에 기록된 고정 여부에 맞춘다.
+* **구현:** `src/tui/profile.ts`의 `pinPrompt`가 프로필 폴더가 Git 저장소일 때만 질문을 켜고, 대상 프로젝트의 `agctx.project.json`이 `pin: true`면 Yes를 미리 고른다. `MENU_ACTIONS['profile.apply']`는 답이 Yes면 `{ pin: true }`로 CLI와 같은 처리기를 부른다. 질문 문구는 `actions.apply.pin`(en·ko)이다. 옵션의 뜻은 [CLI Reference](../../../reference/cli.md#profile-apply)에 있다.
+* **평가:** `evals/tui-pin.test.ts` 3개(Git이 아닌 프로필은 묻지 않음, 새 프로젝트는 No 기본, 고정한 프로젝트는 Yes 기본). 격리한 `AGCTX_HOME`에서 pexpect로 TUI를 실행해 Yes 선택 시 `"pin": true` 기록, 고정한 프로젝트에서 `Enter`만 눌렀을 때 고정 유지, No 선택 시 고정 해제 경고, 커밋하지 않은 수정이 있을 때 오류로 멈추고 파일을 쓰지 않음을 확인했다.
+* **계획과 달라진 점:** 없음.
+* **제약:** 고정 해제 경고 문구는 CLI와 같아서 TUI에서도 `Add --pin to keep it pinned.`로 끝난다. 커밋하지 않은 수정이 있는지는 질문 전에 검사하지 않고, Yes를 고른 뒤 처리기의 오류로 알린다.
+* **다음 단계:** 없음.
+

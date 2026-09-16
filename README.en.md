@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: 12177d54fe55ce4e4a5764574bf1da56d5cf14c5b6ee12f62dac4b741c9ae258 -->
+<!-- agctx-doc-sources-sha256: 8ed9b770c6fe472a2c11da394c1fdcf5b58ba6430a701381c4134a70d58a7093 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)

@@ -11,6 +11,8 @@ import { resolveProject } from '../profile/resolve.ts';
 import { GUIDANCE_KEYS, guidanceDefaults, setupProfile } from '../profile/setup.ts';
 import { createProfile, getProfiles, isScope, readProfile, removeProfile, SCOPES, selectProfile } from '../profile/store.ts';
 import { CliError, usageError } from '../shared/errors.ts';
+import { isGitRoot } from '../shared/git.ts';
+import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
 
 const args = (positional: string[], options: ParsedArguments['options'] = {}): ParsedArguments => ({ positional, options, raw: [] });
 
@@ -140,6 +142,16 @@ export async function projectPathTui(message: string): Promise<string | null> {
   return target.trim() || process.cwd();
 }
 
+/**
+ * Whether the TUI apply flow asks to pin, and which answer it preselects. Only a Git profile can be pinned,
+ * and a project that is already pinned keeps its pin unless the person chooses otherwise, so applying from
+ * the menu never drops a pin silently.
+ */
+export function pinPrompt(name: string, targetDir: string): { ask: boolean; initial: boolean } {
+  if (!isGitRoot(readProfile(name).profileDir)) return { ask: false, initial: false };
+  return { ask: true, initial: readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).pin === true };
+}
+
 /** What each profile-menu entry does. Keys are registry command ids. */
 export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.setup': name => setupProfileTui(name),
@@ -151,7 +163,14 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.apply': async name => {
     const target = await projectPathTui(_('actions.apply.path'));
     if (!target) return cancel(_('actions.project.cancel'));
-    await withConflictRecovery(target, () => HANDLERS['profile.apply'](args([name, target])));
+    const choice = pinPrompt(name, target);
+    let pin = false;
+    if (choice.ask) {
+      const answer = await confirm({ message: _('actions.apply.pin'), initialValue: choice.initial });
+      if (cancelled(answer)) return cancel(_('actions.project.cancel'));
+      pin = answer;
+    }
+    await withConflictRecovery(target, () => HANDLERS['profile.apply'](args([name, target], pin ? { pin: true } : {})));
   },
   'profile.sync': async () => {
     const target = await projectPathTui(_('actions.sync.path'));

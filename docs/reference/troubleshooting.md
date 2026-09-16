@@ -1,7 +1,7 @@
 # 문제 해결
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts, src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 77c007defa421d19273e25de0a7230435f46ce6b53af12575ef14ca8572cf00a -->
+<!-- agctx-doc-sources-sha256: ea42c9dc68db4e002623591f9b6e353c55293673ac15b2b587771fa5ea6b8a33 -->
 
 agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로 실행할 명령)을 함께 출력한다. `Next:` 줄로 풀리지 않을 때 아래를 본다. 종료 코드의 뜻은 [종료 코드](exit-codes.md)에 있다.
 

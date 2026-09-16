@@ -34,6 +34,7 @@ export default {
     'actions.remove.hint': 'Delete the profile source and settings after confirmation',
     'actions.view.outro': 'Profile details shown',
     'actions.apply.path': 'Enter the project path to apply to.',
+    'actions.apply.pin': 'Pin the project to the current profile commit? A pinned project changes only when you apply with a pin again or merge a repos pr pull request.',
     'actions.sync.path': 'Enter the project path to sync.',
     'actions.project.cancel': 'Project operation cancelled.',
     'actions.resolve.label': 'Resolve project conflicts',

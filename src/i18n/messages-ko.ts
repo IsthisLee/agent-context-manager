@@ -34,6 +34,7 @@ export default {
     'actions.remove.hint': '확인 후 프로필 원본과 설정 삭제',
     'actions.view.outro': '프로필 상세 보기 완료',
     'actions.apply.path': '적용할 프로젝트 경로를 입력하세요.',
+    'actions.apply.pin': '프로젝트를 지금 프로필 커밋에 고정할까요? 고정하면 다시 고정해 적용하거나 repos pr로 연 PR을 병합할 때만 바뀝니다.',
     'actions.sync.path': '동기화할 프로젝트 경로를 입력하세요.',
     'actions.project.cancel': '프로젝트 작업을 취소했습니다.',
     'actions.resolve.label': '프로젝트 충돌 해결',

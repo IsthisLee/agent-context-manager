@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 7e0c7a738e2b862a5e5dc711057bf93c5020231adebd07339cb72c05dfaad703 -->
+<!-- agctx-doc-sources-sha256: 14b7617d0ee8c687216993bc4e90532923d33dc9aae8817ee6a71da3216e7b36 -->
 
 ## 설치와 실행
 
@@ -352,6 +352,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
     update    agctx.project.json
   ```
 
+- **TUI:** 관리 메뉴의 적용은 Git 프로필이면 고정할지 묻고, Yes를 고르면 `--pin`을 준 것과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있다.
 - 적용할 프로필 내용에 숨은 문자가 있으면 파일을 쓰지 않고 종료 코드 3으로 멈춘다.
 - 확장 섹션 제목은 `## 4. 프로젝트 규칙 확장 (SSOT)`(ko) 또는 `## 4. Project rule extensions (SSOT)`(en)이며 두 로케일을 모두 인식한다.
 - 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 `## Existing project guidance` 아래로 옮겨 보존한다.

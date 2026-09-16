@@ -439,6 +439,34 @@ agctx가 Microsoft APM(Agent Package Manager)과 한 저장소에서 부딪히�
 
 - **직접 실험(공개 모노레포 조사, 2026-09-16):** `scratchpad/m4-drafts/monorepo-links-survey.sh`가 `gh api repos/<저장소>/git/trees/HEAD?recursive=1`로 널리 알려진 공개 모노레포 24곳의 기본 브랜치 파일 목록을 받아 셌다. 21곳이 루트 `AGENTS.md`를 두었고, 15곳에 하위 폴더 `AGENTS.md`가 151개 있었다. 그 가운데 77개(13곳)는 같은 폴더에 `CLAUDE.md`도 `.claude/CLAUDE.md`도 없었다. PostHog/posthog와 elastic/kibana는 API가 파일 목록을 잘라 보냈으므로(`truncated`) 두 곳의 수는 일부만 센 값이다.
 
+## CI에서 비공개 프로필 저장소를 읽는 근거
+
+[CI와 자동화에서 쓰기](guides/ci.md)의 비공개 프로필 저장소 절이 쓰는 근거다.
+
+- **워크플로의 기본 토큰은 그 워크플로가 있는 저장소로 한정된다.** 그래서 프로필이 다른 비공개 저장소에 있으면 기본 토큰으로 읽을 수 없고 별도의 토큰이나 키가 필요하다. [GitHub Docs, GITHUB_TOKEN](https://docs.github.com/en/actions/concepts/security/github_token) (확인일: 2026-09-16)
+
+  > "The token's permissions are limited to the repository that contains your workflow."
+  >
+  > 번역: 이 토큰의 권한은 워크플로가 들어 있는 저장소로 한정됩니다.
+
+- **GitHub이 만든 checkout 액션도 같은 이유로 다른 비공개 저장소에는 사용자의 PAT이 필요하다고 적는다.** [actions/checkout](https://github.com/actions/checkout) (확인일: 2026-09-16)
+
+  > "${{ github.token }} is scoped to the current repository, so if you want to checkout a different repository that is private you will need to provide your own PAT."
+  >
+  > 번역: ${{ github.token }}은 현재 저장소로 범위가 한정되므로, 비공개인 다른 저장소를 체크아웃하려면 자신의 PAT을 제공해야 합니다.
+
+- **배포 키는 저장소 하나에만 접근을 주고 기본이 읽기 전용이다.** 프로필 저장소를 읽기만 하면 되는 CI에 맞는 권한 단위다. [GitHub Docs, Managing deploy keys](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/managing-deploy-keys) (확인일: 2026-09-16)
+
+  > "Deploy keys only grant access to a single repository." / "Deploy keys are read-only by default, but you can give them write access when adding them to a repository."
+  >
+  > 번역: 배포 키는 저장소 하나에만 접근을 부여합니다. / 배포 키는 기본적으로 읽기 전용이지만, 저장소에 추가할 때 쓰기 권한을 줄 수 있습니다.
+
+- **직접 실험(2026-09-16, macOS, git 2.x).** 자격 증명이 없는 환경에서 비공개 저장소를 가리키는 프로젝트에 `agctx check --refresh`를 실행해 종료 코드와 문구를 확인했다. 실행한 명령은 `env -u SSH_ASKPASS -u GIT_ASKPASS HOME=<빈 홈> GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null GIT_CONFIG_COUNT=0 agctx check --refresh <프로젝트>`다.
+  - HTTPS 주소: `fatal: could not read Username for 'https://github.com': terminal prompts disabled`가 나오고 종료 코드 69.
+  - SSH 주소: `Please make sure you have the correct access rights and the repository exists.`가 나오고 종료 코드 69.
+  - 토큰 방식 확인: `git -c 'url.https://x-access-token:<토큰>@github.com/.insteadOf=https://github.com/' ls-remote -- https://github.com/<소유자>/<저장소>.git refs/heads/main`은 프롬프트 없이 그 토큰으로 인증을 시도한다. 일부러 틀린 토큰을 주면 `remote: Invalid username or token.`과 `fatal: Authentication failed`가 나온다.
+  - 원격 기록이 없는 프로젝트에서 `--refresh` 없이 실행하면 네트워크 없이 판정한다. 적용 직후에는 0, 관리 영역을 밖에서 고친 뒤에는 `conflict AGENTS.md`와 함께 2였다.
+
 ## 공개 npm·GitHub 저장소 운영 근거
 
 - npm은 배포 패키지의 `files` 필드로 포함 파일을 제한할 수 있고, `npm pack --dry-run`으로 실제 포함 목록을 확인할 수 있다고 설명한다. README·LICENSE·package.json은 npm의 기본 포함 규칙이 있으므로, 배포물에 필요한 안내와 실행 파일을 별도로 점검한다. [npm `package.json` 문서](https://docs.npmjs.com/files/package.json), [npm publish 문서](https://docs.npmjs.com/cli/commands/npm-publish/) (확인일: 2026-09-14)

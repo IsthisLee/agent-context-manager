@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 077d9e50e2e579ec874006157730abd03dd3a6ad665bdebf98ab4dffe4b19142 -->
+<!-- agctx-doc-sources-sha256: d9b14789698efb49268f25b1b222f09938bc3ca449d20e7488c506542fa648d6 -->
 
 ## 읽는 법
 
@@ -205,7 +205,7 @@ const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, getLocale() === 
 writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
 ```
 
-이름을 생략하면 처리기(`src/commands/handlers.ts:97-106`)가 `createProfileTui`(`src/tui/profile.ts:36-64`)를 부른다. 터미널에서는 이름·scope·확인을 묻고, 터미널이 아니면 stdin의 첫 줄을 이름, 둘째 줄을 scope로 읽는다(`src/tui/profile.ts:37-42`). 읽은 이름이 비었거나 `--json` 실행이면 사용법 오류(64)로 멈춘다.
+이름을 생략하면 처리기(`src/commands/handlers.ts:97-106`)가 `createProfileTui`(`src/tui/profile.ts:33-61`)를 부른다. 터미널에서는 이름·scope·확인을 묻고, 터미널이 아니면 stdin의 첫 줄을 이름, 둘째 줄을 scope로 읽는다(`src/tui/profile.ts:34-39`). 읽은 이름이 비었거나 `--json` 실행이면 사용법 오류(64)로 멈춘다.
 
 ## 5. profile setup: 지침 블록 기록
 
@@ -407,40 +407,40 @@ return {
 
 ## 11. TUI 흐름 배선
 
-화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`src/tui/profile.ts:3`). 프롬프트는 사용자가 취소하면 심볼을 돌려주는데 clack의 `isCancel`은 자기 취소 심볼만 타입에서 걷어 낸다. 그래서 모든 화면은 심볼 전체를 걷어 내는 `cancelled`(`src/tui/cancel.ts`)로 취소를 검사한다. 인자가 없고 TTY이면 `mainTui`(`src/tui/main.ts:10-38`) 루프가 열린다. 각 단계는 `runTuiStep`(`src/tui/profile.ts:21-28`)으로 감싸 `CliError`를 화면에 보여 주고 메뉴로 돌아온다.
+화면은 `@clack/prompts`의 `intro`/`select`/`text`/`confirm`/`note`/`outro`로 그린다(`src/tui/profile.ts:3`). 프롬프트는 사용자가 취소하면 심볼을 돌려주는데 clack의 `isCancel`은 자기 취소 심볼만 타입에서 걷어 낸다. 그래서 모든 화면은 심볼 전체를 걷어 내는 `cancelled`(`src/tui/cancel.ts`)로 취소를 검사한다. 인자가 없고 TTY이면 `mainTui`(`src/tui/main.ts:38-49`) 루프가 열린다. 첫 화면 항목은 `MAIN_MENU_ENTRIES`(`src/tui/main.ts:14-24`), 항목마다 실행할 동작은 `MAIN_ACTIONS`(`src/tui/main.ts:27-36`)에 있다. 각 단계는 `runTuiStep`(`src/tui/profile.ts:18-25`)으로 감싸 `CliError`를 화면에 보여 주고 메뉴로 돌아온다.
 
 ```mermaid
 flowchart TD
-  M["mainTui 루프<br/>src/tui/main.ts:10-38"] --> C1["새 프로필 생성"]
+  M["mainTui 루프 · MAIN_ACTIONS<br/>src/tui/main.ts:27-49"] --> C1["새 프로필 생성"]
   M --> PC["프로젝트 점검 → projectCheckTui<br/>src/tui/repository.ts:157-159"]
   M --> RP["여러 저장소 → reposTui<br/>src/tui/repository.ts:161-163"]
-  M --> CL["프로필 가져오기 → cloneProfileTui<br/>src/tui/profile.ts:66-75"]
+  M --> CL["프로필 가져오기 → cloneProfileTui<br/>src/tui/profile.ts:63-72"]
   M --> C2["프로필 지침 설정"]
   M --> C3["언어 변경"]
   M --> C4["도움말 → helpTui<br/>src/tui/commands.ts:52-63"]
   PC --> RA["REPOSITORY_ACTIONS<br/>src/tui/repository.ts:59-145"]
   RP --> RA
   RA --> RUN["runFromTui → commandTokens → checkArguments → HANDLERS<br/>src/tui/commands.ts:24-45"]
-  M --> MG["프로필 관리 → listProfiles<br/>src/tui/profile.ts:77-131"]
+  M --> MG["프로필 관리 → listProfiles<br/>src/tui/profile.ts:74-128"]
   MG --> SC["scope 선택"]
   SC --> SEL["프로필 선택 · 새 프로필 · Git에서 가져오기"]
-  SEL --> ACT["profileActions<br/>src/tui/profile.ts:208-215"]
+  SEL --> ACT["profileActions<br/>src/tui/profile.ts:207-214"]
   ACT --> A1["setup · view · remove"]
   ACT --> A2["apply · sync<br/>계획 출력 후 확인"]
   ACT --> A4["status · pull · push · connect"]
-  ACT --> A3["resolve → resolveProjectTui<br/>src/tui/profile.ts:231-253"]
+  ACT --> A3["resolve → resolveProjectTui<br/>src/tui/profile.ts:230-252"]
   A2 -.->|"project.conflict"| A3
 ```
 
-- `profileActions`의 선택지는 등록부에서 만든 `PROFILE_MENU_COMMANDS`(`src/tui/profile.ts:34`)이고, 선택하면 `MENU_ACTIONS`(`src/tui/profile.ts:159-206`)가 경로·URL을 물은 뒤 CLI와 같은 `HANDLERS`를 부른다. 그래서 TUI의 적용·동기화도 계획을 출력한 뒤 `confirmChange`로 확인을 받는다.
-- `apply`는 경로를 고른 뒤 `pinPrompt`(`src/tui/profile.ts:153-156`)로 고정 여부를 물을지 정한다. 프로필 폴더가 Git 저장소일 때만 묻고, 대상 프로젝트의 `agctx.project.json`이 이미 `pin: true`면 Yes를 미리 골라 둔다. 그래서 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. Yes면 CLI의 `--pin`과 같은 옵션으로 처리기를 부른다(`src/tui/profile.ts:166-177`).
-- `apply`·`sync`가 `project.conflict` 오류로 멈추면 `withConflictRecovery`(`src/tui/profile.ts:218-228`)가 오류를 보여 주고 해결로 이어갈지 묻는다.
-- `pull`은 먼저 `--dry-run`으로 들어올 커밋을 보여 준 뒤 받을지 묻는다(`src/tui/profile.ts:188-195`).
+- `profileActions`의 선택지는 등록부에서 만든 `PROFILE_MENU_COMMANDS`(`src/tui/profile.ts:31`)이고, 선택하면 `MENU_ACTIONS`(`src/tui/profile.ts:156-205`)가 경로·URL·브랜치·원격 확인 같은 답을 받은 뒤 `runFromTui`로 CLI와 같은 옵션 검사와 처리기를 부른다. `view`·`setup`·`remove`·`resolve`는 단계마다 묻는 흐름이라 처리기 대신 같은 도메인 함수를 부른다. 그래서 TUI의 적용·동기화도 계획을 출력한 뒤 `confirmChange`로 확인을 받는다.
+- `apply`는 경로를 고른 뒤 `pinPrompt`(`src/tui/profile.ts:150-153`)로 고정 여부를 물을지 정한다. 프로필 폴더가 Git 저장소일 때만 묻고, 대상 프로젝트의 `agctx.project.json`이 이미 `pin: true`면 Yes를 미리 골라 둔다. 그래서 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. Yes면 CLI의 `--pin`과 같은 옵션으로 처리기를 부른다(`src/tui/profile.ts:163-174`).
+- `apply`·`sync`가 `project.conflict` 오류로 멈추면 `withConflictRecovery`(`src/tui/profile.ts:217-227`)가 오류를 보여 주고 해결로 이어갈지 묻는다.
+- `pull`은 먼저 `--dry-run`으로 들어올 커밋을 보여 준 뒤 받을지 묻는다(`src/tui/profile.ts:187-194`). `status`는 원격에서 먼저 받을지(`--refresh`, Yes 기본) 묻는다.
 - `check`·`explain`·`verify`와 `repos list`·`status`·`sync`·`pr`은 등록부의 `tui` 키 접두어(`project.menu.`·`repos.menu.`)로 `PROJECT_MENU_COMMANDS`·`REPOS_MENU_COMMANDS`(`src/tui/repository.ts:13-15`)에 모인다. 고르면 `REPOSITORY_ACTIONS`가 경로·에이전트·프로필·원격 확인 같은 답을 받는다. 목록에 프로필이 둘 이상일 때만 프로필을 묻는다.
 - 답은 `commandTokens`(`src/tui/commands.ts:24-35`)가 CLI 토큰으로 바꾼다. 명령에 없는 옵션 이름이면 예외를 던지고, null·false·빈 문자열인 답은 옵션을 빼서 기본값이 되게 한다. `runFromTui`(`src/tui/commands.ts:38-45`)는 그 토큰을 CLI와 같은 `checkArguments`와 처리기로 실행한 뒤 경고를 출력하고, 종료 코드가 0이 아니면 `exit.<code>` 뜻과 코드를 `Result` 상자로 보여 준다. `profile clone`·`connect`의 브랜치 질문도 이 경로로 `--branch`를 넘긴다.
 - 변경 확인은 처리기 안의 `confirmChange`가 그대로 맡는다. 그래서 `repos sync`·`repos pr`·`verify --probe`도 CLI와 같은 No 기본 확인을 거친다.
 
-비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`src/tui/profile.ts:127-130`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`src/tui/profile.ts:38`, `src/tui/profile.ts:278`). 파이프·CI·스모크 테스트 경로이며 `--json` 실행에서는 쓰지 않는다.
+비대화형에서는 `listProfiles`가 `[scope]` 목록만 출력하고(`src/tui/profile.ts:124-127`), `createProfileTui`·`setupProfileTui`는 표준 입력(`fs.readFileSync(0, 'utf8')`)을 줄 단위로 읽어 처리한다(`src/tui/profile.ts:35`, `src/tui/profile.ts:277`). 파이프·CI·스모크 테스트 경로이며 `--json` 실행에서는 쓰지 않는다.
 
 ## 12. 기능 인터페이스 동등성 계약
 
@@ -451,7 +451,7 @@ flowchart TD
 { id: 'check', words: ['check'], args: ['[<project>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'project.menu.check.label' },
 ```
 
-- **표면(surface):** `profile` 명령은 `tui`와 `profileMenu`를 반드시 가진다. `repository`(`check` 등)와 `global`(도움말·언어 설정) 명령은 CLI만 필수다. 지금은 모든 명령이 `tui`를 가지며, `evals/tui-commands.test.ts`가 저장소 명령마다 TUI 동작이 있는지 검사한다. 기준과 이유는 [ADR 0016](../adr/0016-command-contract.md)과 [구현 계약](../discussion/architecture/topics/implementation-contracts.md#인터페이스-동등성)에 있다.
+- **표면(surface)과 TUI 항목:** 모든 명령은 필수 필드 `tui`를 가진다. 그 키는 `MAIN_MENU_ENTRIES`·프로필 관리 메뉴·프로젝트 점검·여러 저장소 메뉴 가운데 한 곳에 보여야 한다. `profile` 명령은 `profileMenu`도 가진다. `evals/interface-parity.test.ts`가 키가 메뉴에 보이는지와 첫 화면 항목마다 동작이 있는지 검사하고, `evals/tui-commands.test.ts`가 저장소 명령마다 TUI 동작이 있는지 검사한다. 기준과 이유는 [ADR 0025](../adr/0025-every-command-in-cli-and-tui.md), 등록부 계약은 [ADR 0016](../adr/0016-command-contract.md)과 [구현 계약](../discussion/architecture/topics/implementation-contracts.md#인터페이스-동등성)에 있다.
 - **옵션 검사:** `checkArguments`(`src/commands/options.ts:20-52`)는 등록부의 옵션과 전역 옵션(`--json`·`--lang`·`--help`)만 받는다. 모르는 옵션은 앞 세 글자가 같은 옵션을 제안하고, 값이 필요한 옵션에 값이 없거나 위치 인자가 등록부보다 많으면 64로 멈춘다.
 - **확인:** 파일을 바꾸거나 원격으로 보내는 처리기는 쓰기 직전에 `confirmChange`를 부른다(`src/commands/options.ts:64-71`).
 
@@ -530,7 +530,7 @@ if (kind === 'agents' || index === -1) return `${content.trimEnd()}\n\n${block}\
 ```
 
 - **`--edit`:** `mergeWithEditor`(`src/profile/resolve.ts:28-54`)는 `withBaseRegion`(`src/profile/resolve.ts:18-22`)으로 현재 파일의 관리 영역만 base로 바꾼 사본을 base 파일로 삼아 `mergeInVsCode`(`src/project/merge-editor.ts:33-59`)를 부른다. 편집기를 열기 전에 `resolve.edit.guide` 문구로 확인 순서를 출력하고, 경계 문구는 파일 종류에 따라 `resolve.edit.boundary.pointer`·`agents` 키에서 고른다. 결과 파일은 자동 해결과 같은 내용(`automaticResolution`, `src/profile/resolve.ts:12-15`)으로 채워 두므로 Result 창은 사용자 줄이 이미 관리 영역 밖으로 옮겨진 상태로 열린다. `mergeInVsCode`는 임시 폴더에 현재·agctx·base·결과 파일을 쓰고 `code --wait --merge`를 실행한다(Windows는 `code.cmd`, `src/project/merge-editor.ts:46-49`). `code`를 실행할 수 없으면 `vscode.unavailable` 오류(69)를 던진다(`src/project/merge-editor.ts:50-53`). 편집기를 닫으면 결과 파일을 새 내용으로 삼아 계획을 다시 세우므로 관리 영역은 다시 만들어지고 밖의 내용만 남는다. 결과의 관리 영역이 재생성본과 다르면 적용하지 않은 변경을 diff로 출력하고 임시 폴더를 남기며, 관리 마커(`AGENTS.md`는 확장 섹션 제목)가 없으면 멈춘다([ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)).
-- **TUI:** 관리 메뉴의 `resolve`는 `resolveProjectTui`(`src/tui/profile.ts:231-253`)로 간다. 먼저 `--dry-run`으로 계획을 보여 준 뒤 자동 해결·`--edit`·`--discard` 중 하나를 고르게 한다.
+- **TUI:** 관리 메뉴의 `resolve`는 `resolveProjectTui`(`src/tui/profile.ts:230-252`)로 간다. 먼저 `--dry-run`으로 계획을 보여 준 뒤 자동 해결·`--edit`·`--discard` 중 하나를 고르게 한다.
 
 ## 15. Git 프로필 명령
 

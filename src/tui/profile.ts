@@ -3,8 +3,7 @@ import path from 'node:path';
 import { cancel, confirm, intro, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { cancelled } from './cancel.ts';
 import { runFromTui } from './commands.ts';
-import { HANDLERS } from '../commands/handlers.ts';
-import { canPrompt, type ParsedArguments } from '../commands/options.ts';
+import { canPrompt } from '../commands/options.ts';
 import { COMMANDS } from '../commands/registry.ts';
 import { _, getLocale, guidanceDescriptions, guidanceLabels, levelOptions, scopeOptions } from '../i18n/index.ts';
 import { isJsonMode, say } from '../commands/output.ts';
@@ -14,8 +13,6 @@ import { createProfile, getProfiles, isScope, readProfile, removeProfile, SCOPES
 import { CliError, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
 import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
-
-const args = (positional: string[], options: ParsedArguments['options'] = {}): ParsedArguments => ({ positional, options, raw: [] });
 
 /** Run one TUI step and show a failure as a note with the next command, instead of leaving the TUI. */
 export async function runTuiStep(step: () => Promise<void>): Promise<void> {
@@ -173,28 +170,30 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
       if (cancelled(answer)) return cancel(_('actions.project.cancel'));
       pin = answer;
     }
-    await withConflictRecovery(target, () => HANDLERS['profile.apply'](args([name, target], pin ? { pin: true } : {})));
+    await withConflictRecovery(target, () => runFromTui('profile.apply', [name, target], { pin }));
   },
   'profile.sync': async () => {
     const target = await projectPathTui(_('actions.sync.path'));
     if (!target) return cancel(_('actions.project.cancel'));
-    await withConflictRecovery(target, () => HANDLERS['profile.sync'](args([target])));
+    await withConflictRecovery(target, () => runFromTui('profile.sync', [target], {}));
   },
   'profile.resolve': () => resolveProjectTui(),
   'profile.remove': name => removeProfileTui(name),
   'profile.status': async name => {
-    await HANDLERS['profile.status'](args([name], { refresh: true }));
+    const refresh = await confirm({ message: _('actions.status.refresh'), initialValue: true });
+    if (cancelled(refresh)) return cancel(_('actions.project.cancel'));
+    await runFromTui('profile.status', [name], { refresh });
   },
   'profile.pull': async name => {
-    const preview = await HANDLERS['profile.pull'](args([name], { 'dry-run': true }));
+    const preview = await runFromTui('profile.pull', [name], { 'dry-run': true });
     const commits = (preview.data as { commits?: string[] } | undefined)?.commits ?? [];
     if (!commits.length) return;
     const approved = await confirm({ message: _('confirm.pull', { name, count: commits.length }), initialValue: true });
     if (cancelled(approved) || !approved) return cancel(_('actions.project.cancel'));
-    await HANDLERS['profile.pull'](args([name]));
+    await runFromTui('profile.pull', [name], {});
   },
   'profile.push': async name => {
-    await HANDLERS['profile.push'](args([name]));
+    await runFromTui('profile.push', [name], {});
   },
   'profile.connect': async name => {
     const url = await text({ message: _('connect.url.message'), placeholder: 'git@github.com:acme/agent-profile.git', validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid')) });

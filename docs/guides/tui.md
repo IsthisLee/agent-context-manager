@@ -1,7 +1,7 @@
 # TUI로 쓰기
 
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: daa19a22b368a5684cb4c8b59d3970dff0c78f7820a56d7bf3b1663b65d7b61e -->
+<!-- agctx-doc-sources-sha256: 2ef69515da170c63d19fbaf721c2984955cdb7591d8a6eaa0f2e51395d521803 -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서의 화면은 실제로 실행한 화면에서 긴 경로만 `/work`로 바꿨다. 대부분 영어 표시 언어로 찍었고, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
@@ -312,7 +312,7 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | **Manage profiles** > 프로필 > **Sync a project** | **프로필 관리** > 프로필 > **프로젝트 동기화** | `agctx profile sync <project>` |
 | **Manage profiles** > 프로필 > **Resolve project conflicts** | **프로필 관리** > 프로필 > **프로젝트 충돌 해결** | `agctx profile resolve <project>` |
 | **Manage profiles** > 프로필 > **Delete profile** | **프로필 관리** > 프로필 > **프로필 삭제** | `agctx profile remove <name>` |
-| **Manage profiles** > 프로필 > **Git status** | **프로필 관리** > 프로필 > **Git 상태** | `agctx profile status --refresh <name>` |
+| **Manage profiles** > 프로필 > **Git status** | **프로필 관리** > 프로필 > **Git 상태** | `agctx profile status <name>`, 원격에서 먼저 받기에 Yes(기본)면 `--refresh` |
 | **Manage profiles** > 프로필 > **Pull from Git** | **프로필 관리** > 프로필 > **Git에서 받기** | `agctx profile pull <name>` |
 | **Manage profiles** > 프로필 > **Push to Git** | **프로필 관리** > 프로필 > **Git으로 올리기** | `agctx profile push <name>` |
 | **Manage profiles** > 프로필 > **Connect to Git** | **프로필 관리** > 프로필 > **Git에 연결** | `agctx profile connect <name> <git-url>`, 추적할 원격 브랜치를 입력하면 `--branch` |
@@ -328,7 +328,7 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 
 ## CLI에만 있는 옵션
 
-TUI는 모든 명령을 실행하지만, 사람이 화면을 보며 답하는 방식이라 아래 옵션은 CLI에만 있다.
+agctx의 모든 명령은 CLI와 TUI에서 실행할 수 있어야 한다([ADR 0025](../adr/0025-every-command-in-cli-and-tui.md)). 다만 TUI는 사람이 화면을 보며 답하는 방식이라 아래 옵션은 CLI에만 있다. 그 밖의 옵션은 TUI가 질문으로 받는다.
 
 - **`--dry-run`:** TUI는 파일을 쓰거나 원격으로 보내기 전에 계획을 먼저 보여 주고 확인을 묻는다. 확인 질문에서 **No**를 고르면 `--dry-run`과 같은 결과가 된다.
 - **`--yes`:** 터미널이 아닌 곳(CI·스크립트·에이전트)에서 확인 질문을 건너뛰는 옵션이다. TUI는 확인 질문에 직접 답한다.

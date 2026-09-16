@@ -14,10 +14,10 @@ export interface OptionSpec {
 }
 
 /**
- * `profile` commands belong to a profile and must be reachable from the CLI,
- * the TUI, and the profile management menu. `repository` commands work on a
- * repository or CI and need the CLI only; the TUI also offers them under the
- * main menu's project check and repositories entries.
+ * Every command must be reachable from the CLI and the TUI. `profile` commands
+ * belong to a profile and must also appear in the profile management menu.
+ * `repository` commands work on a repository or CI, and `global` commands are
+ * help and language settings; neither belongs in the profile menu.
  */
 export type Surface = 'profile' | 'repository' | 'global';
 
@@ -33,8 +33,8 @@ export interface CommandSpec {
   exitCodes: readonly number[];
   surface: Surface;
   changes: Changes;
-  /** Message key of the TUI entry that runs this command. */
-  tui?: string;
+  /** Message key of the TUI entry that runs this command. Every command needs one. */
+  tui: string;
   /** Message key of the action in the profile management menu, for commands that act on one profile. */
   profileMenu?: string;
   /** Message key of the hint shown when the command gets an option or argument it does not take. */

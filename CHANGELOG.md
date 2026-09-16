@@ -9,6 +9,7 @@
 - TUI의 **Apply to a project**(프로젝트에 적용)가 Git 프로필이면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. Yes는 `profile apply --pin`과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있어, 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. 지금까지는 TUI로 적용하면 항상 고정 없이 적용했다
 - TUI 첫 화면에 **Check a project**(`check`·`explain`·`verify`)와 **Repositories**(`repos list`·`status`·`sync`·`pr`) 메뉴를 더했다. 이제 모든 명령을 TUI에서 실행할 수 있다. 원격 확인·에이전트·probe·프로필·없는 폴더 정리·PR 대상 파일·base 브랜치·초안·메시지는 질문으로 고른다. 답은 CLI와 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다
 - TUI의 **Help**에서 명령 하나를 골라 사용법·설명·종료 코드를 본다. **Clone a profile**과 **Connect to Git**은 브랜치를 묻는다(비워 두면 `--branch` 없음)
+- TUI의 **Git status**는 원격에서 먼저 받을지(`--refresh`) 묻는다. 기본값은 지금까지와 같은 Yes다
 - 사용 가이드 [TUI로 쓰기](docs/guides/tui.md)를 더했다. 키 조작, 확인 질문의 기본값, 취소 키, 메뉴와 CLI 명령의 대응(영어·한국어 메뉴 이름)을 실제 화면으로 보여 준다
 
 ### Changed

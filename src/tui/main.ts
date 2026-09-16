@@ -7,32 +7,43 @@ import { helpTui } from './commands.ts';
 import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
 
+/**
+ * The main menu, in display order. Labels and hints are message keys; a command's `tui` key in the registry
+ * names one of these labels or an entry of a submenu, and the interface-parity evaluation checks that it does.
+ */
+export const MAIN_MENU_ENTRIES: readonly { value: string; label: string; hint?: string }[] = [
+  { value: 'manage', label: 'main.manage.label', hint: 'main.manage.hint' },
+  { value: 'project', label: 'main.project.label', hint: 'main.project.hint' },
+  { value: 'repos', label: 'main.repos.label', hint: 'main.repos.hint' },
+  { value: 'create', label: 'main.create.label', hint: 'main.create.hint' },
+  { value: 'clone', label: 'main.clone.label', hint: 'main.clone.hint' },
+  { value: 'setup', label: 'main.setup.label', hint: 'main.setup.hint' },
+  { value: 'lang', label: 'main.lang.label', hint: 'main.lang.hint' },
+  { value: 'help', label: 'main.help.label', hint: 'main.help.hint' },
+  { value: 'exit', label: 'main.exit.label' }
+];
+
+/** What each main menu entry runs. Exit ends the loop instead. */
+export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
+  manage: () => runTuiStep(() => listProfiles()),
+  project: () => runTuiStep(() => projectCheckTui()),
+  repos: () => runTuiStep(() => reposTui()),
+  create: () => runTuiStep(() => createProfileTui()),
+  clone: () => runTuiStep(() => cloneProfileTui()),
+  setup: () => runTuiStep(() => setupProfileTui()),
+  lang: () => changeLocaleTui(),
+  help: () => helpTui()
+};
+
 export async function mainTui(): Promise<void> {
   intro(_('main.intro'));
   while (true) {
     const action = await select({
       message: _('main.message'),
-      options: [
-        { value: 'manage', label: _('main.manage.label'), hint: _('main.manage.hint') },
-        { value: 'project', label: _('main.project.label'), hint: _('main.project.hint') },
-        { value: 'repos', label: _('main.repos.label'), hint: _('main.repos.hint') },
-        { value: 'create', label: _('main.create.label'), hint: _('main.create.hint') },
-        { value: 'clone', label: _('main.clone.label'), hint: _('main.clone.hint') },
-        { value: 'setup', label: _('main.setup.label'), hint: _('main.setup.hint') },
-        { value: 'lang', label: _('main.lang.label'), hint: _('main.lang.hint') },
-        { value: 'help', label: _('main.help.label'), hint: _('main.help.hint') },
-        { value: 'exit', label: _('main.exit.label') }
-      ]
+      options: MAIN_MENU_ENTRIES.map(entry => ({ value: entry.value, label: _(entry.label), ...(entry.hint ? { hint: _(entry.hint) } : {}) }))
     });
     if (cancelled(action) || action === 'exit') break;
-    if (action === 'manage') await runTuiStep(() => listProfiles());
-    else if (action === 'project') await runTuiStep(() => projectCheckTui());
-    else if (action === 'repos') await runTuiStep(() => reposTui());
-    else if (action === 'create') await runTuiStep(() => createProfileTui());
-    else if (action === 'clone') await runTuiStep(() => cloneProfileTui());
-    else if (action === 'setup') await runTuiStep(() => setupProfileTui());
-    else if (action === 'lang') await changeLocaleTui();
-    else if (action === 'help') await helpTui();
+    await MAIN_ACTIONS[action]();
   }
   outro(_('main.outro'));
 }

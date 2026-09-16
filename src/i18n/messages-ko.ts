@@ -169,6 +169,7 @@ export default {
     'main.clone.label': '프로필 가져오기',
     'main.clone.hint': '팀·회사 프로필을 Git 저장소에서 가져옵니다',
     'actions.status.label': 'Git 상태',
+    'actions.status.refresh': '원격에서 먼저 받아(fetch) 최신 커밋과 비교할까요? 네트워크와 Git 인증이 필요합니다.',
     'actions.status.hint': '원격·커밋과 원격의 새 커밋 여부',
     'actions.pull.label': 'Git에서 받기',
     'actions.pull.hint': '원격까지 fast-forward합니다. 프로젝트는 sync할 때만 바뀝니다',

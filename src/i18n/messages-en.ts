@@ -169,6 +169,7 @@ export default {
     'main.clone.label': 'Clone a profile',
     'main.clone.hint': 'Clone a team or company profile from a Git repository',
     'actions.status.label': 'Git status',
+    'actions.status.refresh': 'Fetch from the remote first to compare with its latest commits? This needs network access and Git credentials.',
     'actions.status.hint': 'Remote, commit, and whether the remote has new commits',
     'actions.pull.label': 'Pull from Git',
     'actions.pull.hint': 'Fast-forward to the remote; projects change only on sync',

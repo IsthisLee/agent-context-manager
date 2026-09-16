@@ -75,6 +75,13 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 
 기여자는 [`CONTRIBUTING.md`](../../CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md), [`SECURITY.md`](../../SECURITY.md)를 따른다. 사용자에게 보이는 CLI·TUI·파일 형식·설치·보안 변경은 README, 관련 정본 문서, `CHANGELOG.md`를 같은 변경에서 갱신한다. 되돌리기 어려운 공개 계약은 [`docs/adr/`](../adr/)에 기록한다.
 
+## 병합 정책
+
+- `main`은 브랜치 보호로 선형 이력을 강제하고, 병합 방식은 squash 하나만 허용한다(merge commit과 rebase는 비활성). 병합하면 head 브랜치를 자동으로 삭제한다.
+- squash 병합의 결과 커밋은 GitHub이 자기 키로 서명하므로 `main`의 커밋에 Verified가 붙는다. rebase 병합은 커밋을 새로 만들면서 작성자의 서명을 버린다. 근거와 실측은 [공개 npm·GitHub 저장소 운영 근거](../references.md)에 있다. 이 저장소에서 2026-09-14부터 2026-09-16까지 rebase로 병합한 커밋 61개에는 서명이 없다.
+- 필수 상태 검사는 유지하고, required review는 0건이며 code owner 승인 요구는 끄고 운영한다. 유지관리자 한 명이 자기 PR을 승인할 수 없어 `gh pr merge --admin` 우회가 반복되면 필수 검사까지 함께 건너뛰기 때문이다. 쓰기 권한을 가진 협업자를 추가하면 승인 요구를 다시 켠다: `gh api -X PATCH repos/IsthisLee/agent-context-manager/branches/main/protection/required_pull_request_reviews -F required_approving_review_count=1 -F require_code_owner_reviews=true`.
+- 저장소 설정은 파일로 보장되지 않으므로 실제 값을 `gh api repos/IsthisLee/agent-context-manager --jq '"merge \(.allow_merge_commit) | squash \(.allow_squash_merge) | rebase \(.allow_rebase_merge)"'`로 확인한다.
+
 ## 운영상 한계
 
 GitHub 저장소 설정(브랜치 보호, required status checks, secret scanning, code scanning, npm trusted publisher 연결)은 파일만으로 완성되지 않으며 저장소 관리자 설정이 필요하다. workflow 파일은 그 설정을 사용할 수 있는 실행 경로를 제공하지만 설정이 실제로 켜졌다는 증거는 GitHub 저장소 상태에서 별도로 확인해야 한다. 특히 CI의 `pnpm run check` 실패가 병합을 실제로 막으려면 브랜치 보호에서 이 검사를 required status check로 지정해야 한다.

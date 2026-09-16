@@ -2,6 +2,36 @@
 
 외부 연구와 오픈소스 도구의 사실을 기록하는 참고 문서다. 이 문서는 프로필 지침의 정본이 아니며, 제품 방향과 구현 계약의 근거로만 사용한다.
 
+## 목차
+
+- [제품 방향에 반영하는 원칙](#제품-방향에-반영하는-원칙)
+- [프로젝트 지침 자동 생성에 관한 근거](#프로젝트-지침-자동-생성에-관한-근거)
+- [기본 지침의 근거와 분량에 관한 자료](#기본-지침의-근거와-분량에-관한-자료)
+- [기본 지침 문장의 근거](#기본-지침-문장의-근거)
+  - [작업 흐름 지침의 근거](#작업-흐름-지침의-근거)
+  - [TDD 지침의 근거](#tdd-지침의-근거)
+  - [변경 검토 지침의 근거](#변경-검토-지침의-근거)
+  - [검증 지침의 근거](#검증-지침의-근거)
+  - [지침 파일 지침의 근거](#지침-파일-지침의-근거)
+  - [보안 지침의 근거](#보안-지침의-근거)
+- [에이전트 규칙 파일 로드 근거](#에이전트-규칙-파일-로드-근거)
+- [에이전트 지침 로드와 전달 확인 근거](#에이전트-지침-로드와-전달-확인-근거)
+- [전역 지침 파일 공유 근거](#전역-지침-파일-공유-근거)
+  - [전역 지침 공유 결론](#전역-지침-공유-결론)
+  - [전역 지침 위치의 공식 문서와 이슈](#전역-지침-위치의-공식-문서와-이슈)
+  - [전역 지침 공유 실측](#전역-지침-공유-실측)
+  - [Cowork 참고](#cowork-참고)
+- [APM과 함께 쓰기 근거](#apm과-함께-쓰기-근거)
+- [모노레포 연결 파일 근거](#모노레포-연결-파일-근거)
+- [CI에서 비공개 프로필 저장소를 읽는 근거](#ci에서-비공개-프로필-저장소를-읽는-근거)
+- [공개 npm·GitHub 저장소 운영 근거](#공개-npmgithub-저장소-운영-근거)
+- [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
+- [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
+- [비교 대상](#비교-대상)
+  - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
+  - [agctx를 선택할 상황](#agctx를-선택할-상황)
+- [해석 규칙](#해석-규칙)
+
 ## 제품 방향에 반영하는 원칙
 
 - 하네스에 조율 구조를 더하면 복잡도와 토큰 비용, 지연이 함께 늘어난다. 그래서 기본 기능은 작게 유지하고 필요할 때만 확장한다. Anthropic은 컨텍스트 초기화를 두면서 "adds orchestration complexity, token overhead, and latency to each harness run"이라고 적고(번역: 하네스 실행마다 조율 복잡도와 토큰 부담, 지연을 더한다), 애플리케이션 설계 일반에 대해서는 "finding the simplest solution possible, and only increasing complexity when needed"를 권한다(번역: 가능한 가장 단순한 해법을 찾고 필요할 때만 복잡도를 높인다). [Anthropic 하네스 설계 글](https://www.anthropic.com/engineering/harness-design-long-running-apps), [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) (확인일: 2026-09-16)
@@ -390,6 +420,12 @@
 
 - **공식 문서(Claude Code CLI):** `--print`·`-p`는 대화형 모드 없이 응답을 출력한다. `--no-session-persistence`는 세션을 디스크에 저장하지 않으며 print 모드에서만 쓴다. [Claude Code CLI reference](https://code.claude.com/docs/en/cli-reference) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 스킬):** `disable-model-invocation: true`는 Claude가 스킬을 스스로 불러오지 못하게 하고 사용자가 `/이름`으로 부를 때만 쓰게 한다. 스킬 목록에서 `description`과 `when_to_use`를 합친 글은 1,536자에서 잘린다. 프로젝트 스킬은 `.claude/skills/<skill-name>/SKILL.md`에 둔다. [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-15)
+- **공식 문서(Claude Code 스킬 링크 폴더):** 프로젝트 위치의 `<skill-name>` 항목은 다른 곳을 가리키는 심볼릭 링크여도 되고, Claude Code는 링크 대상의 `SKILL.md`를 읽는다. [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-17)
+
+  > "a `<skill-name>` entry in the enterprise, personal, or project location can be a symlink to a directory elsewhere on disk. Claude Code reads `SKILL.md` from the target and loads the skill once even if several locations point at the same target."
+  >
+  > 번역: 엔터프라이즈·개인·프로젝트 위치의 `<skill-name>` 항목은 디스크의 다른 곳에 있는 디렉터리를 가리키는 심볼릭 링크일 수 있습니다. Claude Code는 대상에서 `SKILL.md`를 읽고, 여러 위치가 같은 대상을 가리켜도 스킬을 한 번만 불러옵니다.
+
 - **공식 문서(Codex 스킬):** Codex는 현재 폴더부터 저장소 루트까지의 `.agents/skills`에서 스킬을 찾고, `SKILL.md`에는 `name`과 `description`이 있어야 한다. `agents/openai.yaml`의 `policy.allow_implicit_invocation`을 `false`로 두면 명시적으로 부를 때만 쓴다. 처음 넣는 스킬 목록은 모델 컨텍스트 창의 2%, 창 크기를 모르면 8,000자까지만 쓴다. [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-15)
 
   > "Codex won't implicitly invoke the skill based on user prompt; explicit `$skill` invocation still works."
@@ -408,11 +444,155 @@
   - Claude Code `~/.claude/projects/*/*.jsonl`: 20개 모두 `attachment.type`이 `instructions`이고 `attachment.files[].path`가 있는 기록을 가지며, 7개는 이 기록이 두 번 이상 나온다. 6개에 `nested_memory` 기록의 `attachment.path`가 있다.
 - **직접 확인(skills CLI 코드, 2026-09-16):** 설치된 skills@1.5.26의 `dist/cli.mjs`에서 `isEnabled()`는 `DISABLE_TELEMETRY`와 `DO_NOT_TRACK`이 모두 없을 때만 참을 돌려주고, 사용 통계를 보내는 `track()`과 감사 데이터를 받는 `fetchAuditData()`는 이 값이 거짓이면 바로 끝난다. 네트워크 요청을 직접 관찰하지는 않았다.
 - **직접 실험(skills CLI 설치, 2026-09-15):** `node tools/skills-smoke.ts`가 임시 프로젝트에서 `npx -y skills@1.5.26 add <사본> --list`와 `add <사본> --skill '*' -a claude-code -a codex -a antigravity -y`를 `DISABLE_TELEMETRY=1`, `DO_NOT_TRACK=1`로 실행했다. 두 스킬이 `.agents/skills/`와 `.claude/skills/`에 설치됐고, `agctx-author`에는 `disable-model-invocation: true`와 `agents/openai.yaml`이 함께 들어갔다.
+- **직접 실험(GitHub에서 skills CLI 설치, 2026-09-17):** 스크래치패드의 빈 폴더를 `HOME`과 npm 캐시로 두고, [에이전트에게 agctx를 맡기기](guides/agent-skills.md)의 명령 `DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity`를 실행했다. `npx`가 받은 버전은 skills 1.5.26(`npm view skills version`의 최신)이다.
+  - 에이전트 환경 변수가 없는 가상 터미널(pexpect)에서 실행하면 `Installation scope`(Project·Global), `Installation method`(Symlink (Recommended)·Copy to all agents), `Proceed with installation?`를 차례로 묻고, 설치 뒤 처음 한 번 `Install the find-skills skill?`을 Yes 기본으로 물었다. No를 고르자 `HOME/.agents/.skill-lock.json`에 `"findSkillsPrompt": true`가 기록됐다.
+  - Symlink를 고르면 `.agents/skills/agctx`·`.agents/skills/agctx-author`에 파일을 두고, `.claude/skills/agctx`·`.claude/skills/agctx-author`는 `../../.agents/skills/<이름>`을 가리키는 심볼릭 링크였다. Copy to all agents를 고르면 `.claude/skills/` 아래도 실제 폴더였다. 두 방식 모두 프로젝트에 `skills-lock.json`(스킬마다 `source`·`sourceType`·`skillPath`·`computedHash`)을 만들었다.
+  - 같은 명령에 `-y`를 붙이자 질문 없이 Project·Symlink로 설치했고 find-skills를 묻지 않았다. Claude Code 세션 안에서 `-y` 없이 실행했을 때는 `Agent detected — installing non-interactively`를 출력하고 같은 결과로 설치했다. Claude Code가 링크로 둔 스킬 폴더를 읽는다는 것은 위 공식 문서 내용이며, 이 실험에서 에이전트를 실행해 확인하지는 않았다.
 - **직접 실험(verify --probe, 2026-09-15~16):** 빈 Git 저장소에 `team-backend` 프로필을 적용하고 `services/payments/AGENTS.md`, `trigger: glob` 규칙 `.agents/rules/payments.md`, `.cursorrules`를 더한 뒤 `agctx verify services/payments --probe --yes`를 실행했다(codex-cli 0.154.0, Claude Code 2.1.272, agy 1.2.2). 세 에이전트를 차례로 실행하는 데 약 48초가 걸렸다.
   - Codex는 루트 `AGENTS.md`와 `services/payments/AGENTS.md`의 표지 줄을 모두 되풀이했다.
   - Claude Code는 루트 `CLAUDE.md`의 표지 줄만 되풀이하고, 그 파일이 `@AGENTS.md`로 가져오는 루트 `AGENTS.md`의 표지 줄은 되풀이하지 않았다. 새로 만든 사본이라 외부 가져오기를 승인한 적이 없고 루트 `AGENTS.md`가 시작 폴더 밖에 있으므로, 위 공식 문서의 외부 가져오기 규칙과 맞는 결과다. 이 결과에 따라 `explain`이 이 파일을 `conditional`로 판정하게 바꿨다.
   - Antigravity는 루트 `AGENTS.md`와 `trigger: always_on`인 `.agents/rules/agctx.md`의 표지 줄을 되풀이했고, `trigger: glob` 규칙과 `services/payments/AGENTS.md`의 표지 줄은 되풀이하지 않았다. 같은 사본에 루트 `GEMINI.md`와 `trigger: model_decision` 규칙을 더해 `--agent antigravity`로 다시 실행하자 `GEMINI.md`의 표지 줄은 되풀이했고 `model_decision` 규칙의 표지 줄은 되풀이하지 않았다.
   - 판정은 에이전트가 출력한 표지 줄로만 한다. Codex는 `--sandbox read-only`, Claude Code는 `--tools ""`로 도구를 막았지만 Antigravity CLI에는 같은 옵션이 없어 프롬프트의 지시에만 기댄다.
+
+## 전역 지침 파일 공유 근거
+
+코딩 에이전트 세 종류(Claude Code, Codex, Antigravity)가 사용자 전역 지침 파일 하나를 함께 읽을 수 있는지, 그 위에 도구 전용 지침을 따로 둘 수 있는지 판단하는 근거다. 공식 문서와 이슈는 2026-09-16에 확인했고, 실험은 2026-09-16~17에 macOS에서 했다. 에이전트나 앱이 갱신되면 결과가 달라질 수 있다. 각 도구의 전역 지침 위치는 [에이전트 규칙 파일 로드 근거](#에이전트-규칙-파일-로드-근거)와 [에이전트 지침 로드와 전달 확인 근거](#에이전트-지침-로드와-전달-확인-근거)에 있다.
+
+### 전역 지침 공유 결론
+
+공통 파일을 `~/.config/agents/AGENTS.md` 한 곳에 둔 구성으로 잰 결과다. 앱은 당시 실제 위치인 `~/.codex/AGENTS.md`에 확인값을 넣어 쟀다. **읽음**은 넣은 확인값을 답했거나 세션 기록에 그 값이 들어갔다는 뜻이고, **적용됨**은 지침대로 동작했다는 뜻이다. 세부 결과는 [전역 지침 공유 실측](#전역-지침-공유-실측)에 있다.
+
+**공통 파일 읽기**
+
+| 에이전트 | 공통 파일에 연결하는 방식 | CLI | 앱 |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude/CLAUDE.md` 안에 `@~/.config/agents/AGENTS.md` 한 줄 | 읽음 (메인, 서브에이전트) | 읽음 (Claude 앱 Code 탭, 로컬 환경) |
+| Codex | `~/.codex/AGENTS.md`를 공통 파일로 가는 심볼릭 링크로 둠 | 읽음 | 읽음 (앱 화면은 일반 파일로, 링크는 앱에 든 엔진으로 잼) |
+| Antigravity | `~/.gemini/GEMINI.md`를 공통 파일로 가는 심볼릭 링크로 둠 | 읽음 | 읽음 |
+
+**도구 전용 지침**
+
+| 에이전트 | 전용 지침을 두는 곳 | CLI | 앱 |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude/CLAUDE.md` 본문, `~/.claude/rules/` | 읽음 (메인, 서브에이전트) | 읽음 (Code 탭, 로컬 환경) |
+| Codex | `~/.codex/config.toml`의 `developer_instructions` | 적용됨 | 빠짐 (앱에서 연 스레드 기록에 없음) |
+| Antigravity | 전역 플러그인 규칙 `~/.gemini/config/plugins/<이름>/rules/*.md` (플러그인 폴더에 `plugin.json`, 규칙 파일에 `trigger: always_on` frontmatter) | 읽음 | 재지 않음 |
+
+- 공통 파일 하나를 세 코딩 에이전트가 CLI와 앱에서 모두 읽는다.
+- 공통 파일과 따로 전용 지침을 둘 수 있는 곳은 Claude Code(CLI, Code 탭), Codex CLI, Antigravity CLI다. Codex 앱에서는 `developer_instructions`가 빠진다.
+- Antigravity 전역 플러그인 규칙은 `trigger: always_on` frontmatter가 있어야 읽었다. frontmatter가 없는 규칙 파일은 읽지 않았다.
+- Antigravity `GEMINI.md` 안의 `@` 줄은 가리키는 파일의 내용을 끼워 넣지 않았다. 공식 문서는 `@`를 다른 파일을 가리키는 참조로 설명한다.
+- 재지 않은 것: Codex 앱 화면에서 링크를 따라 읽는지, Antigravity 앱이 전역 플러그인 규칙을 읽는지, Gemini CLI(인증 단계 오류로 측정하지 못함).
+- 코딩 에이전트가 아닌 Claude 앱 Cowork의 결과는 [Cowork 참고](#cowork-참고)에 따로 적었다.
+
+### 전역 지침 위치의 공식 문서와 이슈
+
+- **공식 문서(AGENTS.md):** 저장소 루트와 하위 패키지에 두는 `AGENTS.md`만 설명하고, 사용자 전역 위치는 정하지 않는다. [AGENTS.md](https://agents.md) (확인일: 2026-09-16)
+
+  > "AGENTS.md is now stewarded by the Agentic AI Foundation under the Linux Foundation."
+  >
+  > 번역: AGENTS.md는 이제 Linux Foundation 산하 Agentic AI Foundation이 관리합니다.
+
+- **이슈(전역 위치 표준화 제안):** 전역 `AGENTS.md`를 `~/.config/agents/AGENTS.md`(Windows `%APPDATA%\agents\AGENTS.md`)로 통일하자는 제안이 2025-10-22에 올라왔다. 본문은 도구마다 전역 경로가 다른 예로 Claude Code `~/.claude/CLAUDE.md`, Codex `~/.codex/AGENTS.md`, droid `~/.factory/AGENTS.md`, Amp `~/.config/AGENTS.md`를 든다. 확인한 날 열려 있었고 댓글과 라벨이 없었다. [agentsmd/agents.md#91](https://github.com/agentsmd/agents.md/issues/91) (확인일: 2026-09-16)
+- **이슈(VS Code 사용자 범위 AGENTS.md):** 여러 저장소에 같은 선호를 반복하지 않도록 `AGENTS.md`에 사용자 전역 범위를 두자는 요청이 "not planned"로 닫혔다. [microsoft/vscode#305895](https://github.com/microsoft/vscode/issues/305895) (확인일: 2026-09-16)
+- **공식 문서(Gemini CLI):** 전역 지침은 `~/.gemini/GEMINI.md`다. `context.fileName`으로 파일 이름을 다른 이름이나 이름 목록(예: `AGENTS.md`)으로 바꾸고, `@file.md`로 다른 파일을 가져온다. 심볼릭 링크는 언급하지 않는다. [Gemini CLI GEMINI.md](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md) (확인일: 2026-09-16)
+- **공식 문서(Antigravity 규칙의 `@` 참조):** 규칙 파일에서 `@filename`으로 다른 파일을 참조한다고 설명하고, 참조한 파일의 내용을 컨텍스트에 넣는지는 적지 않는다. 전역 규칙 파일은 `~/.gemini/GEMINI.md` 하나다. [Google Antigravity Rules](https://antigravity.google/docs/rules-workflows/) (확인일: 2026-09-17)
+
+  > "You can reference other files using `@filename` in a Rules file. If `filename` is a relative path, it will be interpreted relative to the location of the Rules file."
+  >
+  > 번역: 규칙 파일에서 `@filename`으로 다른 파일을 참조할 수 있습니다. `filename`이 상대 경로이면 규칙 파일의 위치를 기준으로 해석합니다.
+
+- **공식 문서(Antigravity 플러그인):** 플러그인은 폴더 루트에 `plugin.json`이 있어야 하고, 구성 요소로 `skills/`, `rules/`, `mcp_config.json`, `hooks.json`을 가질 수 있다. 전역 플러그인은 `~/.gemini/config/plugins/`, 워크스페이스 플러그인은 `.agents/plugins/`나 `_agents/plugins/`에 둔다. 플러그인 규칙이 언제 적용되는지와 frontmatter는 적지 않는다. [Google Antigravity Plugins](https://antigravity.google/docs/plugins/) (확인일: 2026-09-17)
+
+  > "Rules: Located in the `rules/` subdirectory. These are markdown files that define constraints or guidelines for the agent's behavior."
+  >
+  > 번역: 규칙: `rules/` 하위 폴더에 있습니다. 에이전트의 동작에 대한 제약이나 지침을 정의하는 마크다운 파일입니다.
+
+- **공식 문서(Antigravity 스킬):** 전역 스킬은 `~/.gemini/config/skills/<skill-folder>/`, 워크스페이스 스킬은 `<workspace-root>/.agents/skills/<skill-folder>/`에 둔다. 대화를 시작할 때 스킬 목록을 보고 관련 있을 때 전체 지침을 읽는 방식이라, 항상 적용되는 지침 자리는 아니다. [Google Antigravity Skills](https://antigravity.google/docs/skills/) (확인일: 2026-09-17)
+- **비공식 자료(Antigravity 규칙·워크플로 위치):** Antigravity의 세 형태(AGY, AGY CLI, AGY IDE) 모두 전역 규칙은 `~/.gemini/GEMINI.md`, 전역 워크플로는 `~/.gemini/config/global_workflows/`에서 읽고, 규칙은 플러그인의 `rules/`로도 설치할 수 있다고 적는다. 워크플로는 사용자가 `/`로 부르는 저장된 프롬프트라 항상 적용되는 지침 자리가 아니다. [Mete Atamel, Where does Antigravity look for Rules and Workflows?](https://atamel.dev/posts/2026/07-13_where_agy_rules_workflows/) (확인일: 2026-09-17)
+- **공식 문서(GitHub Copilot CLI):** 사용자 지침은 `$HOME/.copilot/copilot-instructions.md`와 `$HOME/.copilot/instructions/**/*.instructions.md`다. `COPILOT_CUSTOM_INSTRUCTIONS_DIRS`에 적은 폴더에서 `AGENTS.md`와 `*.instructions.md`를 더 찾고, `COPILOT_HOME`을 두면 `$HOME/.copilot` 대신 그 폴더를 쓴다. [GitHub Copilot CLI custom instructions](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-custom-instructions) (확인일: 2026-09-16)
+- **공식 문서(Amp):** `$HOME/.config/amp/AGENTS.md`와 `$HOME/.config/AGENTS.md`가 있으면 항상 넣는다. 다른 파일은 `@`로 언급해 넣고 `@~/some/path`도 쓸 수 있다. [Amp AGENTS.md](https://ampcode.com/docs/customize/agents-md) (확인일: 2026-09-16)
+- **공식 문서(Codex 설정):** `developer_instructions`는 세션에 지침을 덧붙이고, `model_instructions_file`은 기본 지침을 바꾼다. [Codex Configuration Reference](https://learn.chatgpt.com/docs/config-file/config-reference) (확인일: 2026-09-16)
+
+  > "Additional developer instructions injected into the session (optional)." / "Replacement for built-in instructions instead of `AGENTS.md`."
+  >
+  > 번역: 세션에 넣는 추가 개발자 지침(선택). / `AGENTS.md` 대신 기본 지침을 대체합니다.
+
+- **이슈(Codex 앱의 developer_instructions):** Codex 앱에서 시작한 스레드에는 `~/.codex/config.toml`의 `developer_instructions`가 붙지 않고 CLI 스레드에는 붙는다는 보고가 2026-02-07에 올라왔다(Codex 260206.1448). 확인한 날 열려 있었고 관리자 답변이 없었다. [openai/codex#11004](https://github.com/openai/codex/issues/11004) (확인일: 2026-09-16)
+
+### 전역 지침 공유 실측
+
+- **직접 확인(Codex 코드, 2026-09-16):** codex `rust-v0.154.0`의 `codex-rs/codex-home/src/instructions/mod.rs`는 Codex 홈의 `AGENTS.override.md`와 `AGENTS.md`를 차례로 `tokio::fs::metadata`로 확인하고 `tokio::fs::read`로 읽으며, 내용이 있는 첫 파일에서 멈춘다. 이 파일에는 다른 파일을 가져오는 처리가 없다. `tokio::fs::metadata`는 링크를 따라간다. [openai/codex instructions/mod.rs](https://github.com/openai/codex/blob/rust-v0.154.0/codex-rs/codex-home/src/instructions/mod.rs), [tokio::fs::metadata](https://docs.rs/tokio/latest/tokio/fs/fn.metadata.html) (확인일: 2026-09-16)
+
+  > "This function will traverse symbolic links to query information about the destination file."
+  >
+  > 번역: 이 함수는 심볼릭 링크를 따라가 대상 파일의 정보를 조회합니다.
+
+- **직접 실험(격리한 CLI, 2026-09-16):** 스크래치 폴더에 도구·방식별 임시 홈을 만들고 `HOME`(Codex는 `CODEX_HOME`도)을 바꿔 실행했다. 지침 파일마다 `CANARY_<이름>: <16자리 hex>` 줄을 넣고, 이름과 값을 알려 주지 않은 채 도구를 쓰지 말고 지침에 있는 `CANARY_` 줄을 모두 적으라고 물었다. 답의 값이 넣은 값과 같은지와 세션 기록의 도구 호출로 판정했다. 표에서 경로의 `~`는 각 임시 홈을 뜻한다. 결과의 **읽음**은 넣은 값과 같은 값을 답했거나 세션 기록에 그 값이 들어갔다는 뜻이고, **적용됨**은 지침대로 동작했다는 뜻이다.
+
+  | 에이전트 (버전) | 지침 파일과 연결 방식 | 확인값을 넣은 곳 | 결과 | 판정 근거 |
+  | --- | --- | --- | --- | --- |
+  | Claude Code 2.1.273 | `~/.claude/CLAUDE.md`: 일반 파일 | 그 파일 본문 | 읽음 (메인, 서브에이전트) | 답, `/context`, 기록 |
+  | Claude Code 2.1.273 | `~/.claude/CLAUDE.md`(일반 파일) 안의 `@~/.config/agents/AGENTS.md` 한 줄 | 가져온 `~/.config/agents/AGENTS.md` | 읽음 (메인, 서브에이전트) | 답, `/context`, 기록 |
+  | Claude Code 2.1.273 | `~/.claude/rules/regular.md`: 일반 파일 | 그 파일 본문 | 읽음 (메인, 서브에이전트) | 답, `/context`, 기록 |
+  | Claude Code 2.1.273 | `~/.claude/rules/linked.md`: `~/.config/agents/rule-target.md`를 가리키는 심볼릭 링크 | 링크 대상 파일 | 읽음 (메인, 서브에이전트) | 답, `/context`, 기록 |
+  | Claude Code 2.1.273 | `~/.claude/CLAUDE.md`: `~/.config/agents/AGENTS.md`를 가리키는 심볼릭 링크 | 링크 대상 파일 | 읽음 (메인). 서브에이전트는 측정 안 함 | 답, `/context`, 기록 |
+  | Codex CLI 0.154.0 | `~/.codex/AGENTS.md`: 일반 파일 | 그 파일 본문 | 읽음 | 답, 명령 실행 이벤트 없음 |
+  | Codex CLI 0.154.0 | `~/.codex/AGENTS.md`: `~/.config/agents/AGENTS.md`를 가리키는 심볼릭 링크 | 링크 대상 파일 | 읽음 | 답, 명령 실행 이벤트 없음 |
+  | Codex CLI 0.154.0 | `~/.codex/config.toml`의 `developer_instructions = "CANARY_…"` | 설정 값 | 읽음. 모델은 값을 답에 적지 않았고, 인용을 요청하자 거부 | 세션 기록의 developer 메시지 |
+  | Codex CLI 0.154.0 | `~/.codex/config.toml`의 `developer_instructions = "답 끝에 DI-<hex>를 붙여라"` | 설정 값 | 적용됨. `hello` 뒤에 값을 붙임 | 답 |
+  | Codex 앱에 든 엔진 0.153.4 | `~/.codex/AGENTS.md`: `~/.config/agents/AGENTS.md`를 가리키는 심볼릭 링크 | 링크 대상 파일 | 읽음 | 답, 명령 실행 이벤트 없음 |
+  | Codex 앱에 든 엔진 0.153.4 | `~/.codex/config.toml`의 `developer_instructions = "CANARY_…"` | 설정 값 | 읽음. 모델은 값을 답에 적지 않음 | 세션 기록의 developer 메시지 |
+  | Codex 앱에 든 엔진 0.153.4 | `~/.codex/config.toml`의 `developer_instructions = "답 끝에 DI-<hex>를 붙여라"` | 설정 값 | 적용됨. `hello` 뒤에 값을 붙임 | 답 |
+  | Antigravity CLI 1.2.3 | `~/.gemini/GEMINI.md`: 일반 파일 | 그 파일 본문 | 읽음 | 답 |
+  | Antigravity CLI 1.2.3 | `~/.gemini/GEMINI.md`: `~/.config/agents/AGENTS.md`를 가리키는 심볼릭 링크 | 링크 대상 파일 | 읽음 | 답 |
+  | Antigravity CLI 1.2.3 | `~/.gemini/GEMINI.md`(일반 파일) 안의 `@<임시 홈 절대 경로>/.config/agents/AGENTS.md` 한 줄 | 가리키는 파일 | 안 읽음 (내용이 끼워지지 않음) | 답 |
+  | Antigravity CLI 1.2.3 | `~/.gemini/GEMINI.md`(일반 파일) 안의 `@../.config/agents/RELATIVE.md`, `@~/.config/agents/TILDE.md` 두 줄 | 가리키는 파일 두 개 | 안 읽음 (내용이 끼워지지 않음). 규칙을 인용시키자 `@…` 두 줄이 글자 그대로 나옴 | 답 |
+  | Antigravity CLI 1.2.3 | `~/.gemini/config/plugins/agy-only/rules/always-on.md`: `plugin.json`이 있는 전역 플러그인의 규칙, `trigger: always_on` frontmatter | 그 파일 본문 | 읽음 | 답 |
+  | Antigravity CLI 1.2.3 | 같은 플러그인의 `rules/no-frontmatter.md`: frontmatter 없음 | 그 파일 본문 | 안 읽음 | 답 |
+  | Gemini CLI 0.59.0 | 일반 파일 `GEMINI.md`, 링크 `GEMINI.md`, `@` 가져오기 | 각 파일 | 측정 못 함 (인증 단계 오류) | 오류 출력 |
+
+  - 실행 명령: Claude Code `claude -p --model haiku`, Codex CLI `codex exec --json --skip-git-repo-check -s read-only`, Codex 앱에 든 엔진 `/Applications/ChatGPT.app/Contents/Resources/codex exec`(같은 옵션), Antigravity CLI `agy -p --output-format json`, Gemini CLI `gemini -p --output-format json`.
+
+  - Claude Code는 모델을 부르지 않는 `claude -p "/context"`의 Memory files 목록에도 두 임시 홈에 넣은 파일 다섯 개가 모두 나왔다. 링크 규칙 파일은 대상 경로로 표시됐다. 세션 기록에서 메인은 도구를 쓰지 않았고, 서브에이전트 확인에서는 메인이 `Agent`를 한 번 부른 것 말고 도구 호출이 없었으며 서브에이전트가 받은 지시문에 값이 없었다.
+  - 임시 홈의 Claude Code는 처음에 `Not logged in · Please run /login`으로 끝났다. macOS 키체인을 `HOME` 아래 `Library/Keychains`에서 찾기 때문이다. 임시 홈에 그 폴더를 가리키는 링크와, `~/.claude.json`에서 `oauthAccount`·`hasCompletedOnboarding`·`userID`만 옮긴 파일을 두자 로그인됐다. 둘 중 무엇이 필요했는지는 나눠 확인하지 않았다.
+  - Codex의 `developer_instructions`는 모델이 값을 답에 적지 않아서, `--ephemeral` 없이 실행해 `~/.codex/sessions`의 세션 기록으로 들어갔는지 확인했다. 들어간 지침을 모델이 따르는지는 "답 끝에 `DI-<16자리 hex>`를 붙여라"라는 지침과 "hello 한 단어로 답하라"는 질문으로 따로 쟀다.
+  - Antigravity CLI는 응답의 `num_turns`가 1이었다. 도구를 막는 옵션이 없어 프롬프트 지시에 기댄다.
+  - Antigravity 전역 플러그인 규칙은 2026-09-17에 같은 방식으로 쟀다. `~/.gemini/GEMINI.md`를 공통 파일로 가는 링크로 둔 같은 임시 홈에서, 공통 파일의 값과 `trigger: always_on` 규칙의 값을 함께 답했다. `plugin.json`에는 `name`, `version`, `description`만 넣었다. `agy plugin validate`는 이 플러그인을 `[ok]`로 통과시키면서 구성 요소 목록(skills, agents, commands, mcpServers, hooks)에 rules를 표시하지 않았고, `agy plugin list`는 `No imported plugins.`를 출력했다.
+  - Gemini CLI는 격리하지 않은 실제 홈에서도 같은 오류로 끝났다.
+
+    > "This client is no longer supported for Gemini Code Assist for individuals."
+    >
+    > 번역: 이 클라이언트는 개인용 Gemini Code Assist에서 더 이상 지원되지 않습니다.
+
+  - Codex `auth.json`, Gemini `oauth_creds.json`, Antigravity CLI `antigravity-oauth-token`은 사본을 임시 홈에 두고 썼다. Codex는 `last_refresh`가 8일(`TOKEN_REFRESH_INTERVAL`)보다 오래돼야 토큰을 갱신하며 이번에는 갱신하지 않았다. Gemini 사본은 액세스 토큰만 바뀌었고 리프레시 토큰 해시는 원본과 같았다. 사본은 측정 뒤 지웠다.
+
+- **직접 실험(실제 환경의 앱, 2026-09-17):** 앱은 로그인된 실제 홈을 읽으므로 실제 파일에 확인값을 잠깐 넣었다. 공통 파일 `~/.codex/AGENTS.md`(Claude Code가 `@`로 가져오고 `~/.gemini/GEMINI.md`가 링크로 가리킴) 끝, `~/.claude/CLAUDE.md` 끝, 임시 `~/.claude/rules/zz-canary-real.md`, `~/.codex/config.toml` 맨 앞의 `developer_instructions`에 서로 다른 값을 넣었다. 각 앱에서 새 대화를 열어 격리 실험과 같은 질문을 했고, 끝나면 원본을 백업에서 되돌려 해시로 확인했다. ChatGPT와 Claude 앱은 값을 넣은 뒤 재시작해 한 번 더 쟀다.
+
+  당시 실제 파일의 연결은 이랬다. `~/.codex/AGENTS.md`는 일반 파일이고, `~/.claude/CLAUDE.md` 첫 줄이 `@~/.codex/AGENTS.md`로 가져오며, `~/.gemini/GEMINI.md`는 `~/.codex/AGENTS.md`를 가리키는 심볼릭 링크다. 결과의 **읽음**·**안 읽음**은 모델의 답 기준이고, **대상 아님**은 그 앱이 원래 읽지 않는 파일이라 판정하지 않았다는 뜻이다.
+
+  | 앱 (버전) | 측정 시점 | `~/.codex/AGENTS.md` 끝 (공통 파일) | `~/.claude/CLAUDE.md` 본문 끝 | `~/.claude/rules/zz-canary-real.md` | `~/.codex/config.toml`의 `developer_instructions` | 판정 근거 |
+  | --- | --- | --- | --- | --- | --- | --- |
+  | Codex 앱 (ChatGPT.app 26.901.51231) | 앱 재시작 전과 후 | 읽음 (일반 파일을 직접 읽음) | 대상 아님 | 대상 아님 | 적용 안 됨. 새 스레드 기록에 값 없음 | 답, 세션 기록 |
+  | Claude 앱 Code 탭, 로컬 환경 (Claude.app 2.110.0) | 앱 재시작 후 | 읽음 (`CLAUDE.md`의 `@` 가져오기 경유) | 읽음 | 읽음 | 대상 아님 | 답, 세션 기록 도구 호출 없음 |
+  | Antigravity 앱 (Antigravity.app 2.12.2) | 재시작하지 않음 | 읽음 (`GEMINI.md` 심볼릭 링크 경유) | 대상 아님 | 대상 아님 | 대상 아님 | 답 |
+
+  - Codex 앱의 재시작 뒤 스레드(`originator: Codex Desktop`)는 ChatGPT가 확인값을 넣은 뒤 새로 띄운 `codex … app-server`가 처리했다. 그러므로 `developer_instructions`가 빠진 것은 앱이 시작할 때 읽은 예전 설정 때문이 아니다. 모델은 "I can’t disclose hidden instruction canary values."라고 답했고, 판정은 세션 기록으로 했다.
+  - 위 격리 실험에서 Codex 앱에 든 엔진을 `exec`로 직접 실행했을 때는 링크인 `~/.codex/AGENTS.md`를 읽었고 `developer_instructions`도 적용됐다. 그러므로 앱에서 `developer_instructions`가 빠지는 것은 엔진이 아니라 앱이 스레드를 여는 경로의 차이다. Codex 앱 화면에서 링크를 따라 읽는지는 재지 않았다.
+  - Code 탭 세션 기록은 `entrypoint: claude-desktop`이다. Antigravity 앱에서 `GEMINI.md` 안의 `@` 가져오기는 재지 않았다.
+  - 앱을 격리하려고 Antigravity 앱을 임시 `HOME`과 `--user-data-dir`로 띄웠지만 프로세스가 곧 끝나고 임시 홈에 데이터가 생기지 않았다. 원인은 확인하지 못했다.
+
+### Cowork 참고
+
+Claude 앱의 Cowork는 파일과 도구를 오가며 일을 맡기는 도구라 코딩 에이전트와 쓰임새가 다르다. Claude Code 공식 문서가 Cowork 데스크톱 세션의 사용자 지침 로드 규칙을 따로 적고 있어, 위 실제 환경 실험에서 함께 쟀다.
+
+- **공식 문서(Cowork 데스크톱 세션):** Cowork에서는 사용자 수준 파일의 가져오기 중 작업 폴더 밖을 가리키는 것과, 링크인 `~/.claude/CLAUDE.md`·`~/.claude/rules/`를 건너뛴다고 설명한다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-16)
+
+  > "In Cowork sessions on your desktop, Claude Code skips any import in a user-scope file that resolves to a path outside the session's working directory and loads the rest of the file. In those sessions it also skips a `~/.claude/CLAUDE.md` that is itself a symlink or hard link, and a symlinked `~/.claude/rules/` directory or rule file that points outside the working directory."
+  >
+  > 번역: 데스크톱의 Cowork 세션에서 Claude Code는 사용자 수준 파일의 가져오기 중 세션 작업 폴더 밖의 경로로 풀리는 것을 건너뛰고 파일의 나머지는 로드합니다. 이 세션에서는 그 자체가 심볼릭 링크나 하드 링크인 `~/.claude/CLAUDE.md`와, 작업 폴더 밖을 가리키는 심볼릭 링크 `~/.claude/rules/` 폴더나 규칙 파일도 건너뜁니다.
+
+- **직접 실험(Claude.app 2.110.0, 2026-09-17):** 위 실제 환경 실험과 같은 확인값으로 새 Cowork 작업을 열어 물었다. 앱 재시작 전후 모두 `NONE`이라고 답했다. 공통 파일(`CLAUDE.md`의 `@` 가져오기 경유), `~/.claude/CLAUDE.md` 본문, `~/.claude/rules/zz-canary-real.md`의 값이 하나도 들어가지 않았다. 공식 문서는 작업 폴더 밖 가져오기와 링크만 건너뛴다고 설명하지만, 실측에서는 링크가 아닌 본문과 rules 파일도 들어가지 않았다. 기록 폴더 `~/Library/Application Support/Claude/local-agent-mode-sessions`에서도 값을 찾지 못했는데, 그 폴더에 지침이 저장되는지는 확인하지 못했다. 작업 폴더는 홈 폴더가 아닌 곳을 고르도록 안내했고, 실제로 고른 폴더는 기록하지 않았다.
 
 ## APM과 함께 쓰기 근거
 
@@ -431,6 +611,17 @@ agctx가 Microsoft APM(Agent Package Manager)과 한 저장소에서 부딪히�
 - **직접 실험(agctx와 APM, 2026-09-16):** `scratchpad/m4-drafts/apm-e2e.sh`로 가짜 HOME에서 이 브랜치의 agctx와 apm 0.30.0을 함께 실행했다. APM 패키지는 `applyTo: "**"` 지침 파일 하나, 대상은 `codex`·`claude`다.
   - agctx를 먼저 적용하고 `AGENTS.md` 끝에 APM 표지를 둔 뒤 `managed_section`으로 `apm install`·`apm compile`을 실행했다. 프로필과 APM 패키지를 번갈아 고쳐 `agctx profile sync`와 `apm compile`을 반복해도 두 도구의 규칙이 모두 남았다. 이어서 실행한 `agctx profile sync --dry-run`은 바꿀 파일이 없었고, `apm audit --ci`와 `agctx check`는 0으로 끝났다. APM은 같은 규칙을 `.claude/rules/team.md`에도 넣었다.
   - APM 기본 모드가 먼저 `AGENTS.md`(둘째 줄에 생성 표시)와 `.claude/rules/team.md`를 만든 저장소에서 `agctx profile apply --yes`는 파일을 쓰지 않고 2로 멈췄다. 안내대로 `apm.yml`에 `managed_section`을 넣고 `AGENTS.md`를 옮긴 뒤 다시 적용하고, 표지를 넣어 `apm compile`을 실행하자 두 도구의 규칙이 모두 들어갔고 `agctx check`가 0으로 끝났다.
+- **직접 실험(agctx와 APM 0.31.0, 2026-09-17):** 스크래치패드 가상환경에 `pip install apm-cli==0.31.0`으로 설치하고(PyPI의 최신 버전), `HOME`·`AGCTX_HOME`을 임시 폴더로 바꿔 [APM과 함께 쓰기](guides/apm-coexistence.md)의 순서대로 실행했다. APM 쪽은 `apm init --yes --target codex,claude`로 만든 `apm.yml`과 `applyTo: "**"` 지침 파일 `.apm/instructions/api.instructions.md` 하나다.
+  - agctx 적용 → `apm.yml`에 `managed_section` → `AGENTS.md` 끝에 표지 → `apm compile` 순서로 실행하자 APM 규칙이 표지 사이에 들어갔다. `apm compile`은 agctx가 만든 `CLAUDE.md`를 사람이 쓴 파일로 보고 쓰지 않은 채 아래 경고를 내고 0으로 끝났다. 이어서 `agctx profile sync --dry-run .`은 `Dry-run: 0 file(s) to change.`, `agctx check .`과 `apm audit --ci`는 0이었다.
+
+    > "Protected CLAUDE.md: hand-authored file will not be overwritten. To regenerate it, delete or rename the file, then re-run 'apm compile'."
+    >
+    > 번역: 보호된 CLAUDE.md: 사람이 쓴 파일이므로 덮어쓰지 않습니다. 다시 만들려면 파일을 지우거나 이름을 바꾼 뒤 'apm compile'을 다시 실행하세요.
+
+  - `apm install`은 같은 규칙을 `paths:` 목록에 `"**"`를 둔 frontmatter와 함께 `.claude/rules/api.md`로도 넣었다. `agctx explain --agent claude .`은 이 파일을 `conditional`(경로 조건이 있는 규칙)로 판정하고, 지침 파일에 규칙 세 줄을 두었을 때 `AGENTS.md`와 3줄이 겹친다고 경고했다. 종료 코드는 0이었다.
+  - 같은 저장소의 복사본에서 `apm.yml`의 `targets`를 `codex` 하나로 줄이고 `apm install`을 실행하자 APM이 오래된 파일 하나를 정리했다고 알리며 `.claude/rules/api.md`를 지웠다. `apm compile` 뒤에도 `AGENTS.md`의 APM 블록은 남았고, `agctx explain --agent claude .`은 `CLAUDE.md`와 `AGENTS.md`만 `read`로 보여 주고 경고 없이 0으로 끝났다.
+  - 프로필 지침을 바꿔 `agctx profile sync . --yes`를 실행한 뒤 `apm compile`을 실행해도 두 도구의 규칙이 모두 남았고, `sync --dry-run`은 바꿀 파일이 없었으며 `check`는 0이었다.
+  - APM 기본 모드로 먼저 `install`·`compile`한 새 저장소에서는 `AGENTS.md` 둘째 줄에 `<!-- Generated by APM CLI from distributed .apm/ primitives -->`가 들어갔고, `agctx profile apply --dry-run`은 종료 코드 2로 멈췄다. `Next:` 안내대로 `managed_section`을 넣고 `AGENTS.md`를 옮긴 뒤 다시 적용하고 표지를 넣어 `apm compile`을 실행하자 `check`가 0으로 끝났다.
 
 
 ## 모노레포 연결 파일 근거

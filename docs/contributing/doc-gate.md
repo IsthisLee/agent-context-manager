@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 2a656b8fd2644b38d9d14fe9bde325836e1d127b91243b102d522df66ea980c4 -->
+<!-- agctx-doc-sources-sha256: 8ec53e908fe7aa5cd4bc2c691d09581e3d130a7d8fde97b51d8b0a9396095615 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 

@@ -1,7 +1,7 @@
 # TUI로 쓰기
 
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: 95dbc0bfcc7cac4452ba8d67ee40e1c8087d12b6c217dbdd86e3d67874ca2b5a -->
+<!-- agctx-doc-sources-sha256: daa19a22b368a5684cb4c8b59d3970dff0c78f7820a56d7bf3b1663b65d7b61e -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서의 화면은 실제로 실행한 화면에서 긴 경로만 `/work`로 바꿨다. 대부분 영어 표시 언어로 찍었고, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
@@ -315,7 +315,7 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | **Manage profiles** > 프로필 > **Git status** | **프로필 관리** > 프로필 > **Git 상태** | `agctx profile status --refresh <name>` |
 | **Manage profiles** > 프로필 > **Pull from Git** | **프로필 관리** > 프로필 > **Git에서 받기** | `agctx profile pull <name>` |
 | **Manage profiles** > 프로필 > **Push to Git** | **프로필 관리** > 프로필 > **Git으로 올리기** | `agctx profile push <name>` |
-| **Manage profiles** > 프로필 > **Connect to Git** | **프로필 관리** > 프로필 > **Git에 연결** | `agctx profile connect <name> <git-url>`, 브랜치를 입력하면 `--branch` |
+| **Manage profiles** > 프로필 > **Connect to Git** | **프로필 관리** > 프로필 > **Git에 연결** | `agctx profile connect <name> <git-url>`, 추적할 원격 브랜치를 입력하면 `--branch` |
 | **Check a project** > **Profile version** | **프로젝트 점검** > **프로필 버전** | `agctx check <project>`, 원격 확인에 Yes면 `--refresh` |
 | **Check a project** > **Instruction files each agent reads** | **프로젝트 점검** > **에이전트가 읽는 지침 파일** | `agctx explain <path>`, 에이전트 하나를 고르면 `--agent` |
 | **Check a project** > **Delivery to agents** | **프로젝트 점검** > **에이전트 전달 확인** | `agctx verify <path>`, probe를 고르면 `--probe` |

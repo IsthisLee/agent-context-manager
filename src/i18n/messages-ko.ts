@@ -248,7 +248,7 @@ export default {
     'repos.pr.message.message': '커밋 메시지와 PR 제목을 입력하세요. 비워 두면 기본 문구를 씁니다.',
     'repos.cancel': '저장소 작업을 취소했습니다.',
     'clone.branch.message': '받을 브랜치를 입력하세요. 비워 두면 원격의 기본 브랜치를 받습니다.',
-    'connect.branch.message': '연결할 브랜치를 입력하세요. 비워 두면 지금 브랜치를 씁니다.',
+    'connect.branch.message': '추적하고 push할 원격 브랜치를 입력하세요. 비워 두면 지금 브랜치와 같은 이름을 씁니다.',
     'help.select.message': '도움말을 볼 명령을 선택하세요.',
     'help.select.all': '전체 명령',
     'tui.result.title': '결과',

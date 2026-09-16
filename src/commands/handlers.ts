@@ -201,7 +201,7 @@ export const HANDLERS: Record<string, Handler> = {
     const name = requirePositional(parsed, 0, 'agctx profile connect <name> <git-url>');
     const url = requirePositional(parsed, 1, 'agctx profile connect <name> <git-url>');
     const state = connectProfile(name, url, { branch: typeof parsed.options.branch === 'string' ? parsed.options.branch : null });
-    say(_('connect.done', { name, remote: state.remote ?? '', branch: state.branch ?? '' }));
+    say(_('connect.done', { name, remote: state.remote ?? '', branch: state.remoteBranch ?? state.branch ?? '' }));
     say(_('connect.next', { name }));
     return ok(state);
   },
@@ -351,5 +351,5 @@ export const HANDLERS: Record<string, Handler> = {
 function describeState(state: ReturnType<typeof profileGitState>): string {
   if (!state.connected) return _('status.local', { name: state.name });
   const position = state.ahead === null ? _('status.no-upstream') : _('status.position', { ahead: state.ahead, behind: state.behind ?? 0 });
-  return _('status.git', { name: state.name, remote: state.remote ?? '-', branch: state.branch ?? '-', commit: (state.commit ?? '').slice(0, 7), dirty: state.dirty.length ? _('status.dirty', { count: state.dirty.length }) : _('status.clean'), position });
+  return _('status.git', { name: state.name, remote: state.remote ?? '-', branch: state.remoteBranch ?? state.branch ?? '-', commit: (state.commit ?? '').slice(0, 7), dirty: state.dirty.length ? _('status.dirty', { count: state.dirty.length }) : _('status.clean'), position });
 }

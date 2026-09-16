@@ -1,7 +1,7 @@
 # 갱신 방식 고르기: 고정과 예약 봇
 
 <!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts, src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 94df91799f0db50fe846883c2fda0850920a2a0b2d82ac0477179ee370d2a8d8 -->
+<!-- agctx-doc-sources-sha256: 4335d74e2b4283fba123eb1a06b10d17ba21228171f6413247fd18f447f2cf21 -->
 
 프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않음이다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
 

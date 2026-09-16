@@ -248,7 +248,7 @@ export default {
     'repos.pr.message.message': 'Enter the commit message and pull request title. Leave empty for the default.',
     'repos.cancel': 'Repository operation cancelled.',
     'clone.branch.message': 'Enter the branch to clone. Leave empty for the remote\'s default branch.',
-    'connect.branch.message': 'Enter the branch to connect. Leave empty for the current branch.',
+    'connect.branch.message': 'Enter the remote branch to track and push to. Leave empty to use the current branch name.',
     'help.select.message': 'Select a command to see its help.',
     'help.select.all': 'All commands',
     'tui.result.title': 'Result',

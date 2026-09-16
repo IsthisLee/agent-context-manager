@@ -19,6 +19,7 @@
 
 ### Fixed
 
+- `profile connect --branch <branch>`가 현재 브랜치와 다른 이름을 받으면, 현재 브랜치가 아니라 같은 이름의 로컬 브랜치에 추적 설정을 써서 `pull`은 추적 브랜치가 없다며 멈추고 `push`는 현재 브랜치 이름으로 올라갔다. 이제 현재 브랜치가 `--branch`로 준 원격 브랜치를 추적하고, `status`·`pull`·`push`가 모두 그 브랜치를 쓴다. 연결 문구와 `profile status`의 `원격 브랜치@커밋`도 추적하는 원격 브랜치를 표시하고, `--json`의 프로필 상태에 `remoteBranch`를 더했다
 - 원격을 읽는 명령(`check --refresh`, `profile pull`·`push`·`clone`, `repos status`·`sync`·`pr`)이 자격 증명 실패를 기타 오류(70)가 아니라 외부 도구·인증 실패(69)로 끝낸다. 자격 증명 헬퍼나 askpass가 있는데 답하지 못해 git이 `fatal: unable to get password from user`로 끝나는 경우가 70으로 분류돼 "git ls-remote로 주소와 Git 인증을 확인하세요" 안내도 붙지 않았다
 
 ## [0.3.1] - 2026-09-16

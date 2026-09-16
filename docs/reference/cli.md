@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 40831fbda1e8d5933562d49828456e36d3512bb66402afb5e4b1e52270ca919a -->
+<!-- agctx-doc-sources-sha256: 077d9e50e2e579ec874006157730abd03dd3a6ad665bdebf98ab4dffe4b19142 -->
 
 ## 설치와 실행
 
@@ -480,7 +480,7 @@ agctx profile status [--refresh] [<name>]
 | `<name>` | 확인할 프로필; 생략하면 모든 프로필 |
 | `--refresh` | 원격에서 fetch한 뒤 비교; 생략하면 네트워크에 접속하지 않고 마지막으로 받은 원격 정보로 비교 |
 
-한 줄은 `이름`, `원격 브랜치@커밋`, `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 `--refresh`로 실행한다.
+한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 `--refresh`로 실행한다.
 
 ```bash
 $ agctx profile status --refresh team-backend
@@ -537,7 +537,7 @@ agctx profile push [--dry-run] [--yes] <name>
 
 - agctx는 `git add`·`git commit`을 실행하지 않는다. 커밋하지 않은 변경이 있으면 빠지는 파일을 보여 주고 종료 코드 2로 멈춘다.
 - 원격보다 뒤처졌으면 종료 코드 2로 멈추고 `profile pull`을 먼저 안내한다. Git에 연결되지 않았거나 브랜치가 없는 HEAD면 64다.
-- 보낼 커밋 목록을 출력한 뒤 확인을 받고 `git push <원격> HEAD:refs/heads/<브랜치>`를 실행한다. 보낼 커밋이 없으면 알리고 0으로 끝난다. 보호 브랜치 규칙처럼 원격이 거부하면 Git의 오류를 그대로 보여 준다.
+- 보낼 커밋 목록을 출력한 뒤 확인을 받고, 현재 브랜치가 추적하는 원격 브랜치로 `git push <원격> HEAD:refs/heads/<원격 브랜치>`를 실행한다. 추적 설정이 없으면 현재 브랜치와 같은 이름으로 보낸다. 보낼 커밋이 없으면 알리고 0으로 끝난다. 보호 브랜치 규칙처럼 원격이 거부하면 Git의 오류를 그대로 보여 준다.
 
 ```bash
 $ agctx profile push --yes team-backend
@@ -562,9 +562,10 @@ agctx profile connect [--branch <branch>] <name> <git-url>
 | --- | --- |
 | `<name>` | 연결할 프로필 |
 | `<git-url>` | 원격 저장소 주소 |
-| `--branch <branch>` | 추적할 브랜치; 생략하면 현재 브랜치 |
+| `--branch <branch>` | 현재 브랜치가 추적하고 push할 원격 브랜치; 생략하면 현재 브랜치와 같은 이름 |
 
-- TUI의 `Git에 연결`은 주소와 브랜치를 묻는다. 브랜치를 비워 두면 현재 브랜치를 쓴다.
+- 추적 설정은 현재 브랜치(`branch.<현재 브랜치>.remote`·`merge`)에 쓴다. 예를 들어 로컬 브랜치가 `master`이고 팀 원격 브랜치가 `main`이면 `--branch main`으로 연결한다. 그 뒤 `status`는 `main`과 비교하고, `pull`은 `main`에서 받고, `push`는 `main`으로 보낸다. 분리된 HEAD처럼 현재 브랜치가 없으면 64로 멈춘다.
+- TUI의 `Git에 연결`은 주소와 추적할 원격 브랜치를 묻는다. 비워 두면 `--branch`를 주지 않은 것과 같다.
 - 프로필 폴더가 Git 저장소가 아니면 첫 커밋을 만드는 명령을 알려 주고 종료 코드 64로 멈춘다.
 
   ```bash

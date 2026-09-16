@@ -19,6 +19,8 @@ export interface ProfileGitState {
   connected: boolean;
   remote: string | null;
   branch: string | null;
+  /** The remote branch the current branch tracks and pushes to, from its merge setting; null when it tracks none. */
+  remoteBranch: string | null;
   commit: string | null;
   /** Remote-tracking ref for the branch, when configured and fetched. */
   upstream: string | null;
@@ -42,7 +44,7 @@ export function assertNoHiddenCharacters(files: readonly { file: string; content
 
 export function profileGitState(name: string, options: { refresh?: boolean } = {}): ProfileGitState {
   const { profileDir: dir } = readProfile(name);
-  const state: ProfileGitState = { name, dir, connected: false, remote: null, branch: null, commit: null, upstream: null, dirty: [], ahead: null, behind: null, refreshed: false };
+  const state: ProfileGitState = { name, dir, connected: false, remote: null, branch: null, remoteBranch: null, commit: null, upstream: null, dirty: [], ahead: null, behind: null, refreshed: false };
   if (!isGitRoot(dir)) return state;
   state.connected = true;
   state.branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
@@ -57,6 +59,7 @@ export function profileGitState(name: string, options: { refresh?: boolean } = {
     state.refreshed = true;
   }
   const merge = state.branch ? git(['config', `branch.${state.branch}.merge`], { cwd: dir, allowFailure: true }).stdout.trim() : '';
+  if (merge.startsWith('refs/heads/')) state.remoteBranch = merge.slice('refs/heads/'.length);
   if (remoteName && merge.startsWith('refs/heads/')) {
     const ref = `refs/remotes/${remoteName}/${merge.slice('refs/heads/'.length)}`;
     if (git(['rev-parse', '--verify', '--quiet', ref], { cwd: dir, allowFailure: true }).status === 0) {
@@ -166,7 +169,8 @@ export function pushProfile(plan: PushPlan): PushPlan {
   if (!plan.commits.length) return plan;
   const branch = plan.state.branch as string;
   const remoteName = git(['config', `branch.${branch}.remote`], { cwd: plan.state.dir, allowFailure: true }).stdout.trim() || 'origin';
-  git(['push', '--quiet', remoteName, `HEAD:refs/heads/${branch}`], { cwd: plan.state.dir });
+  // Push to the branch the current branch tracks, which connect --branch may name differently from the local branch.
+  git(['push', '--quiet', remoteName, `HEAD:refs/heads/${plan.state.remoteBranch ?? branch}`], { cwd: plan.state.dir });
   return { state: profileGitState(plan.state.name), commits: plan.commits, pushed: true };
 }
 
@@ -181,10 +185,13 @@ export function connectProfile(name: string, location: string, options: { branch
     throw usageError('connect.origin-exists', _('error.connect.origin-exists', { name, remote: sanitizeRemoteUrl(existing.stdout.trim()) }), _('hint.connect.set-url', { dir }));
   }
   git(['ls-remote', '--heads', '--', url], { cwd: dir });
-  const branch = options.branch || git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim();
-  if (!branch) throw usageError('connect.no-branch', _('error.connect.no-branch', { name }), null);
+  // push, pull, and status all read the current branch's tracking settings, so connect writes them there.
+  // --branch names the remote branch to track when it differs from the local branch name.
+  const local = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim();
+  if (!local) throw usageError('connect.no-branch', _('error.connect.no-branch', { name }), null);
+  const branch = options.branch || local;
   if (existing.status !== 0) git(['remote', 'add', 'origin', url], { cwd: dir });
-  git(['config', `branch.${branch}.remote`, 'origin'], { cwd: dir });
-  git(['config', `branch.${branch}.merge`, `refs/heads/${branch}`], { cwd: dir });
+  git(['config', `branch.${local}.remote`, 'origin'], { cwd: dir });
+  git(['config', `branch.${local}.merge`, `refs/heads/${branch}`], { cwd: dir });
   return profileGitState(name);
 }

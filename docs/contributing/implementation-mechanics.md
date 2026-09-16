@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: a29a9831a6f548109308edb569a3dedce655ac88af91405df17f0639bbcc683a -->
+<!-- agctx-doc-sources-sha256: 7e0c7a738e2b862a5e5dc711057bf93c5020231adebd07339cb72c05dfaad703 -->
 
 ## 읽는 법
 
@@ -543,7 +543,7 @@ if (result.error) {
 ```
 
 - 셸 문자열을 만들지 않고 인자 배열로 실행하므로 URL이나 브랜치 이름이 셸에서 해석되지 않는다. 사용자의 Git 설정·credential helper를 그대로 쓴다.
-- 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)).
+- 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)). 이때 git이 내는 문구는 환경에 따라 다르다. 프롬프트가 꺼져 있으면 `could not read Username`, 자격 증명 헬퍼나 askpass가 있는데 답하지 못하면 `unable to get password`다. 둘 다 `REMOTE_FAILURE`에 넣어 69로 분류하므로 어느 쪽이든 Git 인증을 확인하라는 다음 명령이 붙는다.
 - `isGitRoot`(`src/shared/git.ts:41-48`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-cdup`을 실행하고, 출력이 비어 있으면 그 폴더를 작업 트리의 최상위로 본다. 경로 문자열을 비교하지 않으므로 macOS 임시 폴더의 `/var`와 `/private/var`, Windows의 짧은 이름(`RUNNER~1`)이나 대소문자 차이가 판정을 바꾸지 않는다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
 - `resolveRemoteLocation`(`src/shared/git.ts:54-57`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
 - `sanitizeRemoteUrl`(`src/shared/git.ts:60-70`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.

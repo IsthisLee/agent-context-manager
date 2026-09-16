@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { makeWorkspace } from './support/git-workspace.ts';
+import { fakeCommands, makeWorkspace, publishProfile as publishSharedProfile } from './support/git-workspace.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
@@ -182,4 +182,31 @@ test('connect and push see a profile repository through a home folder spelled wi
   const pushed = runRespelled('profile', 'push', 'team-backend', '--yes');
   assert.equal(pushed.status, 0, `${pushed.stdout}\n${pushed.stderr}`);
   assert.match(gitIn(team.root, 'ls-remote', '--heads', remote), /refs\/heads\/main/);
+});
+
+test('a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error', t => {
+  const { root, person, folder } = makeWorkspace(t, 'agctx-git-credentials-');
+  const admin = person('admin');
+  const member = person('member');
+  const { remote } = publishSharedProfile(root, admin, 'team-backend');
+  member.ok(['profile', 'clone', remote]);
+  const project = folder('orders-api');
+  member.ok(['profile', 'apply', 'team-backend', project, '--yes']);
+
+  // git prints this when a credential helper or askpass exists but cannot answer. That is a sign-in
+  // failure like a rejected password, so it must carry the Git credentials next step, not exit 70.
+  const realGit = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['git'], { encoding: 'utf8' }).stdout.split('\n')[0].trim();
+  const fake = fakeCommands(t, {
+    git: `import { spawnSync } from 'node:child_process';
+if (args[0] === 'ls-remote') {
+  process.stderr.write('fatal: unable to get password from user\\n');
+  process.exit(128);
+}
+const passed = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+process.exit(passed.status ?? 1);`
+  });
+
+  const result = member.run(['check', project, '--refresh'], fake.env);
+  assert.equal(result.status, 69, `${result.stdout}\n${result.stderr}`);
+  assert.match(result.stderr, /git ls-remote/);
 });

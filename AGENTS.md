@@ -74,7 +74,8 @@
 | `docs/contributing/releasing.md` | 공개 저장소 릴리스·보안·기여 운영 계약 |
 | `docs/contributing/doc-gate.md` | 문서 소스 해시 게이트와 문서 근거 게이트 |
 | `docs/contributing/adapters.md` | 새 에이전트를 지원하는 절차 |
-| `docs/discussion/` | 아직 채택되지 않았거나 구현·검증 중인 주제별 논의와 계약 |
+| `docs/discussion/architecture/` | 패키지 기능의 구현 단계별 논의와 계약: 아직 채택되지 않았거나 구현·검증 중인 주제 |
+| `docs/discussion/repository/` | 저장소 운영(문서 게이트·CI·PR 리뷰·기여 절차)의 논의와 계약 |
 | `docs/adr/` | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력 |
 | `docs/references.md` | 외부 근거와 참고 자료 |
 | `CHANGELOG.md` | 사용자 영향 변경과 릴리스 버전 이력 |
@@ -88,7 +89,8 @@
   | --- | --- |
   | 패키지의 목적·책임 경계·장기 방향 | `docs/contributing/product-direction.md` |
   | 외부 사실·인용·조사 결과·도구 비교 | `docs/references.md` |
-  | 문제·위험·격차·우선 과제·대안·미확정 채택 여부 | `docs/discussion/architecture/topics/` |
+  | 패키지 기능의 문제·위험·격차·우선 과제·대안·미확정 채택 여부 | `docs/discussion/architecture/topics/` |
+  | 저장소 운영(문서 게이트·CI·PR 리뷰)의 같은 내용 | `docs/discussion/repository/topics/` |
   | 채택되어 현재 실제로 동작하는 구조·계약 | `docs/contributing/architecture.md` |
   | 설치와 첫 적용 흐름 | `docs/getting-started/` |
   | 구현된 기능의 상황별 사용 절차 | `docs/guides/` |
@@ -106,7 +108,7 @@
 - **정본·상태·링크 확인을 변경 완료 조건으로 한다.** 문서를 추가·수정할 때 (1) 내용 상태와 정본 위치, (2) 기존 정본과의 중복·모순 여부, (3) 다른 문서에는 요약·링크만 둘지, (4) 논의가 결정 또는 구현으로 승격됐는지를 확인하라. 이 확인 없이 편의상 이미 열어 둔 문서에 내용을 섞어 넣지 마라.
 - **기능 인터페이스 동등성:** 모든 사용자 기능은 CLI 명령·옵션과 TUI 흐름에서 모두 실행 가능해야 한다. 특정 프로필을 다루는 기능은 `agctx profile list`의 프로필 관리 메뉴에서도 실행 가능해야 한다. 명령은 `src/commands/registry.ts`에 표면(`profile`·`repository`·`global`)과 TUI 항목(`tui`)을 함께 등록하고 각 경로의 동작 평가를 추가하라. TUI로 옮길 수 없는 명령은 새 ADR로 예외를 정한다. 기준의 정본은 `implementation-contracts.md`의 "인터페이스 동등성" 절과 ADR 0025다.
 - `Proposed`·`Implementing` 논의 문서는 상태 아래에 **제안 요약**과 주요 논점을 보여 주는 **목차**를 둔다. 중요도는 확정된 로드맵이 아니라 현재 위험과 의존성에 따른 논의 우선순위다. 요약의 필수 항목·묶음·표기 방식은 정본인 `docs/discussion/architecture/topics/implementation-contracts.md`를 따른다.
-- **구현하면 논의 문서에 결과를 남긴다.** 논의 문서의 계약을 구현하거나 구현하면서 계약이 바뀌면, 같은 변경에서 그 문서의 `**상태:**`, 구현 기록, 논의 색인(`docs/discussion/architecture/README.md`)의 상태, 제안 요약의 `권장 다음 작업`을 갱신하라. 제안 본문은 결정 이력이므로 지우지 말고, 구현이 제안과 달라졌으면 그 사실을 구현 기록에 적어라. 기록 형식과 상태별 기록 시점은 정본인 `implementation-contracts.md`의 "구현 기록" 절을 따른다. `Implemented` 문서에 구현 기록 제목이 없으면 `pnpm run check`의 `check:docs`가 실패한다.
+- **구현하면 논의 문서에 결과를 남긴다.** 논의 문서의 계약을 구현하거나 구현하면서 계약이 바뀌면, 같은 변경에서 그 문서의 `**상태:**`, 구현 기록, 그 주제가 속한 논의 영역의 색인(`docs/discussion/<영역>/README.md`)의 상태, 제안 요약의 `권장 다음 작업`을 갱신하라. 제안 본문은 결정 이력이므로 지우지 말고, 구현이 제안과 달라졌으면 그 사실을 구현 기록에 적어라. 기록 형식과 상태별 기록 시점은 정본인 `implementation-contracts.md`의 "구현 기록" 절을 따른다. `Implemented` 문서에 구현 기록 제목이 없으면 `pnpm run check`의 `check:docs`가 실패한다.
 - **논의 문서는 그림과 예시로 먼저 보여 준다.** `docs/`에 문서를 새로 쓰거나 수정하거나 논점을 추가할 때, 글로만 따라가기 어려운 내용은 그림과 예시를 적극적으로 활용해 설명하라. 그림은 구조와 흐름을, 예시는 사용자가 실제로 입력하고 보게 되는 모습을 보여 준다. 형식은 내용에 맞춰 고른다.
 
   | 보여 줄 내용 | 형식 |

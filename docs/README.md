@@ -58,6 +58,7 @@
 - [문서 게이트](contributing/doc-gate.md)
 - [새 에이전트 지원하기](contributing/adapters.md)
 - [아키텍처 구현 계획](discussion/architecture/): 단계별 계약과 미구현 기능
+- [저장소 운영 논의](discussion/repository/): 문서 게이트·CI·PR 리뷰처럼 저장소 자체의 운영 주제
 - [외부 참고 문헌](references.md): 연구·사례·비교 도구
 
 ## 결정 기록

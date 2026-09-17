@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: c84e31dd3b4ff18125d2a8e1bb70684affa0acff1eb89249d16b198f793351f2 -->
+<!-- agctx-doc-sources-sha256: 9def8026780ddd8b987945052ef6f9102ba41a6bd7dec9e35b8cf47941e5af81 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -21,13 +21,15 @@
 
 </p>
 
+## 통합 에이전트 컨텍스트 생성, 관리 도구
+
 - 👥 개인·팀·회사별 프로필
 - 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 (규칙 외 구현 예정)
 - 📋 TDD·검증·보안 같은 권장 지침을 골라 구성
 - 🎯 저장소마다 프로필과 에이전트 골라 적용 (에이전트 고르기 구현 예정)
 - 🔄 바뀌면 한 번에 동기화
 - 🛡️ 프로젝트별 지침 내용은 그대로 유지
-- 🌿 Git 공유, CI 검사, 여러 저장소 PR
+- 🌿 Git 공유, CI 검사, 여러 저장소에 PR
 
 **TDD·보안·문서화·스킬·MCP 같은 세팅을 이미 CLAUDE.md에 정해 뒀는데, 프로젝트와 AI 도구가 늘어날 때마다 같은 걸 다시 세팅하고 있진 않나요?**
 
@@ -86,7 +88,7 @@ Applied profile company to /path/to/project
 
 | 상황                                    | 가이드                                                                                                                                          |
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 명령 대신 메뉴로 쓰기 | [TUI로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md) |
+| 명령 대신 메뉴로 쓰기                   | [TUI로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md)                                                   |
 | 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-repo-individual.md) |
 | 고객사가 여럿                           | [고객사 여러 곳의 규칙 따로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-client.md)                     |
 | 팀 프로필 공유                          | [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)                               |

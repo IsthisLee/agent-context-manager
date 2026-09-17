@@ -2,6 +2,8 @@
 
 이 문서는 제품 방향을 실제 구현 단계로 분해한 작업 지도다. 각 단계는 선행 계약·코드·평가·문서 갱신을 완료한 뒤 다음 단계로 넘어간다.
 
+저장소 자체의 운영(문서 게이트·CI·PR 리뷰) 논의는 [저장소 운영 논의](../repository/README.md)에 둔다.
+
 논의 문서의 명령·파일 이름은 2026-09-15 이름 변경([ADR 0013](../../adr/0013-rename-agent-context-manager.md))에 맞춰 고쳤다. `bin/*.mjs` 같은 코드 인용은 그 문서를 쓸 당시의 코드를 가리킨다.
 
 ## 단계
@@ -22,7 +24,6 @@
 | 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Implementing |
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
-| — | [문서 정확성 자동 리뷰](topics/doc-accuracy-review.md) | Medium | — | 해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 
 > **중요도**는 각 토픽의 제안 요약을 요약한 값이다: Critical(다른 단계의 기반·데이터 안전 경계), High(사용자 경계·전달 경로), Medium(계약 확장이나 기존 모델 유지). **선행 단계**는 해당 제안이 의존하는 단계 번호다. 근거와 세부는 각 토픽 문서의 `## 제안 요약`을 본다.

@@ -9,6 +9,33 @@
 5. **전달 확인과 스킬**: `explain`·`verify`([전달 확인과 검증의 범위](concepts/verification.md)), 에이전트용 스킬([에이전트에게 agctx를 맡기기](guides/agent-skills.md))
 6. **문제가 생기면**: [문제 해결](reference/troubleshooting.md)
 
+## 문서별 책임
+
+각 문서가 무엇의 정본인지 정리한 표다. 새 내용을 어느 문서에 둘지 판정하는 기준은 루트 [`AGENTS.md`](../AGENTS.md)의 문서 배치 표에 있다.
+
+| 문서 | 책임 |
+| --- | --- |
+| `README.md` | 외부 사용자를 위한 한 페이지 패키지 소개: 핵심 문제·기능·구조·빠른 시작·문서 링크 |
+| `docs/README.md` | 문서 입구: 사용 흐름 요약, 사용자·기여자 문서 목차, ADR 색인 |
+| `docs/getting-started/` | 설치와 첫 적용·확인까지의 최소 흐름 |
+| `docs/guides/` | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM |
+| `docs/concepts/` | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인 |
+| `docs/reference/` | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·문제 해결의 정확한 사양 |
+| `docs/faq.md` | 자주 묻는 질문의 짧은 답과 정본 링크 |
+| `docs/contributing/product-direction.md` | 패키지의 목적, 책임 경계, 장기 방향의 정본 |
+| `docs/contributing/architecture.md` | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `guidance-catalog.md` |
+| `docs/contributing/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설 |
+| `docs/contributing/testing.md` | 품질 게이트와 평가 작성 방법 |
+| `docs/contributing/releasing.md` | 공개 저장소 릴리스·보안·기여 운영 계약 |
+| `docs/contributing/doc-gate.md` | 문서 소스 해시 게이트와 문서 근거 게이트 |
+| `docs/contributing/doc-style.md` | 문서의 그림·예시 형식과 작성 규칙 |
+| `docs/contributing/adapters.md` | 새 에이전트를 지원하는 절차 |
+| `docs/discussion/architecture/` | 패키지 기능의 구현 단계별 논의와 계약: 아직 채택되지 않았거나 구현·검증 중인 주제 |
+| `docs/discussion/repository/` | 저장소 운영(문서 게이트·CI·PR 리뷰·기여 절차)의 논의와 계약 |
+| `docs/adr/` | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력 |
+| `docs/references.md` | 외부 근거와 참고 자료 |
+| `CHANGELOG.md` | 사용자 영향 변경과 릴리스 버전 이력 |
+
 ## 사용자 문서
 
 ### 처음 시작

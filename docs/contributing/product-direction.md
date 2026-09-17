@@ -82,4 +82,4 @@ CLI와 생성 지침은 영어(en)·한국어(ko)를 지원한다. 기본은 `en
 
 문서 변경과 논의 문서의 구현 기록은 [구현 계약 및 문서 규칙](../discussion/architecture/topics/implementation-contracts.md)을 따른다. 이 저장소의 개발 명령은 고정된 pnpm 환경에서 실행한다.
 
-사용자 문서는 처음 시작·목적별 가이드·개념·레퍼런스로, 기여자 문서는 `docs/contributing/`으로 나눈다. 문서별 책임과 정본 위치는 루트 `AGENTS.md`의 문서 규칙과 [문서 안내](../README.md)에 있다.
+사용자 문서는 처음 시작·목적별 가이드·개념·레퍼런스로, 기여자 문서는 `docs/contributing/`으로 나눈다. 문서별 책임의 정본은 [문서 안내](../README.md)의 "문서별 책임" 절이고, 내용을 어느 문서에 둘지 판정하는 기준은 루트 `AGENTS.md`의 배치 표에 있다.

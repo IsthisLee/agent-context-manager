@@ -582,6 +582,26 @@
   - Code 탭 세션 기록은 `entrypoint: claude-desktop`이다. Antigravity 앱에서 `GEMINI.md` 안의 `@` 가져오기는 재지 않았다.
   - 앱을 격리하려고 Antigravity 앱을 임시 `HOME`과 `--user-data-dir`로 띄웠지만 프로세스가 곧 끝나고 임시 홈에 데이터가 생기지 않았다. 원인은 확인하지 못했다.
 
+- **직접 실험(저장소 구조, 2026-09-17):** 실제 파일을 임시 홈의 `agent-config/` 한 폴더에만 두고, 도구가 읽는 자리는 모두 그 파일을 가리키는 링크로 만들어 격리 CLI 실험과 같은 질문을 했다.
+
+  ```text
+  ~/.config/agents/AGENTS.md          → ~/agent-config/agents/AGENTS.md
+  ~/.codex/AGENTS.md                  → ~/agent-config/agents/AGENTS.md
+  ~/.gemini/GEMINI.md                 → ~/agent-config/agents/AGENTS.md
+  ~/.claude/CLAUDE.md                 → ~/agent-config/claude/CLAUDE.md   (안에 @~/.config/agents/AGENTS.md 한 줄)
+  ~/.claude/rules/own.md              → ~/agent-config/claude/rules/own.md
+  ~/.gemini/config/plugins/my-rules   → ~/agent-config/antigravity/plugins/my-rules   (폴더 링크)
+  ```
+
+  | 에이전트 (버전) | 공통 파일 | `CLAUDE.md` 본문 | Claude rules 파일 | Antigravity 플러그인 규칙 | 판정 근거 |
+  | --- | --- | --- | --- | --- | --- |
+  | Claude Code 2.1.273 | 읽음 (메인, 서브에이전트) | 읽음 (메인, 서브에이전트) | 읽음 (메인, 서브에이전트) | 대상 아님 | 답, `/context`, 기록 |
+  | Codex CLI 0.154.0 | 읽음 | 대상 아님 | 대상 아님 | 대상 아님 | 답, 명령 실행 이벤트 없음 |
+  | Antigravity CLI 1.2.3 | 읽음 | 대상 아님 | 대상 아님 | 읽음 (폴더 링크 경유, `trigger: always_on`) | 답 |
+
+  - Claude Code의 `@` 가져오기는 링크인 `CLAUDE.md` 안에서 다시 링크인 `~/.config/agents/AGENTS.md`를 가리켜도 읽었다. `/context`는 rules 파일을 링크 대상 경로로 표시했다.
+  - 링크 파일을 고칠 때도 쟀다. Claude Code(이 세션의 Edit·Write 도구)는 링크 경로에 쓰기를 거부하고 대상 경로에 쓰라고 안내했다. 링크는 그대로였고 원본은 바뀌지 않았다. 오류는 `Refusing to write <경로>: it is a symbolic link. Write to the link's target path instead.`였다. Codex CLI(`-s workspace-write`)는 Python으로 파일을 열어 그 자리에서 덧붙였고, Antigravity CLI(`--dangerously-skip-permissions`)도 원본에 줄을 더했다. 두 경우 모두 링크가 유지됐다. Codex와 Antigravity가 고치는 방법은 모델이 고르므로 한 번 잰 결과다.
+
 ### Cowork 참고
 
 Claude 앱의 Cowork는 파일과 도구를 오가며 일을 맡기는 도구라 코딩 에이전트와 쓰임새가 다르다. Claude Code 공식 문서가 Cowork 데스크톱 세션의 사용자 지침 로드 규칙을 따로 적고 있어, 위 실제 환경 실험에서 함께 쟀다.

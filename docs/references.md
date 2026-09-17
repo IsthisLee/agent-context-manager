@@ -369,7 +369,13 @@
   >
   > 번역: 계획한 작업이 완료된 작업으로 표현되지 않았는지 확인하십시오. / 한계: 시험하지 않은 영역, 받아들인 위험, 불완전한 증거. / 남은 한계가 기록되어 있다.
 
-- **동작을 바꾸면 그 동작을 쓰는 사람이 보는 문서를 같은 변경에서 고친다.** 근거는 Codex 문서가 보여 준 저장소 **예시 한 줄**이다. "- Document public utilities in `docs/` when you change behavior."(번역: 동작을 바꿀 때 공개 유틸리티를 `docs/`에 문서화하십시오.) 원문은 권고가 아니라 한 저장소의 예시이고 다루는 대상도 공개 유틸리티다. 초안에 있던 "계약"은 원문에 없어 지웠다. 이 항목의 세 문장 가운데 이 문장만 근거가 예시에 기댄다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-18)
+- **동작을 바꾸면 그 동작을 쓰는 사람이 보는 문서를 같은 변경에서 고친다.** [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-18)
+
+  > "In your repository root, add an `AGENTS.md` that covers basic setup:" / "- Run `npm run lint` before opening a pull request. - Document public utilities in `docs/` when you change behavior."
+  >
+  > 번역: 저장소 루트에 기본 설정을 다루는 `AGENTS.md`를 추가하십시오. / `npm run lint`를 pull request를 열기 전에 실행하십시오. 동작을 바꿀 때 공개 유틸리티를 `docs/`에 문서화하십시오.
+
+  **근거의 형태:** 이 문장은 공식 문서가 기본 설정의 예로 제시한 `AGENTS.md` 규칙이다. 에이전트에게 직접 내리는 지시문이 아니라, 지침 파일에 둘 만한 규칙으로 문서가 보여 준 것이다. 같은 항목의 다른 두 문장은 쿡북의 지시문에서 왔다. 원문이 다루는 대상은 공개 유틸리티이며, 초안에 있던 "계약"은 원문에 없어 지웠다.
 
 ### 보안 지침의 근거
 
@@ -460,6 +466,36 @@
 - **그래서 기본값을 `off`로 둔다.** 근거 없는 문장을 기본 지침에 넣지 않는다는 원칙의 예외이며, 조건은 켜는 사람만 받는 것과 근거가 없다는 사실을 밝히는 것이다. 결정은 [ADR 0026](adr/0026-guidance-items-and-evidence-tiers.md)에 있다.
 
 - **찾지 못한 주장.** 다국어 출력이 토큰을 낭비한다는 주장은 공식 문서에서 확인하지 못했다. 확인하지 못했다고 적어 둔다.
+
+## 출력 스타일을 담지 않는 근거
+
+[ADR 0027](adr/0027-no-output-styles.md)의 근거다. 아래는 모두 [Claude Code Output styles](https://code.claude.com/docs/en/output-styles) 문서에서 확인했다. (확인일: 2026-09-18)
+
+- **스타일 파일은 프로젝트 범위로 공유할 수 있다.** 파일은 사용자(`~/.claude/output-styles`), 프로젝트(`.claude/output-styles`), 관리 정책 세 위치에 둘 수 있고 frontmatter와 본문으로 된 마크다운이다. (확인일: 2026-09-18)
+
+  > "A custom output style is a Markdown file: frontmatter for metadata, then the instructions for Claude." / "Project output styles load from every `.claude/output-styles/` between the working directory and the repository root."
+  >
+  > 번역: 커스텀 출력 스타일은 마크다운 파일입니다. 메타데이터용 frontmatter 다음에 Claude를 위한 지침이 옵니다. / 프로젝트 출력 스타일은 작업 디렉터리와 저장소 루트 사이의 모든 `.claude/output-styles/`에서 로드됩니다.
+
+- **그러나 어떤 스타일을 쓸지는 개인 설정에 저장된다.** 그래서 파일을 공유해도 선택은 공유되지 않는다. (확인일: 2026-09-18)
+
+  > "Claude Code saves your selection to `.claude/settings.local.json` at the local project level."
+  >
+  > 번역: Claude Code는 여러분의 선택을 로컬 프로젝트 수준의 `.claude/settings.local.json`에 저장합니다.
+
+- **커스텀 스타일은 기본적으로 내장 엔지니어링 지침을 뺀다.** 그래서 agctx가 배포하는 검증·범위·변경 검토 지침과 충돌할 수 있다. (확인일: 2026-09-18)
+
+  > "Custom output styles leave out Claude Code's built-in software engineering instructions, such as how to scope changes, write comments, and verify work, unless `keep-coding-instructions` is set to `true`."
+  >
+  > 번역: 커스텀 출력 스타일은 `keep-coding-instructions`를 `true`로 두지 않으면, 변경 범위를 잡는 방법·주석을 쓰는 방법·작업을 검증하는 방법 같은 Claude Code의 내장 소프트웨어 엔지니어링 지침을 빼놓습니다.
+
+- **프로젝트 관례를 담는 자리는 출력 스타일이 아니라 지침 파일이다.** 같은 문서가 그렇게 구분한다. (확인일: 2026-09-18)
+
+  > "For instructions about your project, conventions, or codebase, use CLAUDE.md instead."
+  >
+  > 번역: 프로젝트, 관례, 코드베이스에 관한 지침에는 대신 CLAUDE.md를 사용하십시오.
+
+- **대응하는 개념을 다른 에이전트에서 찾지 못했다.** Codex 공식 문서가 설명하는 설정은 모델·추론 수준·샌드박스 모드·승인 정책·프로필·MCP이고 응답 형식을 고정하는 기능은 없다. Antigravity 규칙 문서에도 없다. 확인하지 못한 것이 아니라 해당 문서에 없다는 뜻이다. [Codex best practices](https://developers.openai.com/codex/guides/best-practices), [Google Antigravity Rules](https://antigravity.google/docs/rules-workflows/) (확인일: 2026-09-18)
 
 ## 에이전트 규칙 파일 로드 근거
 

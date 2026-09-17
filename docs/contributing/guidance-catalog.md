@@ -3,7 +3,7 @@
 이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
 <!-- agctx-doc-sources: src/i18n/index.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: b5296f4eed6d919d54b3858aa2210d115a5ba98deadd524da1b06574426debc2 -->
+<!-- agctx-doc-sources-sha256: 8d8d4d08470f59b047e6986402bcb358360c07b96b84572d340945f714583a1e -->
 
 ## 지침이 만들어지는 두 경로
 

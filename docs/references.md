@@ -135,15 +135,17 @@
 
 ### 맥락 관리 지침의 근거
 
-- **단일 에이전트에서 시작하고 복잡한 구조는 필요할 때만 더한다.** [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI 실무 가이드](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) (확인일: 2026-09-16)
+- **단일 에이전트에서 시작하고 복잡한 구조는 필요할 때만 더한다.** [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI 실무 가이드](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf), [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
 
   > "When building applications with LLMs, we recommend finding the simplest solution possible, and only increasing complexity when needed. … Agentic systems often trade latency and cost for better task performance, and you should consider when this tradeoff makes sense."
   >
   > 번역: LLM으로 애플리케이션을 만들 때는 가능한 가장 단순한 해법을 찾고, 필요할 때만 복잡도를 높이기를 권합니다. … 에이전트 시스템은 더 나은 작업 성능을 위해 지연 시간과 비용을 맞바꾸는 경우가 많으므로, 그 맞바꿈이 언제 합당한지 따져 보아야 합니다.
 
-  > "Our general recommendation is to maximize a single agent's capabilities first."
+  > "Our general recommendation is to maximize a single agent's capabilities first." / "A single agent can handle many tasks by incrementally adding tools, keeping complexity manageable and simplifying evaluation and maintenance."
   >
-  > 번역: 저희가 일반적으로 권하는 것은 단일 에이전트의 역량을 먼저 최대한 끌어올리는 것입니다.
+  > 번역: 저희가 일반적으로 권하는 것은 단일 에이전트의 역량을 먼저 최대한 끌어올리는 것입니다. / 단일 에이전트는 도구를 점진적으로 더해 많은 작업을 처리할 수 있고, 복잡도를 다룰 만하게 유지하며 평가와 유지보수를 단순하게 합니다.
+
+  **합성 표기:** 배포 문구의 "계획·구현·확인을 이어서 진행한다"는 위 두 문서에서 온 "단일 에이전트"에, Claude Code best practices가 권하는 작업 단계를 합친 것이다. 그 문서는 "Explore first, then plan, then code"라는 절에서 "The recommended workflow has four phases"(번역: 권장 작업 흐름은 네 단계입니다.)로 탐색·계획·구현·커밋을 든다. 한 문장에서 나온 표현이 아니다.
 
 - **조사는 서브에이전트에 맡겨 주 작업의 맥락을 비워 둔다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (확인일: 2026-09-16)
 
@@ -375,7 +377,9 @@
   >
   > 번역: 저장소 루트에 기본 설정을 다루는 `AGENTS.md`를 추가하십시오. / `npm run lint`를 pull request를 열기 전에 실행하십시오. 동작을 바꿀 때 공개 유틸리티를 `docs/`에 문서화하십시오.
 
-  **근거의 형태:** 이 문장은 공식 문서가 기본 설정의 예로 제시한 `AGENTS.md` 규칙이다. 에이전트에게 직접 내리는 지시문이 아니라, 지침 파일에 둘 만한 규칙으로 문서가 보여 준 것이다. 같은 항목의 다른 두 문장은 쿡북의 지시문에서 왔다. 원문이 다루는 대상은 공개 유틸리티이며, 초안에 있던 "계약"은 원문에 없어 지웠다.
+  **근거의 형태:** 이 문장은 공식 문서가 기본 설정의 예로 제시한 `AGENTS.md` 규칙이다. 에이전트에게 직접 내리는 지시문이 아니라, 지침 파일에 둘 만한 규칙으로 문서가 보여 준 것이다. 같은 항목의 다른 두 문장은 쿡북의 지시문에서 왔다.
+
+  **범위 표기:** 원문이 다루는 대상은 `docs/`의 공개 유틸리티다. 초안의 "그 동작을 쓰는 사람이 보는 문서"는 대상을 문서 일반으로 넓힌 것이라 "그 동작을 쓰는 공개 인터페이스의 문서"로 좁혔다. 초안에 있던 "계약"도 원문에 없어 지웠다.
 
 ### 보안 지침의 근거
 
@@ -457,7 +461,9 @@
   >
   > 번역: 도구 설명에 숨은 지시가 있는지 검토하십시오. 도구 설명은 에이전트 맥락의 일부이며 프롬프트 인젝션 페이로드를 담을 수 있습니다.
 
-  같은 절은 "Connect to MCP servers from untrusted sources without security review."(번역: 보안 검토 없이 믿을 수 없는 출처의 MCP 서버에 연결하는 것.)를 하지 말아야 할 일로 든다. Claude Code security 문서도 "We encourage either writing your own MCP servers or using MCP servers from providers that you trust."(번역: 직접 MCP 서버를 작성하거나 신뢰하는 제공자의 MCP 서버를 사용하기를 권합니다.)라고 적는다.
+  같은 절은 "Connect to MCP servers from untrusted sources without security review."(번역: 보안 검토 없이 믿을 수 없는 출처의 MCP 서버에 연결하는 것.)를 하지 말아야 할 일로 들고, 할 일로는 "Audit all MCP servers connected to your development environment. Maintain an allowlist of approved servers and tools."(번역: 개발 환경에 연결된 모든 MCP 서버를 감사하십시오. 승인된 서버와 도구의 허용 목록을 유지하십시오.)를 든다. Claude Code security 문서도 "We encourage either writing your own MCP servers or using MCP servers from providers that you trust."(번역: 직접 MCP 서버를 작성하거나 신뢰하는 제공자의 MCP 서버를 사용하기를 권합니다.)라고 적는다.
+
+  **범위 표기:** 원문은 보안 검토를 거치면 연결할 수 있다는 여지를 둔다. 초안의 "믿을 수 있는 출처만 연결한다"는 그 경로를 닫아 원문보다 셌으므로, "보안 검토를 거치지 않은 출처의 MCP 서버는 연결하지 않는다"로 고쳤다.
 
 ### 응답 언어 지침의 근거
 

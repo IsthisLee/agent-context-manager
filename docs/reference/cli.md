@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 7e0c7a738e2b862a5e5dc711057bf93c5020231adebd07339cb72c05dfaad703 -->
+<!-- agctx-doc-sources-sha256: d9b14789698efb49268f25b1b222f09938bc3ca449d20e7488c506542fa648d6 -->
 
 ## 설치와 실행
 
@@ -116,11 +116,19 @@ $ agctx check --refresh --json /work/orders-api
 agctx
 ```
 
-인자 없이 터미널에서 실행하면 메인 TUI가 열린다. 첫 화면에서 프로필 관리, 저장소 상태, 새 프로필 생성, Git에서 프로필 가져오기, 프로필 지침 설정, 언어 변경, 도움말을 고른다. 프로필 관리 메뉴에서는 프로필을 고른 뒤 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제와 Git 상태·받기·올리기·연결을 실행한다.
+인자 없이 터미널에서 실행하면 메인 TUI(명령 대신 메뉴에서 골라 진행하는 터미널 화면)가 열린다.
+
+- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
+- **프로젝트 점검:** 경로를 고른 뒤 `check`·`explain`·`verify`를 실행한다. 원격 확인(`--refresh`), 에이전트(`--agent`), probe(`--probe`)는 질문으로 고른다.
+- **여러 저장소:** `repos list`·`status`·`sync`·`pr`을 실행한다. 목록에 프로필이 둘 이상이면 프로필(`--profile`)을 먼저 고르고, PR은 대상 파일·base 브랜치·초안·메시지를 묻는다.
+- **도움말:** 전체 사용법이나 명령 하나의 사용법·종료 코드를 보여 준다.
+- **프로필 관리 메뉴:** 프로필을 고른 뒤 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제를 실행한다. Git 프로필이면 Git 상태 보기·받기(pull)·올리기(push)·원격 연결도 여기서 한다.
 
 ```bash
 agctx --tui
 ```
+
+메뉴의 답은 CLI 옵션으로 바뀌어 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다. 메뉴와 명령의 대응은 [TUI로 쓰기](../guides/tui.md#메뉴와-명령-대응표)에 있다.
 
 `--tui`는 메인 TUI를 명시적으로 여는 선택적 플래그다. 터미널이 아니거나 `--json`을 주면 TUI 대신 도움말을 출력한다. 자동화 환경에서는 아래 CLI 명령과 옵션을 사용한다.
 
@@ -144,14 +152,14 @@ agctx --tui
 | [`profile pull`](#profile-pull) | 프로필을 원격까지 fast-forward합니다. 저장소 파일은 바뀌지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile push`](#profile-push) | 이미 만든 커밋을 프로필의 원격으로 보냅니다. | Git 원격 | CLI · TUI · 프로필 메뉴 |
 | [`profile connect`](#profile-connect) | 이미 Git 저장소인 프로필을 원격에 연결합니다. 커밋이나 push는 하지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
-| [`check`](#check) | 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다. | 없음 | CLI |
-| [`explain`](#explain) | 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
-| [`verify`](#verify) | explain이 기대하는 프로젝트 지침 파일을 Codex·Claude Code·Antigravity가 실제로 받았는지 세션 기록이나 --probe로 확인하고, 받지 못한 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI |
-| [`repos list`](#repos-list) | 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 줍니다. --prune은 없어진 폴더를 목록에서 지웁니다. | 프로필 보관함 | CLI |
-| [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI |
-| [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI |
-| [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI |
-| [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI |
+| [`check`](#check) | 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다. | 없음 | CLI · TUI |
+| [`explain`](#explain) | 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI · TUI |
+| [`verify`](#verify) | explain이 기대하는 프로젝트 지침 파일을 Codex·Claude Code·Antigravity가 실제로 받았는지 세션 기록이나 --probe로 확인하고, 받지 못한 파일이 있으면 종료 코드 4로 끝냅니다. | 없음 | CLI · TUI |
+| [`repos list`](#repos-list) | 이 컴퓨터에서 프로필을 적용한 저장소 목록을 보여 줍니다. --prune은 없어진 폴더를 목록에서 지웁니다. | 프로필 보관함 | CLI · TUI |
+| [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI · TUI |
+| [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI · TUI |
+| [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI · TUI |
+| [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI · TUI |
 <!-- agctx:generated:commands:end -->
 
 ### `profile create`
@@ -224,7 +232,7 @@ agctx profile view <name>
 
 ### `profile remove`
 
-선택한 프로필의 원본과 설정을 삭제한다. 이미 프로젝트에 적용된 파일은 변경하지 않는다.
+프로필 보관함에서 선택한 프로필 폴더(`profile.json`·`AGENTS.md`, Git 프로필이면 `.git`까지)를 통째로 삭제한다. 원격 Git 저장소와, 이미 프로젝트에 적용해 둔 파일은 바꾸지 않는다.
 
 <!-- agctx:generated:usage:profile.remove:start -->
 ```bash
@@ -243,7 +251,7 @@ agctx profile remove [--yes] [<name>]
 
 ### `profile setup`
 
-프로필의 공통 에이전틱 개발 지침을 설정한다. 프로젝트 파일은 변경하지 않는다.
+프로필에 담을 공통 개발 지침 6개 항목의 수준을 정해 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
 
 <!-- agctx:generated:usage:profile.setup:start -->
 ```bash
@@ -265,7 +273,7 @@ agctx profile setup [--workflow <level>] [--tdd <level>] [--review <level>] [--v
 
 모든 지침 옵션의 `<level>`은 `off`, `recommended`, `strict` 중 하나다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 `recommended`다.
 
-지침 옵션을 하나라도 전달하면 `<name>`이 필요하다. 옵션을 생략하면 TUI에서 프로필을 고르고 각 지침의 설명과 현재값을 확인해 선택한다. 마지막에 전체 설정 요약을 보여 주며, 사용자가 승인한 경우에만 프로필에 저장한다.
+지침 옵션을 하나라도 전달하면 `<name>`이 필요하고, 전달한 항목만 바꾼다. 지침 옵션을 하나도 전달하지 않으면 TUI가 열린다. `<name>`도 없으면 먼저 프로필을 고르고, 그다음 각 지침의 설명과 현재값을 확인해 수준을 고른다. 마지막에 전체 설정 요약을 보여 주며, 사용자가 승인한 경우에만 프로필에 저장한다.
 
 표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 순서의 수준이다. 빈 줄은 기존 설정을 유지한다. `--json`을 주면 표준 입력을 읽지 않고 종료 코드 64로 멈춘다.
 
@@ -296,7 +304,10 @@ agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
 | `--pin` | Git 프로필의 현재 커밋에 프로젝트를 고정 |
 | `--yes` | 터미널이 아닌 환경에서 적용을 승인 |
 
-프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일, `agctx.project.json`을 만든다. 마지막으로 쓴 관리 영역 원문은 `.agctx/base/<경로>.base`에 기록하고, `.agctx/.gitignore`로 `backups/`를 커밋에서 뺀다. 기존 `AGENTS.md`의 프로젝트 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존한다. 이미 적용된 프로젝트에 다시 실행하면 관리 영역만 갱신하며, 다른 이름을 주면 그 프로필로 전환한다. 적용은 멱등이므로 같은 프로필을 다시 적용해도 결과가 같고, 바뀔 파일이 없으면 확인 없이 `already up to date`로 끝난다.
+- **만드는 파일:** 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일(`CLAUDE.md`·`.agents/rules/agctx.md`), `agctx.project.json`을 만든다. 마지막으로 쓴 관리 영역 원문은 `.agctx/base/<경로>.base`에 기록하고, `.agctx/.gitignore`로 `backups/`를 커밋에서 뺀다.
+- **보존하는 내용:** 기존 `AGENTS.md`의 프로젝트 규칙 확장 섹션과, 포인터 파일의 관리 블록 밖 내용은 건드리지 않는다.
+- **다시 실행할 때:** 이미 적용된 프로젝트에 같은 프로필로 다시 실행하면 관리 영역만 갱신한다. 다른 프로필 이름을 주면 그 프로필로 전환한다.
+- **여러 번 실행해도 같음:** 같은 프로필을 몇 번 다시 적용해도 결과가 같다. 바뀔 파일이 없으면 확인을 묻지 않고 `already up to date`로 끝난다.
 
 **하위 폴더 연결 파일:** Claude Code는 `AGENTS.md`를 직접 읽지 않으므로, 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 
@@ -337,7 +348,12 @@ Error: APM generated AGENTS.md in its default mode, so the next apm compile woul
 Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md aside, and run agctx profile apply again. Then put <!-- apm:start --> and <!-- apm:end --> below the project rule extensions heading and run apm compile.
 ```
 
-적용한 프로필 버전은 `agctx.project.json`에 기록한다. 프로필 폴더가 Git 저장소이면 `source`에 원격 URL·브랜치·커밋을 적는다(URL의 사용자 정보와 토큰은 지운다). 프로필의 `AGENTS.md`·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`, `--pin`이면 `pin: true`를 더한다. 로컬 프로필은 `source`를 기록하지 않는다. `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)도 기록해, 다른 이름의 폴더로 clone한 저장소나 임시 worktree에서도 같은 파일이 나온다(`package.json`에 `name`이 있으면 그 이름이 먼저다). 적용한 저장소는 이 컴퓨터의 저장소 목록에도 기록된다([`repos list`](#repos-list)).
+적용한 프로필 버전은 `agctx.project.json`에 기록한다.
+
+- **Git 프로필:** 프로필 폴더가 Git 저장소이면 `source`에 원격 URL·브랜치·커밋을 적는다. URL에 들어 있는 사용자 정보와 토큰은 지운다. 로컬 프로필은 `source`를 기록하지 않는다.
+- **추가 표시:** 프로필의 `AGENTS.md`·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`를, `--pin`을 주면 `pin: true`를 더한다.
+- **프로젝트 이름:** `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)도 기록한다. 그래서 다른 이름의 폴더로 clone한 저장소나 임시 worktree에서도 같은 파일이 나온다. 이름은 `package.json`에 `name`이 있으면 그 값을 먼저 쓴다.
+- **저장소 목록:** 적용한 저장소는 이 컴퓨터의 저장소 목록에도 기록된다([`repos list`](#repos-list)).
 
 기록하는 필드와 예시는 [파일 형식과 저장 위치](file-formats.md#agctxprojectjson)에 있다.
 
@@ -352,6 +368,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
     update    agctx.project.json
   ```
 
+- **TUI:** 관리 메뉴의 적용은 Git 프로필이면 고정할지 묻고, Yes를 고르면 `--pin`을 준 것과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있다([TUI로 쓰기](../guides/tui.md#프로젝트에-적용하기)).
 - 적용할 프로필 내용에 숨은 문자가 있으면 파일을 쓰지 않고 종료 코드 3으로 멈춘다.
 - 확장 섹션 제목은 `## 4. 프로젝트 규칙 확장 (SSOT)`(ko) 또는 `## 4. Project rule extensions (SSOT)`(en)이며 두 로케일을 모두 인식한다.
 - 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 `## Existing project guidance` 아래로 옮겨 보존한다.
@@ -375,12 +392,17 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `--yes` | 터미널이 아닌 환경에서 동기화를 승인 |
 
-대상 프로필은 프로젝트의 `agctx.project.json`에 기록된 값을 사용한다. 아직 적용되지 않은 프로젝트에서 실행하면 `profile apply <name> <project>`로 먼저 적용하라는 오류(64)로 끝난다. 프로젝트 `AGENTS.md`의 도메인 규칙 확장과 에이전트별 산출물의 사용자 영역은 보존하고, agctx가 관리하는 블록만 갱신한다. 적용한 뒤에 생긴 하위 폴더 `AGENTS.md`에는 이때 연결 파일을 만든다([`profile apply`](#profile-apply)).
+대상 프로필은 프로젝트의 `agctx.project.json`에 기록된 값을 사용한다. 아직 적용되지 않은 프로젝트에서 실행하면 `profile apply <name> <project>`로 먼저 적용하라는 오류(64)로 끝난다. 프로젝트 `AGENTS.md`의 프로젝트 규칙 확장 섹션과 포인터 파일의 관리 블록 밖 내용은 보존하고, agctx가 관리하는 영역만 갱신한다. 적용한 뒤에 생긴 하위 폴더 `AGENTS.md`에는 이때 연결 파일을 만든다([`profile apply`](#profile-apply)).
 
 - **고정한 프로젝트:** 기록한 커밋의 `AGENTS.md`로 다시 만든다. 보관함의 프로필을 pull한 뒤에도 결과는 바뀌지 않는다. 그 커밋이 이 컴퓨터의 프로필 저장소에 없으면 종료 코드 69로 멈추고 `profile pull`을 안내한다.
 - **고정하지 않은 프로젝트:** 보관함의 현재 프로필로 다시 만들고 버전 기록을 갱신한다.
 
-`--dry-run`을 사용하면 파일마다 `create`·`update`·`unchanged`·`conflict` 상태로 계획을 출력하고 실제 파일을 변경하지 않는다. `conflict` 파일은 diff를 함께 출력한다. 마지막 적용본(`.agctx/base/`)을 알면 그 이후 관리 영역 안의 편집과 agctx가 쓸 프로필·템플릿 변경을 나눠 보여 주고, 모르면 현재 관리 영역과 agctx가 쓸 내용을 비교한다. 충돌이 하나라도 있으면 계획을 끝까지 출력한 뒤 종료 코드 2로 끝나며 `apply --dry-run`도 같다. TUI에서 프로젝트 적용·동기화를 선택하면 계획을 보여 준 뒤 적용할지 묻고, 충돌로 멈추면 충돌 해결로 이어갈지 묻는다.
+`--dry-run`을 사용하면 실제 파일을 바꾸지 않고 계획만 출력한다. `apply --dry-run`도 같다.
+
+- **파일 상태:** 파일마다 `create`(새로 만듦)·`update`(고침)·`unchanged`(그대로)·`conflict`(관리 영역을 밖에서 고쳐 쓰지 못함) 중 하나를 붙인다.
+- **충돌 파일의 diff:** `conflict` 파일은 diff를 함께 출력한다. 마지막 적용본(`.agctx/base/`)이 있으면 그 뒤에 사람이 관리 영역 안에서 고친 부분과 agctx가 새로 쓸 프로필·템플릿 변경을 나눠 보여 준다. 없으면 지금의 관리 영역과 agctx가 쓸 내용을 비교한다.
+- **종료 코드:** 충돌이 하나라도 있으면 계획을 끝까지 출력한 뒤 종료 코드 2로 끝난다.
+- **TUI:** 프로젝트 적용·동기화를 고르면 계획을 보여 준 뒤 적용할지 묻고, 충돌로 멈추면 충돌 해결로 이어갈지 묻는다.
 
 ### `profile resolve`
 
@@ -433,7 +455,7 @@ agctx profile clone [--branch <branch>] <git-url>
 - 두 파일에 숨은 문자가 있으면 등록하지 않고 종료 코드 3으로 멈춘다.
 - 프로필 이름은 `profile.json`의 `name`을 쓴다. 같은 이름의 프로필이 이미 있으면 종료 코드 64로 멈춘다. 저장소 하나에 프로필 하나를 둔다.
 - 인증은 사용자의 Git 설정(SSH 키·credential helper)을 그대로 쓴다. 터미널이 아니면 인증 질문을 띄우지 않으므로 인증이 없으면 종료 코드 69로 끝난다.
-- TUI에서는 메인 화면의 `프로필 가져오기`나 프로필 목록의 `Git에서 프로필 가져오기`에서 주소를 입력한다.
+- TUI에서는 메인 화면의 `프로필 가져오기`나 프로필 목록의 `Git에서 프로필 가져오기`에서 주소와 브랜치를 입력한다. 브랜치를 비워 두면 `--branch`를 주지 않은 것과 같다.
 
 ```bash
 $ agctx profile clone /work/team-backend.git
@@ -458,7 +480,7 @@ agctx profile status [--refresh] [<name>]
 | `<name>` | 확인할 프로필; 생략하면 모든 프로필 |
 | `--refresh` | 원격에서 fetch한 뒤 비교; 생략하면 네트워크에 접속하지 않고 마지막으로 받은 원격 정보로 비교 |
 
-한 줄은 `이름`, `원격 브랜치@커밋`, `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 `--refresh`로 실행한다.
+한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 원격에서 먼저 받을지 묻고, Yes(기본)면 `--refresh`로 실행한다.
 
 ```bash
 $ agctx profile status --refresh team-backend
@@ -515,7 +537,7 @@ agctx profile push [--dry-run] [--yes] <name>
 
 - agctx는 `git add`·`git commit`을 실행하지 않는다. 커밋하지 않은 변경이 있으면 빠지는 파일을 보여 주고 종료 코드 2로 멈춘다.
 - 원격보다 뒤처졌으면 종료 코드 2로 멈추고 `profile pull`을 먼저 안내한다. Git에 연결되지 않았거나 브랜치가 없는 HEAD면 64다.
-- 보낼 커밋 목록을 출력한 뒤 확인을 받고 `git push <원격> HEAD:refs/heads/<브랜치>`를 실행한다. 보낼 커밋이 없으면 알리고 0으로 끝난다. 보호 브랜치 규칙처럼 원격이 거부하면 Git의 오류를 그대로 보여 준다.
+- 보낼 커밋 목록을 출력한 뒤 확인을 받고, 현재 브랜치가 추적하는 원격 브랜치로 `git push <원격> HEAD:refs/heads/<원격 브랜치>`를 실행한다. 추적 설정이 없으면 현재 브랜치와 같은 이름으로 보낸다. 보낼 커밋이 없으면 알리고 0으로 끝난다. 보호 브랜치 규칙처럼 원격이 거부하면 Git의 오류를 그대로 보여 준다.
 
 ```bash
 $ agctx profile push --yes team-backend
@@ -540,8 +562,10 @@ agctx profile connect [--branch <branch>] <name> <git-url>
 | --- | --- |
 | `<name>` | 연결할 프로필 |
 | `<git-url>` | 원격 저장소 주소 |
-| `--branch <branch>` | 추적할 브랜치; 생략하면 현재 브랜치 |
+| `--branch <branch>` | 현재 브랜치가 추적하고 push할 원격 브랜치; 생략하면 현재 브랜치와 같은 이름 |
 
+- 추적 설정은 현재 브랜치(`branch.<현재 브랜치>.remote`·`merge`)에 쓴다. 예를 들어 로컬 브랜치가 `master`이고 팀 원격 브랜치가 `main`이면 `--branch main`으로 연결한다. 그 뒤 `status`는 `main`과 비교하고, `pull`은 `main`에서 받고, `push`는 `main`으로 보낸다. 분리된 HEAD처럼 현재 브랜치가 없으면 64로 멈춘다.
+- TUI의 `Git에 연결`은 주소와 추적할 원격 브랜치를 묻는다. 비워 두면 `--branch`를 주지 않은 것과 같다.
 - 프로필 폴더가 Git 저장소가 아니면 첫 커밋을 만드는 명령을 알려 주고 종료 코드 64로 멈춘다.
 
   ```bash
@@ -564,7 +588,7 @@ Next: agctx profile push team-backend
 
 ### `check`
 
-프로젝트가 기록한 프로필 버전과 지금 파일이 맞는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
+프로젝트가 기록한 프로필 버전과 지금 파일이 맞는지 확인한다. 파일을 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **프로필 버전**으로 실행한다.
 
 <!-- agctx:generated:usage:check:start -->
 ```bash
@@ -604,7 +628,7 @@ behind            -  the source repository has a newer commit (ddf3742)
 
 ### `explain`
 
-한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않으며, CLI로만 제공한다.
+한 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일과 그 이유를 보여 준다. 에이전트를 실행하지 않고 파일도 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **에이전트가 읽는 지침 파일**로 실행한다.
 
 <!-- agctx:generated:usage:explain:start -->
 ```bash
@@ -723,7 +747,7 @@ $ agctx explain --json --agent claude services/payments
 
 ### `verify`
 
-`explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않으며 CLI로만 제공한다.
+`explain`이 읽는다고 판정한 프로젝트 지침 파일이 에이전트에 실제로 들어갔는지 확인한다. 파일을 바꾸지 않는다. TUI에서는 **프로젝트 점검** > **에이전트 전달 확인**으로 실행하고, 증거로 세션 기록이나 probe를 고른다.
 
 <!-- agctx:generated:usage:verify:start -->
 ```bash
@@ -834,7 +858,7 @@ ok       client-a         -      /work/client-a-api
 
 ### `repos status`
 
-목록의 저장소마다 `check`를 실행해 한 줄씩 보여 준다. 파일은 바꾸지 않으며 TUI 메인 메뉴의 `저장소 상태`도 같은 내용을 보여 준다.
+목록의 저장소마다 `check`를 실행해 한 줄씩 보여 준다. 파일은 바꾸지 않는다. TUI에서는 **여러 저장소** > **상태 보기**로 실행한다.
 
 <!-- agctx:generated:usage:repos.status:start -->
 ```bash
@@ -847,9 +871,11 @@ agctx repos status [--profile <name>] [--refresh]
 | 옵션 | 설명 |
 | --- | --- |
 | `--profile <name>` | 이 프로필을 쓰는 저장소만 확인 |
-| `--refresh` | 원천 저장소의 최신 커밋과도 비교. 같은 원천·브랜치는 한 번만 조회 |
+| `--refresh` | 프로필을 받아 온 원격 저장소의 최신 커밋과도 비교. 같은 저장소·브랜치는 한 번만 조회 |
 
-한 줄은 상태(`ok`·`behind`·`conflict`·`hidden-characters`·`missing`·`error`), 프로필, 고정 여부, `기록한 커밋→새 커밋`, 경로 순서다. 종료 코드는 저장소 가운데 가장 심각한 값이고(폴더가 없는 저장소는 0), 뒤처진 저장소가 있으면 고정 여부에 맞는 다음 명령을 stderr로 알려 준다.
+- **한 줄의 형식:** 왼쪽부터 상태(`ok`·`behind`·`conflict`·`hidden-characters`·`missing`·`error`), 프로필, 고정 여부, `기록한 커밋→새 커밋`, 경로다.
+- **종료 코드:** 저장소 가운데 가장 심각한 값을 돌려준다. 폴더가 없어진 저장소(`missing`)는 0으로 친다.
+- **다음 명령:** 뒤처진 저장소가 있으면 고정 여부에 맞는 다음 명령을 stderr로 알려 준다. 고정하지 않은 저장소는 `repos sync`, 고정한 저장소는 `profile pull` 뒤 `repos pr`이다.
 
 ```bash
 $ agctx repos status
@@ -881,7 +907,7 @@ agctx repos sync [--profile <name>] [--dry-run] [--yes]
 | `--dry-run` | 저장소마다 바뀔 파일만 보여 주고 쓰지 않음 |
 | `--yes` | 터미널이 아닌 환경에서 동기화를 승인 |
 
-모든 저장소의 계획을 먼저 출력하고 한 번 확인한 뒤 쓴다. 다음 저장소는 건너뛰며, 한 저장소가 실패해도 나머지를 계속한다. 종료 코드는 모든 저장소 가운데 가장 심각한 값이다.
+모든 저장소의 계획을 먼저 출력하고, 확인은 한 번만 받은 뒤 쓴다. 아래 표에서 `pinned`·`dirty`·`conflict`·`missing` 상태인 저장소는 건너뛴다. 한 저장소가 실패해도 나머지 저장소는 계속 처리하고, 종료 코드는 모든 저장소 가운데 가장 심각한 값이다.
 
 | 상태 | 뜻 | 종료 코드 |
 | --- | --- | --- |
@@ -976,7 +1002,14 @@ agctx config lang <en|ko>
 종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
 <!-- agctx:generated:usage:config.lang:end -->
 
-허용값은 `en`, `ko`이며 기본은 `en`이다. 로케일은 `--lang` → `AGCTX_LANG` → 저장된 선택 → (대화형이면 첫 실행에 한 번 물어 저장하고 비대화형이거나 `--json`이면 `en`) 순서로 정한다. `--lang`과 `AGCTX_LANG`에 허용되지 않는 값을 주면 오류로 끝나고 저장된 값이 잘못됐으면 무시한다.
+허용값은 `en`, `ko`이며 기본은 `en`이다. 표시 언어는 아래 순서로 먼저 찾은 값을 쓴다.
+
+1. `--lang` 옵션
+2. `AGCTX_LANG` 환경 변수
+3. `config lang`으로 저장한 선택
+4. 저장한 선택이 없을 때: 터미널에서 대화형으로 처음 실행하면 한 번 물어 저장한다. 터미널이 아니거나 `--json`이면 `en`을 쓴다.
+
+`--lang`과 `AGCTX_LANG`에 허용되지 않는 값을 주면 오류로 끝난다. 저장된 값이 잘못됐으면 무시하고 다음 순서로 넘어간다.
 
 ## 저장 위치
 

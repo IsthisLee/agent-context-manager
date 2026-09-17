@@ -1,83 +1,333 @@
 # 팀과 Git으로 공유하기
 
-<!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: a36404ea6873f50b8219fb78f756520a1bec6435bc77e17dddbbbaff5d8ff4f9 -->
+<!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/profile/setup.ts, src/check.ts, src/explain.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 3c880ec30bff2300af1cffa8b3fe0d63e3490d16dea659d2dd3a505966f1e391 -->
 
 팀·조직 프로필은 표준 Git 원격(GitHub·GitLab 등)에 두고 주고받는다. 권한·리뷰·변경 이력은 Git 호스트가 맡고, agctx는 사용자의 Git 인증으로 `git`을 실행할 뿐이다. `clone`·`status`·`pull`·`push`·`connect`는 프로필만 다루고 프로젝트 파일은 건드리지 않는다. 결정과 안전 계약은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
+
+## 목차
+
+- [누가 무엇을 하나](#누가-무엇을-하나)
+- [시작하기 전에](#시작하기-전에)
+- [관리자: 팀 프로필 올리기](#관리자-팀-프로필-올리기)
+  - [1. 프로필 만들기](#1-프로필-만들기)
+  - [2. 지침 고르기](#2-지침-고르기)
+  - [3. 첫 커밋 만들기](#3-첫-커밋-만들기)
+  - [4. 원격에 연결하고 올리기](#4-원격에-연결하고-올리기)
+  - [5. 올라갔는지 확인하기](#5-올라갔는지-확인하기)
+- [적용 담당: 저장소에 적용하기](#적용-담당-저장소에-적용하기)
+  - [1. 프로필 받기](#1-프로필-받기)
+  - [2. 갱신 방식 고르기](#2-갱신-방식-고르기)
+  - [3. 적용하기](#3-적용하기)
+  - [4. 커밋하고 올리기](#4-커밋하고-올리기)
+  - [5. 적용됐는지 확인하기](#5-적용됐는지-확인하기)
+- [프로필이 바뀌었을 때](#프로필이-바뀌었을-때)
+  - [1. 관리자: 고쳐서 올리기](#1-관리자-고쳐서-올리기)
+  - [2. CI: 뒤처짐 알리기](#2-ci-뒤처짐-알리기)
+  - [3. 적용 담당: 받아서 반영하기](#3-적용-담당-받아서-반영하기)
+- [개발자: 저장소 받기](#개발자-저장소-받기)
+- [다음 단계](#다음-단계)
+
+## 누가 무엇을 하나
+
+| 역할 | 하는 일 | agctx | 프로필 저장소 권한 |
+| --- | --- | --- | --- |
+| 관리자 | 프로필을 만들고 고쳐서 원격에 올린다 | 필요 | 쓰기 |
+| 적용 담당 | 프로필을 받아 저장소에 적용·동기화하고 결과를 커밋한다 | 필요 | 읽기 |
+| [예약 봇](update-policies.md#예약-봇으로-pr-열기) | 정해진 시간마다 CI에서 `repos pr`을 실행해, 고정한 저장소(`--pin`으로 프로필 커밋에 묶어 둔 저장소)마다 새 버전 PR을 연다 | 필요 | 읽기 |
+| 개발자 | 저장소를 받아 평소처럼 에이전트를 쓴다 | 필요 없음 | 필요 없음 |
+| CI | 저장소가 기록한 프로필 버전과 지금 파일이 맞는지 검사한다 | 필요(`npx`로 실행) | 프로필 원격 저장소의 최신 커밋과도 비교하는 `check --refresh`를 쓸 때 읽기 |
+
+```mermaid
+flowchart TB
+  subgraph S1["1 프로필 관리"]
+    ADMIN["관리자<br/>agctx 필요 · 프로필 쓰기 권한"]
+    PROFILE[("팀 프로필<br/>Git 원격")]
+  end
+  subgraph S2["2 저장소에 반영"]
+    APPLIER["적용 담당<br/>agctx 필요 · 프로필 읽기 권한"]
+    BOT["예약 봇<br/>agctx 필요 · 프로필 읽기 권한"]
+    REPO[("프로젝트 저장소<br/>AGENTS.md · CLAUDE.md<br/>.agents/rules/agctx.md")]
+  end
+  subgraph S3["3 사용과 검사"]
+    DEV["개발자<br/>에이전트가 받은 파일을 읽음<br/>agctx · 프로필 권한 필요 없음"]
+    CI["CI<br/>npx로 agctx 실행"]
+  end
+  ADMIN -->|"setup · 커밋 · profile push"| PROFILE
+  PROFILE -->|"profile clone · pull"| APPLIER
+  PROFILE -->|"새 커밋 확인"| BOT
+  APPLIER -->|"apply · sync 후 커밋"| REPO
+  BOT -->|"repos pr로 PR"| REPO
+  REPO -->|"git pull"| DEV
+  REPO -->|"check"| CI
+  PROFILE -.->|"check --refresh일 때 읽기"| CI
+```
+
+프로필 내용은 적용 담당이나 예약 봇이 반영할 때 프로젝트 저장소의 파일로 들어가고, 개발자의 에이전트는 그 파일을 직접 읽는다. 그래서 agctx와 프로필 저장소 권한이 필요한 쪽은 1·2단계와 CI뿐이고, 저장소를 받기만 하는 개발자는 아무것도 설치하지 않아도 된다.
+
+- 한 사람이 관리자와 적용 담당을 함께 맡아도 된다.
+- 에이전트가 어떤 파일을 읽는지는 시작한 폴더에 따라 다르다. 개발자가 하위 폴더에서 에이전트를 시작한다면 [에이전트가 읽는 지침 파일](../concepts/agent-loading.md)을 확인한다.
+- 예약 봇의 토큰 권한은 [갱신 방식 고르기](update-policies.md#예약-봇으로-pr-열기)에, CI 설정은 [CI와 자동화에서 쓰기](ci.md)에 있다.
+
+## 시작하기 전에
+
+1. 관리자와 적용 담당은 agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
+2. Git 호스트에 프로필을 둘 저장소를 README·라이선스 파일 없이 빈 저장소로 만든다. 원격에 커밋이 이미 있으면 첫 `push`가 `The remote of profile team-backend has commits you do not have.`로 멈춘다.
+3. 관리자와 적용 담당은 그 저장소에 Git으로 접근할 수 있는지 확인한다. 빈 저장소에서는 아무것도 출력하지 않고 오류 없이 끝나면 된다.
+
+   ```bash
+   git ls-remote git@github.com:acme/team-backend-profile.git
+   ```
+
+4. 명령 대신 메뉴로 진행하려면, 아래 단계의 명령마다 같은 일을 하는 TUI 메뉴를 [TUI로 쓰기](tui.md#메뉴와-명령-대응표)에서 찾는다. 고정 적용(`--pin`)은 **Apply to a project**에서 고정 질문에 **Yes**를 고르는 것과 같다.
+
+아래 출력은 모두 로컬 Git 원격을 두고 실제로 실행한 결과에서 경로와 원격 주소만 바꿨다.
+
+## 관리자: 팀 프로필 올리기
+
+### 1. 프로필 만들기
+
+```bash
+$ agctx profile create team-backend --scope team
+Created profile: team-backend (team)
+```
+
+`--scope`는 프로필의 용도(`personal`·`company`·`team`·`workspace`)다. 프로필은 이 컴퓨터의 프로필 보관함인 `~/.agctx/profiles/team-backend` 폴더에 만들어진다([프로필 보관함](../concepts/profiles.md#프로필-보관함)).
+
+### 2. 지침 고르기
+
+```bash
+$ agctx profile setup team-backend --tdd recommended --security strict
+Configured profile: team-backend
+```
+
+작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목마다 수준을 `off`·`recommended`·`strict` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓰고, 처음 설정하는 프로필이면 `recommended`가 된다(`src/profile/setup.ts:10`, `:23`). 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+
+### 3. 첫 커밋 만들기
+
+agctx는 커밋을 대신 만들지 않으므로 프로필 폴더를 Git 저장소로 만들고 첫 커밋을 직접 만든다. 커밋에는 `AGENTS.md`와 `profile.json`이 들어간다.
+
+```bash
+git -C ~/.agctx/profiles/team-backend init -b main
+git -C ~/.agctx/profiles/team-backend add -A
+git -C ~/.agctx/profiles/team-backend commit -m "Add team-backend profile"
+```
+
+이 단계를 건너뛰고 `profile connect`를 먼저 실행하면, 위 세 명령을 안내하고 멈춘다.
+
+### 4. 원격에 연결하고 올리기
+
+```bash
+$ agctx profile connect team-backend git@github.com:acme/team-backend-profile.git
+Connected profile team-backend to git@github.com:acme/team-backend-profile.git (branch main).
+Next: agctx profile push team-backend
+
+$ agctx profile push team-backend
+1 commit(s) of profile team-backend will go to git@github.com:acme/team-backend-profile.git:
+  e0caeb1 Add team-backend profile
+Pushed profile team-backend.
+```
+
+`push`는 보낼 커밋을 보여 준 뒤 `Push 1 commit(s) of profile team-backend?`로 확인을 묻는다. 위 출력에서는 확인 질문 줄을 뺐다.
+
+### 5. 올라갔는지 확인하기
+
+```bash
+$ agctx profile status --refresh team-backend
+team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahead 0, behind 0
+```
+
+`clean`과 `ahead 0, behind 0`이 보이면 로컬 프로필과 원격이 같다.
+
+## 적용 담당: 저장소에 적용하기
+
+### 1. 프로필 받기
+
+```bash
+$ agctx profile clone git@github.com:acme/team-backend-profile.git
+Cloned profile team-backend at commit e0caeb1.
+Next: agctx profile apply team-backend <project>
+```
+
+`clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞였는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함에 등록한다.
+
+### 2. 갱신 방식 고르기
+
+적용할 때 `--pin`을 붙일지 정한다. 차이는 나중에 프로필에 새 커밋이 생긴 뒤 `profile sync`(저장소에 기록한 프로필로 다시 적용하는 명령)를 실행했을 때 드러난다.
+
+```text
+프로필 커밋:  ab35396 (변경 검토: recommended) ──pull──→ c61bea6 (변경 검토: strict)
+
+고정하지 않은 저장소   sync → c61bea6 내용으로 바뀐다     (변경 검토: strict)
+고정한 저장소          sync → ab35396 내용 그대로 남는다  (변경 검토: recommended)
+                      apply --pin 또는 repos pr로 옮겨야 c61bea6이 된다
+```
+
+| 방식 | 적용 명령 | 프로필이 바뀐 뒤 `sync`하면 | 새 버전으로 옮기는 법 | 어울리는 경우 |
+| --- | --- | --- | --- | --- |
+| 고정하지 않음 | `profile apply team-backend <project>` | 보관함의 최신 내용으로 바뀐다 | `profile pull` 뒤 `profile sync` | 바뀐 지침을 바로 따라가도 되는 저장소 |
+| 고정 | `profile apply team-backend <project> --pin` | 적용할 때 기록한 커밋의 내용 그대로 남는다 | `apply --pin` 다시 실행, 또는 `repos pr`로 연 PR 병합 | 새 지침을 PR로 리뷰한 뒤 들이려는 저장소 |
+
+그림은 실제로 두 저장소를 나란히 두고 실행한 결과를 줄인 것이다. 실행 출력은 [갱신 방식 고르기](update-policies.md#두-방식의-차이-확인하기)에 있다. 아래는 고정하는 예다.
+
+### 3. 적용하기
+
+```bash
+$ agctx profile apply team-backend /path/to/orders-api --pin
+Plan: 8 file(s) to change.
+  create    AGENTS.md
+  create    CLAUDE.md
+  create    .agents/rules/agctx.md
+  create    .agctx/base/AGENTS.md.base
+  create    .agctx/base/CLAUDE.md.base
+  create    .agctx/base/.agents/rules/agctx.md.base
+  create    .agctx/.gitignore
+  create    agctx.project.json
+Applied profile team-backend to /path/to/orders-api
+```
+
+계획을 보여 준 뒤 `Write 8 file(s) in /path/to/orders-api?`로 확인을 묻는다. 위 출력에서는 확인 질문 줄을 뺐다. 파일을 쓰지 않고 계획만 보려면 `--dry-run`을 붙인다.
+
+만들어지는 파일은 세 종류다.
+
+- `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`: 에이전트가 읽는 지침 파일이다. agctx가 다시 만드는 관리 영역과 사람이 쓰는 영역이 나뉘어 있다([관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)).
+- `agctx.project.json`: 이 저장소에 적용한 프로필과 버전(원격·브랜치·커밋)을 기록한다. CI의 `check`가 이 기록을 기준으로 검사한다.
+- `.agctx/base/`: 마지막으로 적용한 관리 영역 원문이다. 관리 영역 충돌을 풀 때 기준이 된다.
+
+### 4. 커밋하고 올리기
+
+적용한 파일을 프로젝트 저장소에 커밋해야 다른 팀원과 CI가 같은 규칙과 버전 기록을 받는다. 프로젝트 폴더에서 새로 생긴 파일을 확인한다.
+
+```bash
+$ git status --short --untracked-files=all
+?? .agctx/.gitignore
+?? .agctx/base/.agents/rules/agctx.md.base
+?? .agctx/base/AGENTS.md.base
+?? .agctx/base/CLAUDE.md.base
+?? .agents/rules/agctx.md
+?? AGENTS.md
+?? CLAUDE.md
+?? agctx.project.json
+```
+
+이 파일들을 커밋하고, 저장소의 평소 방식대로 push하거나 PR을 연다.
+
+```bash
+git add AGENTS.md CLAUDE.md .agents agctx.project.json .agctx
+git commit -m "Apply team-backend profile"
+```
+
+모노레포에서 하위 폴더 연결 파일(`CLAUDE.md`)이 함께 생겼다면 그 파일도 커밋한다([모노레포에서 쓰기](monorepo.md)).
+
+### 5. 적용됐는지 확인하기
+
+`check`는 저장소 파일이 기록한 프로필 버전과 맞는지 검사하고, `explain`은 에이전트마다 어떤 지침 파일을 왜 읽는지 보여 준다. 둘 다 파일을 바꾸지 않는다. 프로젝트 폴더에서 실행한다.
+
+```bash
+$ agctx check .
+/path/to/orders-api matches its recorded profile version.
+
+$ agctx explain .
+Codex · started in the project root
+  …
+  read         AGENTS.md  one file per folder from the project root to the start folder
+Claude Code · started in the project root
+  …
+  read         CLAUDE.md  start folder or a folder above it, read at launch
+  read         AGENTS.md  imported by CLAUDE.md
+Antigravity · started in the project root
+  …
+  read         AGENTS.md  workspace root file (measured)
+  read         .agents/rules/agctx.md  trigger: always_on
+```
+
+`check`가 오류 없이 끝나고, `explain`에서 세 에이전트가 모두 `AGENTS.md`를 읽으면 된다. `…`는 사용자 수준 지침 파일처럼 컴퓨터마다 다른 줄을 줄인 곳이다.
+
+## 프로필이 바뀌었을 때
 
 ```mermaid
 sequenceDiagram
   actor A as 관리자
   participant R as Git 원격
-  actor M as 구성원
+  actor M as 적용 담당
   participant CI as CI
-  A->>R: git commit · profile connect · profile push
-  M->>R: profile clone
-  M->>M: profile apply --pin (적용 버전 기록)
-  A->>R: 지침 수정 커밋 · profile push
+  A->>R: setup · 커밋 · profile push
   CI->>R: check --refresh → 종료 코드 1
   M->>R: profile status --refresh · profile pull
-  M->>M: profile apply --pin (새 커밋으로 고정)
+  M->>M: profile apply --pin · 커밋 · push
   CI->>R: check --refresh → 0
 ```
 
-관리자가 올린 변경은 구성원이 받아 적용하기 전까지 프로젝트에 들어가지 않는다. CI의 `check`가 그 사이의 뒤처짐을 드러낸다.
+관리자가 올린 변경은 적용 담당이 받아 반영하기 전까지 프로젝트에 들어가지 않는다. 그 사이의 뒤처짐은 CI의 `check --refresh`가 드러낸다.
 
-## 관리자: 프로필을 원격에 올리기
-
-프로필을 만들고 설정한 뒤 프로필 폴더를 Git 저장소로 만든다. agctx는 커밋을 대신 만들지 않으므로, 연결을 먼저 시도하면 필요한 명령을 알려 준다.
+### 1. 관리자: 고쳐서 올리기
 
 ```bash
-$ agctx profile create team-backend --scope team
-Created profile: team-backend (team)
+$ agctx profile setup team-backend --tdd strict --security strict
+Configured profile: team-backend
 
-$ agctx profile connect team-backend git@github.com:acme/team-backend-profile.git
-Error: Profile team-backend is not a Git repository yet.
-Next: Create the first commit, then connect again:
-  git -C "/Users/me/.agctx/profiles/team-backend" init -b main
-  git -C "/Users/me/.agctx/profiles/team-backend" add -A
-  git -C "/Users/me/.agctx/profiles/team-backend" commit -m "Add team-backend profile"
+$ git -C ~/.agctx/profiles/team-backend add -A
+$ git -C ~/.agctx/profiles/team-backend commit -m "Make TDD strict"
+
+$ agctx profile push team-backend
+1 commit(s) of profile team-backend will go to git@github.com:acme/team-backend-profile.git:
+  ab35396 Make TDD strict
+Pushed profile team-backend.
 ```
 
-위 출력은 실제 실행 결과에서 경로와 원격 주소만 바꿨다. 안내대로 커밋한 뒤 다시 연결하고 올린다.
+`profile setup` 대신 프로필 폴더의 `AGENTS.md`를 직접 고쳐도 순서는 같다. 커밋하지 않은 변경이 있거나 원격보다 뒤처졌으면 `push`가 멈추고 무엇을 먼저 할지 알려 준다.
+
+### 2. CI: 뒤처짐 알리기
 
 ```bash
-agctx profile connect team-backend git@github.com:acme/team-backend-profile.git
-agctx profile push team-backend
+$ agctx check --refresh .
+behind            -  the source repository has a newer commit (ab35396)
 ```
 
-`push`는 보낼 커밋을 보여 주고 확인을 받는다. 지침을 고칠 때마다 `profile setup`이나 직접 편집 → 프로필 폴더에서 `git commit` → `agctx profile push team-backend` 순서로 반복한다. 커밋하지 않은 변경이 있거나 원격보다 뒤처졌으면 `push`가 멈추고 무엇을 먼저 할지 알려 준다.
+`--refresh`는 `agctx.project.json`에 기록한 프로필 원격 저장소의 최신 커밋을 읽어 기록과 비교한다. 더 새 커밋이 있으면 뒤처짐으로 보고 종료 코드 1로 끝나므로 CI 작업이 실패로 표시된다. 종료 코드의 뜻은 [종료 코드](../reference/exit-codes.md)에, 설정 방법은 [CI와 자동화에서 쓰기](ci.md#ci에서-확인하기)에 있다.
 
-## 구성원: 받아서 적용하기
-
-```bash
-agctx profile clone git@github.com:acme/team-backend-profile.git
-agctx profile apply team-backend /path/to/orders-api --pin
-```
-
-`clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞였는지 검사한 뒤에만 등록한다. 적용할 때는 두 방식 중 하나를 고른다.
-
-
-고정하지 않으면 프로필을 따라 바로 바뀌고, `--pin`으로 고정하면 PR을 검토한 뒤에만 바뀐다. 어느 쪽을 고를지는 [갱신 방식 고르기](update-policies.md)에 있다.
-
-어느 방식이든 `agctx.project.json`에 원격 주소·브랜치·커밋이 기록되므로 팀원과 CI가 같은 버전을 확인할 수 있다. 이 파일과 `.agctx/base/`를 커밋한다.
-
-## 갱신 받기
+### 3. 적용 담당: 받아서 반영하기
 
 ```bash
 $ agctx profile status --refresh team-backend
-team-backend	git@github.com:acme/team-backend-profile.git main@39ca6e1	clean	ahead 0, behind 1
+team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahead 0, behind 1
   Next: agctx profile pull team-backend
 
 $ agctx profile pull team-backend
 Pulled 1 commit(s) into profile team-backend:
-  ddf3742 Make TDD strict
+  ab35396 Make TDD strict
 Next: run agctx profile sync <project> in projects that use team-backend. A project pinned with --pin stays on its commit until you run agctx profile apply team-backend <project> --pin.
+
+$ agctx profile apply team-backend /path/to/orders-api --pin
+Plan: 3 file(s) to change.
+  update    AGENTS.md
+  unchanged CLAUDE.md
+  unchanged .agents/rules/agctx.md
+  update    .agctx/base/AGENTS.md.base
+  unchanged .agctx/base/CLAUDE.md.base
+  unchanged .agctx/base/.agents/rules/agctx.md.base
+  unchanged .agctx/.gitignore
+  update    agctx.project.json
+Applied profile team-backend to /path/to/orders-api
 ```
 
-위 출력도 실제 실행 결과에서 원격 주소만 바꿨다. `pull`은 fast-forward만 하며, 프로필 폴더에 커밋하지 않은 수정이 있거나 로컬과 원격이 갈라졌으면 받지 않고 멈춘다. 받은 뒤 고정하지 않은 프로젝트는 `agctx profile sync <project>`, 고정한 프로젝트는 `agctx profile apply team-backend <project> --pin`으로 반영한다.
+- 고정하지 않은 저장소는 마지막 명령 대신 `agctx profile sync /path/to/orders-api`를 실행한다.
+- `pull`은 fast-forward(로컬 프로필 뒤에 원격의 새 커밋만 이어 붙이는 방식)로만 받는다. 프로필 폴더에 커밋하지 않은 수정이 있거나 로컬과 원격이 갈라졌으면 받지 않고 멈춘다.
+- 반영한 뒤 바뀐 파일(`AGENTS.md`, `.agctx/base/AGENTS.md.base`, `agctx.project.json`)을 커밋하고 올린다. 그다음 `check --refresh`가 오류 없이 끝나면 최신이다.
+- 저장소가 여럿이면 [갱신 방식 고르기](update-policies.md)에 있는 명령으로 한 번에 처리한다. `repos sync`는 고정하지 않은 저장소들을 한 번에 다시 적용하고, `repos pr`은 고정한 저장소마다 새 버전 PR을 연다. `repos pr`은 예약 봇에 맡길 수도 있다.
+
+## 개발자: 저장소 받기
+
+개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
+
+```bash
+git pull
+```
+
+받은 뒤에는 에이전트를 새로 시작한다. 예를 들어 Claude Code는 `explain` 출력의 `read at launch`처럼 지침 파일을 시작할 때 읽으므로, 이미 열어 둔 세션에는 바뀐 규칙이 바로 들어가지 않을 수 있다.
 
 ## 다음 단계
 
 - 서비스 저장소가 여럿이면 [갱신 방식 고르기](update-policies.md)의 `repos pr`로 저장소마다 PR을 연다.
 - 저장소 CI에 [`agctx check`](ci.md#ci에서-확인하기)를 넣어 뒤처진 저장소를 잡는다.
+- `push`·`pull`이 멈추거나 CI의 `check`가 실패하면 [문제 해결](../reference/troubleshooting.md)을 본다.

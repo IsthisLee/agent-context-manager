@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import en from '../src/i18n/messages-en.ts';
 import ko from '../src/i18n/messages-ko.ts';
 import { COMMANDS } from '../src/commands/registry.ts';
+import { MAIN_MENU_ENTRIES } from '../src/tui/main.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -29,10 +30,15 @@ function usedKeys(): Set<string> {
     used.add(`command.${command.id}.summary`);
     for (const code of command.exitCodes) used.add(`exit.${code}`);
     if (command.tui) used.add(command.tui);
+    if (command.tui && /^(project|repos)\.menu\./.test(command.tui)) used.add(command.tui.replace(/\.label$/, '.hint'));
     if (command.profileMenu) {
       used.add(command.profileMenu);
       if (command.profileMenu.startsWith('actions.')) used.add(command.profileMenu.replace(/\.label$/, '.hint'));
     }
+  }
+  for (const entry of MAIN_MENU_ENTRIES) {
+    used.add(entry.label);
+    if (entry.hint) used.add(entry.hint);
   }
   for (const kind of ['pointer', 'agents']) used.add(`resolve.edit.boundary.${kind}`);
   for (const mode of ['plan', 'will']) {

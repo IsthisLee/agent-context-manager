@@ -4,7 +4,7 @@
 * **일자:** 2026-09-15
 * **결정자:** 제품 소유자
 * **근거:** [CLI 계약과 지침 공급망 근거](../references.md#cli-계약과-지침-공급망-근거)의 GitHub CLI·`git worktree` 항목
-* **관련:** 종료 코드와 확인은 [ADR 0016](0016-command-contract.md), 적용 버전 기록과 고정은 [ADR 0017](0017-git-profile-sharing.md)을 따른다. [Git 기반 프로필 관리](../discussion/architecture/topics/git-profile-management.md)가 비범위로 둔 "프로필 변경을 감지한 자동 PR 생성"은 여전히 하지 않고, 사람이나 예약 봇이 명시적으로 실행하는 명령으로 제공한다.
+* **관련:** 종료 코드와 확인은 [ADR 0016](0016-command-contract.md), 적용 버전 기록과 고정은 [ADR 0017](0017-git-profile-sharing.md)을 따른다. [Git 기반 프로필 관리](../discussion/architecture/topics/git-profile-management.md)가 비범위로 둔 "프로필 변경을 감지한 자동 PR 생성"은 여전히 하지 않고, 사람이나 예약 봇이 명시적으로 실행하는 명령으로 제공한다. 결정 7의 필수 경로는 [ADR 0025](0025-every-command-in-cli-and-tui.md)가 대체해 `repos` 명령도 TUI에서 실행한다.
 
 ## 배경 (Context)
 

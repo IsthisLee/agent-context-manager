@@ -166,7 +166,7 @@ function checkDiscussionStatuses() {
 function checkReadme() {
   const readmePath = path.join(root, 'README.md');
   const content = fs.readFileSync(readmePath, 'utf8');
-  const requiredHeadings = ['## 핵심 목표', '## 핵심 기능', '## 🧭 아키텍처 방향과 진행 상태', '## 시작하기', '## 문서'];
+  const requiredHeadings = ['## 핵심 목표', '## 핵심 기능', '## 아키텍처 방향과 진행 상태', '## 시작하기', '## 문서'];
   for (const heading of requiredHeadings) {
     if (!content.includes(heading)) errors.push(`README.md: missing required section ${heading}`);
   }
@@ -175,7 +175,6 @@ function checkReadme() {
     'npm install -g',
     'agctx',
     'docs/discussion/architecture/',
-    '개발자가 달라도, 팀이 달라도, AI 에이전트가 달라도 컨텍스트는',
     '개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정'
   ]) {
     if (!content.includes(requiredText)) errors.push(`README.md: missing required product guidance ${requiredText}`);

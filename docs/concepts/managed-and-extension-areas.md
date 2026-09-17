@@ -21,15 +21,21 @@ flowchart TB
   end
 ```
 
-agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외로 `.agents/rules/agctx.md`는 파일 맨 앞에 frontmatter가 없을 때만 템플릿 frontmatter를 넣는다. 에이전트가 첫 줄의 frontmatter로 규칙을 로드하기 때문이며, 이미 있는 frontmatter는 고치지 않는다.
+agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외가 하나 있다. `.agents/rules/agctx.md`는 관리 블록 위, 파일 맨 앞에 frontmatter(`---` 두 줄 사이에 적는 설정)를 둔다. Antigravity는 파일 첫 줄부터 시작하는 frontmatter의 `trigger: always_on`을 보고 이 규칙을 항상 읽기 때문이다. 그래서 agctx는 파일 맨 앞에 frontmatter가 없을 때만 템플릿의 frontmatter를 넣고, 사람이 이미 둔 frontmatter는 고치지 않는다.
 
-프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 한국어 로케일에서 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어 로케일에서 `## 4. Project rule extensions (SSOT)`이며 agctx는 두 제목을 모두 인식한다.
+프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 표시 언어가 한국어면 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어면 `## 4. Project rule extensions (SSOT)`이고, agctx는 두 제목을 모두 인식한다. 그래서 적용할 때와 다른 언어로 동기화해도 확장 섹션을 찾는다.
 
-agctx는 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤 사람이 다듬어 이 확장 섹션으로 옮긴다. 여러 에이전트가 공통으로 읽는 표준은 `AGENTS.md`이므로 함께 따를 규칙은 여기에 둔다. `CLAUDE.md`에 남기려면 `<!-- agctx:managed:start -->`와 `<!-- agctx:managed:end -->` 사이의 관리 블록 밖에 둔다. 관리 영역 안을 고치면 다음 `apply`·`sync`가 `Managed file changed outside agctx`로 멈추고 어떤 파일도 쓰지 않는다. `agctx profile resolve <project>`가 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 [문제 해결](#관리-영역을-고쳐서-멈췄을-때)에 있다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](../adr/0006-no-codebase-analysis-guidance.md)에 있다.
+- **초안 만들기:** agctx는 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤, 사람이 다듬어 이 확장 섹션으로 옮긴다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](../adr/0006-no-codebase-analysis-guidance.md)에 있다.
+- **어디에 둘지:** 여러 에이전트가 공통으로 읽는 파일은 `AGENTS.md`이므로, 에이전트들이 함께 따를 규칙은 여기에 둔다. Claude Code에만 줄 지침을 `CLAUDE.md`에 남기려면 `<!-- agctx:managed:start -->`와 `<!-- agctx:managed:end -->` 사이의 관리 블록 밖에 둔다.
+- **관리 영역 안을 고쳤을 때:** 다음 `apply`·`sync`가 `Managed file changed outside agctx`로 멈추고 어떤 파일도 쓰지 않는다. `agctx profile resolve <project>`를 실행하면 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 바로 아래 [관리 영역을 고쳐서 멈췄을 때](#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ## 관리 영역을 고쳐서 멈췄을 때
 
-`apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다. 멈춘 시점에는 어떤 파일도 쓰지 않았다. 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다. 줄 끝 문자만 다른 것은 차이로 보지 않는다. Git for Windows처럼 `core.autocrlf` 설정으로 파일을 CRLF 줄 끝으로 체크아웃해도 agctx는 LF로 맞춰 비교하고, 파일을 다시 쓸 때는 그 파일이 쓰던 CRLF를 유지한다.
+`apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
+
+- 멈춘 시점에는 어떤 파일도 쓰지 않았다.
+- 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다.
+- 줄 끝 문자(LF·CRLF)만 다른 것은 차이로 보지 않는다. Git for Windows처럼 `core.autocrlf` 설정으로 파일을 CRLF 줄 끝으로 체크아웃해도, agctx는 LF로 맞춰 비교한다. 파일을 다시 쓸 때는 그 파일이 쓰던 CRLF를 유지한다.
 
 ```mermaid
 flowchart TD
@@ -53,4 +59,4 @@ flowchart TD
 
    agctx는 결과에서 관리 영역 밖의 내용만 가져오고 관리 영역은 다시 만들므로, 저장할 때 포매터가 관리 영역을 바꿔도 된다. 관리 영역 안에 남긴 변경은 적용되지 않으며 diff와 merge 결과 파일 경로로 알려 준다. `code` 명령이 PATH에 있어야 한다.
 
-`.agctx/base/`는 마지막으로 적용한 관리 영역 원문이다. git에 커밋해 두면 팀원도 같은 기준으로 충돌을 푼다. 지워도 다음 `apply`·`sync`가 다시 만들지만, 그 전에 프로필까지 바뀐 충돌은 `--discard`로만 풀 수 있다. TUI에서는 `profile list`의 `프로젝트 충돌 해결` 메뉴에서 같은 선택지를 고른다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)에 있다.
+`.agctx/base/`는 마지막으로 적용한 관리 영역 원문이다. `resolve`는 이 원문과 지금 파일을 비교해 사람이 고친 줄을 찾는다. git에 커밋해 두면 팀원도 같은 원문을 기준으로 충돌을 푼다. `.agctx/base/`를 지워도 다음 `apply`·`sync`가 다시 만든다. 다만 지운 상태에서 관리 영역을 고쳤고 프로필까지 바뀌었다면, 고친 줄과 프로필 변경을 구분할 기준이 없어서 `--discard`로만 풀 수 있다. TUI에서는 `profile list`의 `프로젝트 충돌 해결` 메뉴에서 같은 선택지를 고른다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)에 있다.

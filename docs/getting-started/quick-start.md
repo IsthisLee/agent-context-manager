@@ -1,9 +1,21 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 15047479336048b8a0996844c3431f494026bda821d89d8841dce4c66e3aec1c -->
+<!-- agctx-doc-sources-sha256: 12476e967f7ed068a6a855c46be1b11e60b01ff63e292500b9f143bcc36dfd24 -->
 
-agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md), 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
+agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md)에, 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
+
+## 목차
+
+- [설치](#설치)
+- [1. 프로필 만들기](#1-프로필-만들기)
+- [2. 지침 설정](#2-지침-설정)
+- [3. 프로젝트에 적용](#3-프로젝트에-적용)
+- [4. 저장소 확인하기](#4-저장소-확인하기)
+- [5. 프로필 갱신과 동기화](#5-프로필-갱신과-동기화)
+- [6. 에이전트로 개발](#6-에이전트로-개발)
+- [업데이트와 삭제](#업데이트와-삭제)
+- [다음 단계](#다음-단계)
 
 전체 흐름은 다음과 같다.
 
@@ -13,13 +25,15 @@ flowchart LR
   CREATE --> SETUP["2. profile setup"]
   SETUP --> APPLY["3. profile apply"]
   APPLY --> CHECK["4. check"]
-  CHECK --> DEV["6. 에이전트로 개발"]
-  DEV -->|"프로필 지침을 바꿀 때"| SYNC["5. profile setup · profile sync"]
+  CHECK --> DEV["에이전트로 개발<br/>6절"]
+  DEV -->|"프로필 지침을 바꿀 때"| SYNC["profile setup · profile sync<br/>5절"]
   SYNC --> CHECK
   CLONE["팀 프로필이면<br/>profile clone"] -.-> APPLY
 ```
 
-프로필을 만들고 설정한 뒤 한 번 적용하면, 그 뒤로는 개발과 동기화를 반복한다. 팀이 공유하는 프로필은 만들지 않고 Git 원격에서 받는다([팀과 Git으로 공유하기](../guides/team-sharing.md)). 프로필을 지우는 방법은 [프로필과 적용](../concepts/profiles.md#프로필-삭제)에 있다.
+- 프로필을 만들고 설정한 뒤 한 번 적용하면, 그 뒤로는 에이전트로 개발하다가 지침을 바꿀 때마다 동기화하는 일을 반복한다.
+- 팀이 이미 Git 원격에 올려 둔 프로필을 쓴다면 1·2단계 대신 `profile clone`으로 받아서 3단계부터 한다([팀과 Git으로 공유하기](../guides/team-sharing.md)).
+- 프로필을 지우는 방법은 [프로필과 적용](../concepts/profiles.md#프로필-삭제)에 있다.
 
 ## 설치
 
@@ -31,14 +45,14 @@ agctx help
 ```
 
 - 설치하지 않고 한 번만 쓰려면 `npx agent-context-manager <명령>`으로 실행한다. CI에서 쓰는 예시는 [CI와 자동화에서 쓰기](../guides/ci.md)에 있다.
-- 터미널에서 인자 없이 `agctx`를 실행하면 메인 TUI가 열려 프로필 만들기·설정·적용을 메뉴로 진행한다.
+- 터미널에서 인자 없이 `agctx`를 실행하면 메인 TUI(명령을 외우지 않고 메뉴에서 골라 진행하는 터미널 화면)가 열린다. 프로필 만들기·설정·적용을 메뉴로 진행할 수 있다. 아래 단계마다 같은 일을 하는 TUI 메뉴를 적었고, 화면과 조작 방법은 [TUI로 쓰기](../guides/tui.md)에 있다.
 - Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. `repos pr`이 PR까지 열려면 GitHub CLI `gh`가 필요하다.
 - 표시 언어는 영어가 기본이다. 한국어는 `--lang ko`, `AGCTX_LANG=ko`, `agctx config lang ko` 가운데 하나로 고른다.
 - `command not found: agctx`가 나오면 전역 bin 경로가 PATH에 없다. `npm prefix -g`로 위치를 확인해 PATH에 더한다.
 
 ## 1. 프로필 만들기
 
-1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이며, `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 문서와 대조한다.
+1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
 ```bash
 $ agctx profile create team-backend --scope team
@@ -47,20 +61,30 @@ Created profile: team-backend (team)
 
 이름을 생략하면 TUI에서 이름과 scope를 입력한다. 이름은 소문자·숫자·하이픈 1-64자다. scope는 프로필의 용도 분류이며 `personal`·`company`·`team`·`workspace` 중 하나다.
 
+TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용도를 입력한다.
+
 ## 2. 지침 설정
 
-프로필에 담을 공통 지침 수준을 정한다. 항목은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개이고 각 항목은 `off`·`recommended`·`strict` 중 하나다.
+프로필에 담을 공통 지침의 수준을 정한다. 항목은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개이고, 항목마다 아래 수준 중 하나를 고른다.
+
+- `off`: 그 지침을 넣지 않는다.
+- `recommended`(기본값): 일반적으로 지키되, 합당한 이유가 있으면 예외를 두고 그 이유를 기록하게 한다.
+- `strict`: 예외 없이 지키게 하고, 위반을 발견하면 작업을 멈추고 해결한 뒤 진행하게 한다.
 
 ```bash
 $ agctx profile setup team-backend --tdd strict --security strict
 Configured profile: team-backend
 ```
 
-옵션을 생략하면 TUI에서 항목마다 설명·현재값을 보고 고른다. `setup`은 시작점이며 더 두터운 지침은 프로필의 `AGENTS.md`를 직접 편집해 채운다. 배포되는 6개 항목의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+수준 옵션을 하나라도 넘기면 넘긴 항목만 바꾸고, 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓴다(처음이면 `recommended`). 수준 옵션을 하나도 넘기지 않으면 TUI가 열려 항목마다 설명과 현재값을 보고 고른다. 이름까지 생략하면 TUI에서 프로필도 고른다(`src/commands/handlers.ts:116-125`). 첫 화면의 **Configure profile guidance**도 같은 화면을 연다.
+
+`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 6개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
 
 ## 3. 프로젝트에 적용
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
+
+TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**를 고르고 프로젝트 폴더를 고른다. 파일을 쓰기 전 확인 질문은 No가 기본이므로, `←`로 **Yes**를 고른 뒤 `Enter`를 누른다. 프로필이 Git 저장소면 그 전에 프로젝트를 커밋에 고정할지 한 번 더 묻는다([TUI로 쓰기](../guides/tui.md#프로젝트에-적용하기)).
 
 ```bash
 $ mkdir shop
@@ -81,20 +105,24 @@ Applied profile team-backend to /work/shop
 
 ```text
 대상 프로젝트/
-├── AGENTS.md                        # 공통 지침 + 프로젝트 도메인 지침
-├── agctx.project.json             # 적용한 프로필·버전과 관리 hash 기록
-├── .agctx/base/                   # 마지막으로 적용한 관리 영역 원문(충돌 해결 기준, 커밋)
-├── .agctx/.gitignore              # 충돌 해결 백업 폴더 backups/를 커밋에서 제외
-├── CLAUDE.md                        # Claude Code 포인터
-├── .agents/rules/agctx.md         # Antigravity 포인터
-└── services/payments/CLAUDE.md      # 하위 AGENTS.md가 있는 폴더마다 Claude Code 연결 파일
+├── AGENTS.md                        # 프로필의 공통 지침 + 그 아래 프로젝트 도메인 지침을 쓰는 확장 섹션
+├── agctx.project.json             # 적용한 프로필·버전과, 관리 영역이 바뀌었는지 비교할 해시
+├── .agctx/base/                   # 마지막으로 적용한 관리 영역 원문(충돌을 풀 때 기준)
+├── .agctx/.gitignore              # 충돌을 풀 때 만드는 백업 폴더 backups/를 커밋에서 뺌
+├── CLAUDE.md                        # Claude Code가 AGENTS.md를 읽도록 @AGENTS.md로 가져오는 파일
+├── .agents/rules/agctx.md         # Antigravity가 작업을 시작할 때 AGENTS.md를 읽도록 지시하는 규칙
+└── services/payments/CLAUDE.md      # 모노레포에서 하위 폴더에 AGENTS.md가 있을 때만 생기는 연결 파일
 ```
 
-프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 규칙 확장 섹션 아래에 쓴다. agctx가 다시 만드는 곳과 사람이 쓰는 곳의 경계는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다. 생성된 파일은 모두 커밋한다.
+`CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문에 필요하다.
+
+프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 규칙 확장 섹션 아래에 쓴다. 그 위의 공통 지침 부분(관리 영역)은 `apply`·`sync`가 다시 만든다. 그래서 관리 영역 안을 고치면, 다음 `apply`·`sync`가 고친 내용을 지우지 않으려고 파일을 쓰지 않고 멈춘다. 두 영역의 경계와 멈췄을 때 푸는 법은 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
+
+생성된 파일은 `.agctx/base/`까지 모두 커밋한다. 그래야 저장소를 받는 팀원이 agctx 없이도 같은 지침을 받고, CI의 `check`가 기록한 버전과 비교할 수 있다.
 
 ## 4. 저장소 확인하기
 
-`check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다.
+`check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 
 ```bash
 $ agctx check shop
@@ -103,7 +131,7 @@ $ agctx check shop
 
 ## 5. 프로필 갱신과 동기화
 
-프로필 지침을 바꾸면 `check`가 뒤처짐(종료 코드 1)을 알린다. `sync`로 관리 영역만 다시 적용하면 다시 맞는다.
+프로필 지침을 바꾸면 저장소 파일이 프로필보다 뒤처지므로 `check`가 뒤처짐(종료 코드 1)을 알린다. `sync`로 관리 영역만 다시 적용하면 다시 맞는다. 아래 예시는 변경 검토 수준을 `strict`로 바꾼 뒤 동기화한다.
 
 ```bash
 $ agctx profile setup team-backend --review strict
@@ -128,14 +156,36 @@ $ agctx check shop
 /work/shop matches its recorded profile version.
 ```
 
-`sync`는 프로젝트에 바인딩된 프로필만 다시 적용하고 프로필을 바꾸지 않는다. 다른 프로필로 바꾸려면 `apply`를 쓴다. 동기화는 관리 영역만 갱신하고 사용자가 쓴 부분은 그대로 둔다.
+`sync`는 `agctx.project.json`에 기록된 프로필을 다시 적용할 뿐, 다른 프로필로 바꾸지 않는다. 다른 프로필로 바꾸려면 `apply`를 쓴다. 동기화는 관리 영역만 갱신하고, 확장 섹션처럼 사용자가 쓴 부분은 그대로 둔다. 적용할 때 `--pin`으로 커밋에 고정했다면 `sync`로는 새 지침을 받지 않는다([갱신 방식 고르기](../guides/update-policies.md)). TUI에서는 **Manage profiles** > 프로필 > **Sync a project**로 동기화한다.
 
 ## 6. 에이전트로 개발
 
-적용이 끝나면 평소 쓰는 에이전트(Codex·Claude Code·Antigravity)에 작업을 맡긴다. 에이전트는 프로젝트의 `AGENTS.md`와 포인터 파일을 읽고 그 지침대로 작업한다. agctx는 에이전트의 작업을 통제하지 않는다. 각 에이전트가 실제로 어떤 파일을 읽는지는 [에이전트가 읽는 지침 파일](../concepts/agent-loading.md)에 있다.
+적용이 끝나면 평소 쓰는 에이전트(Codex·Claude Code·Antigravity)에 작업을 맡긴다. 에이전트는 프로젝트의 `AGENTS.md`와 포인터 파일을 읽고 그 지침대로 작업한다. agctx는 지침 파일을 만들 뿐, 에이전트가 지침을 지키는지 감시하거나 강제하지 않는다. 각 에이전트가 실제로 어떤 파일을 읽는지는 [에이전트가 읽는 지침 파일](../concepts/agent-loading.md)에 있다.
+
+## 업데이트와 삭제
+
+새 버전으로 올리려면 같은 설치 명령에 `@latest`를 붙여 다시 설치한다. 설치된 버전은 `npm ls -g`로 확인한다.
+
+```bash
+npm install -g agent-context-manager@latest
+npm ls -g agent-context-manager
+```
+
+agctx를 지우려면 전역 패키지를 삭제한다.
+
+```bash
+npm uninstall -g agent-context-manager
+```
+
+패키지를 지워도 아래 두 가지는 남는다. 필요 없으면 직접 지운다.
+
+- **프로필 보관함과 설정:** `~/.agctx` 폴더(`AGCTX_HOME`을 설정했다면 그 폴더)에 프로필, 표시 언어 설정, 적용한 저장소 목록이 있다.
+- **프로젝트에 적용한 파일:** `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`·`agctx.project.json`·`.agctx/`는 저장소의 파일이라 그대로 남고, 에이전트도 계속 읽는다. agctx 없이 이 파일들을 직접 관리해도 된다.
 
 ## 다음 단계
 
 - 저장소가 여럿이면 [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](../guides/multi-repo-individual.md)
 - 팀과 함께 쓰면 [팀과 Git으로 공유하기](../guides/team-sharing.md)
 - CI에서 확인하려면 [CI와 자동화에서 쓰기](../guides/ci.md)
+- 명령 대신 메뉴로 쓰려면 [TUI로 쓰기](../guides/tui.md)
+- 명령이 멈추거나 오류가 나면 [문제 해결](../reference/troubleshooting.md)

@@ -4,7 +4,7 @@
 * **일자:** 2026-09-15
 * **결정자:** 제품 소유자
 * **근거:** [CLI 계약과 지침 공급망 근거](../references.md#cli-계약과-지침-공급망-근거)
-* **관련:** [ADR 0008](0008-managed-conflict-recovery.md)이 정한 충돌 종료 코드 1을 2로 바꾼다. [자연어 요청을 통한 agctx 사용](../discussion/architecture/topics/agent-mediated-usage.md)의 비대화형 계약을 구현한다.
+* **관련:** [ADR 0008](0008-managed-conflict-recovery.md)이 정한 충돌 종료 코드 1을 2로 바꾼다. [자연어 요청을 통한 agctx 사용](../discussion/architecture/topics/agent-mediated-usage.md)의 비대화형 계약을 구현한다. 결정 6의 동등성 기준은 [ADR 0025](0025-every-command-in-cli-and-tui.md)가 대체한다.
 
 ## 배경 (Context)
 

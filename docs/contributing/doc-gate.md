@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 2a656b8fd2644b38d9d14fe9bde325836e1d127b91243b102d522df66ea980c4 -->
+<!-- agctx-doc-sources-sha256: a990990f0c5e702d28f47b4305f8025d544526bd45104feffd2c02fa6c932b60 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -47,6 +47,7 @@ flowchart TD
 
 명령 등록부에서 뽑을 수 있는 내용은 사람이 옮겨 적지 않고 생성한다. `docs/reference/cli.md`의 명령 표와 명령마다의 사용법·종료 코드 줄, `docs/reference/exit-codes.md`의 명령별 종료 코드 표는 `<!-- agctx:generated:<이름>:start -->`와 `<!-- agctx:generated:<이름>:end -->` 사이에 있다. `node tools/generate-reference.ts`가 명령 등록부(`src/commands/registry.ts`)와 한국어 메시지 카탈로그의 명령 요약·종료 코드 이름으로 이 블록을 다시 쓰고, `--check`를 주면 다를 때 1로 끝난다.
 
-- `evals/reference-docs.test.ts`가 생성 결과와 파일 내용이 같은지, 명령마다 자기 절 안에 사용법 블록이 있는지 검사한다. 명령·옵션·종료 코드를 바꾸고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
+- 명령 표의 `쓸 수 있는 곳` 열은 CLI에 더해, 등록부 항목에 `tui`가 있으면 TUI를, `profileMenu`가 있으면 프로필 메뉴를 적는다.
+- `evals/reference-docs.test.ts`가 생성 결과와 파일 내용이 같은지, 명령마다 자기 절 안에 사용법 블록이 있는지, 명령 표가 등록부의 인터페이스를 빠짐없이 적는지 검사한다. 명령·옵션·종료 코드를 바꾸고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
 - 표지 밖의 설명·예시·표는 사람이 쓰며, 해시 게이트가 다시 읽게 한다.
 - 새 명령을 등록하면 CLI Reference에 그 명령의 `###` 절과 사용법 표지를 먼저 만든 뒤 생성한다.

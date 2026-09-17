@@ -1,15 +1,15 @@
 # 프로필과 적용
 
-<!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts, src/profile/apply.ts, src/shared/home.ts -->
-<!-- agctx-doc-sources-sha256: d372c5a0f694cb0e2017297f3773ef8ba52afbc77c40b0507606532a9cbd361e -->
+<!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts, src/profile/apply.ts, src/shared/home.ts, src/i18n/index.ts, templates/CLAUDE.md, templates/antigravity-rules -->
+<!-- agctx-doc-sources-sha256: 58e3a48fcb0ae804c958549464972eab78cbb8890b18c35bf82483380c82de5a -->
 
 agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여러 프로젝트와 여러 AI 에이전트에 **적용·동기화**하는 도구다. 코드를 대신 쓰지 않는다. 지침을 만들고 배포하며, 그 지침이 에이전트에 닿는지 확인한다. 확인하려고 에이전트를 실행하는 것은 사용자가 `verify --probe`로 요청할 때뿐이다.
 
 핵심 개념 네 가지:
 
 - **프로필**: 공통 개발 지침을 담는 폴더. `~/.agctx/profiles/<이름>` 아래에 지침 `AGENTS.md`와 메타데이터가 있다. scope(`personal`·`company`·`team`·`workspace`)로 용도를 나눈다.
-- **적용(apply)**: 프로필의 지침을 대상 프로젝트에 복사해 `AGENTS.md`와 에이전트별 포인터 파일을 만든다.
-- **관리 영역**: 적용된 파일에서 agctx가 관리하는 부분. 사용자가 직접 쓴 부분과 분리돼 있어 동기화 때 사용자 내용은 보존된다.
+- **적용(apply)**: 프로필의 지침을 대상 프로젝트에 복사해 `AGENTS.md`와 에이전트별 포인터 파일을 만든다. 포인터 파일은 `AGENTS.md`를 직접 읽지 않는 에이전트에게 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일이다. Claude Code용 `CLAUDE.md`는 `@AGENTS.md`로 그 파일을 가져오고, Antigravity용 `.agents/rules/agctx.md`는 작업을 시작할 때 `AGENTS.md`를 읽으라고 지시한다.
+- **관리 영역**: 적용된 파일에서 `apply`·`sync`가 다시 만드는 부분. 사용자가 직접 쓰는 부분과 분리돼 있어서, 동기화해도 사용자가 쓴 내용은 그대로 남는다.
 - **동기화(sync)**: 프로필을 고친 뒤 그 변경을 이미 적용한 프로젝트에 다시 반영한다. 관리 영역만 갱신한다.
 
 ## 프로필 보관함
@@ -18,13 +18,22 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 
 ## 지침 수준
 
-`profile setup`은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목의 수준(`off`·`recommended`·`strict`)을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 블록 밖은 사람이 직접 편집한다. 항목별 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+`profile setup`은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목의 수준을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 수준의 뜻은 다음과 같고, 생성된 `AGENTS.md`에도 같은 정의가 함께 들어간다(`src/i18n/index.ts:87-99`).
+
+| 수준 | 뜻 |
+| --- | --- |
+| `off` | 이 지침을 프로필에 넣지 않는다. `AGENTS.md`에 해당 항목이 나오지 않는다. |
+| `recommended` | 기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다. |
+| `strict` | 예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다. |
+
+`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 프로필 폴더의 `AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행할 때 새로 만들어진다. 항목별 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
 
 ## 적용과 동기화
 
-- `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 바꾼다.
-- `profile sync <프로젝트>`는 기록한 프로필을 다시 적용하며 프로필을 바꾸지 않는다.
-- 두 명령 모두 `agctx.project.json`에 적용한 프로필과 버전(Git 프로필이면 원격·브랜치·커밋)을 기록한다. 커밋에 고정하는 방법은 [갱신 방식 고르기](../guides/update-policies.md)에 있다.
+- `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
+- `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.
+- 두 명령 모두 `agctx.project.json`에 적용한 프로필과 버전(Git 프로필이면 원격·브랜치·커밋)을 기록한다.
+- `apply`에 `--pin`을 붙이면 그 커밋에 고정된다. 고정한 프로젝트는 프로필에 새 커밋이 생겨도 `sync`가 기록한 커밋의 내용을 그대로 다시 쓰고, `apply --pin`을 다시 실행해야 새 커밋으로 옮겨 간다. 실제 차이는 [갱신 방식 고르기](../guides/update-policies.md#두-방식의-차이-확인하기)에 있다.
 
 ## 프로필 삭제
 
@@ -32,4 +41,4 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 agctx profile remove company --yes
 ```
 
-삭제되는 것은 프로필 원본과 설정뿐이다. 이미 프로젝트에 적용된 파일은 그대로 남는다. TUI에서는 이름과 `--yes` 없이 골라 확인 후 삭제한다.
+삭제되는 것은 프로필 보관함의 그 프로필 폴더뿐이다. 이미 프로젝트에 적용해 둔 `AGENTS.md` 같은 파일은 그대로 남는다. TUI에서는 목록에서 프로필을 고른 뒤 확인 질문에 답해 삭제하므로 이름과 `--yes`를 적지 않는다.

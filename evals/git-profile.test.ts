@@ -184,6 +184,36 @@ test('connect and push see a profile repository through a home folder spelled wi
   assert.match(gitIn(team.root, 'ls-remote', '--heads', remote), /refs\/heads\/main/);
 });
 
+test('connect --branch makes the current branch track that remote branch, and push, status, and pull follow it', t => {
+  const team = makeTeam(t);
+  const { admin, member, remote } = team;
+  admin.ok('profile', 'create', 'team-backend', '--scope', 'team');
+  const dir = admin.profileDir('team-backend');
+  gitIn(dir, 'init', '--initial-branch=master');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
+  gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '-m', 'Add profile');
+
+  // The local branch is master, but the team's remote branch is main.
+  const connected = admin.ok('profile', 'connect', 'team-backend', remote, '--branch', 'main');
+  assert.match(connected.stdout, /\(branch main\)/);
+  assert.equal(gitIn(dir, 'config', 'branch.master.merge'), 'refs/heads/main');
+
+  admin.ok('profile', 'push', 'team-backend', '--yes');
+  const heads = gitIn(team.root, 'ls-remote', '--heads', remote);
+  assert.match(heads, /refs\/heads\/main/);
+  assert.doesNotMatch(heads, /refs\/heads\/master/);
+  const status = JSON.parse(admin.ok('profile', 'status', 'team-backend', '--refresh', '--json').stdout).data.profiles[0];
+  assert.deepEqual([status.ahead, status.behind], [0, 0]);
+
+  member.ok('profile', 'clone', remote);
+  const memberDir = member.profileDir('team-backend');
+  fs.appendFileSync(path.join(memberDir, 'AGENTS.md'), '\n- Member rule\n');
+  gitIn(memberDir, '-c', 'user.name=member', '-c', 'user.email=member@example.com', 'commit', '-am', 'Add member rule');
+  member.ok('profile', 'push', 'team-backend', '--yes');
+  admin.ok('profile', 'pull', 'team-backend');
+  assert.match(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), /- Member rule/);
+});
+
 test('a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error', t => {
   const { root, person, folder } = makeWorkspace(t, 'agctx-git-credentials-');
   const admin = person('admin');

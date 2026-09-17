@@ -79,6 +79,8 @@ agent-context-manager/
 │   ├── profile/AGENTS.md        # 새 프로필의 초기 지침 템플릿(한국어는 AGENTS.ko.md)
 │   └── ...                      # 에이전트별 지침 포인터·하위 폴더 연결 파일(CLAUDE.link.md) 템플릿
 ├── skills/                      # 에이전트용 스킬: agctx(진단·갱신)·agctx-author(게시·PR)
+├── .agents/skills/repo-docs/    # 이 저장소 기여자용 스킬: 문서·ADR·논의 문서 변경 절차
+│                             # (Claude Code용 링크는 .claude/skills/repo-docs)
 ├── evals/                       # CLI·문서·패키지 산출물 평가
 ├── tools/
 │   ├── build.ts                 # src/를 dist/로 컴파일(prepack에서 실행)

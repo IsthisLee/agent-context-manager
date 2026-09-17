@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: d9b14789698efb49268f25b1b222f09938bc3ca449d20e7488c506542fa648d6 -->
+<!-- agctx-doc-sources-sha256: 4dfcb328e051a9cb8e78be4d4edc9421bbe77763ba90f591cff2445ae26a1375 -->
 
 ## 읽는 법
 
@@ -536,7 +536,7 @@ if (kind === 'agents' || index === -1) return `${content.trimEnd()}\n\n${block}\
 
 Git 프로필은 프로필 폴더 자체가 Git 작업 트리인 프로필이다. 원격 URL과 추적 브랜치는 `.git/config`가 정본이고 `profile.json`에는 기록하지 않는다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
 
-**git 실행.** 모든 Git 호출은 `git()`(`src/shared/git.ts:19-38`)을 거친다.
+**git 실행.** 모든 Git 호출은 `git()`(`src/shared/git.ts:28-47`)을 거친다.
 
 ```ts
 const env = process.stdin.isTTY ? process.env : { ...process.env, GIT_TERMINAL_PROMPT: '0' };
@@ -547,14 +547,14 @@ if (result.error) {
   }
   throw result.error;
 }
-// … 실패하면 원격·인증 오류(REMOTE_FAILURE)는 69, 그 밖은 70
+// … 실패하면 isRemoteFailure(stderr)가 참인 원격·인증 오류는 69, 그 밖은 70
 ```
 
 - 셸 문자열을 만들지 않고 인자 배열로 실행하므로 URL이나 브랜치 이름이 셸에서 해석되지 않는다. 사용자의 Git 설정·credential helper를 그대로 쓴다.
-- 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)). 이때 git이 내는 문구는 환경에 따라 다르다. 프롬프트가 꺼져 있으면 `could not read Username`, 자격 증명 헬퍼나 askpass가 있는데 답하지 못하면 `unable to get password`다. 둘 다 `REMOTE_FAILURE`에 넣어 69로 분류하므로 어느 쪽이든 Git 인증을 확인하라는 다음 명령이 붙는다.
-- `isGitRoot`(`src/shared/git.ts:41-48`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-cdup`을 실행하고, 출력이 비어 있으면 그 폴더를 작업 트리의 최상위로 본다. 경로 문자열을 비교하지 않으므로 macOS 임시 폴더의 `/var`와 `/private/var`, Windows의 짧은 이름(`RUNNER~1`)이나 대소문자 차이가 판정을 바꾸지 않는다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
-- `resolveRemoteLocation`(`src/shared/git.ts:54-57`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
-- `sanitizeRemoteUrl`(`src/shared/git.ts:60-70`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
+- 터미널이 아니면 `GIT_TERMINAL_PROMPT=0`으로 인증 질문에서 멈추지 않게 한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)). 이때 git이 내는 문구는 환경에 따라 다르다. 프롬프트가 꺼져 있으면 `could not read Username`, 자격 증명 헬퍼나 askpass가 있는데 답하지 못하면 `unable to get password`다. 둘 다 `isRemoteFailure`(`src/shared/git.ts:20-22`)가 참이라 69로 분류하므로 어느 쪽이든 Git 인증을 확인하라는 다음 명령이 붙는다.
+- `isGitRoot`(`src/shared/git.ts:50-57`)는 폴더에 `.git`이 있을 때만 `git rev-parse --show-cdup`을 실행하고, 출력이 비어 있으면 그 폴더를 작업 트리의 최상위로 본다. 경로 문자열을 비교하지 않으므로 macOS 임시 폴더의 `/var`와 `/private/var`, Windows의 짧은 이름(`RUNNER~1`)이나 대소문자 차이가 판정을 바꾸지 않는다. `.git`이 없는 로컬 프로필은 `git`이 설치되지 않은 컴퓨터에서도 동작한다.
+- `resolveRemoteLocation`(`src/shared/git.ts:63-66`)은 명령줄에 준 원격이 이미 있는 로컬 경로면 현재 폴더 기준 절대 경로로 바꾼다. `git`은 프로필 폴더에서 실행되므로 상대 경로를 그대로 넘기면 프로필 폴더 기준으로 해석되기 때문이다. URL은 입력한 그대로 둔다.
+- `sanitizeRemoteUrl`(`src/shared/git.ts:69-79`)은 URL 형식 주소의 사용자 이름·비밀번호를 지운 뒤 기록하고 출력한다.
 
 **status.** `profileGitState`(`src/profile/git-profile.ts:45-75`)는 브랜치, 그 브랜치가 추적하는 원격 브랜치(`remoteBranch`, `branch.<브랜치>.merge`에서 읽음), HEAD 커밋, `git status --porcelain` 결과, 원격 URL을 읽는다. `--refresh`일 때만 `git fetch`로 네트워크에 접속한다. `branch.<브랜치>.remote`·`merge` 설정이 가리키는 원격 추적 ref가 있으면 `git rev-list --left-right --count HEAD...<ref>`로 앞섬·뒤처짐을 센다. 처리기(`src/commands/handlers.ts:161-170`)는 뒤처졌으면 `profile pull`을, 앞섰으면 `profile push`를 다음 명령으로 출력한다.
 

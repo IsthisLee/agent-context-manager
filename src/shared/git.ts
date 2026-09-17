@@ -13,6 +13,15 @@ export interface GitOutput {
 const REMOTE_FAILURE = /Authentication failed|could not read (Username|Password)|unable to get password|Permission denied \(publickey\)|Repository not found|does not appear to be a git repository|Could not resolve host|unable to access|Connection (timed out|refused)|Host key verification failed/i;
 
 /**
+ * Whether git failed at reaching or signing in to the remote rather than at the
+ * work tree. Those failures carry the Git credentials next step and exit 69, so
+ * a missing password reads as a sign-in problem instead of an unknown error.
+ */
+export function isRemoteFailure(stderr: string): boolean {
+  return REMOTE_FAILURE.test(stderr);
+}
+
+/**
  * Run git with separate arguments, never through a shell. Outside a terminal
  * git must not wait for a password prompt, so interactive prompts are off there.
  */
@@ -29,7 +38,7 @@ export function git(args: readonly string[], options: { cwd?: string; allowFailu
   const output = { status: result.status ?? 1, stdout: result.stdout, stderr: result.stderr };
   if (output.status !== 0 && !options.allowFailure) {
     const detail = output.stderr.trim().split('\n').slice(-3).join('\n');
-    if (REMOTE_FAILURE.test(output.stderr)) {
+    if (isRemoteFailure(output.stderr)) {
       throw new CliError('git.remote', _('error.git.remote', { detail }), { exitCode: EXIT.unavailable, hint: _('hint.git.remote') });
     }
     throw new CliError('git.failed', _('error.git.failed', { command: `git ${args.join(' ')}`, detail }), { exitCode: EXIT.software });

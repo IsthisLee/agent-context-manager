@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용한다(예: `src/commands/cli.ts:34-64`). 줄 번호는 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 다른 문서는 줄 번호 대신 절 링크로 인용한다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/commands, src/profile, src/project, src/shared, src/tui, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: e3374fa62f2b1b94318bdc4227634961c7f8b8edc31d0d2c980040f060960bda -->
+<!-- agctx-doc-sources-sha256: ef3148a5de30c61963438c104fd8ab39ff4f9510ff229c0da13e5e072def2cf5 -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -241,7 +241,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 - **배포되는 CLI(`src/`를 컴파일한 `dist/`)**는 `fs`·`os`·`path`를 쓴다(`src/profile/store.ts:1-2`). 경로 구분자 차이를 흡수하려고 항상 `path`로 경로를 조립하고, `os.homedir()`로 프로필 기준 위치를 잡는다(`src/shared/home.ts:12`).
 - 이 밖에 `src/shared/fs-utils.ts`, `src/project/analyzer.ts`, `src/project/plan.ts`는 `node:crypto`를 쓴다. 원자적 교체용 임시 파일 이름에 `randomUUID`(`src/shared/fs-utils.ts:3,55`), 관리 영역 무결성 확인에 `createHash`(`src/project/analyzer.ts:1,55,92`, `src/project/plan.ts:3,20-22`)를 사용한다.
-- **배포 코드에서 `child_process`를 쓰는 곳은 둘이다.** Git 프로필 명령과 적용 버전 기록은 `src/shared/git.ts`의 `git()`이 `spawnSync('git', args)`로 인자를 나눠 실행한다(`src/shared/git.ts:19-38`). 사용자가 `profile resolve --edit`을 명시하면 `src/project/merge-editor.ts`가 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `46-49`). 둘 다 셸 없이 인자 배열로 실행하며, Windows에서 `code.cmd`를 실행할 때만 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
+- **배포 코드에서 `child_process`를 쓰는 곳은 둘이다.** Git 프로필 명령과 적용 버전 기록은 `src/shared/git.ts`의 `git()`이 `spawnSync('git', args)`로 인자를 나눠 실행한다(`src/shared/git.ts:28-47`). 사용자가 `profile resolve --edit`을 명시하면 `src/project/merge-editor.ts`가 VS Code CLI `code --wait --merge`를 실행한다(`src/project/merge-editor.ts:4`, `46-49`). 둘 다 셸 없이 인자 배열로 실행하며, Windows에서 `code.cmd`를 실행할 때만 셸을 거친다. 저장소 개발 도구도 쓴다: 빌드 도구가 TypeScript 컴파일러를 자식 프로세스로 실행하고(`tools/build.ts:3,18`), 패키지 스모크가 `npm`을 실행한다(`tools/package-smoke.ts:7,26-31`).
 
 ### 사용자가 알아야 할 주의점
 

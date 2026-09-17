@@ -22,6 +22,7 @@ pnpm run audit
 - 평가는 `evals/*.test.ts`이며 Node.js 내장 `node:test`로 실행한다. 코드를 바꾸기 전에 실패하는 평가를 먼저 쓰고(Red), 통과시킨 뒤(Green) 정리한다.
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.
 - `evals/support/git-workspace.ts`의 `makeWorkspace`는 사람마다 따로 `AGCTX_HOME`을 둔 임시 컴퓨터를 만들고, `publishProfile`·`serviceRepo`는 bare 원격과 작업 저장소를, `fakeCommands`는 PATH에 두는 가짜 `gh`·에이전트 CLI를 만든다(Windows에서는 `.cmd` 래퍼).
+- **PATH에 둔 가짜 명령은 CLI가 셸로 실행하는 명령만 가로챈다.** Windows에서 `.cmd` 래퍼는 셸이 있어야 시작되므로(`node:child_process` 문서, [외부 근거](../references.md#cli-계약과-지침-공급망-근거)), `gh`와 에이전트 CLI처럼 Windows에서 셸을 거치는 명령은 가짜로 바뀌지만 `git`은 바뀌지 않는다. `git()`은 셸 없이 실행하기 때문이다. `git` 동작을 가짜로 바꿔 확인하는 평가는 판정 함수를 직접 부르는 평가를 함께 두고, 가짜를 쓰는 쪽만 `skip`으로 Windows에서 건너뛴다.
 - 빠른 시작의 명령 예시는 `evals/doc-examples.test.ts`가 실제 출력과 대조한다. 명령 출력을 바꿨다면 문서의 예시를 실제 출력으로 고친다.
 - 에이전트 관련 평가는 `HOME`·`USERPROFILE`·`CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 임시 폴더로 바꿔 이 컴퓨터의 사용자 파일과 세션 기록이 섞이지 않게 한다.
 - 명령 등록부를 바꾸면 `node tools/generate-skills.ts`와 `node tools/generate-reference.ts`로 스킬의 명령 목록과 레퍼런스의 생성 블록을 다시 만든다. 다르면 `evals/skills.test.ts`와 `evals/reference-docs.test.ts`가 실패한다.

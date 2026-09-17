@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 90f1da2b80459edc5da03902e6fd29cfe92c2cacc5dbdf1c507c9f3f69245aeb -->
+<!-- agctx-doc-sources-sha256: 9a317760269715a712ed72d77f99e9ba678b709819ca0ea160d9af12101725a4 -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -85,6 +85,7 @@ agent-context-manager/
 │   ├── check-docs.ts            # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
 │   ├── check-release.ts         # 릴리스 태그·버전·CHANGELOG 일치 검사
 │   ├── discussion-record.ts     # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
+│   ├── discussion-roots.ts      # docs/discussion 아래에서 topics/를 가진 논의 영역 목록
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
@@ -99,7 +100,7 @@ agent-context-manager/
 │   ├── reference/               # CLI·종료 코드·파일 형식·지원 에이전트·문제 해결
 │   ├── faq.md                   # 자주 묻는 질문
 │   ├── contributing/            # 제품 방향·아키텍처·테스트·릴리스·문서 게이트·에이전트 추가
-│   ├── discussion/              # 구현 계획·논의·계약
+│   ├── discussion/              # 논의 영역별 계획·계약(architecture: 패키지 기능, repository: 저장소 운영)
 │   ├── adr/                     # 장기 설계 결정 기록
 │   └── references.md            # 외부 근거와 비교 자료
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본

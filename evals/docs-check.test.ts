@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +22,39 @@ test('documentation checker validates architecture discussion topics beneath the
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
 
   assert.match(checker, /path\.join\(discussionDir, 'topics'\)/);
+});
+
+test('every discussion area with a topics folder is checked, so repository topics are not exempt', async (t) => {
+  const { discussionRoots } = await import('../tools/discussion-roots.ts');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-discussion-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  fs.mkdirSync(path.join(dir, 'repository', 'topics'), { recursive: true });
+  fs.mkdirSync(path.join(dir, 'architecture', 'topics'), { recursive: true });
+  fs.mkdirSync(path.join(dir, 'notes'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'README.md'), '# 논의\n');
+
+  assert.deepEqual(discussionRoots(dir), ['architecture', 'repository'], 'a folder without topics/ is not a discussion area');
+  assert.deepEqual(discussionRoots(path.join(dir, 'missing')), []);
+
+  const areas = fs.readdirSync(path.join(repoRoot, 'docs/discussion'), { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name)
+    .sort();
+  assert.deepEqual(discussionRoots(path.join(repoRoot, 'docs/discussion')), areas, 'every discussion folder in this repository is an area the checker walks');
+
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
+  assert.match(checker, /discussionRoots/);
+});
+
+test('repository operations discussions live apart from the package implementation plan', () => {
+  const topic = path.join(repoRoot, 'docs/discussion/repository/topics/doc-accuracy-review.md');
+
+  assert.ok(fs.existsSync(topic), 'the doc gate review topic belongs to the repository area');
+  assert.ok(
+    !fs.existsSync(path.join(repoRoot, 'docs/discussion/architecture/topics/doc-accuracy-review.md')),
+    'a topic is indexed by exactly one area'
+  );
 });
 
 test('documentation checker hashes a pinned directory so files inside it are covered without list edits', () => {

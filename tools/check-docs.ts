@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
+import { discussionRoots } from './discussion-roots.ts';
 import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutRecordedHash } from './doc-sources.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -108,19 +109,29 @@ function checkReferenceDates() {
 }
 
 function checkDiscussionStatuses() {
-  const discussionDir = path.join(root, 'docs', 'discussion', 'architecture');
-  const topicsDir = path.join(discussionDir, 'topics');
-  const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
-  const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
-  const index = fs.readFileSync(path.join(discussionDir, 'README.md'), 'utf8');
-
-  if (!fs.existsSync(topicsDir)) {
+  const discussionRoot = path.join(root, 'docs', 'discussion');
+  const areas = discussionRoots(discussionRoot);
+  if (!areas.includes('architecture')) {
     errors.push('docs/discussion/architecture/topics: must exist');
     return;
   }
+  for (const area of areas) checkDiscussionArea(area);
+}
+
+function checkDiscussionArea(area: string) {
+  const discussionDir = path.join(root, 'docs', 'discussion', area);
+  const topicsDir = path.join(discussionDir, 'topics');
+  const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
+  const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
+  const indexPath = path.join(discussionDir, 'README.md');
+  if (!fs.existsSync(indexPath)) {
+    errors.push(`docs/discussion/${area}/README.md: a discussion area needs an index listing its topics and their status`);
+    return;
+  }
+  const index = fs.readFileSync(indexPath, 'utf8');
 
   for (const name of fs.readdirSync(discussionDir).filter(name => name.endsWith('.md') && name !== 'README.md')) {
-    errors.push(`docs/discussion/architecture/${name}: move topic documents into topics/`);
+    errors.push(`docs/discussion/${area}/${name}: move topic documents into topics/`);
   }
 
   const topicFiles = fs.readdirSync(topicsDir).filter(name => name.endsWith('.md')).sort();
@@ -129,36 +140,36 @@ function checkDiscussionStatuses() {
     const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
     const match = content.match(/^\*\*상태:\*\* (.+)$/m);
     if (!match || !allowed.has(match[1].trim())) {
-      errors.push(`docs/discussion/architecture/topics/${name}: use an allowed **상태:** value`);
+      errors.push(`docs/discussion/${area}/topics/${name}: use an allowed **상태:** value`);
       continue;
     }
 
     if (requiresImplementationRecord(match[1].trim()) && !hasImplementationRecord(content)) {
-      errors.push(`docs/discussion/architecture/topics/${name}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+      errors.push(`docs/discussion/${area}/topics/${name}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
     }
 
     if (['Proposed', 'Implementing'].includes(match[1].trim())) {
       for (const field of proposalSummaryFields) {
         if (!content.includes(`| ${field} |`)) {
-          errors.push(`docs/discussion/architecture/topics/${name}: missing proposal summary field (${field})`);
+          errors.push(`docs/discussion/${area}/topics/${name}: missing proposal summary field (${field})`);
         }
       }
     }
 
     const occurrences = indexedTopics.filter(indexedName => indexedName === name).length;
     if (occurrences !== 1) {
-      errors.push(`docs/discussion/architecture/README.md: ${name} must be indexed exactly once`);
+      errors.push(`docs/discussion/${area}/README.md: ${name} must be indexed exactly once`);
     }
     const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
     const indexStatus = indexRow?.split('|').map(cell => cell.trim()).filter(Boolean).at(-1);
     if (indexStatus !== match[1].trim()) {
-      errors.push(`docs/discussion/architecture/README.md: status for ${name} must match its document`);
+      errors.push(`docs/discussion/${area}/README.md: status for ${name} must match its document`);
     }
   }
 
   for (const indexedName of new Set(indexedTopics)) {
     if (!topicFiles.includes(indexedName)) {
-      errors.push(`docs/discussion/architecture/README.md: index references missing topic ${indexedName}`);
+      errors.push(`docs/discussion/${area}/README.md: index references missing topic ${indexedName}`);
     }
   }
 }

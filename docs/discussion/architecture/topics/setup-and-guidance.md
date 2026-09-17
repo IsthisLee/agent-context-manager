@@ -43,7 +43,7 @@ agctx profile setup company \
   --tdd recommended \
   --review recommended \
   --verification recommended \
-  --documentation recommended \
+  --instructions recommended \
   --security strict
 ```
 

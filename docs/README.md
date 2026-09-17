@@ -85,6 +85,7 @@
     - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md)
     - [ADR 0022: 프로필이 담을 대상에 hooks를 더함](adr/0022-profile-scope-hooks.md)
     - [ADR 0023: 기존 저장소에서 프로필을 만들 때 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦](adr/0023-profile-drafting-through-agent-skill.md)
+    - [ADR 0024: 기본 지침 문장은 공식 문서·표준 근거가 있어야 하고 분량 예산 안에 머묾](adr/0024-guidance-evidence-and-budget.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

@@ -3,7 +3,7 @@
 **A profile-based context manager for AI coding agents.**
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: c702082c2a643f78d697c2552c2302660e8c68bb002479481815d197f84816c6 -->
+<!-- agctx-doc-sources-sha256: 12177d54fe55ce4e4a5764574bf1da56d5cf14c5b6ee12f62dac4b741c9ae258 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -134,7 +134,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 
 - `agctx profile create [<name>] [--scope <scope>]` — create a Profile for the `personal`, `company`, `team`, or `workspace` purpose; omit the name for TUI input.
 - `agctx profile list [--scope <scope>]` — list, select, and manage Profiles by scope; in the TUI you choose the scope first.
-- `agctx profile setup [<name>]` — after selecting a Profile by scope, configure harness behavior, TDD, change review, verification, documentation, and security guidance; omit everything for the full TUI.
+- `agctx profile setup [<name>]` — after selecting a Profile by scope, configure workflow, TDD, change review, verification, instruction files, and security guidance; omit everything for the full TUI.
 - `agctx profile remove [<name>]` — delete the selected Profile after confirmation; files already applied to projects are kept.
 - `agctx profile apply <name> <project> [--pin]` — apply the selected Profile to a project and record the Profile version; `--pin` keeps the project on that commit.
 - `agctx profile sync <project>` — reapply only the managed areas from the Profile recorded for the project.

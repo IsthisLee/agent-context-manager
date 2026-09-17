@@ -19,7 +19,7 @@
 | 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6·13 | 프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
 | 10 | [스코프 확장과 지침 합성](topics/scope-composition.md) | Medium | 1·6 | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합 | Proposed |
 | 11 | [Git 기반 프로필 관리](topics/git-profile-management.md) | Critical | 1 | 표준 Git 원격을 통한 프로필 공유·확인·안전한 갱신 | Implemented |
-| 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Proposed |
+| 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Implementing |
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
 | — | [문서 정확성 자동 리뷰](topics/doc-accuracy-review.md) | Medium | — | 해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰 | Proposed |

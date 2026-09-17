@@ -23,7 +23,7 @@ export default {
 
     'actions.message': '{name}에서 수행할 작업을 선택하세요.',
     'actions.setup.label': '지침 설정',
-    'actions.setup.hint': 'TDD·변경 검토·검증·문서화·보안 수준 변경',
+    'actions.setup.hint': '작업 흐름·TDD·변경 검토·검증·지침 파일·보안 수준 변경',
     'actions.apply.label': '프로젝트에 적용',
     'actions.apply.hint': '선택한 프로필을 프로젝트에 처음 적용',
     'actions.sync.label': '프로젝트 동기화',

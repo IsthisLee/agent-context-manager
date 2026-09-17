@@ -1,7 +1,7 @@
 # 프로필과 적용
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts, src/profile/apply.ts, src/shared/home.ts -->
-<!-- agctx-doc-sources-sha256: 9a09c2843f5ebba521f555fa5b64346e87fe424d9d6500065c576dc4a612367a -->
+<!-- agctx-doc-sources-sha256: d372c5a0f694cb0e2017297f3773ef8ba52afbc77c40b0507606532a9cbd361e -->
 
 agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여러 프로젝트와 여러 AI 에이전트에 **적용·동기화**하는 도구다. 코드를 대신 쓰지 않는다. 지침을 만들고 배포하며, 그 지침이 에이전트에 닿는지 확인한다. 확인하려고 에이전트를 실행하는 것은 사용자가 `verify --probe`로 요청할 때뿐이다.
 
@@ -18,7 +18,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 
 ## 지침 수준
 
-`profile setup`은 하네스 동작·TDD·변경 검토·검증·문서화·보안 6개 항목의 수준(`off`·`recommended`·`strict`)을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 블록 밖은 사람이 직접 편집한다. 항목별 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+`profile setup`은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목의 수준(`off`·`recommended`·`strict`)을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 블록 밖은 사람이 직접 편집한다. 항목별 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
 
 ## 적용과 동기화
 

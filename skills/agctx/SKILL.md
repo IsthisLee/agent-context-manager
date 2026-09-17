@@ -28,7 +28,7 @@ agctx keeps one profile of agent guidance per repository in sync and checks that
 - `agctx profile create [--scope <scope>] [<name>]`: Create a profile with an initial AGENTS.md.
 - `agctx profile list [--scope <scope>]`: List profiles by scope and manage one.
 - `agctx profile view <name>`: Print a profile's scope and AGENTS.md.
-- `agctx profile setup [--harness <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--documentation <level>] [--security <level>] [<name>]`: Choose the guidance levels written into a profile.
+- `agctx profile setup [--workflow <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--instructions <level>] [--security <level>] [<name>]`: Choose the guidance levels written into a profile.
 - `agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]`: Apply a profile to a project: create the agent files and record the profile version. --pin keeps the project on the current commit until you apply again.
 - `agctx profile sync [--dry-run] [--yes] [<project>]`: Re-apply the profile a project already uses. A pinned project stays on its recorded commit.
 - `agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]`: Move edits made inside managed areas outside them and regenerate the areas.

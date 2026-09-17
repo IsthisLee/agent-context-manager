@@ -2,7 +2,7 @@
 
 export type Locale = 'ko' | 'en';
 export type Scope = 'personal' | 'company' | 'team' | 'workspace';
-export type GuidanceKey = 'harness' | 'tdd' | 'review' | 'verification' | 'documentation' | 'security';
+export type GuidanceKey = 'workflow' | 'tdd' | 'review' | 'verification' | 'instructions' | 'security';
 export type GuidanceLevel = 'off' | 'recommended' | 'strict';
 
 /** `profile.json` in a profile folder. */

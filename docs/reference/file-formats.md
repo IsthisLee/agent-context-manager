@@ -1,7 +1,7 @@
 # 파일 형식과 저장 위치
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/shared/types.ts, src/project/plan.ts, src/repos/registry.ts, src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 9c1a00b7319c251511e169f1a6a411e9a87ff6839e5f489bf7492c22a2564513 -->
+<!-- agctx-doc-sources-sha256: c70b041538181f85bd9fca4eb9ed692a0abc3c95af3353b4a90540a0ce6c04a7 -->
 
 ## 저장 위치
 

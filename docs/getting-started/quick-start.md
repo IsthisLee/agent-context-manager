@@ -1,7 +1,7 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 775bad573d0f3dc90808bfab5da597ec9e43cbde6fd9ee3e733a7a343c62939e -->
+<!-- agctx-doc-sources-sha256: 15047479336048b8a0996844c3431f494026bda821d89d8841dce4c66e3aec1c -->
 
 agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md), 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 
@@ -49,7 +49,7 @@ Created profile: team-backend (team)
 
 ## 2. 지침 설정
 
-프로필에 담을 공통 지침 수준을 정한다. 항목은 하네스 동작·TDD·변경 검토·검증·문서화·보안 6개이고 각 항목은 `off`·`recommended`·`strict` 중 하나다.
+프로필에 담을 공통 지침 수준을 정한다. 항목은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개이고 각 항목은 `off`·`recommended`·`strict` 중 하나다.
 
 ```bash
 $ agctx profile setup team-backend --tdd strict --security strict

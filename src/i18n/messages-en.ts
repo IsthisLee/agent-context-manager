@@ -23,7 +23,7 @@ export default {
 
     'actions.message': 'Select an action for {name}.',
     'actions.setup.label': 'Configure guidance',
-    'actions.setup.hint': 'Change levels for TDD, change review, verification, documentation, and security',
+    'actions.setup.hint': 'Change levels for workflow, TDD, change review, verification, instruction files, and security',
     'actions.apply.label': 'Apply to a project',
     'actions.apply.hint': 'Apply the selected profile to a project for the first time',
     'actions.sync.label': 'Sync a project',

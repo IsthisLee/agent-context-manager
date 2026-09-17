@@ -143,25 +143,31 @@ test('setup applies selected guidance to the profile and preserves its project-i
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [
       cli, 'profile', 'setup', 'team',
-      '--workflow', 'recommended', '--tdd', 'strict', '--review', 'off',
-      '--verification', 'recommended', '--instructions', 'off', '--security', 'strict'
+      '--workflow', 'recommended', '--context', 'recommended', '--tdd', 'strict', '--review', 'off',
+      '--verification', 'recommended', '--instructions', 'off', '--docs', 'recommended',
+      '--security', 'strict', '--untrusted', 'recommended', '--language', 'off'
     ], { cwd: repoRoot, env, encoding: 'utf8' });
 
     const profileDir = path.join(home, 'profiles', 'team');
     const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       workflow: 'recommended',
+      context: 'recommended',
       tdd: 'strict',
       review: 'off',
       verification: 'recommended',
       instructions: 'off',
-      security: 'strict'
+      docs: 'recommended',
+      security: 'strict',
+      untrusted: 'recommended',
+      language: 'off'
     });
     const instructions = fs.readFileSync(path.join(profileDir, 'AGENTS.md'), 'utf8');
     assert.match(instructions, /## TDD/);
     assert.match(instructions, /strict/);
     assert.doesNotMatch(instructions, /## 변경 검토/);
     assert.doesNotMatch(instructions, /## 지침 파일/);
+    assert.doesNotMatch(instructions, /## 응답 언어/, 'a level of off keeps the item out of the block');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -530,7 +536,7 @@ test('profile create and setup support interactive TUI input when options are om
     const setup = spawnSync(process.execPath, [cli, 'profile', 'setup', 'company-main'], {
       cwd: repoRoot,
       env,
-      input: 'recommended\nstrict\noff\nrecommended\noff\nstrict\n',
+      input: 'recommended\nrecommended\nstrict\noff\nrecommended\noff\nrecommended\nstrict\nrecommended\noff\n',
       encoding: 'utf8'
     });
     assert.equal(setup.status, 0, setup.stderr);
@@ -538,11 +544,15 @@ test('profile create and setup support interactive TUI input when options are om
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
       workflow: 'recommended',
+      context: 'recommended',
       tdd: 'strict',
       review: 'off',
       verification: 'recommended',
       instructions: 'off',
-      security: 'strict'
+      docs: 'recommended',
+      security: 'strict',
+      untrusted: 'recommended',
+      language: 'off'
     });
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -559,7 +569,7 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
     const setup = spawnSync(process.execPath, [cli, 'profile', 'setup'], {
       cwd: repoRoot,
       env,
-      input: '1\nrecommended\nrecommended\nrecommended\nstrict\noff\nrecommended\n',
+      input: '1\nrecommended\nrecommended\nrecommended\nrecommended\nstrict\noff\nrecommended\nrecommended\nrecommended\noff\n',
       encoding: 'utf8'
     });
     assert.equal(setup.status, 0, setup.stderr);

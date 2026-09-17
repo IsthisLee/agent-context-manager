@@ -1,7 +1,7 @@
 # 팀과 Git으로 공유하기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/profile/setup.ts, src/check.ts, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 3c880ec30bff2300af1cffa8b3fe0d63e3490d16dea659d2dd3a505966f1e391 -->
+<!-- agctx-doc-sources-sha256: ebae8f39eaa5a8ca0c3102e1e489b8cccab8e73220660b7475d2e87540135cab -->
 
 팀·조직 프로필은 표준 Git 원격(GitHub·GitLab 등)에 두고 주고받는다. 권한·리뷰·변경 이력은 Git 호스트가 맡고, agctx는 사용자의 Git 인증으로 `git`을 실행할 뿐이다. `clone`·`status`·`pull`·`push`·`connect`는 프로필만 다루고 프로젝트 파일은 건드리지 않는다. 결정과 안전 계약은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
 
@@ -101,7 +101,7 @@ $ agctx profile setup team-backend --tdd recommended --security strict
 Configured profile: team-backend
 ```
 
-작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목마다 수준을 `off`·`recommended`·`strict` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓰고, 처음 설정하는 프로필이면 `recommended`가 된다(`src/profile/setup.ts:10`, `:23`). 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 수준을 `off`·`recommended`·`strict` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `recommended`가 된다(`src/profile/setup.ts:15-26`, `:39`). 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
 
 ### 3. 첫 커밋 만들기
 

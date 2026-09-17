@@ -1,7 +1,7 @@
 # TUI로 쓰기
 
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: 2ef69515da170c63d19fbaf721c2984955cdb7591d8a6eaa0f2e51395d521803 -->
+<!-- agctx-doc-sources-sha256: c3ac301995d92d447dde6b51137699119ceaebc1052465cd7b200f018a12e194 -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서의 화면은 실제로 실행한 화면에서 긴 경로만 `/work`로 바꿨다. 대부분 영어 표시 언어로 찍었고, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
@@ -109,7 +109,7 @@ Created profile: team-backend (team)
 
 ## 지침 고르기
 
-첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개 항목이 하나씩 나오고, 항목마다 **Off**·**Recommended**·**Strict** 가운데 하나를 고른다. 지금 설정된 수준이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
+첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **Off**·**Recommended**·**Strict** 가운데 하나를 고른다. 지금 설정된 수준이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
 
 ```text
 ◆  TDD — Red → Green → Refactor order and the rules that keep tests honest
@@ -121,7 +121,7 @@ Created profile: team-backend (team)
 └
 ```
 
-6개 항목을 모두 고르면 요약이 나온다. **Yes**에서 `Enter`를 누르면 프로필에 저장한다.
+10개 항목을 모두 고르면 요약이 나온다. **Yes**에서 `Enter`를 누르면 프로필에 저장한다.
 
 ```text
 ◇  Guidance to apply to team-backend ─╮

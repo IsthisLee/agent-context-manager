@@ -7,7 +7,7 @@
 > 이 문서는 코드의 `파일:줄` 위치를 다수 인용하고, 핵심 로직은 코드블록으로 함께 싣는다(예: `src/commands/handlers.ts:63-94`). 줄 번호와 코드블록은 **아래 마커의 해시를 마지막으로 기록한 시점의 소스 기준**이며 코드가 바뀌면 어긋날 수 있다. 인용을 신뢰하기 전에 현재 코드에서 직접 확인하라. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며 과거 버전의 설명은 git 이력에서 확인한다. 코드가 바뀌면 이 문서와 위 기준선을 같은 변경에서 갱신한다. 인용한 소스가 바뀌면 `pnpm run check`가 실패하도록 소스 해시 게이트가 걸려 있다([문서 게이트](doc-gate.md)의 "문서 소스 해시 게이트" 참고).
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 4dfcb328e051a9cb8e78be4d4edc9421bbe77763ba90f591cff2445ae26a1375 -->
+<!-- agctx-doc-sources-sha256: 3ca1c8e9fcfa9e08264a344059dfbb05ade7717e567b1e6ebb27c4391fa8b6f0 -->
 
 ## 읽는 법
 
@@ -209,7 +209,7 @@ writeTextAtomic(path.join(profileDir, 'AGENTS.md'), profileTemplate.replaceAll('
 
 ## 5. profile setup: 지침 블록 기록
 
-기본값은 6개 항목 모두 `recommended`다(`guidanceDefaults`, `src/profile/setup.ts:10`): `workflow`·`tdd`·`review`·`verification`·`instructions`·`security`. `setupProfile`(`src/profile/setup.ts:19-46`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고(틀리면 64), `off`가 아닌 항목만 블록으로 만든다. 항목이 하나라도 있으면 맨 앞에 적용 수준 정의 범례를 붙인 뒤 마커로 감싼다(`src/profile/setup.ts:34-39`). 범례 문구는 `guidanceLevelDefinitions`가 돌려주는 상수이며 setup TUI 힌트와 같다. 모든 항목이 `off`면 블록 안은 비어 있다.
+항목은 열 개이고(`guidanceDefaults`, `src/profile/setup.ts:15-26`) 순서는 `workflow`·`context`·`tdd`·`review`·`verification`·`instructions`·`docs`·`security`·`untrusted`·`language`다. 기본값은 `language`만 `off`이고 나머지는 `recommended`다([ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)). `setupProfile`(`src/profile/setup.ts:35-62`)은 항목마다 `--<key>`(없으면 기존 설정 → 기본값)를 읽어 `off`/`recommended`/`strict`를 검증하고(틀리면 64), `off`가 아닌 항목만 블록으로 만든다. 항목이 하나라도 있으면 맨 앞에 적용 수준 정의 범례를 붙인 뒤 마커로 감싼다(`src/profile/setup.ts:52-57`). 범례 문구는 `guidanceLevelDefinitions`가 돌려주는 상수이며 setup TUI 힌트와 같다. 모든 항목이 `off`면 블록 안은 비어 있다.
 
 ```ts
 const definitions = guidanceLevelDefinitions(getLocale());

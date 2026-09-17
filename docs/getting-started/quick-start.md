@@ -1,7 +1,7 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 12476e967f7ed068a6a855c46be1b11e60b01ff63e292500b9f143bcc36dfd24 -->
+<!-- agctx-doc-sources-sha256: d9eb504ce4fec015a32e1f621ace4d52669529b96ddb96506d5a9dd71943e92c -->
 
 agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md)에, 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 
@@ -65,7 +65,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 
 ## 2. 지침 설정
 
-프로필에 담을 공통 지침의 수준을 정한다. 항목은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 6개이고, 항목마다 아래 수준 중 하나를 고른다.
+프로필에 담을 공통 지침의 수준을 정한다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 아래 수준 중 하나를 고른다. 응답 언어만 기본값이 `off`이고 나머지는 `recommended`다.
 
 - `off`: 그 지침을 넣지 않는다.
 - `recommended`(기본값): 일반적으로 지키되, 합당한 이유가 있으면 예외를 두고 그 이유를 기록하게 한다.
@@ -78,7 +78,7 @@ Configured profile: team-backend
 
 수준 옵션을 하나라도 넘기면 넘긴 항목만 바꾸고, 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓴다(처음이면 `recommended`). 수준 옵션을 하나도 넘기지 않으면 TUI가 열려 항목마다 설명과 현재값을 보고 고른다. 이름까지 생략하면 TUI에서 프로필도 고른다(`src/commands/handlers.ts:116-125`). 첫 화면의 **Configure profile guidance**도 같은 화면을 연다.
 
-`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 6개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 10개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
 
 ## 3. 프로젝트에 적용
 

@@ -12,11 +12,13 @@ import { guidanceSections, SUPPORTED_LOCALES } from '../src/i18n/index.ts';
  * The deployed guidance has a size budget: every user who runs `profile setup`
  * receives it, and a long instruction file makes agents follow fewer of its
  * rules. Claude Code targets under 200 lines per instruction file and Codex
- * stops reading at 32 KiB of combined instructions, so the block keeps well
- * inside both and leaves the rest of the file to the user and the project.
+ * stops reading at 32 KiB of combined instructions, so the block stays under a
+ * third of the Codex cap and leaves the rest of the file to the user and the
+ * project. Minimal is not the same as short: the budget caps the block, it does
+ * not ask for fewer words than a rule needs.
  */
-const LINE_BUDGET = 100;
-const BYTE_BUDGET = 8 * 1024;
+const LINE_BUDGET = 120;
+const BYTE_BUDGET = 10 * 1024;
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');

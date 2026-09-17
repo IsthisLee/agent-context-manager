@@ -26,10 +26,10 @@
 | --- | --- |
 | 선행 작업 | [지침 카탈로그](../../../contributing/guidance-catalog.md)로 배포 문구의 정본을 한 곳에 모은 작업, [ADR 0005](../../../adr/0005-guidance-level-semantics.md)의 적용 수준 정의 |
 | 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) (Implemented), [지침 적용 수준의 의미 정의](guidance-level-semantics.md) (Implemented) |
-| 후속 제안 | 항목별 문구 구체화(6개 항목마다), 필요할 때만 읽히는 지침 형태로의 분리([프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다) |
+| 후속 제안 | 항목별 문구 구체화(10개 항목마다), 필요할 때만 읽히는 지침 형태로의 분리([프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다) |
 | 연관 제안 | [스코프 확장과 지침 합성](scope-composition.md)(여러 계층을 합치면 분량도 합산된다), [문서 정확성 자동 리뷰](../../repository/topics/doc-accuracy-review.md) |
 | 후속 작업 | 근거 기준 ADR 작성, 현재 6개 문장의 근거 감사 결과 확정, 지침 카탈로그에 근거 열 추가, 분량 예산 평가와 분량 경고 구현, `docs/product-direction.md`에 원칙 반영 |
-| 권장 다음 작업 | 근거 기준·문구·분량 예산은 [ADR 0024](../../../adr/0024-guidance-evidence-and-budget.md)로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
+| 권장 다음 작업 | 근거 기준·문구·분량 예산은 [ADR 0024](../../../adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](../../../adr/0026-guidance-items-and-evidence-tiers.md)으로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
 
 ## 목차
 
@@ -60,7 +60,7 @@ agctx가 배포하는 기본 지침은 사용자가 에이전트 지침을 처�
 
 ## 현재 동작과 빈 곳
 
-`profile setup`은 6개 항목의 문구를 프로필 `AGENTS.md`의 guidance 블록으로 생성한다. 배포 문구의 정본은 [지침 카탈로그](../../../contributing/guidance-catalog.md)이고 실제 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다.
+`profile setup`은 10개 항목의 문구를 프로필 `AGENTS.md`의 guidance 블록으로 생성한다. 배포 문구의 정본은 [지침 카탈로그](../../../contributing/guidance-catalog.md)이고 실제 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다.
 
 2026-09-14 main `73d03c2`에서 측정한 분량은 다음과 같다.
 
@@ -255,3 +255,11 @@ $ agctx profile sync /path/to/project
 - **이름:** 항목 이름과 CLI 옵션을 바꿨다. `--harness` → `--workflow`(작업 흐름), `--documentation` → `--instructions`(지침 파일). 옛 옵션은 남기지 않은 호환성 파괴다.
 - **검사:** `check:docs`에 카탈로그 근거 열 검사를 더했고(`tools/check-docs.ts`의 `checkGuidanceCatalog`), `evals/guidance-budget.test.ts`가 ko·en 모두에서 `strict` guidance 블록이 100줄·8 KiB 이하인지와 6개 항목이 모두 산출물에 들어가는지 검사한다.
 - **남은 것:** 프로젝트 `AGENTS.md` 분량 경고(200줄 초과 또는 24 KiB 이상)는 구현하지 않았다. [별도 문서 분리 옵션](#별도-문서-분리-옵션)의 판단(C 권장)도 그대로 남는다.
+
+### 2026-09-18 · 항목 열 개와 근거 등급 세 단계 (ADR 0026)
+
+- **확정:** [ADR 0026](../../../adr/0026-guidance-items-and-evidence-tiers.md)이 항목 구분, 근거 등급 세 단계, 분량 예산 120줄·10 KiB, 응답 언어 항목의 근거 없음 예외를 정했다.
+- **전문 재독:** 근거 18건을 전문으로 다시 읽고 배포 문구를 문장 단위로 대조했다. 근거를 넘어 쓴 일곱 곳을 원문 범위로 되돌리고, 빠뜨린 것을 되살렸다. 무엇을 왜 되돌렸는지는 [기본 지침 문장의 근거](../../../references.md#기본-지침-문장의-근거)의 각 항목에 적었다.
+- **항목 분리와 추가:** 작업 흐름에서 맥락 관리를, 보안에서 믿을 수 없는 입력을 떼어냈다. 나누는 기준은 근거 문서다. 사용자 요청으로 문서화와 응답 언어를 더했다. 문서화는 쿡북의 정본·링크 문장으로 A급 근거를 찾았고, 응답 언어는 근거가 없어 기본값을 `off`로 두는 예외로 처리했다.
+- **실측:** 모든 항목을 `strict`로 켠 블록은 ko 56줄 7,193바이트, en 56줄 6,452바이트다. 상한의 70%이고 프로필 파일 전체는 65줄로 Claude Code의 200줄 목표 안에 있다.
+- **남은 것:** 프로젝트 `AGENTS.md` 분량 경고(200줄 초과 또는 24 KiB 이상)는 아직 구현하지 않았다. 리뷰어 subagent가 생기면 변경 검토 항목의 점검 목록을 그 프롬프트로 옮기는 것도 [프로필 설정 표면 확장](profile-config-surface.md)의 후속 작업으로 남는다.

@@ -214,7 +214,20 @@ test('connect --branch makes the current branch track that remote branch, and pu
   assert.match(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), /- Member rule/);
 });
 
-test('a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error', t => {
+test('a credential helper that cannot answer reads as a sign-in failure, not an unknown Git error', async () => {
+  const { isRemoteFailure } = await import('../src/shared/git.ts');
+
+  assert.equal(isRemoteFailure('fatal: unable to get password from user\n'), true, 'a helper that cannot answer');
+  assert.equal(isRemoteFailure("remote: Invalid username or password.\nfatal: Authentication failed for 'https://example.com/team.git'\n"), true);
+  assert.equal(isRemoteFailure("fatal: could not read Username for 'https://example.com': terminal prompts disabled\n"), true);
+  assert.equal(isRemoteFailure('error: failed to push some refs\nhint: Updates were rejected because the tip is behind\n'), false, 'a rejected push is not a sign-in failure');
+  assert.equal(isRemoteFailure('fatal: bad object HEAD\n'), false);
+});
+
+// The fake git below sits on PATH as a .cmd shim on Windows, and `git()` starts git without a
+// shell on purpose (src/shared/git.ts), so Windows runs the real git instead of the fake and the
+// run succeeds. The classification itself is covered on every platform by the test above.
+test('a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error', { skip: process.platform === 'win32' ? 'a PATH shim cannot replace git without a shell on Windows' : false }, t => {
   const { root, person, folder } = makeWorkspace(t, 'agctx-git-credentials-');
   const admin = person('admin');
   const member = person('member');

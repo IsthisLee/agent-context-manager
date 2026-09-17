@@ -56,31 +56,7 @@
 
 ### 문서 체계 및 변경 규칙
 
-
-| 문서 | 책임 |
-| --- | --- |
-| `README.md` | 외부 사용자를 위한 한 페이지 패키지 소개: 핵심 문제·기능·구조·빠른 시작·문서 링크 |
-| `docs/README.md` | 문서 입구: 사용 흐름 요약, 사용자·기여자 문서 목차, ADR 색인 |
-| `docs/getting-started/` | 설치와 첫 적용·확인까지의 최소 흐름 |
-| `docs/guides/` | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM |
-| `docs/concepts/` | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인 |
-| `docs/reference/` | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·문제 해결의 정확한 사양 |
-| `docs/faq.md` | 자주 묻는 질문의 짧은 답과 정본 링크 |
-| `docs/contributing/product-direction.md` | 패키지의 목적, 책임 경계, 장기 방향의 정본 |
-| `docs/contributing/architecture.md` | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `guidance-catalog.md` |
-| `docs/contributing/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설 |
-| `docs/contributing/testing.md` | 품질 게이트와 평가 작성 방법 |
-| `docs/contributing/releasing.md` | 공개 저장소 릴리스·보안·기여 운영 계약 |
-| `docs/contributing/doc-gate.md` | 문서 소스 해시 게이트와 문서 근거 게이트 |
-| `docs/contributing/doc-style.md` | 문서의 그림·예시 형식과 작성 규칙 |
-| `docs/contributing/adapters.md` | 새 에이전트를 지원하는 절차 |
-| `docs/discussion/architecture/` | 패키지 기능의 구현 단계별 논의와 계약: 아직 채택되지 않았거나 구현·검증 중인 주제 |
-| `docs/discussion/repository/` | 저장소 운영(문서 게이트·CI·PR 리뷰·기여 절차)의 논의와 계약 |
-| `docs/adr/` | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력 |
-| `docs/references.md` | 외부 근거와 참고 자료 |
-| `CHANGELOG.md` | 사용자 영향 변경과 릴리스 버전 이력 |
-
-
+- **문서별 책임의 정본은 [`docs/README.md`](docs/README.md)의 "문서별 책임" 절이다.** 문서를 추가·이동·폐기하면 그 절을 같은 변경에서 갱신한다. 아래 배치 표는 "이 내용을 어느 문서에 둘지" 판정에만 쓴다.
 - **README 작성 기준:** README는 패키지를 처음 검토하는 사용자를 위한 한 페이지 소개다. 목적과 해결하려는 문제, 현재 제공 기능과 아직 구현되지 않은 다음 단계의 구분, 전제 조건, 최소 시작 명령, 검증의 목적·증거 범위·한계, 동기화·생성 파일의 사용자 영향, 저장소 구조와 정본 문서 링크를 유지하라. 현재 구현되지 않은 기능을 사용 가능한 것처럼 쓰지 말고, 상세 근거·결정·논의는 각 정본 문서로 링크한다.
 - 다른 개발자·에이전트·사용자가 관찰하거나 의존하는 동작, 계약, 설정, 운영 정책, 보안 경계, 호환성이 생성·변경·폐기될 때는 작업 완료 전 같은 변경에서 해당 문서를 갱신하라.
 - **문서·ADR·논의 문서를 고칠 때는 `repo-docs` 스킬을 따른다.** 배치 판정부터 해시 재기록·검증까지의 순서가 그 스킬에 있다(`.agents/skills/repo-docs/SKILL.md`, Claude Code는 `.claude/skills/repo-docs`).
@@ -115,7 +91,7 @@
 - 문서에는 최종 동작 또는 정책, 영향 범위, 검증 증거, 알려진 제약과 후속 작업을 기록하라.
 - 논의가 확정되면 ADR을 작성하고 `docs/contributing/architecture.md`와 사용자 문서에 현재 사실을 반영하라. 구현되지 않은 목표를 현재 아키텍처나 운영 가이드에 사실처럼 기록하지 마라.
 - 패키지의 목적·책임 경계·기본 작업 모델을 바꾸면 `docs/contributing/product-direction.md`, 관련 README 요약, ADR을 같은 변경에서 갱신하라.
-- 문서화 방향, 문서별 책임, 문서화 구조, 이 표의 위치 또는 변경 규칙 자체를 바꾸면 이 `AGENTS.md` 섹션과 `docs/contributing/product-direction.md`, `docs/README.md`를 같은 변경에서 함께 갱신하라.
+- 문서화 방향, 문서화 구조, 배치 표 또는 변경 규칙 자체를 바꾸면 이 `AGENTS.md` 섹션과 `docs/contributing/product-direction.md`, `docs/README.md`를 같은 변경에서 함께 갱신하라.
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
 - 공개 저장소 운영 계약을 변경할 때는 `docs/contributing/releasing.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.

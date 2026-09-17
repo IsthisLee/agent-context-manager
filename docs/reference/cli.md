@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 4dfcb328e051a9cb8e78be4d4edc9421bbe77763ba90f591cff2445ae26a1375 -->
+<!-- agctx-doc-sources-sha256: 3ca1c8e9fcfa9e08264a344059dfbb05ade7717e567b1e6ebb27c4391fa8b6f0 -->
 
 ## 설치와 실행
 
@@ -255,7 +255,7 @@ agctx profile remove [--yes] [<name>]
 
 <!-- agctx:generated:usage:profile.setup:start -->
 ```bash
-agctx profile setup [--workflow <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--instructions <level>] [--security <level>] [<name>]
+agctx profile setup [--workflow <level>] [--context <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--instructions <level>] [--docs <level>] [--security <level>] [--untrusted <level>] [--language <level>] [<name>]
 ```
 
 종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
@@ -265,17 +265,21 @@ agctx profile setup [--workflow <level>] [--tdd <level>] [--review <level>] [--v
 | --- | --- |
 | `<name>` | 설정할 프로필; 생략하면 TUI에서 `scope · 이름` 목록으로 선택 |
 | `--workflow <level>` | 작업 흐름 지침 |
+| `--context <level>` | 맥락 관리 지침 |
 | `--tdd <level>` | TDD 지침 |
 | `--review <level>` | 변경 검토 지침 |
 | `--verification <level>` | 검증 지침 |
 | `--instructions <level>` | 지침 파일 지침 |
+| `--docs <level>` | 문서화 지침 |
 | `--security <level>` | 보안 지침 |
+| `--untrusted <level>` | 믿을 수 없는 입력 지침 |
+| `--language <level>` | 응답 언어 지침 (기본값 `off`) |
 
-모든 지침 옵션의 `<level>`은 `off`, `recommended`, `strict` 중 하나다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 `recommended`다.
+모든 지침 옵션의 `<level>`은 `off`, `recommended`, `strict` 중 하나다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 응답 언어가 `off`이고 나머지는 `recommended`다.
 
 지침 옵션을 하나라도 전달하면 `<name>`이 필요하고, 전달한 항목만 바꾼다. 지침 옵션을 하나도 전달하지 않으면 TUI가 열린다. `<name>`도 없으면 먼저 프로필을 고르고, 그다음 각 지침의 설명과 현재값을 확인해 수준을 고른다. 마지막에 전체 설정 요약을 보여 주며, 사용자가 승인한 경우에만 프로필에 저장한다.
 
-표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 작업 흐름·TDD·변경 검토·검증·지침 파일·보안 순서의 수준이다. 빈 줄은 기존 설정을 유지한다. `--json`을 주면 표준 입력을 읽지 않고 종료 코드 64로 멈춘다.
+표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 순서의 수준이다. 빈 줄은 기존 설정을 유지한다. `--json`을 주면 표준 입력을 읽지 않고 종료 코드 64로 멈춘다.
 
 Git 프로필이면 `setup`이 바꾼 `AGENTS.md`와 `profile.json`은 커밋하지 않은 변경으로 남는다. 팀과 공유하려면 프로필 폴더에서 커밋한 뒤 `profile push`한다.
 

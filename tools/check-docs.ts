@@ -9,6 +9,7 @@ import { hasImplementationRecord, requiresImplementationRecord } from './discuss
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
 import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutRecordedHash } from './doc-sources.ts';
+import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors: string[] = [];
@@ -236,9 +237,12 @@ function checkGuidanceCatalog() {
   }
   const content = fs.readFileSync(catalog, 'utf8');
   const rows = content.split('\n').filter(line => line.startsWith('| `--'));
-  if (rows.length !== 6) {
-    errors.push(`docs/contributing/guidance-catalog.md: expected one row per guidance option, found ${rows.length}`);
+  if (rows.length !== GUIDANCE_KEYS.length) {
+    errors.push(`docs/contributing/guidance-catalog.md: expected one row per guidance option (${GUIDANCE_KEYS.length}), found ${rows.length}`);
     return;
+  }
+  for (const key of GUIDANCE_KEYS) {
+    if (!rows.some(row => row.startsWith(`| \`--${key}\``))) errors.push(`docs/contributing/guidance-catalog.md: no row for --${key}`);
   }
   for (const row of rows) {
     const option = row.split('|')[1].trim();

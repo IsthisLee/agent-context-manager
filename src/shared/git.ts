@@ -10,7 +10,7 @@ export interface GitOutput {
   stderr: string;
 }
 
-const REMOTE_FAILURE = /Authentication failed|could not read (Username|Password)|Permission denied \(publickey\)|Repository not found|does not appear to be a git repository|Could not resolve host|unable to access|Connection (timed out|refused)|Host key verification failed/i;
+const REMOTE_FAILURE = /Authentication failed|could not read (Username|Password)|unable to get password|Permission denied \(publickey\)|Repository not found|does not appear to be a git repository|Could not resolve host|unable to access|Connection (timed out|refused)|Host key verification failed/i;
 
 /**
  * Run git with separate arguments, never through a shell. Outside a terminal

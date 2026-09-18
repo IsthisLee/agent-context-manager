@@ -1,6 +1,6 @@
 {
   "name": "agent-context-manager",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "packageManager": "pnpm@10.15.0",
   "description": "A profile-based context manager for AI coding agents: keep rules in profiles, apply one per repository, and keep Codex, Claude Code, and Antigravity in sync",
   "repository": {

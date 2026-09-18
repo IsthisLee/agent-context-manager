@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-19
+
 ### Changed
 
 - 라이선스를 Apache-2.0에서 **MIT**로 바꿨다. 이미 게시한 0.3.0과 0.3.1은 Apache-2.0으로 남고, MIT는 다음 게시 버전부터다. 근거는 [ADR 0031](docs/adr/0031-drop-open-source-process-files.md)

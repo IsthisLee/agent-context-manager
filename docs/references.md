@@ -20,6 +20,7 @@
   - [전역 지침 공유 결론](#전역-지침-공유-결론)
   - [전역 지침 위치의 공식 문서와 이슈](#전역-지침-위치의-공식-문서와-이슈)
   - [전역 지침 공유 실측](#전역-지침-공유-실측)
+  - [적용 후 확인](#적용-후-확인)
   - [Cowork 참고](#cowork-참고)
 - [APM과 함께 쓰기 근거](#apm과-함께-쓰기-근거)
 - [모노레포 연결 파일 근거](#모노레포-연결-파일-근거)
@@ -775,7 +776,7 @@
 | 에이전트 | 공통 파일에 연결하는 방식 | CLI | 앱 |
 | --- | --- | --- | --- |
 | Claude Code | `~/.claude/CLAUDE.md` 안에 `@~/.config/agents/AGENTS.md` 한 줄 | 읽음 (메인, 서브에이전트) | 읽음 (Claude 앱 Code 탭, 로컬 환경) |
-| Codex | `~/.codex/AGENTS.md`를 공통 파일로 가는 심볼릭 링크로 둠 | 읽음 | 읽음 (앱 화면은 일반 파일로, 링크는 앱에 든 엔진으로 잼) |
+| Codex | `~/.codex/AGENTS.md`를 공통 파일로 가는 심볼릭 링크로 둠 | 읽음 | 읽음 (앱 화면도 링크 경유로 확인) |
 | Antigravity | `~/.gemini/GEMINI.md`를 공통 파일로 가는 심볼릭 링크로 둠 | 읽음 | 읽음 |
 
 **도구 전용 지침**
@@ -790,7 +791,8 @@
 - 공통 파일과 따로 전용 지침을 둘 수 있는 곳은 Claude Code(CLI, Code 탭), Codex CLI, Antigravity CLI다. Codex 앱에서는 `developer_instructions`가 빠진다.
 - Antigravity 전역 플러그인 규칙은 `trigger: always_on` frontmatter가 있어야 읽었다. frontmatter가 없는 규칙 파일은 읽지 않았다.
 - Antigravity `GEMINI.md` 안의 `@` 줄은 가리키는 파일의 내용을 끼워 넣지 않았다. 공식 문서는 `@`를 다른 파일을 가리키는 참조로 설명한다.
-- 재지 않은 것: Codex 앱 화면에서 링크를 따라 읽는지, Antigravity 앱이 전역 플러그인 규칙을 읽는지, Gemini CLI(인증 단계 오류로 측정하지 못함).
+- 재지 않은 것: Antigravity 앱이 전역 플러그인 규칙을 읽는지, Gemini CLI(인증 단계 오류로 측정하지 못함).
+- 실제 환경에 이 구조를 적용한 뒤 다시 쟀다. Claude Code CLI, Codex CLI, Antigravity CLI, Claude 앱 Code 탭, Codex 앱, Antigravity 앱이 모두 새 공통 파일을 읽었다([적용 후 확인](#적용-후-확인)).
 - 코딩 에이전트가 아닌 Claude 앱 Cowork의 결과는 [Cowork 참고](#cowork-참고)에 따로 적었다.
 
 ### 전역 지침 위치의 공식 문서와 이슈
@@ -909,6 +911,21 @@
 
   - Claude Code의 `@` 가져오기는 링크인 `CLAUDE.md` 안에서 다시 링크인 `~/.config/agents/AGENTS.md`를 가리켜도 읽었다. `/context`는 rules 파일을 링크 대상 경로로 표시했다.
   - 링크 파일을 고칠 때도 쟀다. Claude Code(이 세션의 Edit·Write 도구)는 링크 경로에 쓰기를 거부하고 대상 경로에 쓰라고 안내했다. 링크는 그대로였고 원본은 바뀌지 않았다. 오류는 `Refusing to write <경로>: it is a symbolic link. Write to the link's target path instead.`였다. Codex CLI(`-s workspace-write`)는 Python으로 파일을 열어 그 자리에서 덧붙였고, Antigravity CLI(`--dangerously-skip-permissions`)도 원본에 줄을 더했다. 두 경우 모두 링크가 유지됐다. Codex와 Antigravity가 고치는 방법은 모델이 고르므로 한 번 잰 결과다.
+
+### 적용 후 확인
+
+한 사용자의 실제 환경에 위 저장소 구조를 적용하고 다시 쟀다(2026-09-18). 실제 파일은 `~/agent-config/`(git 저장소)에 두고, `~/.codex/AGENTS.md`·`~/.gemini/GEMINI.md`·`~/.config/agents/AGENTS.md`는 저장소의 공통 파일을, `~/.claude/CLAUDE.md`와 `~/.claude/rules/ecc-priority.md`는 저장소의 Claude 전용 파일을 가리키는 심볼릭 링크로 만들었다. `~/.claude/CLAUDE.md` 첫 줄은 `@~/.config/agents/AGENTS.md`이므로 가져오기 경로도 링크다.
+
+| 경로 | 결과 | 판정 근거 |
+| --- | --- | --- |
+| Claude Code CLI | 읽음 | `claude -p "/context"`의 Memory files에 `~/.claude/CLAUDE.md`, `~/.config/agents/AGENTS.md`, `~/agent-config/claude/rules/ecc-priority.md`가 나옴 |
+| Codex CLI | 읽음 | 새 세션 기록에 공통 파일의 새 문장이 들어감 |
+| Antigravity CLI | 읽음 | 공통 파일의 새 문장이 지침에 있느냐는 질문에 `YES` |
+| Claude 앱 Code 탭 | 읽음 | 같은 질문에 `YES` (사용자가 앱에서 물음) |
+| Antigravity 앱 | 읽음 | 같은 질문에 `YES` (사용자가 앱에서 물음) |
+| Codex 앱 | 읽음 | 같은 질문에 `YES` (사용자가 앱에서 물음) |
+
+- 이로써 Codex 앱 화면도 링크를 따라 공통 파일을 읽는 것이 확인됐다. Antigravity 앱이 전역 플러그인 규칙을 읽는지는 이번에도 재지 않았다.
 
 ### Cowork 참고
 

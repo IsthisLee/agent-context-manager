@@ -24,6 +24,10 @@
 
 Claude Code는 `AGENTS.md`를 직접 읽지 않고 `CLAUDE.md`만 읽는다. `agctx profile sync`를 실행하면 하위 `AGENTS.md` 옆에 그 파일을 가져오는 `CLAUDE.md` 연결 파일을 만든다. 또 하위 폴더에서 Claude Code를 시작하면 루트 `AGENTS.md`는 시작 폴더 밖의 파일이 된다. 그래서 그 프로젝트를 처음 대화형으로 열 때 뜨는 승인 창에서 허용해야 루트 규칙도 들어간다([모노레포에서 쓰기](guides/monorepo.md)).
 
+## 전역(사용자 수준) 지침도 agctx가 관리하나요?
+
+관리하지 않는다. agctx는 프로필을 저장소에 적용하는 도구이고, `~/.claude/CLAUDE.md`·`~/.codex/AGENTS.md`·`~/.gemini/GEMINI.md` 같은 사용자 수준 파일은 저장소를 구분하지 못한다([성격이 다른 저장소 여럿에 프로필 나눠 쓰기](guides/multi-repo-individual.md)). 이 파일들을 직접 하나로 모으려면 원본을 한 폴더에 두고 각 도구가 읽는 자리를 그 원본으로 연결한다. Codex와 Antigravity는 심볼릭 링크로, Claude Code는 `CLAUDE.md`의 `@` 가져오기로 연결한다. 여러 컴퓨터에서 맞추려면 그 폴더를 Git 저장소로 관리한다. 어떤 연결 방식이 실제로 읽히는지, 도구 전용 지침을 어디에 둘 수 있는지는 [전역 지침 파일 공유 근거](references.md#전역-지침-파일-공유-근거)에 실측으로 정리해 두었다.
+
 ## 여러 컴퓨터에서 같은 프로필을 쓰려면요?
 
 프로필 폴더를 Git 저장소로 만들어 첫 커밋을 하고, `profile connect`와 `profile push`로 내 Git 원격에 올린다. 다른 컴퓨터에서는 `profile clone <원격 주소>`로 받는다. 이미 적용한 저장소는 커밋된 파일로 지침을 받으므로 다시 적용하지 않아도 된다([성격이 다른 저장소 여럿에 프로필 나눠 쓰기](guides/multi-repo-individual.md#다른-컴퓨터에서-같은-프로필-쓰기)).

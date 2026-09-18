@@ -55,11 +55,11 @@ jobs:
 ```
 
 - 프로필 저장소가 비공개면 `--refresh`의 `git ls-remote`가 그 저장소를 읽을 수 있어야 한다. 배포 키나 토큰을 Git 설정으로 제공하지 않으면 종료 코드 69로 끝난다. 방법은 아래 [프로필 저장소가 비공개일 때](#프로필-저장소가-비공개일-때)에 있다.
-- 뒤처짐을 실패가 아니라 알림으로만 쓰려면 이 단계에 `continue-on-error: true`를 둔다. 충돌(2)과 숨은 문자(3)까지 무시하게 되므로 종료 코드를 나눠 처리하려면 `--json`(결과를 JSON 문서 하나로 출력하는 옵션) 결과의 `exitCode`를 읽는다.
+- 뒤처짐을 실패가 아니라 알림으로만 두려면 이 단계에 `continue-on-error: true`를 붙인다. 다만 그렇게 하면 충돌(2)과 숨은 문자(3)까지 함께 무시된다. 종료 코드를 나눠 처리하려면 `--json`(결과를 JSON 문서 하나로 출력하는 옵션) 결과의 `exitCode`를 읽는다.
 
 ## 프로필 저장소가 비공개일 때
 
-비공개여도 검사 대부분은 자격 증명 없이 된다. 관리 영역 변조(2)와 숨은 문자(3)는 프로젝트 안의 파일과 `agctx.project.json`에 기록된 해시만 보므로 네트워크를 쓰지 않는다.
+비공개 저장소여도 검사 대부분은 자격 증명 없이 끝난다. 관리 영역 변조(2)와 숨은 문자(3)는 프로젝트 안의 파일과 `agctx.project.json`에 기록된 해시만 보므로 네트워크를 쓰지 않는다.
 
 ```bash
 $ agctx check /path/to/orders-api
@@ -102,7 +102,7 @@ $ agctx check --refresh /path/to/orders-api
           npx --yes agent-context-manager check --refresh .
 ```
 
-배포 키는 SSH로만 쓰므로 `agctx.project.json`의 `source.git`이 `git@github.com:<소유자>/<저장소>.git` 형식이어야 한다. HTTPS 주소로 기록된 프로젝트라면 `git config --global url."git@github.com:".insteadOf "https://github.com/"`로 주소를 바꾼다.
+배포 키는 SSH 주소에서만 쓰이므로 `agctx.project.json`의 `source.git`이 `git@github.com:<소유자>/<저장소>.git` 형식이어야 한다. HTTPS 주소로 기록된 프로젝트라면 `git config --global url."git@github.com:".insteadOf "https://github.com/"`로 주소를 바꾼다.
 
 ## 에이전트 전달을 CI에서 확인하기
 

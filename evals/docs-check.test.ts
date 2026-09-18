@@ -47,6 +47,18 @@ test('every discussion area with a topics folder is checked, so repository topic
   assert.match(checker, /discussionRoots/);
 });
 
+test('the guidance catalog is a user-facing reference and the checker guards it there', () => {
+  assert.ok(
+    fs.existsSync(path.join(repoRoot, 'docs/reference/guidance-catalog.md')),
+    'users read what each guidance item writes, so the catalog belongs with the other specifications'
+  );
+  assert.ok(!fs.existsSync(path.join(repoRoot, 'docs/contributing/guidance-catalog.md')));
+
+  const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
+  assert.match(checker, /'reference', 'guidance-catalog\.md'/);
+  assert.doesNotMatch(checker, /'contributing', 'guidance-catalog\.md'/);
+});
+
 test('repository operations discussions live apart from the package implementation plan', () => {
   const topic = path.join(repoRoot, 'docs/discussion/repository/topics/doc-accuracy-review.md');
 

@@ -149,7 +149,7 @@ Cloned profile team-backend at commit e0caeb1.
 Next: agctx profile apply team-backend <project>
 ```
 
-`clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞였는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함에 등록한다.
+`clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함에 등록한다.
 
 ### 2. 갱신 방식 고르기
 
@@ -241,7 +241,7 @@ Antigravity · started in the project root
   read         .agents/rules/agctx.md  trigger: always_on
 ```
 
-`check`가 오류 없이 끝나고, `explain`에서 세 에이전트가 모두 `AGENTS.md`를 읽으면 된다. `…`는 사용자 수준 지침 파일처럼 컴퓨터마다 다른 줄을 줄인 곳이다.
+`check`가 오류 없이 끝나고, `explain`에서 세 에이전트가 모두 `AGENTS.md`를 읽으면 된다. `…`는 사용자 수준 지침 파일처럼 컴퓨터마다 달라지는 줄을 생략한 자리다.
 
 ## 프로필이 바뀌었을 때
 
@@ -258,7 +258,7 @@ sequenceDiagram
   CI->>R: check --refresh → 0
 ```
 
-관리자가 올린 변경은 적용 담당이 받아 반영하기 전까지 프로젝트에 들어가지 않는다. 그 사이의 뒤처짐은 CI의 `check --refresh`가 드러낸다.
+관리자가 올린 변경은 적용 담당이 받아 반영하기 전까지 프로젝트에 들어가지 않는다. 그 사이에 저장소가 뒤처진 것은 CI의 `check --refresh`가 알려 준다.
 
 ### 1. 관리자: 고쳐서 올리기
 
@@ -284,7 +284,7 @@ $ agctx check --refresh .
 behind            -  the source repository has a newer commit (ab35396)
 ```
 
-`--refresh`는 `agctx.project.json`에 기록한 프로필 원격 저장소의 최신 커밋을 읽어 기록과 비교한다. 더 새 커밋이 있으면 뒤처짐으로 보고 종료 코드 1로 끝나므로 CI 작업이 실패로 표시된다. 종료 코드의 뜻은 [종료 코드](../reference/exit-codes.md)에, 설정 방법은 [CI와 자동화에서 쓰기](ci.md#ci에서-확인하기)에 있다.
+`--refresh`는 `agctx.project.json`에 기록한 프로필 원격 저장소의 최신 커밋을 읽어 기록과 비교한다. 더 최근 커밋이 있으면 뒤처진 것으로 보고 종료 코드 1로 끝나므로 CI 작업이 실패로 표시된다. 종료 코드의 뜻은 [종료 코드](../reference/exit-codes.md)에, 설정 방법은 [CI와 자동화에서 쓰기](ci.md#ci에서-확인하기)에 있다.
 
 ### 3. 적용 담당: 받아서 반영하기
 
@@ -329,5 +329,5 @@ git pull
 ## 다음 단계
 
 - 서비스 저장소가 여럿이면 [갱신 방식 고르기](update-policies.md)의 `repos pr`로 저장소마다 PR을 연다.
-- 저장소 CI에 [`agctx check`](ci.md#ci에서-확인하기)를 넣어 뒤처진 저장소를 잡는다.
+- 저장소 CI에 [`agctx check`](ci.md#ci에서-확인하기)를 넣어 뒤처진 저장소를 찾아낸다.
 - `push`·`pull`이 멈추거나 CI의 `check`가 실패하면 [문제 해결](../reference/troubleshooting.md)을 본다.

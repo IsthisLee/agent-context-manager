@@ -1,16 +1,15 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: 5c146c033fdae594f4ae29cfea51def7f1465b8dc77e9b6779f1bbbd5a5e727b -->
+<!-- agctx-doc-sources-sha256: 4852f3fc766b5e5ec2c6b104ddf01ed54a6ff24c5befbcc3db8e19a2e1697178 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agent-context-manager/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agent-context-manager)
 [![npm](https://img.shields.io/npm/v/agent-context-manager?logo=npm&color=cb3837)](https://www.npmjs.com/package/agent-context-manager)
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#supported-agents)
 
-[Getting Started](#getting-started) · [Core goals](#core-goals) · [Use cases](#use-cases) · [Core features](#core-features) · [Supported agents](#supported-agents) · [Not supported](#not-supported) · [Architecture direction](#architecture-direction-and-progress) · [Documentation](#documentation) · [Open-source participation](#open-source-participation)
+[Core goals](#core-goals) · [Use cases](#use-cases) · [Guides by situation](#guides-by-situation) · [Getting Started](#getting-started) · [Core features](#core-features) · [Supported agents](#supported-agents) · [Not supported](#not-supported) · [Architecture direction](#architecture-direction-and-progress) · [Documentation](#documentation) · [Open-source participation](#open-source-participation)
 
 Read in: **English** · [한국어](README.md)
 
@@ -23,6 +22,10 @@ Read in: **English** · [한국어](README.md)
 
 </p>
 
+**Your working principles for TDD, security, documentation, skills, and MCP are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
+
+agctx manages those standards as a Profile. Applying the Profile to a project creates the instruction files that Codex, Claude Code, and Antigravity read, in one pass. After you change the standard in the Profile and sync, you do not edit each project's files again, and each project's own domain rules stay intact. It is one flow: `profile create` → `profile setup` → `profile apply`/`profile sync`.
+
 - 👥 Personal, Team & Company Profiles
 - 🧩 Rules, Skills, MCP, Subagents & Hooks in One Profile (beyond rules: planned)
 - 📋 Choose Recommended Guidance: TDD, Verification, Security & More
@@ -31,21 +34,44 @@ Read in: **English** · [한국어](README.md)
 - 🛡️ Project-Specific Guidance Stays Intact
 - 🌿 Git Sharing, CI Checks & Multi-Repo PRs
 
-**Your working principles for TDD, security, documentation, skills, and MCP are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
+> ⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`). The same problem shows up in the skills, MCP server settings, subagent definitions, and hooks a team shares. The scope is expanding to cover those in one Profile too.
 
-agctx manages those standards as a Profile. Applying the Profile to a project creates the instruction files that Codex, Claude Code, and Antigravity read, in one pass. After you change the standard in the Profile and sync, you do not edit each project's files again, and each project's own domain rules stay intact. The same problem shows up beyond rules, in the skills, MCP server settings, and subagent definitions a team shares. agctx manages rules today and is extending the same Profile to cover them.
+## Core goals
 
 > agctx creates and configures agent context as Profiles for individuals and organizations, manages them locally or through Git, and safely applies and synchronizes them across projects and multiple AI agents.
->
-> Where agctx is headed: rules, skills, MCP, subagents, and hooks managed as Profiles and picked per repository, so every agent follows the same setup and stays in sync.
->
-> (⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`); the scope is expanding to skills, MCP, subagents, and hooks.)
 
-In one flow of `profile create` → `profile setup` → `profile apply`/`profile sync`, you build a **Profile** (the single source of truth for shared context) and apply it to your **project files**, and **multiple AI agents** work to the same standard.
+Guidance lives in two places. What many projects follow goes in the Profile and is edited only there. What only one project needs is written directly in that project's `AGENTS.md`. When you sync, agctx regenerates only the part that came from the Profile and leaves what you wrote in the project untouched.
+
+> [!NOTE]
+> agctx distributes a Profile's shared context to projects and multiple agents. It does not analyze a codebase to write project guidance automatically. [See why](#not-supported)
+
+## Use cases
+
+| Who | How you use it | What you get |
+| --- | --- | --- |
+| An individual developer | Create `Personal` Profiles for different project types and apply one to each repository with `profile apply`. | Reuse the same development standard when you switch AI tools or start a new project. |
+| A team | Share a team Profile in a Git repository; the person who applies it runs `profile clone` or `pull`, applies it to the team's repositories, and commits the result. Add `--pin` to stay on a reviewed commit. | Review and distribute shared-context updates through one history, so per-person configuration drift goes away. Roles and steps are in [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나). |
+| An organization | Manage organization-wide standards in a Git-backed Profile; teams and projects add only their domain rules to the project `AGENTS.md`. | Keep organization standards and project-specific requirements separate. CI runs `agctx check --refresh` to confirm each repository reflects the latest standard. |
+
+Other teammates only pull the repository and do not need agctx. Their agents read the committed instruction files as they are.
+
+## Guides by situation
+
+Pick the guide that fits your situation. The same list is in the [documentation index (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드).
+
+| Situation                                                  | Guide                                                                                                                                                            |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Using menus instead of commands                            | [Using the TUI (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md)                                                        |
+| Handing agctx to an agent                                  | [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)                                   |
+| Several repositories of different kinds, several computers | [Splitting Profiles across different repositories (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-repo-individual.md)   |
+| Several clients                                            | [Keeping each client's rules separate (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-client.md)                        |
+| Sharing a team Profile                                     | [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)                             |
+| Monorepo                                                   | [Using agctx in a monorepo (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/monorepo.md)                                       |
+| Pinning and the scheduled bot                              | [Choosing an update policy: pinning and the scheduled bot (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/update-policies.md) |
+| CI and scripts                                             | [Using agctx in CI and automation (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/ci.md)                                      |
+| With Microsoft APM                                         | [Using agctx with APM (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/apm-coexistence.md)                                     |
 
 ## Getting Started
-
-> Step-by-step installation through the first apply is in the [quick start (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md), and you can pick usage by situation from the [guides by situation](#guides-by-situation) below.
 
 > Runtime: Node.js 22 LTS or newer
 
@@ -80,86 +106,30 @@ Applied profile company to /path/to/project
 
 Profiles are stored in the `~/.agctx/profiles/<name>` folder on this machine. After applying, write a project's domain rules below the `Project rule extensions` section of the project `AGENTS.md`. The shared guidance above it is regenerated by agctx when you sync.
 
-agctx provides commands to create, set up, apply, synchronize, and share Profiles through Git, to check repositories, to check that agents receive the guidance, and to sync and open pull requests across many repositories. For detailed contracts and implementation records, see the [current architecture](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/contributing/architecture.md) and the [implementation plans](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/).
+Step-by-step installation through the first apply is in the [quick start (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md).
 
-### Guides by situation
+### Hand it to an agent (optional)
 
-Pick the guide that fits your situation. The same list is in the [documentation index (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드).
-
-| Situation                                                  | Guide                                                                                                                                                            |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Using menus instead of commands | [Using the TUI (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md) |
-| Several repositories of different kinds, several computers | [Splitting Profiles across different repositories (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-repo-individual.md)   |
-| Several clients                                            | [Keeping each client's rules separate (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-client.md)                        |
-| Sharing a team Profile                                     | [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)                             |
-| Monorepo                                                   | [Using agctx in a monorepo (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/monorepo.md)                                       |
-| Pinning and the scheduled bot                              | [Choosing an update policy: pinning and the scheduled bot (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/update-policies.md) |
-| CI and scripts                                             | [Using agctx in CI and automation (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/ci.md)                                      |
-| Handing agctx to an agent                                  | [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)                                   |
-| With Microsoft APM                                         | [Using agctx with APM (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/apm-coexistence.md)                                     |
-
-## Core goals
-
-> Multiple agents and developers work and collaborate against the same shared context.
->
-> Create and manage per-purpose Profiles (shared context stores such as Personal, Company, Team, and Workspace) and choose which to apply per project.
-
-Reduce the working styles, rules, and verification standards that otherwise vary by developer and agent, keeping a consistent collaboration standard.
-
-A Profile's shared context is managed as a single source of truth, while each project adds its own domain rules separately in its own `AGENTS.md`.
-
-Individual developers can also split and reuse per-project `Personal` Profiles and keep the same context even when the AI tools they use change. This reduces repeated setup and rule drift between projects, making both maintenance and development easier.
-
-> [!NOTE]
-> agctx distributes a Profile's shared context to projects and multiple agents. It does not analyze a codebase to write project guidance automatically. [See why](#not-supported)
-
-## Use cases
-
-### Individual development
-
-- **Use it this way:** Create Personal Profiles for different project types, configure their guidance through `profile setup`, and apply one to each project with `profile apply`.
-- **Benefit:** Reuse the same development standard when switching AI tools or starting a new project.
-
-### Team collaboration
-
-- **Use it this way:** Share a team Profile in a Git repository; the person who applies it runs `profile clone` or `pull`, applies it to the team's projects, and commits the result. Other teammates only pull the repository and do not need agctx. Add `--pin` to stay on a reviewed commit.
-- **Benefit:** Review and distribute shared-context updates through one history while reducing per-person configuration drift.
-- **More:** CI runs `agctx check` to confirm that a repository reflects the latest Profile version. What each role needs and the steps are in [Sharing with a team through Git (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나).
-
-### Organization standards
-
-- **Use it this way:** Manage organization-wide standards in a Git-backed Profile; teams and projects add their own domain rules in the project `AGENTS.md`.
-- **Benefit:** Keep organization standards and project-specific requirements managed independently, without mixing them. CI runs `agctx check --refresh` to confirm each repository reflects the latest standard.
-
-## Core features
-
-- `agctx profile create [<name>] [--scope <scope>]` — create a Profile for the `personal`, `company`, `team`, or `workspace` purpose; omit the name for TUI input.
-- `agctx profile list [--scope <scope>]` — list, select, and manage Profiles by scope; in the TUI you choose the scope first.
-- `agctx profile setup [<name>] [--tdd <level> …]` — set the level (`off`, `recommended`, `strict`) of six items: workflow, TDD, change review, verification, instruction files, and security; without level options the TUI asks for each item, and without a name the TUI first asks for the Profile.
-- `agctx profile remove [<name>]` — delete the selected Profile after confirmation; files already applied to projects are kept.
-- `agctx profile apply <name> <project> [--pin]` — apply the selected Profile to a project and record the Profile version; `--pin` keeps the project on that commit, so a new Profile commit does not change it through `sync` and only another `apply --pin` moves it.
-- `agctx profile sync <project>` — reapply only the managed areas from the Profile recorded for the project.
-- `agctx profile resolve <project>` — move edits made inside a managed area outside it and regenerate the area; when the last applied version is unknown, `--discard` backs up and regenerates, and `--edit` opens a VS Code three-way merge.
-- Generate and synchronize per-agent guidance files.
-- `agctx profile clone|status|pull|push|connect` — share Profiles through a standard Git remote; project files are never touched, and incoming Profile content with hidden characters is refused.
-- `agctx check [--refresh] <project>` — without changing files, report through exit codes whether the managed area was edited outside agctx, whether hidden characters exist, and whether the project is behind its recorded Profile version (for CI); `--refresh` also compares with the latest commit of the Profile's remote repository.
-- `agctx repos list|status|sync|pr` — check and sync every repository that uses a Profile at once, and update pinned repositories through one pull request each; a scheduled bot that opens pull requests from CI at set times runs `repos pr --targets <file> --yes`.
-- `agctx explain [<path>]` — show which instruction files Codex, Claude Code, and Antigravity read when started in a folder, and why; exits with 4 when any checked agent misses an instruction file.
-- `agctx verify [--probe] [<path>]` — check from agent session logs that the instruction files actually arrived; `--probe` runs each agent once in a scratch copy after approval.
-- Agent skills `agctx` and `agctx-author` — tell an agent the commands and approval rules when you hand agctx over in plain language.
-- Monorepos and APM — create a `CLAUDE.md` link next to every nested `AGENTS.md` so Claude Code reads it, work alongside Microsoft APM's `managed_section` block, and stop instead of writing into files APM regenerates in its default mode.
-- Every command — a `--json` result document, exit codes that separate behind, conflict, and hidden characters, and `agctx <command> --help`; commands that change files cannot ask for confirmation outside a terminal, so they run only with `--yes` there.
-- `agctx config lang <ko|en>` — set the display and generation language; the default is English, can also be set with `--lang` / `AGCTX_LANG`, and is chosen once on the first interactive run and saved.
-
-### Hand it to an agent
-
-Install the agent skills and you can hand agctx to an agent in plain language, such as "check that this repository's context is up to date". The skills make the agent show `--dry-run` output and ask for approval before any write command. The `agctx-author` skill for publishing Profiles and opening PRs is used only when you call it by name.
+Up to here a person ran the commands. Install the agent skills and you can hand the rest to an agent in plain language, such as "check that this repository's context is up to date": the agent runs `agctx check` and explains the result. The skills make the agent show `--dry-run` output and ask for approval before any write command. The `agctx-author` skill for publishing Profiles and opening PRs is used only when you call it by name.
 
 ```bash
 DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
 ```
 
 The skills CLI sends anonymous usage data; with `DISABLE_TELEMETRY=1` as above it sends none. Details are in the [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md).
+
+## Core features
+
+- **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` sets the level (`off`, `recommended`, `strict`) of ten items: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
+- **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
+- **Share through Git** — `profile clone`, `status`, `pull`, `push`, `connect`. They use a standard Git remote, never touch project files, and stop when incoming Profile content carries hidden characters.
+- **Check a repository** — `check` changes no files and reports through exit codes whether the managed area was edited outside agctx, whether hidden characters exist, and whether the project is behind its recorded Profile version. `--refresh` also compares with the latest commit on the remote.
+- **Many repositories** — `repos list`, `status`, `sync`, `pr` handle every repository that uses a Profile at once, and pinned repositories are updated through one pull request each. A scheduled bot runs `repos pr --targets <file> --yes`.
+- **Confirm delivery** — `explain` shows which instruction files an agent reads when started in a folder, and why, and exits with 4 when any checked agent misses one. `verify` confirms from session logs that they actually arrived, and `--probe` runs each agent once in a scratch copy after approval.
+- **Monorepos and APM** — a `CLAUDE.md` link file is created next to every nested `AGENTS.md` so Claude Code reads it, and agctx works alongside Microsoft APM's `managed_section` block. It stops instead of writing into files APM regenerates in its default mode.
+- **Contracts shared by every command** — a `--json` result document, exit codes that separate behind, conflict, and hidden characters, and `agctx <command> --help`. Commands that change files cannot ask for confirmation outside a terminal, so they run only with `--yes`. The display and generation language is set with `config lang <ko|en>`.
+
+Options, exit codes, and usage for each command are in the [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md).
 
 ### Scope of verification
 
@@ -190,15 +160,18 @@ Whether an agent actually reads a file depends on the folder it starts in. Codex
 | The benefit is unproven.                        | In a study, agents followed the instructions in context files, yet task success rates did not generally improve and inference cost rose by over 20% on average. Repository overviews were not helpful.                                                                                              |
 | It is outside agctx's scope.                    | Deep analysis needs model calls. agctx does not handle model calls or agent runtimes.                                                                                                                                                                                                               |
 
-Refine a `/init` draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the agctx managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict, and `profile resolve` then moves those edits outside the managed area. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md#프로젝트-지침-자동-생성에-관한-근거).
+> [!Tip]
+> When you need a draft written for one repository, use each agent's `/init` or [microsoft/agentrc](https://github.com/microsoft/agentrc). agentrc measures a repository's AI readiness, generates instruction files tailored to that codebase, and can write `AGENTS.md` with `--output AGENTS.md`. The comparison and how to combine them are in the [references (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md#비교-대상).
+
+Refine such a draft by hand, then place it in the project extension area of `AGENTS.md`, because `AGENTS.md` is the standard that many agents read in common. If you keep it in `CLAUDE.md`, place it outside the agctx managed block. Editing inside a managed area makes the next `profile sync` stop with a conflict, and `profile resolve` then moves those edits outside the managed area. The decision and its sources are in [ADR 0006](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/adr/0006-no-codebase-analysis-guidance.md) and the [references](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md#프로젝트-지침-자동-생성에-관한-근거).
 
 ## Architecture direction and progress
 
 agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) is the canonical list of topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
 - **Implemented:** Profile model and store, setup and guidance options, guidance level semantics, project application, agent artifact synchronization, agent rule discovery, Git-based Profile management
-- **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording who owns each file and deciding how to treat existing files without agctx markers remain)
-- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), choosing agents and context types per repository, creating a Profile from an existing repository, scope expansion and guidance composition, evidence criteria and length budget for default guidance, automated documentation accuracy review. These are not current behavior yet.
+- **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording who owns each file and deciding how to treat existing files without agctx markers remain), evidence criteria and length budget for default guidance
+- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), choosing agents and context types per repository, creating a Profile from an existing repository, scope expansion and guidance composition. These are not current behavior yet.
 
 ## Documentation
 

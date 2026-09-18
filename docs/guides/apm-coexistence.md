@@ -41,7 +41,7 @@ agctx는 프로필 영역(적용한 프로필 지침이 들어가는 부분, [�
        mode: managed_section
    ```
 
-3. `AGENTS.md`의 프로젝트 규칙 확장 아래, 파일 끝에 표지 두 줄을 넣고 `apm compile`을 실행한다. APM 규칙이 두 표지 사이에 들어간다.
+3. `AGENTS.md`의 프로젝트 규칙 확장 아래쪽(파일 끝)에 표지 두 줄을 넣고 `apm compile`을 실행한다. APM 규칙이 두 표지 사이에 들어간다.
 
    ```md
    <!-- apm:start -->
@@ -49,9 +49,9 @@ agctx는 프로필 영역(적용한 프로필 지침이 들어가는 부분, [�
    ```
 
    > [!NOTE]
-   > `apm compile`이 `Protected CLAUDE.md: hand-authored file will not be overwritten.`라고 경고할 수 있다. agctx가 만든 `CLAUDE.md`를 APM이 사람이 쓴 파일로 보고 건드리지 않았다는 뜻이다. 경고가 권하는 대로 `CLAUDE.md`를 지우지 않는다. 지우면 Claude Code가 `AGENTS.md`를 읽지 못한다.
+   > `apm compile`이 `Protected CLAUDE.md: hand-authored file will not be overwritten.`라고 경고할 수 있다. agctx가 만든 `CLAUDE.md`를 APM이 사람이 쓴 파일로 보고 건드리지 않았다는 뜻이다. 경고에서 권하더라도 `CLAUDE.md`를 지우지 않는다. 지우면 Claude Code가 `AGENTS.md`를 읽지 못한다.
 
-4. 확인한다. agctx 쪽에서 바꿀 파일이 없고(`0 file(s) to change`), `check`가 기록한 버전과 맞다고 하면 두 도구가 서로의 영역을 건드리지 않은 것이다. 아래는 실제 출력에서 경로만 바꾼 것이다.
+4. 확인한다. agctx 쪽에서 바꿀 파일이 없고(`0 file(s) to change`), `check`가 기록한 버전과 같다고 알리면 두 도구가 서로의 영역을 건드리지 않은 것이다. 아래는 실제 출력에서 경로만 바꾼 것이다.
 
    ```bash
    $ agctx profile sync --dry-run .
@@ -64,7 +64,7 @@ agctx는 프로필 영역(적용한 프로필 지침이 들어가는 부분, [�
    /work/shop matches its recorded profile version.
    ```
 
-   계획에 `conflict`가 나오면 관리 영역이 바뀐 것이다. 표지를 프로필 영역 안에 넣지 않았는지 보고, [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다. 같은 규칙이 두 경로로 들어가는지는 아래 [같은 규칙이 두 번 들어가는지 확인하기](#같은-규칙이-두-번-들어가는지-확인하기)에서 본다.
+   계획에 `conflict`가 나오면 관리 영역이 바뀐 것이다. 표지를 프로필 영역 안에 넣지는 않았는지 확인하고, [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다. 같은 규칙이 두 경로로 들어가는지는 아래 [같은 규칙이 두 번 들어가는지 확인하기](#같은-규칙이-두-번-들어가는지-확인하기)에서 본다.
 
 ## APM 기본 모드가 이미 파일을 만든 경우
 

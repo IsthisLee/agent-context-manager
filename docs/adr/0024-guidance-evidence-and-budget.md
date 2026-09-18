@@ -59,5 +59,5 @@
 
 - **호환성 파괴:** `agctx profile setup --harness`·`--documentation`을 쓰던 스크립트는 사용법 오류(64)로 멈춘다. 기존 프로필에 저장된 `harness`·`documentation` 설정 값은 읽지 않으므로, 두 항목은 다시 고르기 전까지 기본값 `recommended`로 생성된다.
 - 문구가 바뀌어도 기존 프로필은 자동으로 바뀌지 않는다. `profile setup`을 다시 실행하면 guidance 블록이 바뀌고 `profile sync`로 프로젝트에 반영된다. 블록 밖에 쓴 내용은 그대로 남는다.
-- 문구를 고칠 때는 [지침 카탈로그](../contributing/guidance-catalog.md), `src/i18n/index.ts`, `references.md`를 같은 변경에서 고친다.
+- 문구를 고칠 때는 [지침 카탈로그](../reference/guidance-catalog.md), `src/i18n/index.ts`, `references.md`를 같은 변경에서 고친다.
 - 문장이 실제로 에이전트의 실수를 줄이는지는 모델을 실행해야 알 수 있어 자동 평가에 넣지 않는다. 문구를 바꿀 때 유지관리자가 같은 과제를 전후 문구로 실행해 비교하고 결과를 논의 문서에 남긴다.

@@ -78,7 +78,7 @@ Configured profile: team-backend
 
 수준 옵션을 하나라도 넘기면 넘긴 항목만 바꾸고, 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓴다(처음이면 `recommended`). 수준 옵션을 하나도 넘기지 않으면 TUI가 열려 항목마다 설명과 현재값을 보고 고른다. 이름까지 생략하면 TUI에서 프로필도 고른다(`src/commands/handlers.ts:116-125`). 첫 화면의 **Configure profile guidance**도 같은 화면을 연다.
 
-`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 10개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+`setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 10개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../reference/guidance-catalog.md)에 있다.
 
 ## 3. 프로젝트에 적용
 

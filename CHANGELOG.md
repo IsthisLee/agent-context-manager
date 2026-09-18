@@ -27,7 +27,7 @@
 
 - TUI 첫 화면의 **Repository status**(저장소 상태)를 **Repositories**(여러 저장소) > **Status**(상태 보기)로 옮겼다
 - **호환성 파괴:** `profile setup`의 지침 항목 두 개의 이름과 옵션을 바꿨다. `--harness`는 `--workflow`(작업 흐름)로, `--documentation`은 `--instructions`(지침 파일)로 바뀌었다. 옛 옵션은 남기지 않으므로 옛 이름을 쓰던 스크립트는 사용법 오류(64)로 멈춘다. 프로필에 저장된 `harness`·`documentation` 값도 읽지 않으므로 두 항목은 다시 고르기 전까지 기본값 `recommended`로 만들어진다. 근거는 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)
-- 배포되는 기본 지침 6개 항목의 문구를 공식 문서·표준 근거에 맞춰 다시 썼다. 작업 흐름은 계획·범위·중단 기준을, TDD는 Red → Green → Refactor 각 단계와 테스트를 지키는 규칙을, 변경 검토는 새 맥락에서의 diff 검토를, 검증은 실행한 명령과 결과를 증거로 보이는 방식을, 지침 파일은 무엇을 두고 언제 고칠지를, 보안은 비밀값·권한·승인·믿을 수 없는 입력을 담는다. 문장마다 원문 인용과 확인일을 [docs/references.md](docs/references.md)에 기록했고 [지침 카탈로그](docs/contributing/guidance-catalog.md)가 그 절로 링크한다. 기존 프로필은 자동으로 바뀌지 않는다. `agctx profile setup <name>`을 다시 실행하면 guidance 블록이 바뀌고 `agctx profile sync <project>`로 프로젝트에 반영되며, 블록 밖에 쓴 내용은 그대로 남는다
+- 배포되는 기본 지침 6개 항목의 문구를 공식 문서·표준 근거에 맞춰 다시 썼다. 작업 흐름은 계획·범위·중단 기준을, TDD는 Red → Green → Refactor 각 단계와 테스트를 지키는 규칙을, 변경 검토는 새 맥락에서의 diff 검토를, 검증은 실행한 명령과 결과를 증거로 보이는 방식을, 지침 파일은 무엇을 두고 언제 고칠지를, 보안은 비밀값·권한·승인·믿을 수 없는 입력을 담는다. 문장마다 원문 인용과 확인일을 [docs/references.md](docs/references.md)에 기록했고 [지침 카탈로그](docs/reference/guidance-catalog.md)가 그 절로 링크한다. 기존 프로필은 자동으로 바뀌지 않는다. `agctx profile setup <name>`을 다시 실행하면 guidance 블록이 바뀌고 `agctx profile sync <project>`로 프로젝트에 반영되며, 블록 밖에 쓴 내용은 그대로 남는다
 
 ### Fixed
 
@@ -101,7 +101,7 @@
 - 공개 저장소 운영 문서와 기여·보안·행동규범 안내
 - Node.js 24 LTS·26 Current CI, npm tarball 검사, Dependabot 설정, provenance 배포 workflow
 - OpenSSF Scorecard workflow와 README의 자동 계산 점수 뱃지
-- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/contributing/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 사용 가이드와 지침 카탈로그에 명시
+- 배포되는 공통 지침 6개의 정본 목록을 [지침 카탈로그](docs/reference/guidance-catalog.md)로 정리. 프로필 `AGENTS.md`를 직접 편집해 지침을 채우는 경로를 사용 가이드와 지침 카탈로그에 명시
 - `setup` 산출물에 `recommended`/`strict`의 뜻을 정의하는 "적용 수준 정의" 범례를 추가하고 setup TUI 힌트와 같은 문구를 공유. 배포되는 6개 지침을 근거 기반으로 다시 씀(하네스는 "작게 유지·선택적 확장" 반영). 근거는 [ADR 0005](docs/adr/0005-guidance-level-semantics.md)
 
 ### Changed

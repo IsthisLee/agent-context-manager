@@ -3,7 +3,7 @@
 <!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts, src/check.ts, src/i18n/messages-en.ts -->
 <!-- agctx-doc-sources-sha256: bd1e831202405fb2fd1b4bef24dee1fa7f3b9ec9bc8c41d3606bec78c7ae3d50 -->
 
-프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않음이다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
+프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않은 상태다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
 
 - **고정하지 않음:** 저장소가 프로필의 최신 내용을 따라간다. `sync`하면 이 컴퓨터 보관함에 있는 최신 프로필로 바뀐다.
 - **고정:** 저장소가 적용할 때 기록한 프로필 커밋에 머문다. 보관함이 최신이 되어도 `sync`는 그 커밋의 내용을 그대로 다시 쓴다. 새 커밋으로 옮기려면 `apply --pin`을 다시 실행하거나 `repos pr`로 연 PR을 병합한다.
@@ -95,7 +95,7 @@ Plan: 0 file(s) to change.
 /path/to/orders-api is already up to date.
 ```
 
-실행 뒤 `AGENTS.md`의 변경 검토 수준은 `web-app`이 `strict`, `orders-api`가 `recommended`였다. 두 저장소 모두 `check`는 종료 코드 1(뒤처짐)로 끝났다. 고정한 저장소도 새 버전이 나왔다는 사실은 알 수 있지만, 옮겨 가는 것은 아래 [고정한 저장소를 PR로 갱신](#고정한-저장소를-pr로-갱신)이나 `apply --pin`으로만 한다. 바꿀 파일이 있으면 터미널에서는 쓰기 전에 확인을 묻는다.
+실행 뒤 `AGENTS.md`의 변경 검토 수준은 `web-app`이 `strict`, `orders-api`가 `recommended`였다. 두 저장소 모두 `check`는 종료 코드 1(뒤처짐)로 끝났다. 고정한 저장소도 새 버전이 나왔다는 사실은 알 수 있다. 다만 새 커밋으로 옮기는 일은 아래 [고정한 저장소를 PR로 갱신](#고정한-저장소를-pr로-갱신)이나 `apply --pin`으로만 한다. 바꿀 파일이 있으면 터미널에서는 쓰기 전에 확인을 묻는다.
 
 ## 고정하지 않은 저장소
 
@@ -109,7 +109,7 @@ agctx repos pr --profile team-backend --dry-run
 agctx repos pr --profile team-backend
 ```
 
-`repos pr`은 사용자의 작업 폴더를 건드리지 않는다. 저장소마다 원격 base 브랜치를 임시 worktree(작업 폴더와 따로 꺼낸 임시 체크아웃)에 꺼내 새 커밋으로 다시 고정하고, `agctx/<프로필>-<커밋>` 브랜치로 push한 뒤 `gh`(GitHub CLI)로 PR을 연다. 같은 브랜치에 열린 PR이 있거나 그 브랜치가 이미 원격에 있으면 새로 만들지 않는다. `gh`가 없거나 GitHub가 아닌 원격이면 push까지 하고 PR을 직접 열도록 안내한다. 옵션과 실제 출력은 [CLI Reference](../reference/cli.md#repos-pr)에 있다.
+`repos pr`은 사용자의 작업 폴더를 건드리지 않는다. 저장소마다 원격 base 브랜치를 임시 worktree(작업 폴더와 별도로 만든 임시 체크아웃)에 받아 와 새 커밋으로 다시 고정하고, `agctx/<프로필>-<커밋>` 브랜치로 push한 뒤 `gh`(GitHub CLI)로 PR을 연다. 같은 브랜치에 열린 PR이 있거나 그 브랜치가 이미 원격에 있으면 새로 만들지 않는다. `gh`가 없거나 GitHub가 아닌 원격이면 push까지 하고 PR을 직접 열도록 안내한다. 옵션과 실제 출력은 [CLI Reference](../reference/cli.md#repos-pr)에 있다.
 
 ## 예약 봇으로 PR 열기
 
@@ -150,7 +150,7 @@ jobs:
 ```
 
 - 토큰은 프로필 저장소를 읽고 대상 저장소에 브랜치를 push하고 PR을 열 수 있어야 한다. `GH_TOKEN`은 gh가 인증에 쓰는 토큰이고, `gh auth setup-git`은 git이 gh를 인증 도우미로 쓰게 설정한다([외부 근거](../references.md#cli-계약과-지침-공급망-근거)). `GH_TOKEN`만 둔 환경에서 `gh auth setup-git`이 성공하는지는 직접 확인하지 못했으므로, 처음 적용할 때 `workflow_dispatch`로 한 번 실행해 확인한다.
-- 커밋 작성자는 실행 환경의 Git 설정을 따르므로 봇 이름과 메일을 설정한다.
+- 커밋 작성자는 실행 환경의 Git 설정을 따르므로 봇 이름과 메일 주소를 설정한다.
 - 봇이 연 PR은 각 저장소의 CI에서 `agctx check`로 검사한 뒤 리뷰해 병합한다([CI에서 확인하기](ci.md#ci에서-확인하기)).
 
 ## 고정하거나 풀기

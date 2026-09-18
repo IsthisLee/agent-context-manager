@@ -193,4 +193,4 @@ flowchart TD
 - `setupProfile`(`bin/agentic.mjs`)이 guidance 블록 맨 위에 "## 적용 수준 정의" 범례를 넣는다. 포함된 항목이 하나라도 있을 때만 넣는다.
 - setup TUI의 레벨 힌트가 같은 상수를 읽는다. 사람과 에이전트가 같은 정의를 본다.
 - 평가: `evals/profile.test.mjs`가 범례 존재와 "범례 문구 == 상수"를 확인한다.
-- 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../contributing/guidance-catalog.md)에 반영했다.
+- 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../reference/guidance-catalog.md)에 반영했다.

@@ -251,7 +251,7 @@ agctx profile remove [--yes] [<name>]
 
 ### `profile setup`
 
-프로필에 담을 공통 개발 지침 6개 항목의 수준을 정해 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
+프로필에 담을 공통 개발 지침 10개 항목의 수준을 정해 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
 
 <!-- agctx:generated:usage:profile.setup:start -->
 ```bash

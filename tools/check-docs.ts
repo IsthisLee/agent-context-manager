@@ -230,24 +230,24 @@ function checkDocumentationGovernance() {
  * A row without one means a sentence ships without recorded evidence.
  */
 function checkGuidanceCatalog() {
-  const catalog = path.join(root, 'docs', 'contributing', 'guidance-catalog.md');
+  const catalog = path.join(root, 'docs', 'reference', 'guidance-catalog.md');
   if (!fs.existsSync(catalog)) {
-    errors.push('docs/contributing/guidance-catalog.md: guidance catalog must exist');
+    errors.push('docs/reference/guidance-catalog.md: guidance catalog must exist');
     return;
   }
   const content = fs.readFileSync(catalog, 'utf8');
   const rows = content.split('\n').filter(line => line.startsWith('| `--'));
   if (rows.length !== GUIDANCE_KEYS.length) {
-    errors.push(`docs/contributing/guidance-catalog.md: expected one row per guidance option (${GUIDANCE_KEYS.length}), found ${rows.length}`);
+    errors.push(`docs/reference/guidance-catalog.md: expected one row per guidance option (${GUIDANCE_KEYS.length}), found ${rows.length}`);
     return;
   }
   for (const key of GUIDANCE_KEYS) {
-    if (!rows.some(row => row.startsWith(`| \`--${key}\``))) errors.push(`docs/contributing/guidance-catalog.md: no row for --${key}`);
+    if (!rows.some(row => row.startsWith(`| \`--${key}\``))) errors.push(`docs/reference/guidance-catalog.md: no row for --${key}`);
   }
   for (const row of rows) {
     const option = row.split('|')[1].trim();
     if (!/\.\.\/references\.md#/.test(row)) {
-      errors.push(`docs/contributing/guidance-catalog.md: ${option} has no evidence link into references.md`);
+      errors.push(`docs/reference/guidance-catalog.md: ${option} has no evidence link into references.md`);
     }
   }
 }

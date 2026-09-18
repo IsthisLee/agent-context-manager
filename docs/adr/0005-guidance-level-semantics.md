@@ -3,7 +3,7 @@
 * **상태:** 채택됨 (Accepted)
 * **일자:** 2026-09-14
 * **결정자:** 제품 소유자·개발자
-* **관련:** [지침 적용 수준의 의미 정의](../discussion/architecture/topics/guidance-level-semantics.md)를 구현으로 확정한다. 현재 사실은 [지침 카탈로그](../contributing/guidance-catalog.md)에 있다.
+* **관련:** [지침 적용 수준의 의미 정의](../discussion/architecture/topics/guidance-level-semantics.md)를 구현으로 확정한다. 현재 사실은 [지침 카탈로그](../reference/guidance-catalog.md)에 있다.
 
 ## 배경 (Context)
 

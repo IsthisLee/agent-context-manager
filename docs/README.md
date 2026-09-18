@@ -40,6 +40,7 @@
 ### 레퍼런스
 
 - [CLI Reference](reference/cli.md)
+- [지침 카탈로그](reference/guidance-catalog.md): `profile setup`의 열 개 항목이 넣는 문장과 그 근거
 - [종료 코드](reference/exit-codes.md)
 - [파일 형식과 저장 위치](reference/file-formats.md)
 - [지원 에이전트](reference/supported-agents.md)
@@ -51,7 +52,6 @@
 - [제품 방향](contributing/product-direction.md): 목표·범위·용어·단계별 완료 기준
 - [현재 아키텍처](contributing/architecture.md): 현재 구현된 구조와 소유권
   - [기능 구현 메커니즘](contributing/implementation-mechanics.md): 각 기능의 내부 코드 로직
-  - [지침 카탈로그](contributing/guidance-catalog.md): 프로필에 배포되는 공통 지침 10개 항목의 문구와 근거
 - [구현 원리](contributing/implementation-principles.md): npm·Node.js·CLI 원리와 구현의 연결
 - [테스트와 품질 게이트](contributing/testing.md)
 - [릴리스와 저장소 운영](contributing/releasing.md)
@@ -73,10 +73,10 @@
 | `docs/getting-started/`                          | 설치와 첫 적용·확인까지의 최소 흐름                                                                                                   |
 | `docs/guides/`                                   | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM                                                           |
 | `docs/concepts/`                                 | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인                                                                  |
-| `docs/reference/`                                | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·문제 해결의 정확한 사양                                                               |
+| `docs/reference/`                                | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·배포 지침 목록·문제 해결의 정확한 사양                                                |
 | `docs/faq.md`                                    | 자주 묻는 질문의 짧은 답과 정본 링크                                                                                                  |
 | `docs/contributing/product-direction.md`         | 패키지의 목적, 책임 경계, 장기 방향의 정본                                                                                            |
-| `docs/contributing/architecture.md`              | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `guidance-catalog.md` |
+| `docs/contributing/architecture.md`              | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `docs/reference/guidance-catalog.md` |
 | `docs/contributing/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설                                                                                |
 | `docs/contributing/testing.md`                   | 품질 게이트와 평가 작성 방법                                                                                                          |
 | `docs/contributing/releasing.md`                 | 공개 저장소 릴리스·보안·기여 운영 계약                                                                                                |

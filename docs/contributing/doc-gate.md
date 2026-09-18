@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 5fa57146ce6ddb269b2d0acf22cd99a7d8e4eda4d414e5af89cb8a84f69c8d91 -->
+<!-- agctx-doc-sources-sha256: c1a55fdfeacf6630ea5011638d8ddd3159f1633ae142ddfb4107c50d99329091 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -40,7 +40,7 @@ flowchart TD
 
 - **확인일:** `docs/references.md`에서 코드 블록 밖의 외부 링크(`http`·`https`)가 들어 있는 줄은 같은 줄에 `확인일: YYYY-MM-DD`가 있어야 한다. 목록 항목은 줄 끝에, 표 행은 마지막 칸 안에 붙인다.
 - **ADR 근거:** 번호가 0009 이상인 ADR은 머리말에 `* **근거:**`(또는 `* **Evidence:**`)가 있어야 한다. 값에는 링크를 두거나, 외부 사실에 기대지 않는 결정이면 `외부 근거 없음: <이유>`(또는 `No external evidence: <reason>`)를 적는다. 0008 이전 ADR은 검사하지 않는다.
-- **지침 카탈로그:** [지침 카탈로그](guidance-catalog.md)의 항목 표에는 지침 항목마다 행이 하나씩 있어야 하고, 각 행에는 `references.md`의 근거 절로 가는 링크가 있어야 한다. 행 수와 옵션 이름은 `GUIDANCE_KEYS`에서 읽으므로, 항목을 더하면 카탈로그에 행을 더하지 않은 채로는 검사를 통과할 수 없다. 근거 기준은 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)에 있다.
+- **지침 카탈로그:** [지침 카탈로그](../reference/guidance-catalog.md)의 항목 표에는 지침 항목마다 행이 하나씩 있어야 하고, 각 행에는 `references.md`의 근거 절로 가는 링크가 있어야 한다. 행 수와 옵션 이름은 `GUIDANCE_KEYS`에서 읽으므로, 항목을 더하면 카탈로그에 행을 더하지 않은 채로는 검사를 통과할 수 없다. 근거 기준은 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)에 있다.
 
 게이트는 형식만 확인한다. 링크한 문서에 그 주장이 실제로 있는지는 확인일을 붙이는 사람이 직접 열어 확인해야 하며, 외부 링크가 살아 있는지도 검사하지 않는다.
 

@@ -72,5 +72,5 @@
 
 - **호환성 파괴:** `profile setup`에 옵션 네 개(`--context`·`--docs`·`--untrusted`·`--language`)가 늘어난다. 옵션을 순서대로 읽는 비대화형 표준 입력은 줄이 여섯에서 열로 늘어나므로, 여섯 줄을 넘기던 스크립트는 나머지 항목이 기본값으로 만들어진다. 기존 프로필에 저장된 여섯 항목의 값은 그대로 읽는다.
 - 문구가 바뀌어도 기존 프로필은 자동으로 바뀌지 않는다. `profile setup`을 다시 실행하면 guidance 블록이 바뀌고 `profile sync`로 프로젝트에 반영된다. 블록 밖에 쓴 내용은 그대로 남는다.
-- 항목을 더하거나 문구를 고칠 때는 [지침 카탈로그](../contributing/guidance-catalog.md), `src/i18n/index.ts`, `references.md`를 같은 변경에서 고친다.
+- 항목을 더하거나 문구를 고칠 때는 [지침 카탈로그](../reference/guidance-catalog.md), `src/i18n/index.ts`, `references.md`를 같은 변경에서 고친다.
 - 리뷰어를 subagent로 배포하게 되면 "변경 검토" 항목의 점검 목록은 그 프롬프트로 옮길 수 있다. subagent의 설명만 메인 대화에 상시 로드되고 본문은 호출될 때만 로드되기 때문이다. 다만 형식이 확인된 에이전트가 하나뿐이라 지금은 옮기지 않고, [프로필 설정 표면 확장](../discussion/architecture/topics/profile-config-surface.md) 논의의 후속 작업으로 둔다.

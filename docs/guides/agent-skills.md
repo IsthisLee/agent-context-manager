@@ -36,7 +36,7 @@
    DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
    ```
 
-2. 터미널에서 실행하면 skills CLI가 몇 가지를 묻는다. 아래 화면은 skills 1.5.26으로 실제로 실행한 화면에서 로고를 뺀 것이다.
+2. 터미널에서 실행하면 skills CLI가 몇 가지를 묻는다. 아래는 skills 1.5.26으로 실제 실행한 화면에서 로고만 지운 것이다.
 
    ```text
    ◇  Found 2 skills
@@ -59,7 +59,7 @@
 
 3. `Installed 2 skills`와 `Done!`이 나오면 끝난 것이다.
 
-질문 없이 설치하려면 명령 끝에 `-y`를 붙인다. 실제로 실행했을 때 **Project**와 **Symlink**로 설치했고 find-skills는 묻지 않았다. Claude Code 같은 에이전트 안에서 실행해도 skills CLI가 에이전트를 감지해 질문 없이 같은 방식으로 설치한다.
+질문 없이 설치하려면 명령 끝에 `-y`를 붙인다. `-y`로 실행해 보니 **Project**와 **Symlink**로 설치됐고 find-skills는 묻지 않았다. Claude Code 같은 에이전트 안에서 실행해도 skills CLI가 에이전트를 감지해 질문 없이 같은 방식으로 설치한다.
 
 ## 설치 확인하기
 
@@ -81,10 +81,10 @@ skills-lock.json
 
 ## 알아 둘 점
 
-- skills CLI(위 명령의 `npx skills`)는 익명 사용 통계를 보낸다. `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`을 두면 보내지 않는다. 질문 화면과 설치 결과를 확인한 실험도 같은 곳에 있다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
+- skills CLI(위 명령의 `npx skills`)는 익명 사용 통계를 보낸다. `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`을 붙이면 보내지 않는다. 질문 화면과 설치 결과를 확인한 실험도 같은 곳에 있다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
 - 두 스킬은 쓰기 명령 앞에 `--dry-run` 결과(파일을 쓰지 않고 출력한 계획)를 보여 주고, 사용자가 승인한 뒤에만 `--yes`(확인 질문 없이 실행)를 붙이라고 지시한다. 에이전트를 임시 사본에서 한 번 실행해 확인하는 `verify --probe`도 실행 전에 묻게 한다.
-- 스킬은 에이전트에게 주는 지시이므로 에이전트가 반드시 지킨다는 보장은 없다. 터미널이 아닌 곳에서는 `--yes` 없이 파일을 쓰지 않는 CLI 규칙이 마지막 방어선이다.
-- 스킬 안의 명령 목록은 스킬을 설치한 시점의 저장소 기준이다.
+- 스킬은 에이전트에게 주는 지시이므로 에이전트가 반드시 지킨다는 보장은 없다. 터미널이 아닌 곳에서는 `--yes` 없이 파일을 쓰지 않는다는 CLI 규칙이 마지막 안전장치다.
+- 스킬에 적힌 명령 목록은 스킬을 설치한 시점의 저장소를 기준으로 한다.
 
 ## 다음 단계
 

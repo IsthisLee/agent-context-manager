@@ -71,7 +71,7 @@ behind            personal         -      -               /work/notes
 Next: agctx repos sync --profile personal
 ```
 
-위 출력은 실제 실행 결과에서 경로만 바꿨다. 한 줄은 왼쪽부터 상태, 프로필, 고정 여부, `기록한 커밋→새 커밋`, 경로 순서다. 상태 `behind`는 저장소가 보관함의 프로필보다 뒤처졌다는 뜻이고, `ok`는 맞는다는 뜻이다. 옮기거나 지운 폴더는 `missing`으로 나오고, `agctx repos list --prune`으로 목록에서 지운다. 마지막 `Next:` 줄은 뒤처진 저장소를 맞출 명령이다.
+위 출력은 실제 실행 결과에서 경로만 바꿨다. 한 줄은 왼쪽부터 상태, 프로필, 고정 여부, `기록한 커밋→새 커밋`, 경로 순서다. 상태 `behind`는 저장소가 보관함의 프로필보다 뒤처졌다는 뜻이고, `ok`는 같은 버전이라는 뜻이다. 옮기거나 지운 폴더는 `missing`으로 나오고, `agctx repos list --prune`으로 목록에서 지운다. 마지막 `Next:` 줄은 뒤처진 저장소를 맞출 명령이다.
 
 ### 고정하지 않은 저장소 동기화
 
@@ -80,7 +80,7 @@ agctx repos sync --profile personal --dry-run
 agctx repos sync --profile personal
 ```
 
-`--dry-run`은 파일을 쓰지 않고 계획만 보여 준다. `repos sync`는 모든 저장소의 계획을 보여 준 뒤 한 번만 묻는다. 고정한 저장소(`pinned`), 관리 파일에 커밋하지 않은 변경이 있는 저장소(`dirty`), 관리 영역을 밖에서 고친 저장소(`conflict`)는 건너뛰고 나머지를 계속한다. 쓴 파일의 커밋은 저장소마다 사람이 한다.
+`--dry-run`은 파일을 쓰지 않고 계획만 보여 준다. `repos sync`는 모든 저장소의 계획을 보여 준 뒤 한 번만 묻는다. 고정한 저장소(`pinned`), 관리 파일에 커밋하지 않은 변경이 있는 저장소(`dirty`), 관리 영역을 밖에서 고친 저장소(`conflict`)는 건너뛰고 나머지를 계속한다. 바뀐 파일을 커밋하는 일은 저장소마다 사람이 한다.
 
 ### 동기화 결과 확인하기
 
@@ -99,7 +99,7 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 
 프로필 보관함은 어떤 저장소에도 커밋되지 않는다. 컴퓨터를 옮겨도 같은 개인 프로필을 쓰려면 프로필 자체를 내 Git 저장소에 올린다.
 
-1. 보관함의 `personal` 폴더에서 `git init`과 첫 커밋을 만든 뒤 `agctx profile connect personal <내 Git 저장소 주소>`와 `agctx profile push personal`을 실행한다. 커밋은 사람이 하고 agctx는 원격 연결과 push만 한다.
+1. 보관함의 `personal` 폴더에서 `git init`으로 저장소를 만들고 첫 커밋을 남긴 뒤 `agctx profile connect personal <내 Git 저장소 주소>`와 `agctx profile push personal`을 실행한다. 커밋은 사람이 하고 agctx는 원격 연결과 push만 한다.
 2. 새 컴퓨터에서 `agctx profile clone <내 Git 저장소 주소>`를 실행한다. 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
 3. 이미 적용한 저장소는 커밋된 파일로 규칙을 받는다. 이후 프로필을 고치면 `agctx profile pull personal` 뒤 `agctx repos sync --profile personal`로 맞춘다.
 

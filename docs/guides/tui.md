@@ -3,7 +3,7 @@
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
 <!-- agctx-doc-sources-sha256: c3ac301995d92d447dde6b51137699119ceaebc1052465cd7b200f018a12e194 -->
 
-명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서의 화면은 실제로 실행한 화면에서 긴 경로만 `/work`로 바꿨다. 대부분 영어 표시 언어로 찍었고, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
+명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서에 실은 화면은 실제로 실행한 결과에서 긴 경로만 `/work`로 바꾼 것이다. 대부분 표시 언어를 영어로 두고 찍었으며, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
 ## 목차
 
@@ -80,7 +80,7 @@
 
 첫 화면에서 **Create a new profile**을 고른다.
 
-1. 프로필 이름을 입력하고 `Enter`를 누른다. 이름은 소문자·숫자·하이픈 1-64자다.
+1. 프로필 이름을 입력하고 `Enter`를 누른다. 이름은 소문자·숫자·하이픈으로 1~64자까지 쓸 수 있다.
 2. 프로필의 용도(Personal·Company·Team·Workspace)를 고른다.
 3. 만들 내용을 확인하고 **Yes**에서 `Enter`를 누른다. 이 질문은 Yes가 기본이다.
 
@@ -221,7 +221,7 @@ Configured profile: team-backend
 **Delivery to agents**의 증거는 둘 중 하나를 고른다.
 
 - **Session logs:** 그 폴더에서 이미 시작한 세션 기록을 읽는다. 에이전트를 실행하지 않는다.
-- **Run the agent once (probe):** 임시 사본에서 에이전트 CLI를 한 번씩 실행한다. 에이전트 사용량이 들기 때문에 실행 전에 No가 기본인 확인을 한 번 더 묻는다.
+- **Run the agent once (probe):** 임시 사본에서 에이전트 CLI를 한 번씩 실행한다. 에이전트를 실제로 호출해 사용량이 늘기 때문에, 실행 전에 No가 기본인 확인을 한 번 더 묻는다.
 
 아래는 프로필이 바뀐 뒤 아직 동기화하지 않은 프로젝트에서 **Profile version**을 고른 화면이다.
 
@@ -262,7 +262,7 @@ behind            AGENTS.md  differs from the current profile; run agctx profile
 - **Open pull requests**는 대상을 **Repositories on this computer's list**와 **Repositories in a targets file**(한 줄에 작업 폴더 경로나 clone URL 하나를 적은 파일) 가운데서 고른다. base 브랜치와 커밋 메시지는 비워 두면 기본값을 쓴다.
 - PR을 열려면 `gh`가 설치되어 로그인되어 있어야 한다. 없으면 브랜치만 올리고 `pushed`로 끝난다.
 
-아래는 **Status**를 고른 화면에서 경로만 줄인 것이다. 결과 줄과 `Next:` 안내는 CLI와 같다.
+아래는 **Status**를 고른 화면에서 경로만 짧게 바꾼 것이다. 결과 줄과 `Next:` 안내는 CLI와 같다.
 
 ```text
 ◇  Select what to do with the repositories on this computer's list.

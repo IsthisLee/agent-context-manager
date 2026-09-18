@@ -1,7 +1,7 @@
 # 빠른 시작
 
 <!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 17028c96443b1dd05661398bc2bb165ecd1666bd021aa95fb783d53109921114 -->
+<!-- agctx-doc-sources-sha256: 47b4b2499ef09c0a0839ec1ffe7e6bfa68ba3b942583d066f5c8d398207484f2 -->
 
 agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md)에, 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 

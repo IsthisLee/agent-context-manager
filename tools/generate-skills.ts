@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import en from '../src/i18n/messages-en.ts';
+import ko from '../src/i18n/messages-ko.ts';
 import { COMMANDS, agentPolicy, usageLine, type AgentPolicy } from '../src/commands/registry.ts';
 
 /**
@@ -35,7 +35,10 @@ export const SKILLS: readonly SkillSpec[] = [
   { file: 'skills/agctx-author/SKILL.md', policies: ['auto', 'ask'] }
 ];
 
-const summaries = en as Record<string, string>;
+// The skills are written in Korean, the language of this repository's
+// documentation, so their command summaries come from the Korean catalog
+// (ADR 0030). The CLI itself still defaults to English (ADR 0014).
+const summaries = ko as Record<string, string>;
 
 export function commandList(policies: readonly AgentPolicy[]): string {
   return COMMANDS

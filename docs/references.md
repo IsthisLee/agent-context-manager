@@ -28,6 +28,7 @@
 - [공개 npm·GitHub 저장소 운영 근거](#공개-npmgithub-저장소-운영-근거)
 - [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
+- [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -1051,6 +1052,20 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 - **공식 문서:** `git worktree add <path> [<commit-ish>]`는 현재 저장소에 연결된 작업 트리를 만들며, `HEAD`·`index` 같은 작업 트리별 파일을 뺀 나머지를 공유한다. `--detach`는 새 작업 트리의 `HEAD`를 분리한다. `git worktree remove`는 깨끗한 작업 트리만 지우고 `--force`를 주면 수정이 남은 작업 트리도 지운다. `git worktree prune`은 작업 트리가 사라진 기록을 정리한다. [git-worktree](https://git-scm.com/docs/git-worktree) (확인일: 2026-09-15)
 - **공식 문서:** Node.js `child_process` 문서는 Windows에서 `.bat`와 `.cmd` 파일이 터미널 없이는 그 자체로 실행되지 않으므로 `child_process.execFile()`로 시작할 수 없다고 적는다. 이런 파일은 `shell` 옵션을 켠 `spawn()`, `exec()`, 또는 `cmd.exe`를 직접 실행하면서 인자로 넘기는 방법으로만 호출할 수 있다. 원문: "On Windows, however, `.bat` and `.cmd` files are not executable on their own without a terminal, and therefore cannot be launched using [`child_process.execFile()`]." 번역: 다만 Windows에서는 `.bat`와 `.cmd` 파일이 터미널 없이는 그 자체로 실행되지 않으므로 `child_process.execFile()`로는 시작할 수 없다. [Node.js child_process](https://nodejs.org/api/child_process.html) (확인일: 2026-09-18)
 - **확인하지 못한 것:** agctx는 폭 없는 문자(U+200B–U+200D, U+2060, 파일 맨 앞이 아닌 U+FEFF)와 변형 선택자 보충(U+E0100–U+E01EF)도 검사한다. 보이지 않는 문자가 사람의 검토를 우회한다는 위 자료와 같은 이유로 넣은 판단이며, 이 두 범위를 직접 다룬 공식 자료는 찾지 못했다.
+
+## 세션 사이 작업 상태 근거
+
+[논의 문서 상태의 정본](discussion/repository/topics/discussion-status-source.md)과 진행 파일(`PROGRESS.md`)이 기대는 외부 사실이다.
+
+- **공식 자료(Anthropic 엔지니어링 글):** 오래 일하는 에이전트는 세션마다 이전 기억 없이 시작한다. 그래서 첫 세션이 `init.sh`, 에이전트가 한 일을 기록하는 `claude-progress.txt`, 첫 git 커밋을 만들고, 이후 세션은 git 기록과 진행 파일을 읽고 시작해 커밋과 진행 기록 갱신으로 끝낸다. 남은 기능 목록은 JSON으로 두는데, 모델이 Markdown 파일보다 JSON 파일을 덜 함부로 고치기 때문이다. 진행 파일을 `.txt`로 둔 이유는 글에 없다. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) (확인일: 2026-09-19)
+
+  > "After some experimentation, we landed on using JSON for this, as the model is less likely to inappropriately change or overwrite JSON files compared to Markdown files."
+  >
+  > 번역: 몇 번 실험한 끝에 이 파일은 JSON으로 두기로 했습니다. 모델이 Markdown 파일보다 JSON 파일을 부적절하게 바꾸거나 덮어쓸 가능성이 낮기 때문입니다.
+
+  > "End the session by writing a git commit and progress update."
+  >
+  > 번역: git 커밋과 진행 기록 갱신으로 세션을 끝내세요.
 
 ## 비교 대상
 

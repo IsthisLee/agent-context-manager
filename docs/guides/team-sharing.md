@@ -1,7 +1,7 @@
 # 팀과 Git으로 공유하기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/profile/setup.ts, src/check.ts, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 82caf59fe7e78528686de15fe0463e95f9d6938a93f62cbc40b730b1dfac073e -->
+<!-- agctx-doc-sources-sha256: 4cb4de0d2cd2dd08fd681eed1ec9b08f05d29262a5fcd7fbc48d912c185678bd -->
 
 팀·조직 프로필은 표준 Git 원격(GitHub·GitLab 등)에 두고 주고받는다. 권한·리뷰·변경 이력은 Git 호스트가 맡고, agctx는 사용자의 Git 인증으로 `git`을 실행할 뿐이다. `clone`·`status`·`pull`·`push`·`connect`는 프로필만 다루고 프로젝트 파일은 건드리지 않는다. 결정과 안전 계약은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
 

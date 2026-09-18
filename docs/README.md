@@ -96,7 +96,7 @@
   - [ADR 0002: 로케일(ko/en) 국제화](adr/0002-locale-i18n.md) (일부 대체: ADR 0014)
   - [ADR 0003: Core를 Guidance Profile로 개명하고 apply/sync 분리](adr/0003-rename-core-to-guidance-profile.md) (일부 대체: ADR 0013)
   - [ADR 0004: Antigravity 규칙 파일을 `.agents/rules/`로 생성](adr/0004-antigravity-rules-path.md) (일부 정정: ADR 0009, 일부 대체: ADR 0013)
-  - [ADR 0005: 지침 적용 수준의 뜻을 정의로 노출](adr/0005-guidance-level-semantics.md)
+  - [ADR 0005: 지침 적용 수준의 뜻을 정의로 노출](adr/0005-guidance-level-semantics.md) (대체: ADR 0028)
   - [ADR 0006: 코드베이스 분석 기반 지침 생성을 구현하지 않음](adr/0006-no-codebase-analysis-guidance.md)
   - [ADR 0007: 프로필 저장소를 `~/.agentic/` 아래로 모음](adr/0007-profile-home-layout.md) (일부 대체: ADR 0013)
   - [ADR 0008: 관리 영역 충돌을 보여 주고 마지막 적용본으로 복구](adr/0008-managed-conflict-recovery.md) (일부 대체: ADR 0010, ADR 0016)
@@ -119,6 +119,7 @@
   - [ADR 0025: 모든 명령은 CLI와 TUI에서 실행할 수 있어야 함](adr/0025-every-command-in-cli-and-tui.md)
   - [ADR 0026: 지침 항목을 열 개로 나누고 근거 등급을 세 단계로 넓힘](adr/0026-guidance-items-and-evidence-tiers.md)
   - [ADR 0027: 출력 스타일은 프로필이 담지 않음](adr/0027-no-output-styles.md)
+  - [ADR 0028: 지침 항목은 켜고 끄는 두 값만 받음](adr/0028-guidance-on-off.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

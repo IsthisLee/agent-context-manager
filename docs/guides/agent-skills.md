@@ -1,7 +1,7 @@
 # 에이전트에게 agctx를 맡기기
 
 <!-- agctx-doc-sources: skills, tools/generate-skills.ts -->
-<!-- agctx-doc-sources-sha256: 332a11e2ab0145082aa1cc08286938be4fa1d7c709cd005dbf6fce1b8ca5b304 -->
+<!-- agctx-doc-sources-sha256: f09c6ec50256c0a1bf2dc4f098395db3c98a035518b02e08cbdc9e5d149dcffd -->
 
 "이 폴더에서 규칙이 안 먹는 이유를 찾아 줘"나 "새 팀 규칙을 이 저장소에 반영해 줘"처럼 에이전트에게 말로 맡기려면 에이전트용 스킬을 설치한다. 스킬은 상황별로 쓸 명령, 쓰기 전에 승인을 받는 규칙, 종료 코드의 뜻을 에이전트에게 알려 준다.
 

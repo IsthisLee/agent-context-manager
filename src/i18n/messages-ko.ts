@@ -92,9 +92,6 @@ export default {
     'setup.confirm': '이 설정을 프로필에 저장할까요?',
     'setup.cancel': '프로필 설정을 취소했습니다.',
     'setup.outro': '프로필 지침이 설정되었습니다.',
-    'setup.block.level': '적용 수준',
-    'setup.legend.title': '적용 수준 정의',
-    'setup.legend.intro': '아래 각 지침의 `적용 수준`은 이 정의를 따른다.',
 
     'scaffold.extHeading': '## 4. 프로젝트 규칙 확장 (SSOT)',
     'scaffold.extBody': '이 프로젝트에만 적용되는 도메인 규칙은 이 섹션 아래에 추가한다. 프로필에는 역으로 동기화하지 않는다.',
@@ -162,7 +159,7 @@ export default {
     'create.done': '프로필을 만들었습니다: {name} ({scope})',
     'remove.done': '프로필을 지웠습니다: {name}',
     'setup.done': '프로필 지침을 설정했습니다: {name}',
-    'error.setup.invalid-level': '{option} 값은 off, recommended, strict 중 하나여야 합니다.',
+    'error.setup.invalid-level': '{option} 값은 on 또는 off여야 합니다.',
     'list.empty': '프로필이 없습니다. `agctx profile create`로 만드세요.',
     'list.empty.scope': '\'{scope}\' scope에 프로필이 없습니다. `agctx profile create <name> --scope {scope}`로 만드세요.',
     'list.clone.label': 'Git에서 프로필 가져오기',

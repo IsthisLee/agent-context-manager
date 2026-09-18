@@ -194,3 +194,14 @@ flowchart TD
 - setup TUI의 레벨 힌트가 같은 상수를 읽는다. 사람과 에이전트가 같은 정의를 본다.
 - 평가: `evals/profile.test.mjs`가 범례 존재와 "범례 문구 == 상수"를 확인한다.
 - 채택한 정의는 [ADR 0005](../../../adr/0005-guidance-level-semantics.md)에 기록했다. 현재 사실은 [지침 카탈로그](../../../reference/guidance-catalog.md)에 반영했다.
+
+#### 구현 기록: 세 수준을 켜고 끄는 두 값으로 줄임
+
+**2026-09-18.** 상태는 Implemented 그대로다.
+
+- 제안과 달라진 점이 결정 그 자체다. 이 문서는 세 수준의 **정의를 노출하는** 계약이었고, [ADR 0028](../../../adr/0028-guidance-on-off.md)이 그 가운데 두 수준을 없앴다. 제안 본문은 결정 이력이므로 그대로 둔다.
+- 없앤 이유는 둘이다. 첫째, ADR 0026으로 다시 쓴 배포 문구에 예외를 열면 안 되는 규칙(승인·비밀값·테스트 무결성)이 많은데 `recommended`가 "이유를 적으면 예외를 둔다"는 길을 붙였다. 둘째, 두 수준이 에이전트 행동을 다르게 만든다는 근거가 없다. 이 문서와 ADR 0005 어디에도 왜 나누는지를 판단한 기록이 없었다.
+- `GuidanceLevel`이 `'off' | 'on'`이 됐다. `levelDefinitions`·`guidanceLevelDefinitions`와 메시지 키 `setup.block.level`·`setup.legend.title`·`setup.legend.intro`를 지웠다. 산출물에서 범례와 항목마다 붙던 `적용 수준:` 줄이 빠졌다.
+- 저장된 값은 `storedLevel`(`src/profile/setup.ts:39-42`)이 `recommended`·`strict`를 `on`으로 읽어 기존 프로필이 그대로 동작한다. CLI로 옛 값을 넘기면 사용법 오류(64)다.
+- 평가: `evals/guidance-levels.test.ts`가 두 값 계약, 옛 값의 사용법 오류, 저장된 옛 값의 `on` 읽기, 범례와 수준 줄의 부재를 검사한다. 범례를 검사하던 `evals/profile.test.ts`의 평가는 요구가 바뀌어 지웠다.
+- 실측: 모든 항목을 켠 블록이 한국어 56줄 9,077바이트 → 39줄 8,476바이트, 영어 56줄 8,175바이트 → 39줄 7,680바이트다.

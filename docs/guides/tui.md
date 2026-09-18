@@ -1,7 +1,7 @@
 # TUI로 쓰기
 
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: c3ac301995d92d447dde6b51137699119ceaebc1052465cd7b200f018a12e194 -->
+<!-- agctx-doc-sources-sha256: 89d02cb1904e9c38506976cc3c7239780ba1e45b53198cb23e5777c88af4de45 -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서에 실은 화면은 실제로 실행한 결과에서 긴 경로만 `/work`로 바꾼 것이다. 대부분 표시 언어를 영어로 두고 찍었으며, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
@@ -109,29 +109,26 @@ Created profile: team-backend (team)
 
 ## 지침 고르기
 
-첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **Off**·**Recommended**·**Strict** 가운데 하나를 고른다. 지금 설정된 수준이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
+첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
-```text
-◆  TDD — Red → Green → Refactor order and the rules that keep tests honest
-│  ○ Off
-│  ● Recommended (The default. Follow it as a rule; when a sound reason calls for an
-│  exception, make it and record why.)
-│  ○ Strict
-│  ↑/↓ to navigate • Enter: confirm
-└
-```
+항목 화면은 항목 이름과 설명을 제목으로 두고 선택지 둘을 보여 준다. 선택지 이름과 설명은 `levelOptions`가 돌려주는 값이다(`src/i18n/index.ts:100-106`).
+
+| 선택지 | 설명 |
+| --- | --- |
+| **On** | Include this guidance in the profile |
+| **Off** | Exclude this guidance from the profile |
 
 10개 항목을 모두 고르면 요약이 나온다. **Yes**에서 `Enter`를 누르면 프로필에 저장한다.
 
 ```text
 ◇  Guidance to apply to team-backend ─╮
 │                                     │
-│  Workflow: recommended              │
-│  TDD: strict                        │
-│  Change review: recommended         │
-│  Verification: recommended          │
-│  Instruction files: recommended     │
-│  Security: strict                   │
+│  Workflow: on                       │
+│  TDD: on                            │
+│  Change review: off                 │
+│  Verification: on                   │
+│  Instruction files: on              │
+│  Security: on                       │
 │                                     │
 ├─────────────────────────────────────╯
 │

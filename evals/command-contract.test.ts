@@ -161,7 +161,7 @@ test('check reports a project behind its profile with exit 1 until sync', t => {
   ok(['profile', 'apply', 'demo', project, '--yes']);
   ok(['check', project]);
 
-  ok(['profile', 'setup', 'demo', '--tdd', 'strict']);
+  ok(['profile', 'setup', 'demo', '--tdd', 'on']);
   const behind = run(['check', project]);
   assert.equal(behind.status, 1);
   assert.match(behind.stdout, /behind\s+AGENTS\.md\s+differs from the current profile; run agctx profile sync/);

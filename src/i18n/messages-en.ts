@@ -92,9 +92,6 @@ export default {
     'setup.confirm': 'Save these settings to the profile?',
     'setup.cancel': 'Profile configuration cancelled.',
     'setup.outro': 'Profile guidance configured.',
-    'setup.block.level': 'Level',
-    'setup.legend.title': 'What the levels mean',
-    'setup.legend.intro': 'The `Level` on each guidance item below follows these definitions.',
 
     'scaffold.extHeading': '## 4. Project rule extensions (SSOT)',
     'scaffold.extBody': 'Add domain rules specific to this project below this section. They are not synced back to the profile.',
@@ -162,7 +159,7 @@ export default {
     'create.done': 'Created profile: {name} ({scope})',
     'remove.done': 'Removed profile: {name}',
     'setup.done': 'Configured profile: {name}',
-    'error.setup.invalid-level': '{option} must be off, recommended, or strict.',
+    'error.setup.invalid-level': '{option} must be on or off.',
     'list.empty': 'No profiles found. Run `agctx profile create` to create one.',
     'list.empty.scope': 'No profiles found in scope \'{scope}\'. Run `agctx profile create <name> --scope {scope}` to create one.',
     'list.clone.label': 'Clone a profile from Git',

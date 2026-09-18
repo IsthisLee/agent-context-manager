@@ -23,12 +23,12 @@ const BYTE_BUDGET = 10 * 1024;
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
-function strictProfile(locale: string) {
+function allOnProfile(locale: string) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-budget-'));
   const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: locale };
-  const strictAll = GUIDANCE_KEYS.flatMap(key => [`--${key}`, 'strict']);
+  const allOn = GUIDANCE_KEYS.flatMap(key => [`--${key}`, 'on']);
   execFileSync(process.execPath, [cli, 'profile', 'create', 'budget', '--scope', 'team'], { cwd: repoRoot, env });
-  execFileSync(process.execPath, [cli, 'profile', 'setup', 'budget', ...strictAll], { cwd: repoRoot, env });
+  execFileSync(process.execPath, [cli, 'profile', 'setup', 'budget', ...allOn], { cwd: repoRoot, env });
   const instructions = fs.readFileSync(path.join(home, 'profiles', 'budget', 'AGENTS.md'), 'utf8');
   fs.rmSync(home, { recursive: true, force: true });
   return instructions;
@@ -41,8 +41,8 @@ function guidanceBlock(instructions: string) {
 }
 
 for (const locale of SUPPORTED_LOCALES) {
-  test(`the strict guidance block stays inside its size budget in ${locale}`, () => {
-    const block = guidanceBlock(strictProfile(locale));
+  test(`the fully on guidance block stays inside its size budget in ${locale}`, () => {
+    const block = guidanceBlock(allOnProfile(locale));
     const lines = block.split('\n').length;
     const bytes = Buffer.byteLength(block);
     assert.ok(lines <= LINE_BUDGET, `guidance block is ${lines} lines, over the ${LINE_BUDGET} line budget`);
@@ -50,7 +50,7 @@ for (const locale of SUPPORTED_LOCALES) {
   });
 
   test(`every guidance item reaches the profile in ${locale}`, () => {
-    const block = guidanceBlock(strictProfile(locale));
+    const block = guidanceBlock(allOnProfile(locale));
     const sections = guidanceSections(locale);
     for (const key of GUIDANCE_KEYS) {
       const [title, body] = sections[key];

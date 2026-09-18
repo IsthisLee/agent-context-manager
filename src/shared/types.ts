@@ -3,7 +3,7 @@
 export type Locale = 'ko' | 'en';
 export type Scope = 'personal' | 'company' | 'team' | 'workspace';
 export type GuidanceKey = 'workflow' | 'context' | 'tdd' | 'review' | 'verification' | 'instructions' | 'docs' | 'security' | 'untrusted' | 'language';
-export type GuidanceLevel = 'off' | 'recommended' | 'strict';
+export type GuidanceLevel = 'off' | 'on';
 
 /** `profile.json` in a profile folder. */
 export interface ProfileMetadata {

@@ -24,7 +24,7 @@ function run(home: string, args: string[], env: NodeJS.ProcessEnv = {}) {
 
 function buildProject(home: string, env: NodeJS.ProcessEnv = {}) {
   run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
-  run(home, ['profile', 'setup', 'demo', '--workflow', 'strict', '--context', 'strict', '--tdd', 'strict', '--review', 'strict', '--verification', 'strict', '--instructions', 'strict', '--docs', 'strict', '--security', 'strict', '--untrusted', 'strict', '--language', 'strict'], env);
+  run(home, ['profile', 'setup', 'demo', '--workflow', 'on', '--context', 'on', '--tdd', 'on', '--review', 'on', '--verification', 'on', '--instructions', 'on', '--docs', 'on', '--security', 'on', '--untrusted', 'on', '--language', 'on'], env);
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-proj-'));
   run(home, ['profile', 'apply', 'demo', project, '--yes'], env);
   return fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');

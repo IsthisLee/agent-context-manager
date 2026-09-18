@@ -89,31 +89,19 @@ const levelHints: Record<Locale, { off: string }> = {
   en: { off: 'Exclude this guidance from the profile' }
 };
 
-// The meaning of each level, defined once. The setup legend and the TUI level
-// hints both read from here so a person choosing a level and an agent reading
-// the produced AGENTS.md see the same definition.
-const levelDefinitions: Record<Locale, { recommended: string; strict: string }> = {
-  ko: {
-    recommended: '기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다.',
-    strict: '예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다.'
-  },
-  en: {
-    recommended: 'The default. Follow it as a rule; when a sound reason calls for an exception, make it and record why.',
-    strict: 'Always applied, with no exceptions. If you find a violation, stop, resolve it, then continue.'
-  }
+// What each level does, defined once. The TUI hints read from here so a person
+// choosing a level sees the same wording the docs use. A guidance item is either
+// deployed or it is not; there is no level that allows an exception (ADR 0028).
+const levelHintsOn: Record<Locale, string> = {
+  ko: '이 지침을 프로필에 포함함',
+  en: 'Include this guidance in the profile'
 };
-
-export function guidanceLevelDefinitions(locale: string): { recommended: string; strict: string } {
-  return forLocale(levelDefinitions, locale);
-}
 
 export function levelOptions(locale: string): ChoiceOption<GuidanceLevel>[] {
   const hints = forLocale(levelHints, locale);
-  const definitions = guidanceLevelDefinitions(locale);
   return [
     { value: 'off', label: 'Off', hint: hints.off },
-    { value: 'recommended', label: 'Recommended', hint: definitions.recommended },
-    { value: 'strict', label: 'Strict', hint: definitions.strict }
+    { value: 'on', label: 'On', hint: forLocale(levelHintsOn, locale) }
   ];
 }
 

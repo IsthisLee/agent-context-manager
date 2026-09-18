@@ -1,7 +1,7 @@
 # 팀과 Git으로 공유하기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/profile/setup.ts, src/check.ts, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ebae8f39eaa5a8ca0c3102e1e489b8cccab8e73220660b7475d2e87540135cab -->
+<!-- agctx-doc-sources-sha256: 82caf59fe7e78528686de15fe0463e95f9d6938a93f62cbc40b730b1dfac073e -->
 
 팀·조직 프로필은 표준 Git 원격(GitHub·GitLab 등)에 두고 주고받는다. 권한·리뷰·변경 이력은 Git 호스트가 맡고, agctx는 사용자의 Git 인증으로 `git`을 실행할 뿐이다. `clone`·`status`·`pull`·`push`·`connect`는 프로필만 다루고 프로젝트 파일은 건드리지 않는다. 결정과 안전 계약은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
 
@@ -97,11 +97,11 @@ Created profile: team-backend (team)
 ### 2. 지침 고르기
 
 ```bash
-$ agctx profile setup team-backend --tdd recommended --security strict
+$ agctx profile setup team-backend --tdd on --security on
 Configured profile: team-backend
 ```
 
-작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 수준을 `off`·`recommended`·`strict` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 수준을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `recommended`가 된다(`src/profile/setup.ts:15-26`, `:39`). 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts:15-26`, `:48`). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
 
 ### 3. 첫 커밋 만들기
 
@@ -156,10 +156,10 @@ Next: agctx profile apply team-backend <project>
 적용할 때 `--pin`을 붙일지 정한다. 차이는 나중에 프로필에 새 커밋이 생긴 뒤 `profile sync`(저장소에 기록한 프로필로 다시 적용하는 명령)를 실행했을 때 드러난다.
 
 ```text
-프로필 커밋:  ab35396 (변경 검토: recommended) ──pull──→ c61bea6 (변경 검토: strict)
+프로필 커밋:  ab35396 (변경 검토: on)      ──pull──→ c61bea6 (변경 검토: off)   
 
-고정하지 않은 저장소   sync → c61bea6 내용으로 바뀐다     (변경 검토: strict)
-고정한 저장소          sync → ab35396 내용 그대로 남는다  (변경 검토: recommended)
+고정하지 않은 저장소   sync → c61bea6 내용으로 바뀐다     (변경 검토: off)   
+고정한 저장소          sync → ab35396 내용 그대로 남는다  (변경 검토: on)     
                       apply --pin 또는 repos pr로 옮겨야 c61bea6이 된다
 ```
 
@@ -263,7 +263,7 @@ sequenceDiagram
 ### 1. 관리자: 고쳐서 올리기
 
 ```bash
-$ agctx profile setup team-backend --tdd strict --security strict
+$ agctx profile setup team-backend --tdd on --security on
 Configured profile: team-backend
 
 $ git -C ~/.agctx/profiles/team-backend add -A

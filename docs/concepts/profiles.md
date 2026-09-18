@@ -1,7 +1,7 @@
 # 프로필과 적용
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts, src/profile/apply.ts, src/shared/home.ts, src/i18n/index.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 3d3807cb399caa0d0f96cfa267ad73ca0271c9b8775c82a97efcd6b78afa17a9 -->
+<!-- agctx-doc-sources-sha256: 516e9c43ac9f3e3ff01d6c4c17e3665ada50d43eae7879ceb4115e79ec02a878 -->
 
 agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여러 프로젝트와 여러 AI 에이전트에 **적용·동기화**하는 도구다. 코드를 대신 쓰지 않는다. 지침을 만들고 배포하며, 그 지침이 에이전트에 닿는지 확인한다. 확인하려고 에이전트를 실행하는 것은 사용자가 `verify --probe`로 요청할 때뿐이다.
 
@@ -16,15 +16,16 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 
 프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 필드는 [파일 형식](../reference/file-formats.md)에 있다.
 
-## 지침 수준
+## 지침 항목 켜고 끄기
 
-`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목의 수준을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 수준의 뜻은 다음과 같고, 생성된 `AGENTS.md`에도 같은 정의가 함께 들어간다(`src/i18n/index.ts:87-99`).
+`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts:15-26`).
 
-| 수준 | 뜻 |
+| 값 | 뜻 |
 | --- | --- |
-| `off` | 이 지침을 프로필에 넣지 않는다. `AGENTS.md`에 해당 항목이 나오지 않는다. |
-| `recommended` | 기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다. |
-| `strict` | 예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다. |
+| `on` | 이 지침을 프로필에 넣는다. 응답 언어를 뺀 나머지 항목의 기본값이다. |
+| `off` | 넣지 않는다. `AGENTS.md`에 해당 항목이 나오지 않는다. |
+
+지침은 지켜지기를 원해서 넣는 것이므로 예외를 허용하는 중간 값을 두지 않는다. 지침을 얼마나 강하게 지킬지는 각 항목의 문장이 정하고, 강제는 프로젝트 하네스의 몫이다([ADR 0028](../adr/0028-guidance-on-off.md)).
 
 `setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 프로필 폴더의 `AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행할 때 새로 만들어진다. 항목별 문장의 정본은 [지침 카탈로그](../reference/guidance-catalog.md)에 있다.
 

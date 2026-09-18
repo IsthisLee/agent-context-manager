@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 523ab71e02d167e9ac7cdc3313cdbcf9fac2c115cbaf511c83bf007d5ccc07f8 -->
+<!-- agctx-doc-sources-sha256: c22804ec67f7d9ed37df4251c0f3033f4f306e2030e654681c5983b290c1ce39 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -81,7 +81,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 npm install -g agent-context-manager
 
 agctx profile create company --scope company
-agctx profile setup company --tdd recommended --security strict
+agctx profile setup company --tdd on --security on
 agctx profile apply company /path/to/project
 ```
 
@@ -122,7 +122,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 ## 핵심 기능
 
-- **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목의 수준(`off`·`recommended`·`strict`)을 정합니다. 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
+- **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
 - **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다.
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
@@ -171,7 +171,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태의 정본은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)입니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
-- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 적용 수준의 의미 정의, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 항목 켜고 끄기, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
 - **구현 중:** 자연어 요청을 통한 agctx 사용(스킬·`--json`·`explain`·`verify`는 동작하고, 배포 패키지로 에이전트 시나리오를 평가하는 일이 남았습니다), agctx 관리 산출물의 안전한 동기화(관리 영역 해시·dry-run·충돌 복구는 동작하고, 파일마다 누가 소유하는지 기록하는 일과 agctx 표지가 없는 기존 파일을 어떻게 다룰지 정하는 일이 남았습니다), 기본 지침의 근거 기준과 분량 예산
 - **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents·hooks), 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기, 스코프 확장과 지침 합성. 아직 현재 동작이 아니므로 보장하지 않습니다.
 

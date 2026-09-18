@@ -62,3 +62,4 @@ pnpm run check                    # 형식 검사·문서 계약·평가 전체
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경: `CHANGELOG.md`의 `Unreleased`
 - 패키지의 목적·책임 경계·작업 모델: `docs/contributing/product-direction.md`와 README 요약
 - 공개 저장소 운영 계약: `docs/contributing/releasing.md`와 관련 GitHub 파일·workflow
+- 진행 중인 작업이 생기거나 바뀌거나 끝남: 루트 `PROGRESS.md`. 결정·근거는 정본 문서에 두고, 진행 파일에는 링크와 다음에 할 일만 적는다.

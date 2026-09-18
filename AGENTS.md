@@ -26,6 +26,11 @@
   - 커밋 메시지는 Conventional Commits 형식을 따르고 제목과 본문을 한국어로 쓴다. 타입(`feat`, `fix`, `docs` 등)과 코드 식별자·명령은 원문 그대로 둔다. 예: `docs: README 상단에 가로 목차 추가`
   - 브랜치는 squash로 병합되므로 `main`의 커밋 하나가 PR 하나다. PR은 되돌릴 단위로 끊고 관련 없는 정리는 다른 PR로 뺀다. 병합 절차와 저장소 설정의 정본은 [릴리스와 저장소 운영](docs/contributing/releasing.md)이다.
   - 커밋이 여러 개인 PR은 PR 제목이 `main` 커밋 제목이 되므로 제목도 Conventional Commits 형식으로 쓴다.
+  - push, PR 생성, `main` 병합(관리자 병합 포함)은 사용자가 요청할 때만 한다. 그 전까지는 로컬 브랜치에서 수정·검증·커밋까지 하고 결과를 보고한다. 한 번의 요청은 그 PR에만 적용된다.
+  - 작업은 사용자가 연 체크아웃에서 브랜치를 바꿔 가며 하고, 저장소 밖에 별도 worktree를 만들지 않는다. 브랜치를 바꾸기 전에 `git status`로 커밋하지 않은 변경을 확인하고, 다른 사람이나 다른 세션의 변경이 있으면 먼저 묻는다.
+6. **세션 시작과 끝.**
+  - 세션을 시작하면 루트 [`PROGRESS.md`](PROGRESS.md)를 읽고 진행 중인 작업을 이어받는다.
+  - 세션을 끝낼 때는 그 파일의 갱신 규칙대로 고쳐 마지막 커밋에 함께 넣는다.
 
 ---
 
@@ -79,6 +84,7 @@
   | npm·Node.js·CLI 일반 원리와 구현의 연결 해설 | `docs/contributing/implementation-principles.md` |
   | 되돌리기 어렵거나 장기 영향을 주는 결정의 이유·결과 | `docs/adr/` |
   | 사용자 영향 변경의 버전별 기록 | `CHANGELOG.md` |
+  | 진행 중인 작업과 다음 세션이 이어받을 순서(링크와 다음 할 일만) | `PROGRESS.md` |
   | 외부 소개·탐색용 요약 | `README.md`, `docs/README.md` |
   
 - **외부 근거는 출처와 확인일을 붙여 `docs/references.md` 한 곳에 둔다.** 링크한 문서를 열어 그 주장이 실제로 있는지 확인한 뒤에 쓰고, 공식 문서·비공식 자료·직접 실험을 구분한다. 다른 문서는 외부 사실을 다시 쓰지 말고 `references.md`의 절로 링크한다. 확인일 표기 규칙과 ADR 근거 필드는 [문서 근거 게이트](docs/contributing/doc-gate.md#문서-근거-게이트)가 정본이며 `check:docs`가 강제한다.

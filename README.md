@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 6b6d607cb4f5afe1e80adbe81f930451583388d00d7d559e8c7078b596bb5efd -->
+<!-- agctx-doc-sources-sha256: df18d5eea5e953d19d4679872cf2c01c786b9590de474e555ca5f1b043f2fedf -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -10,7 +10,7 @@
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#지원-에이전트)
 
-[핵심 목표](#핵심-목표) · [사용 사례](#사용-사례) · [시작하기](#시작하기) · [핵심 기능](#핵심-기능) · [지원 에이전트](#지원-에이전트) · [지원하지 않는 기능](#지원하지-않는-기능) · [아키텍처 방향](#아키텍처-방향과-진행-상태) · [문서](#문서) · [공개 프로젝트 참여](#공개-프로젝트-참여)
+[핵심 목표](#핵심-목표) · [사용 사례](#사용-사례) · [목적별 가이드](#목적별-가이드) · [시작하기](#시작하기) · [핵심 기능](#핵심-기능) · [지원 에이전트](#지원-에이전트) · [지원하지 않는 기능](#지원하지-않는-기능) · [아키텍처 방향](#아키텍처-방향과-진행-상태) · [문서](#문서) · [공개 프로젝트 참여](#공개-프로젝트-참여)
 
 읽는 언어: **한국어** · [English](README.en.md)
 
@@ -25,7 +25,7 @@
 
 ## 에이전트 컨텍스트를 한곳에서 만들고 관리합니다
 
-**TDD·보안·문서화·스킬·MCP 등을 어떤 기준으로 쓸지 이미 CLAUDE.md에 정해 두셨을 것입니다. 그런데 프로젝트와 AI 도구가 늘어날 때마다 같은 설정을 처음부터 다시 하고 계시지는 않나요?**
+**TDD·보안·문서화·스킬·MCP 같은 기준을 이미 CLAUDE.md에 정해 두셨을 것입니다. 그런데 프로젝트와 AI 도구가 늘어날 때마다 같은 설정을 처음부터 다시 하고 계시지는 않나요?**
 
 agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트에 적용하면 Codex·Claude Code·Antigravity가 읽는 지침 파일을 한 번에 만듭니다. 프로필에서 기준을 바꾼 뒤 동기화하면 프로젝트마다 파일을 다시 고치지 않아도 되고, 각 프로젝트만의 도메인 규칙은 그대로 남습니다. `profile create` → `profile setup` → `profile apply`·`profile sync`로 이어지는 한 흐름입니다.
 
@@ -37,38 +37,42 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 - 🛡️ 프로젝트마다 따로 쓴 지침은 그대로 두기
 - 🌿 Git으로 공유하고, CI로 검사하고, 여러 저장소에 PR 열기
 
-> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)입니다. 팀이 함께 쓰는 스킬·MCP 서버 설정·subagent 정의·hooks에서도 같은 문제가 생기므로, 같은 프로필로 관리하도록 범위를 넓혀 가는 중입니다.
+> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)입니다. 팀이 함께 쓰는 스킬·MCP 서버 설정·subagent 정의·hooks에서도 같은 문제가 생깁니다. 그래서 이것들까지 한 프로필로 관리하도록 범위를 넓혀 가는 중입니다.
 
 ## 핵심 목표
 
 > agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고, 로컬 또는 Git으로 관리하며, 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화합니다.
->
-> 용도별 프로필(공통 컨텍스트 저장소, Personal·Company·Team·Workspace 등)을 만들어 두고 프로젝트마다 골라 적용하면, 여러 에이전트와 개발자가 같은 기준으로 일합니다.
 
-개발자와 에이전트마다 달라지는 작업 방식·규칙·검증 기준의 차이를 줄여, 협업 기준을 일관되게 유지합니다. 프로필의 공통 컨텍스트는 단일 정본으로 관리하고, 프로젝트는 자신의 `AGENTS.md`에 도메인 규칙을 따로 추가합니다.
-
-개인 개발자도 프로젝트 성격에 따라 `Personal` 프로필을 여러 개 두고 재사용할 수 있습니다. 쓰는 AI 도구가 바뀌어도 같은 컨텍스트가 유지됩니다. 같은 설정을 반복하는 일과 프로젝트 사이에서 규칙이 어긋나는 일이 줄어들어, 관리도 개발도 수월해집니다.
+지침을 두는 자리가 둘로 나뉩니다. 여러 프로젝트가 함께 따르는 지침은 프로필에 두고 거기서만 고칩니다. 한 프로젝트에만 필요한 규칙은 그 프로젝트의 `AGENTS.md`에 직접 씁니다. 동기화할 때 agctx는 프로필에서 온 부분만 다시 만들고, 프로젝트에 직접 쓴 부분은 건드리지 않습니다.
 
 > [!NOTE]
 > agctx는 프로필의 공통 컨텍스트를 프로젝트와 여러 에이전트에 배포합니다. 코드베이스를 분석해 프로젝트 지침을 자동으로 작성하지는 않습니다. [이유 보기](#지원하지-않는-기능)
 
 ## 사용 사례
 
-### 개인 개발
+| 누가 | 이렇게 씁니다 | 얻는 것 |
+| --- | --- | --- |
+| 개인 개발자 | 프로젝트 성격별로 `Personal` 프로필을 만들고 저장소마다 `profile apply`로 적용합니다. | AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 그대로 다시 씁니다. |
+| 팀 | 팀 프로필을 Git 저장소로 공유하고, 적용을 맡은 사람이 `profile clone`·`pull`로 받아 담당 저장소에 적용해 커밋합니다. 검토한 버전에 머물려면 `--pin`으로 고정합니다. | 공통 컨텍스트가 바뀔 때마다 같은 이력으로 검토하고 배포하므로, 사람마다 설정이 달라지는 일이 줄어듭니다. 역할과 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나)에 있습니다. |
+| 조직 | 조직 프로필의 공통 기준을 Git으로 관리하고, 팀과 프로젝트는 자기 도메인 규칙만 프로젝트 `AGENTS.md`에 적습니다. | 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 따로 관리합니다. CI에서 `agctx check --refresh`로 각 저장소가 최신 기준을 반영했는지 확인합니다. |
 
-- **이렇게 사용합니다:** 프로젝트 성격별로 Personal 프로필을 만들고 `profile setup`으로 지침을 구성한 뒤, 각 프로젝트에 `profile apply`로 적용합니다.
-- **기대 효과:** AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 재사용합니다.
+다른 팀원은 저장소만 받으면 되고 agctx를 설치하지 않아도 됩니다. 에이전트는 커밋된 지침 파일을 그대로 읽습니다.
 
-### 팀 협업
+## 목적별 가이드
 
-- **이렇게 사용합니다:** 팀 프로필을 Git 저장소로 공유하고, 적용을 맡은 사람이 `profile clone`·`pull`로 받은 뒤 담당 프로젝트에 적용해 커밋합니다. 다른 팀원은 저장소만 받으면 되고 agctx를 설치하지 않아도 됩니다. 검토한 버전에만 머물려면 `--pin`으로 커밋에 고정합니다.
-- **기대 효과:** 팀의 공통 컨텍스트가 바뀔 때마다 같은 이력으로 검토하고 배포하므로, 사람마다 설정이 달라지는 일이 줄어듭니다.
-- **자세히:** CI는 `agctx check`로 저장소가 최신 프로필 버전을 반영했는지 확인합니다. 역할별로 필요한 것과 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나)에 있습니다.
+내 상황에 맞는 가이드를 고릅니다. 같은 목록이 [문서 안내](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드)에도 있습니다.
 
-### 조직 표준
-
-- **이렇게 사용합니다:** 조직 프로필의 공통 기준을 Git으로 관리하고, 팀·프로젝트는 각자의 도메인 규칙을 프로젝트 `AGENTS.md`에 추가합니다.
-- **기대 효과:** 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 따로 관리합니다. CI에서 `agctx check --refresh`로 각 저장소가 최신 기준을 반영했는지 확인합니다.
+| 상황                                    | 가이드                                                                                                                                          |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| 명령 대신 메뉴로 쓰기                   | [TUI로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md)                                                   |
+| 에이전트에게 맡기기                     | [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)                         |
+| 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-repo-individual.md) |
+| 고객사가 여럿                           | [고객사 여러 곳의 규칙 따로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-client.md)                     |
+| 팀 프로필 공유                          | [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)                               |
+| 모노레포                                | [모노레포에서 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/monorepo.md)                                       |
+| 고정 여부와 예약 봇                     | [갱신 방식 고르기: 고정과 예약 봇](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/update-policies.md)                 |
+| CI와 스크립트                           | [CI와 자동화에서 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/ci.md)                                          |
+| Microsoft APM과 함께                    | [APM과 함께 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/apm-coexistence.md)                                  |
 
 ## 시작하기
 
@@ -107,25 +111,19 @@ Applied profile company to /path/to/project
 
 설치부터 첫 적용까지 단계별 설명은 [빠른 시작](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/getting-started/quick-start.md)에 있습니다.
 
-### 목적별 가이드
+### 에이전트에게 맡기기 (선택)
 
-내 상황에 맞는 가이드를 고릅니다. 같은 목록이 [문서 안내](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/README.md#목적별-가이드)에도 있습니다.
+여기까지는 사람이 명령으로 실행했습니다. 에이전트용 스킬을 설치하면 이후 작업은 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
 
-| 상황                                    | 가이드                                                                                                                                          |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| 명령 대신 메뉴로 쓰기                   | [TUI로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/tui.md)                                                   |
-| 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-repo-individual.md) |
-| 고객사가 여럿                           | [고객사 여러 곳의 규칙 따로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/multi-client.md)                     |
-| 팀 프로필 공유                          | [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md)                               |
-| 모노레포                                | [모노레포에서 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/monorepo.md)                                       |
-| 고정 여부와 예약 봇                     | [갱신 방식 고르기: 고정과 예약 봇](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/update-policies.md)                 |
-| CI와 스크립트                           | [CI와 자동화에서 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/ci.md)                                          |
-| 에이전트에게 맡기기                     | [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)                         |
-| Microsoft APM과 함께                    | [APM과 함께 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/apm-coexistence.md)                                  |
+```bash
+DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+```
+
+skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
 
 ## 핵심 기능
 
-- **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목의 수준(`off`·`recommended`·`strict`)을 정합니다.
+- **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목의 수준(`off`·`recommended`·`strict`)을 정합니다. 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
 - **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다.
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
@@ -135,16 +133,6 @@ Applied profile company to /path/to/project
 - **모든 명령의 공통 계약** — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, `agctx <명령> --help`. 파일을 바꾸는 명령은 터미널이 아니면 확인을 물을 수 없으므로 `--yes`가 있어야 실행합니다. 표시·생성 언어는 `config lang <ko|en>`으로 정합니다.
 
 명령마다의 옵션·종료 코드·사용법은 [CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md)에 있습니다.
-
-### 에이전트에게 맡기기
-
-에이전트용 스킬을 설치하면 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 agctx를 맡길 수 있습니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
-
-```bash
-DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
-```
-
-skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
 
 ### 검증의 범위
 

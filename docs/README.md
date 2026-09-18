@@ -20,13 +20,13 @@
 | 상황                                    | 가이드                                                                        |
 | --------------------------------------- | ----------------------------------------------------------------------------- |
 | 명령 대신 메뉴로 쓰기                   | [TUI로 쓰기](guides/tui.md)                                                   |
+| 에이전트에게 맡기기                     | [에이전트에게 agctx를 맡기기](guides/agent-skills.md)                         |
 | 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](guides/multi-repo-individual.md) |
 | 고객사가 여럿                           | [고객사 여러 곳의 규칙 따로 쓰기](guides/multi-client.md)                     |
 | 팀 프로필 공유                          | [팀과 Git으로 공유하기](guides/team-sharing.md)                               |
 | 모노레포                                | [모노레포에서 쓰기](guides/monorepo.md)                                       |
 | 고정 여부와 예약 봇                     | [갱신 방식 고르기: 고정과 예약 봇](guides/update-policies.md)                 |
 | CI와 스크립트                           | [CI와 자동화에서 쓰기](guides/ci.md)                                          |
-| 에이전트에게 맡기기                     | [에이전트에게 agctx를 맡기기](guides/agent-skills.md)                         |
 | Microsoft APM과 함께                    | [APM과 함께 쓰기](guides/apm-coexistence.md)                                  |
 
 ### 개념

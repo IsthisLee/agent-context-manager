@@ -1,7 +1,7 @@
 # 에이전트에게 agctx를 맡기기
 
 <!-- agctx-doc-sources: skills, tools/generate-skills.ts -->
-<!-- agctx-doc-sources-sha256: 494c72cc02eb3619e2c2d8f50cc2b7703df8232fa7b0ddf2c73b46feba8d7215 -->
+<!-- agctx-doc-sources-sha256: d2c739a541c62e70931f0ed5715a056a3f2553fcf71e5379d1da0dc7dfc2be93 -->
 
 "이 폴더에서 규칙이 안 먹는 이유를 찾아 줘"나 "새 팀 규칙을 이 저장소에 반영해 줘"처럼 에이전트에게 말로 맡기려면 에이전트용 스킬을 설치한다. 스킬은 상황별로 쓸 명령, 쓰기 전에 승인을 받는 규칙, 종료 코드의 뜻을 에이전트에게 알려 준다.
 
@@ -25,6 +25,8 @@
 | --- | --- | --- |
 | `agctx` | **읽기만 한다.** 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 프로필 내용과 원격 상태 보기(`profile list`·`view`·`status`) | 쓴다 |
 | `agctx-author` | **바꾸는 일 전부.** 프로필 만들기와 지침 고르기(`profile create`·`setup`), 프로젝트에 적용(`apply`·`sync`·`resolve`), Git 연결과 게시(`clone`·`connect`·`pull`·`push`), 저장소마다 반영(`repos sync`·`pr`) | 사용자가 이름으로 부를 때만 |
+
+두 스킬은 한국어로 쓰여 있다. `description`에는 영어 한 줄을 함께 두어 한국어를 쓰지 않는 에이전트도 용도를 알 수 있게 했다([ADR 0030](../adr/0030-korean-skills.md)). CLI 출력의 기본 언어는 영어 그대로다([ADR 0014](../adr/0014-default-locale-english.md)).
 
 어느 명령이 어느 스킬에 들어가는지는 명령 등록부의 에이전트 정책이 정한다. 아무것도 바꾸지 않는 명령은 `auto`라서 `agctx` 스킬에 들어가고, 파일이나 원격을 바꾸는 명령은 `ask`라서 `agctx-author` 스킬에만 들어간다. `profile remove`·`config lang`·`help`는 `never`라서 어느 스킬에도 없다([ADR 0029](../adr/0029-agent-surface-contract.md)).
 

@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: b5e6270d4486b7f308c22711a1d93988ba917258733b755d54be35e6d0ee0208 -->
+<!-- agctx-doc-sources-sha256: b5f6d1d73c68e3482e8d41cf1e5199beca1edea9b7271ebbabfd31c703ea36da -->
 
 ## 설치와 실행
 
@@ -142,7 +142,7 @@ agctx --tui
 | [`profile create`](#profile-create) | 초기 AGENTS.md가 있는 프로필을 만듭니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile list`](#profile-list) | scope별 프로필을 보고 하나를 관리합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
 | [`profile view`](#profile-view) | 프로필의 scope와 AGENTS.md를 출력합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
-| [`profile setup`](#profile-setup) | 프로필에 쓸 지침 수준을 고릅니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile setup`](#profile-setup) | 프로필에 담을 지침 항목을 켜고 끕니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile apply`](#profile-apply) | 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile sync`](#profile-sync) | 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile resolve`](#profile-resolve) | 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |

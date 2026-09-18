@@ -30,8 +30,10 @@ test('the diagnosing skill may start on its own, and the publishing skill only w
 test('the publishing skill tells agents to show a dry run and wait for approval before --yes', () => {
   const author = read('skills/agctx-author/SKILL.md');
   assert.match(author, /--dry-run/);
+  // The skills are written in Korean (ADR 0030); this one English sentence stays
+  // so the rule reads the same to an agent working in either language.
   assert.match(author, /Never add `--yes`/);
-  assert.match(author, /approv/);
+  assert.match(author, /승인/);
 });
 
 test('the diagnosing skill offers nothing that writes', () => {

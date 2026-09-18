@@ -115,7 +115,7 @@ export default {
     'command.profile.create.summary': '초기 AGENTS.md가 있는 프로필을 만듭니다.',
     'command.profile.list.summary': 'scope별 프로필을 보고 하나를 관리합니다.',
     'command.profile.view.summary': '프로필의 scope와 AGENTS.md를 출력합니다.',
-    'command.profile.setup.summary': '프로필에 쓸 지침 수준을 고릅니다.',
+    'command.profile.setup.summary': '프로필에 담을 지침 항목을 켜고 끕니다.',
     'command.profile.apply.summary': '프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.',
     'command.profile.sync.summary': '프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.',
     'command.profile.resolve.summary': '관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다.',

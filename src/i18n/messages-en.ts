@@ -115,7 +115,7 @@ export default {
     'command.profile.create.summary': 'Create a profile with an initial AGENTS.md.',
     'command.profile.list.summary': 'List profiles by scope and manage one.',
     'command.profile.view.summary': 'Print a profile\'s scope and AGENTS.md.',
-    'command.profile.setup.summary': 'Choose the guidance levels written into a profile.',
+    'command.profile.setup.summary': 'Turn the guidance items in a profile on or off.',
     'command.profile.apply.summary': 'Apply a profile to a project: create the agent files and record the profile version. --pin keeps the project on the current commit until you apply again.',
     'command.profile.sync.summary': 'Re-apply the profile a project already uses. A pinned project stays on its recorded commit.',
     'command.profile.resolve.summary': 'Move edits made inside managed areas outside them and regenerate the areas.',

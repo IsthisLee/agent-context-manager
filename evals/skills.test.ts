@@ -12,13 +12,13 @@ const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), 'utf8'
 test('skill command lists match the command registry', () => {
   for (const skill of SKILLS) {
     const content = read(skill.file);
-    assert.equal(content, renderSkill(content, skill.commands), `${skill.file} is out of date; run node tools/generate-skills.ts`);
-  }
-  const listed = read('skills/agctx/SKILL.md');
-  for (const command of COMMANDS.filter(entry => entry.id !== 'help')) {
-    assert.ok(listed.includes(`agctx ${command.words.join(' ')}`), `skills/agctx lists agctx ${command.words.join(' ')}`);
+    assert.equal(content, renderSkill(content, skill.policies), `${skill.file} is out of date; run node tools/generate-skills.ts`);
   }
 });
+// Which command belongs in which skill is the agent surface contract, checked
+// by evals/agent-surface.test.ts. This file only checks that each list is
+// generated from the registry and that the two skills carry their invocation
+// policy and their approval rules.
 
 test('the diagnosing skill may start on its own, and the publishing skill only when called by name', () => {
   assert.match(read('skills/agctx/SKILL.md'), /^---\nname: agctx\ndescription: .+\n---\n/);
@@ -27,11 +27,20 @@ test('the diagnosing skill may start on its own, and the publishing skill only w
   assert.match(read('skills/agctx-author/agents/openai.yaml'), /^policy:\n {2}allow_implicit_invocation: false$/m, 'Codex does not start it on its own');
 });
 
-test('skills tell agents to show a dry run and wait for approval before --yes', () => {
-  for (const file of ['skills/agctx/SKILL.md', 'skills/agctx-author/SKILL.md']) {
-    const content = read(file);
-    assert.match(content, /--dry-run/, file);
-    assert.match(content, /Never add `--yes`/, file);
-    assert.match(content, /approv/, file);
-  }
+test('the publishing skill tells agents to show a dry run and wait for approval before --yes', () => {
+  const author = read('skills/agctx-author/SKILL.md');
+  assert.match(author, /--dry-run/);
+  assert.match(author, /Never add `--yes`/);
+  assert.match(author, /approv/);
 });
+
+test('the diagnosing skill offers nothing that writes', () => {
+  const user = read('skills/agctx/SKILL.md');
+  for (const command of COMMANDS.filter(entry => entry.changes !== 'none')) {
+    const usage = `\`agctx ${command.words.join(' ')}`;
+    assert.ok(!user.includes(usage), `${command.id} changes ${command.changes} and must not sit in a skill the model can start`);
+  }
+  assert.doesNotMatch(user.split('<!-- agctx:commands:start -->')[0], /--dry-run/, 'the prose never sends the agent to a writing command');
+});
+// `verify --probe --yes` stays: the probe only reads, and the flag is there so
+// the run does not start without the user paying for agent CLI calls.

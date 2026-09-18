@@ -18,6 +18,7 @@
 
 ### Added
 
+- 에이전트를 CLI·TUI와 같은 계약 아래 두는 세 번째 표면으로 뒀다. 명령 등록부의 `agent` 정책(`auto`·`ask`·`never`)이 어느 스킬이 그 명령을 싣는지 정하고, `evals/agent-surface.test.ts`가 정책에 맞는 스킬 소속과 시나리오 덮음을 검사한다. 정책은 `changes`에서 유도되므로 새 명령이 정책 없이 존재할 수 없다. 근거는 [ADR 0029](docs/adr/0029-agent-surface-contract.md)
 - TUI의 **Apply to a project**(프로젝트에 적용)가 Git 프로필이면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. Yes는 `profile apply --pin`과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있어, 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. 지금까지는 TUI로 적용하면 항상 고정 없이 적용했다
 - TUI 첫 화면에 **Check a project**(`check`·`explain`·`verify`)와 **Repositories**(`repos list`·`status`·`sync`·`pr`) 메뉴를 더했다. 이제 모든 명령을 TUI에서 실행할 수 있다. 원격 확인·에이전트·probe·프로필·없는 폴더 정리·PR 대상 파일·base 브랜치·초안·메시지는 질문으로 고른다. 답은 CLI와 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다
 - TUI의 **Help**에서 명령 하나를 골라 사용법·설명·종료 코드를 본다. **Clone a profile**과 **Connect to Git**은 브랜치를 묻는다(비워 두면 `--branch` 없음)
@@ -32,6 +33,8 @@
 
 ### Fixed
 
+- 모델이 스스로 부를 수 있는 `agctx` 스킬이 `profile push`·`repos pr`처럼 원격을 바꾸는 명령까지 싣고 있던 것을 고쳤다. 이제 읽기만 하는 명령 일곱(`profile list`·`view`·`status`, `check`, `explain`, `verify`, `repos status`)만 싣는다. 바꾸는 명령은 사용자가 이름으로 부르는 `agctx-author` 스킬에만 있다. 지금까지는 스킬 본문의 승인 규칙에만 의존했고, 그 규칙은 지침이라 지켜진다는 보장이 없었다
+- `agctx profile create`가 스킬의 명령 목록에 있으면서 에이전트가 부를 길이 없던 것을 고쳤다. 에이전트는 스킬 `description`만 보고 호출을 정하는데 생성 시나리오가 어디에도 없었다. `agctx-author` 스킬에 시나리오 일곱을 넣어 "컨텍스트 프로필 만들어줘" 같은 요청이 스킬에 닿는다. 지침 항목은 에이전트가 고르지 않고 사용자에게 묻는다
 - CodeQL이 워크플로 파일을 추출만 하고 검사하지 않던 것을 고쳤다. GitHub Actions는 자기 쿼리 팩(`codeql/actions-queries`)을 가진 별도 언어인데 `languages: javascript` 하나만 주어 그 팩이 로드되지 않았다. `javascript-typescript`와 `actions`를 매트릭스로 돌린다. `${{ }}` 스크립트 인젝션과 과한 권한을 이제 검사하며, `publish.yml`이 신뢰된 게시로 `id-token: write`를 들고 있어 특히 필요하다. TypeScript 분석은 그대로다. `javascript`·`typescript`·`javascript-typescript`는 같은 추출기로 해석되고 실행 로그가 `.ts` 83개를 모두 스캔했음을 보였다
 - 스킬 설치 안내가 기여자 전용 스킬까지 설치하게 하던 것을 고쳤다. `--skill '*'`는 skills CLI가 저장소 전체를 순회하므로 `.agents/skills/repo-docs`(이 저장소의 문서 작업 절차)까지 함께 설치했다. `repo-docs`에 `metadata.internal: true`를 붙여 사용자 설치에서 빠지게 하고, 안내를 `npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a antigravity`로 줄였다. `-g`는 전역 설치이므로 실행 위치가 상관없고 프로젝트에 파일을 만들지 않는다. `-a`는 빼면 에이전트 폴더 70개가 넘는 곳에 설치되므로 남긴다. 안내에서 `DISABLE_TELEMETRY=1`은 뺐다. 보내는 값은 저장소·스킬·에이전트 이름과 설치된 파일 목록뿐이고 끄는 방법은 가이드가 설명하므로, 끌지는 쓰는 사람이 정한다. `tools/skills-smoke.ts`가 이제 `.agents/skills`까지 복사해 `repo-docs`가 설치되지 않는지 검사한다
 - `profile connect --branch <branch>`가 현재 브랜치와 다른 이름을 받으면, 현재 브랜치가 아니라 같은 이름의 로컬 브랜치에 추적 설정을 써서 `pull`은 추적 브랜치가 없다며 멈추고 `push`는 현재 브랜치 이름으로 올라갔다. 이제 현재 브랜치가 `--branch`로 준 원격 브랜치를 추적하고, `status`·`pull`·`push`가 모두 그 브랜치를 쓴다. 연결 문구와 `profile status`의 `원격 브랜치@커밋`도 추적하는 원격 브랜치를 표시하고, `--json`의 프로필 상태에 `remoteBranch`를 더했다

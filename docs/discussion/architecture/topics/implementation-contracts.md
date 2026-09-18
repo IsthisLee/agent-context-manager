@@ -19,10 +19,20 @@ flowchart LR
   REG["COMMANDS<br/>src/commands/registry.ts"] -->|"모든 명령"| CLI["CLI 명령·옵션·--help"]
   REG -->|"모든 명령: tui"| TUI["터미널 TUI 흐름"]
   REG -->|"profile 표면: profileMenu"| MENU["agctx profile list<br/>관리 메뉴"]
+  REG -->|"agent 정책: auto·ask"| SKILL["skills/<br/>에이전트용 스킬"]
   EVAL["evals/interface-parity.test.ts"] -.->|"경로가 빠지거나 메뉴에 보이지 않으면 실패"| REG
+  EVAL2["evals/agent-surface.test.ts"] -.->|"정책과 스킬 소속·시나리오가 어긋나면 실패"| SKILL
 ```
 
 기능을 추가하면 등록부에 항목을 하나 넣고 표면과 TUI 항목(`tui`)을 정한다. `tui`는 필수 필드라 빠뜨리면 형식 검사가 실패한다. 평가는 그 키가 첫 화면·프로필 관리·프로젝트 점검·여러 저장소 메뉴 가운데 한 곳에 보이는지, 메뉴 항목마다 동작이 연결됐는지, `profile` 명령이 관리 메뉴에 있는지 확인한다. TUI가 옵션을 질문으로 받는 흐름은 `evals/tui-commands.test.ts`가 답과 CLI 옵션이 같은지 검사한다.
+
+**에이전트도 같은 계약 아래 둔다.** 등록부의 `agent` 정책(`auto`·`ask`·`never`)이 어느 스킬이 그 명령을 싣는지 정한다. 정책은 `changes`에서 유도되므로 새 명령이 정책 없이 존재할 수 없고, `evals/agent-surface.test.ts`가 정책에 맞는 스킬 소속과 「Pick the command」 시나리오 덮음을 검사한다. 노출만으로는 부족한 이유는 에이전트가 스킬 `description`만 보고 호출을 정하기 때문이다([ADR 0029](../../../adr/0029-agent-surface-contract.md)).
+
+| 정책 | 담는 스킬 | 대상 |
+| --- | --- | --- |
+| `auto` | `skills/agctx` (모델이 스스로 부름) | `changes: 'none'`인 읽기 전용 명령 |
+| `ask` | `skills/agctx-author` (이름으로 부를 때만) | 프로필 보관함·저장소·원격을 바꾸는 명령 |
+| `never` | 없음 | `profile remove`·`config lang`·`help` |
 
 TUI에는 `--json`, `--yes`, 단독 `--dry-run`, 한 번만 쓰는 `--lang`을 요구하지 않는다. 사람이 화면을 보며 답하는 경로라 계획을 보여 준 뒤 확인을 묻고 결과의 뜻을 보여 주는 것으로 대신한다. TUI로 옮길 수 없는 명령이 생기면 새 ADR로 예외와 이유를 정한다.
 

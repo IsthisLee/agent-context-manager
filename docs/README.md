@@ -116,10 +116,11 @@
   - [ADR 0022: 프로필이 담을 대상에 hooks를 더함](adr/0022-profile-scope-hooks.md)
   - [ADR 0023: 기존 저장소에서 프로필을 만들 때 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦](adr/0023-profile-drafting-through-agent-skill.md)
   - [ADR 0024: 기본 지침 문장은 공식 문서·표준 근거가 있어야 하고 분량 예산 안에 머묾](adr/0024-guidance-evidence-and-budget.md)
-  - [ADR 0025: 모든 명령은 CLI와 TUI에서 실행할 수 있어야 함](adr/0025-every-command-in-cli-and-tui.md)
+  - [ADR 0025: 모든 명령은 CLI와 TUI에서 실행할 수 있어야 함](adr/0025-every-command-in-cli-and-tui.md) (확장: ADR 0029)
   - [ADR 0026: 지침 항목을 열 개로 나누고 근거 등급을 세 단계로 넓힘](adr/0026-guidance-items-and-evidence-tiers.md)
   - [ADR 0027: 출력 스타일은 프로필이 담지 않음](adr/0027-no-output-styles.md)
   - [ADR 0028: 지침 항목은 켜고 끄는 두 값만 받음](adr/0028-guidance-on-off.md)
+  - [ADR 0029: 에이전트를 CLI·TUI와 같은 계약 아래 둠](adr/0029-agent-surface-contract.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

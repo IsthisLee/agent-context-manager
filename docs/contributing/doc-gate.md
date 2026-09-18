@@ -7,7 +7,7 @@
 
 ## 문서 소스 해시 게이트
 
-현재 코드 동작을 서술하는 문서는 인용·서술하는 소스 파일 목록과 그 sha256을 문서 상단 HTML 주석 마커로 고정한다. `pnpm run check`의 `check:docs`가 마커의 소스를 다시 해싱해 기록된 값과 다르면 실패한다. 현재 대상은 코드 동작이나 실제 출력을 싣는 `getting-started/`·`guides/`·`concepts/`·`reference/`의 문서(`concepts/why-agctx.md` 제외), `contributing/`의 `architecture.md`·`implementation-mechanics.md`·`guidance-catalog.md`·`implementation-principles.md`·`testing.md`·`releasing.md`·`doc-gate.md`·`adapters.md`, 그리고 루트 `README.md`·`README.en.md`이다. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다.
+현재 코드 동작을 서술하는 문서는 인용·서술하는 소스 파일 목록과 그 sha256을 문서 상단 HTML 주석 마커로 고정한다. `pnpm run check`의 `check:docs`가 마커의 소스를 다시 해싱해 기록된 값과 다르면 실패한다. 현재 대상은 코드 동작이나 실제 출력을 싣는 `getting-started/`·`guides/`·`concepts/`·`reference/`의 문서(`concepts/why-agctx.md` 제외), `contributing/`의 `architecture.md`·`implementation-mechanics.md`·`implementation-principles.md`·`testing.md`·`releasing.md`·`doc-gate.md`·`adapters.md`, 그리고 루트 `README.md`·`README.en.md`이다. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다.
 
 ```mermaid
 flowchart TD

@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 20306b4f82f53b9882996267567097dddbb073bb6ef644e0b21a5105513ca34f -->
+<!-- agctx-doc-sources-sha256: 01912b56723716ef9f37fd10b4f402274e35e7a18bdd57c7b54d30db0a462819 -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 
@@ -35,5 +35,5 @@ GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·2
 
 ## 네트워크가 필요한 확인
 
-- `node tools/skills-smoke.ts`: skills CLI로 스킬을 임시 프로젝트에 설치해 위치를 확인한다. npm에서 skills CLI를 받으므로 `pnpm run check`에는 넣지 않는다.
+- `node tools/skills-smoke.ts`: skills CLI로 스킬을 임시 프로젝트에 설치해 위치를 확인하고, 기여자 전용 스킬(`.agents/skills/repo-docs`)이 사용자 설치에서 빠지는지 검사한다. skills CLI가 저장소 전체를 순회하므로 사용자가 실제로 보는 것과 같게 `skills/`와 `.agents/skills/`를 모두 복사해 실행한다. npm에서 skills CLI를 받으므로 `pnpm run check`에는 넣지 않는다.
 - 실제 에이전트 CLI로 `agctx verify --probe`를 실행하는 확인은 요금제·로그인이 필요해 자동화하지 않는다. 에이전트 판정을 바꾸면 한 번 수동으로 실행하고 결과를 [외부 참고 문헌](../references.md)에 기록한다.

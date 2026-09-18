@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: f3fa9c5209b54bc106c6211e2350f8fedef3c413e1973d46db33cf0865698855 -->
+<!-- agctx-doc-sources-sha256: f792f029a3940f6ddf89dba61ef5a38783535103046145c526d8e1535d58292c -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -51,7 +51,7 @@ flowchart LR
 - **저장소 검사:** `agctx check`는 파일을 바꾸지 않고 관리 영역 hash(충돌 2), 관리 파일의 숨은 문자(3), 프로필이나 원천 저장소보다 뒤처졌는지(1)를 판정한다. 보관함이 없는 CI에서는 `--refresh`가 `git ls-remote`로 원천 브랜치의 최신 커밋과 비교한다.
 - **여러 저장소:** `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록하고, `repos status`·`sync`·`pr`이 이 목록이나 `--targets` 파일의 저장소를 한 번에 다룬다. `repos pr`은 사용자 작업 폴더 대신 임시 worktree(URL은 임시 clone)에서 커밋해 push하고 `gh`로 PR을 연다. 렌더링이 폴더 이름에 흔들리지 않도록 프로젝트 이름을 `agctx.project.json`에 기록한다. 결정은 [ADR 0018](../adr/0018-multi-repository-sync.md)이다.
 - **전달 확인:** `agctx explain`은 에이전트마다 문서화된 로드 규칙과 실측으로, 한 폴더에서 시작한 에이전트가 읽는 지침 파일을 판정하고, 확인한 에이전트 가운데 하나라도 받지 못하는 파일(`missing`)이 있으면 4로 끝난다(`src/explain.ts:367-368`). `agctx verify`는 Codex·Claude Code 세션 기록에서 그 파일들이 실제로 들어갔는지 확인한다. `--probe`를 주면 확인을 받은 뒤, 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행한다. `explain`은 같은 규칙이 두 파일로 한 에이전트에 들어가는 중복도 경고한다([ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)). 결정은 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)다.
-- **에이전트용 스킬:** 저장소 `skills/`에 진단·갱신용 `agctx`와 게시용 `agctx-author` 스킬이 있다. 명령 목록은 `tools/generate-skills.ts`가 등록부에서 만들고 평가가 최신인지 검사한다. 스킬은 npm 패키지에 넣지 않고 사용자가 skills CLI로 저장소에서 설치한다.
+- **에이전트용 스킬:** 저장소 `skills/`에 진단·갱신용 `agctx`와 게시용 `agctx-author` 스킬이 있다. 명령 목록은 `tools/generate-skills.ts`가 등록부에서 만들고 평가가 최신인지 검사한다. 스킬은 npm 패키지에 넣지 않고 사용자가 skills CLI로 저장소에서 전역(`-g`)에 설치한다. skills CLI는 저장소 전체를 순회하므로, 기여자용 `.agents/skills/repo-docs`는 frontmatter의 `metadata.internal: true`로 사용자 설치에서 뺀다.
 
 프로필은 로컬 파일 시스템의 `~/.agctx/profiles/<name>`에 보관하며, 이 폴더가 Git 저장소이면 원격과 공유할 수 있다. 원격 저장소의 권한·리뷰·보호 규칙은 Git 호스트가 맡는다.
 
@@ -79,7 +79,7 @@ agent-context-manager/
 │   ├── profile/AGENTS.md        # 새 프로필의 초기 지침 템플릿(한국어는 AGENTS.ko.md)
 │   └── ...                      # 에이전트별 지침 포인터·하위 폴더 연결 파일(CLAUDE.link.md) 템플릿
 ├── skills/                      # 에이전트용 스킬: agctx(진단·갱신)·agctx-author(게시·PR)
-├── .agents/skills/repo-docs/    # 이 저장소 기여자용 스킬: 문서·ADR·논의 문서 변경 절차
+├── .agents/skills/repo-docs/    # 이 저장소 기여자용 스킬(metadata.internal): 문서 변경 절차
 │                             # (Claude Code용 링크는 .claude/skills/repo-docs)
 ├── evals/                       # CLI·문서·패키지 산출물 평가
 ├── tools/

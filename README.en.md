@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: 4852f3fc766b5e5ec2c6b104ddf01ed54a6ff24c5befbcc3db8e19a2e1697178 -->
+<!-- agctx-doc-sources-sha256: 287e087bedb351edfdd89b2f229ea24a3c9cbe03aaa33ab1e650d33be438df27 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -113,10 +113,10 @@ Step-by-step installation through the first apply is in the [quick start (Korean
 Up to here a person ran the commands. Install the agent skills and you can hand the rest to an agent in plain language, such as "check that this repository's context is up to date": the agent runs `agctx check` and explains the result. The skills make the agent show `--dry-run` output and ask for approval before any write command. The `agctx-author` skill for publishing Profiles and opening PRs is used only when you call it by name.
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a antigravity
 ```
 
-The skills CLI sends anonymous usage data; with `DISABLE_TELEMETRY=1` as above it sends none. Details are in the [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md).
+Details are in the [Handing agctx to an agent (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md).
 
 ## Core features
 

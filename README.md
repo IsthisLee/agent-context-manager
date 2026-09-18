@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: a8c08054ae21da392c21d660ae1f7c4106cecbfaa944b78a418945183d4c5f9a -->
+<!-- agctx-doc-sources-sha256: 523ab71e02d167e9ac7cdc3313cdbcf9fac2c115cbaf511c83bf007d5ccc07f8 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -45,7 +45,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 지침을 두는 자리가 둘로 나뉩니다. 여러 프로젝트가 함께 따르는 지침은 프로필에 두고 거기서만 고칩니다. 한 프로젝트에만 필요한 규칙은 그 프로젝트의 `AGENTS.md`에 직접 씁니다. 동기화할 때 agctx는 프로필에서 온 부분만 다시 만들고, 프로젝트에 직접 쓴 부분은 건드리지 않습니다.
 
 > [!NOTE]
-> agctx는 프로필의 공통 컨텍스트를 프로젝트와 여러 에이전트에 배포합니다. 코드베이스를 분석해 프로젝트 지침을 자동으로 작성하지는 않습니다. [이유 보기](#지원하지-않는-기능)
+> agctx는 프로필의 공통 컨텍스트를 여러 프로젝트와 에이전트에 배포합니다. 코드베이스를 분석해 프로젝트 지침을 자동으로 작성하지는 않습니다. [이유 보기](#지원하지-않는-기능)
 
 ## 사용 사례
 
@@ -115,10 +115,10 @@ Applied profile company to /path/to/project
 여기까지는 사람이 명령으로 실행했습니다. 에이전트용 스킬을 설치하면 이후 작업은 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
 
 ```bash
-DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a antigravity
 ```
 
-skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`을 붙이면 보내지 않습니다. 자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
+자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
 
 ## 핵심 기능
 

@@ -30,58 +30,54 @@
 
 ## 설치하기
 
-1. 스킬을 둘 프로젝트 폴더에서 아래 명령을 실행한다.
+1. 아래 명령을 실행한다. 이 컴퓨터의 모든 프로젝트에서 쓰도록 설치하므로 실행 위치는 상관없다.
 
    ```bash
-   DISABLE_TELEMETRY=1 npx skills add IsthisLee/agent-context-manager --skill '*' -a claude-code -a codex -a antigravity
+   npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a antigravity
    ```
 
-2. 터미널에서 실행하면 skills CLI가 몇 가지를 묻는다. 아래는 skills 1.5.26으로 실제 실행한 화면에서 로고만 지운 것이다.
+   `-g`는 전역 설치다. 두 스킬은 특정 저장소의 성질이 아니라 이 컴퓨터에서 agctx를 쓰는 방법이므로, 프로젝트에 커밋하지 않고 전역에 둔다. `-a`로 세 에이전트를 적는 이유는 이것을 빼면 skills CLI가 아는 에이전트 70개가 넘는 폴더에 모두 설치하기 때문이다(실측은 [외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
+
+2. 설치가 끝나면 아래처럼 결과가 나온다. 격리한 `HOME`으로 실제 실행한 출력이다.
 
    ```text
-   ◇  Found 2 skills
-   │
-   ●  Installing all 2 skills
-   │
-   ◆  Installation scope
-   │  ● Project (Install in current directory (committed with your project))
-   │  ○ Global
-   │  ↑/↓ to navigate • Enter: confirm
-   └
+   ◇  Installed 2 skills ──────────────╮
+   │                                   │
+   │  ✓ ~/.agents/skills/agctx         │
+   │    universal: Codex, Antigravity  │
+   │    symlinked: Claude Code         │
+   │  ✓ ~/.agents/skills/agctx-author  │
+   │    universal: Codex, Antigravity  │
+   │    symlinked: Claude Code         │
+   │                                   │
+   ├───────────────────────────────────╯
+   └  Done!  Review skills before use; they run with full agent permissions.
    ```
 
-   | 질문 | 고를 것 |
-   | --- | --- |
-   | **Installation scope** | **Project**는 이 프로젝트 폴더에 설치해 저장소와 함께 커밋한다. **Global**은 이 컴퓨터의 모든 프로젝트에서 쓰도록 설치한다(`-g`와 같다). |
-   | **Installation method** | **Symlink (Recommended)**는 스킬 파일을 `.agents/skills/`에 한 벌만 두고, `.claude/skills/`에는 그 폴더를 가리키는 링크를 만든다. **Copy to all agents**는 두 폴더에 같은 파일을 각각 둔다. |
-   | **Proceed with installation?** | 설치할 경로 요약을 확인하고 **Yes**(기본)에서 `Enter`를 누른다. |
-   | **Install the find-skills skill?** | 처음 한 번만 묻는다. agctx와 관계없는 다른 스킬이며 **Yes가 기본**이다. 필요 없으면 `→`로 **No**를 고른 뒤 `Enter`를 누른다. |
+   스킬 파일은 `~/.agents/skills/`에 한 벌만 두고 `~/.claude/skills/`에는 그 폴더를 가리키는 링크를 만든다(**Symlink**). `--copy`를 주면 두 폴더에 같은 파일을 각각 둔다.
 
-3. `Installed 2 skills`와 `Done!`이 나오면 끝난 것이다.
-
-질문 없이 설치하려면 명령 끝에 `-y`를 붙인다. `-y`로 실행해 보니 **Project**와 **Symlink**로 설치됐고 find-skills는 묻지 않았다. Claude Code 같은 에이전트 안에서 실행해도 skills CLI가 에이전트를 감지해 질문 없이 같은 방식으로 설치한다.
+   터미널에서 실행하면 설치 방법과 진행 여부를 묻는다. `-g`와 `-a`가 설치 범위와 에이전트를 미리 정하므로 그 두 질문은 나오지 않는다. 질문 없이 끝내려면 `-y`를 붙인다. Claude Code 같은 에이전트 안에서 실행하면 skills CLI가 에이전트를 감지해 질문 없이 설치한다.
 
 ## 설치 확인하기
 
-프로젝트에 설치했다면 아래 파일이 생겼는지 본다. 아래는 **Symlink**로 설치한 결과다.
+아래 파일이 생겼는지 본다. 격리한 `HOME`으로 실제 설치한 뒤 옮긴 목록이다.
 
 ```text
-.agents/skills/agctx/SKILL.md
-.agents/skills/agctx-author/SKILL.md
-.agents/skills/agctx-author/agents/openai.yaml
-.claude/skills/agctx -> ../../.agents/skills/agctx
-.claude/skills/agctx-author -> ../../.agents/skills/agctx-author
-skills-lock.json
+~/.agents/skills/agctx/SKILL.md
+~/.agents/skills/agctx-author/SKILL.md
+~/.agents/skills/agctx-author/agents/openai.yaml
+~/.claude/skills/agctx -> ../../.agents/skills/agctx
+~/.claude/skills/agctx-author -> ../../.agents/skills/agctx-author
 ```
 
-- Codex와 Antigravity는 `.agents/skills/`를, Claude Code는 `.claude/skills/`를 읽는다. Claude Code는 링크로 둔 스킬 폴더도 링크 대상의 `SKILL.md`를 읽는다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)). **Copy to all agents**로 설치했다면 `.claude/skills/` 아래도 링크가 아니라 실제 폴더다.
-- `skills-lock.json`에는 스킬을 받은 저장소와 파일 해시가 기록된다. 팀이 같은 스킬을 쓰려면 두 스킬 폴더와 함께 커밋한다.
+- Codex와 Antigravity는 `.agents/skills/`를, Claude Code는 `.claude/skills/`를 읽는다. Claude Code는 링크로 둔 스킬 폴더도 링크 대상의 `SKILL.md`를 읽는다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
+- 전역 설치는 `skills-lock.json`을 만들지 않는다. 프로젝트 설치(`-g` 없이 **Project**를 고른 경우)에만 프로젝트 폴더에 생기고, 그때는 두 스킬 폴더와 함께 커밋해야 팀이 같은 스킬을 쓴다.
 
 그다음 에이전트에게 "이 폴더에서 규칙이 에이전트에 닿는지 확인해 줘"처럼 요청해 본다. 에이전트가 `agctx explain`을 실행해 결과를 설명하면 스킬이 동작하는 것이다.
 
 ## 알아 둘 점
 
-- skills CLI(위 명령의 `npx skills`)는 익명 사용 통계를 보낸다. `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`을 붙이면 보내지 않는다. 질문 화면과 설치 결과를 확인한 실험도 같은 곳에 있다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
+- skills CLI(위 명령의 `npx skills`)는 설치 사실을 익명 통계로 보낸다. 저장소 이름, 스킬 이름, 에이전트 이름, 설치된 파일 목록이며 개인 정보는 없다. 보내지 않으려면 `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`을 붙인다. 보내는 내용과 끄는 방식을 코드에서 확인한 기록은 [외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)에 있다.
 - 두 스킬은 쓰기 명령 앞에 `--dry-run` 결과(파일을 쓰지 않고 출력한 계획)를 보여 주고, 사용자가 승인한 뒤에만 `--yes`(확인 질문 없이 실행)를 붙이라고 지시한다. 에이전트를 임시 사본에서 한 번 실행해 확인하는 `verify --probe`도 실행 전에 묻게 한다.
 - 스킬은 에이전트에게 주는 지시이므로 에이전트가 반드시 지킨다는 보장은 없다. 터미널이 아닌 곳에서는 `--yes` 없이 파일을 쓰지 않는다는 CLI 규칙이 마지막 안전장치다.
 - 스킬에 적힌 명령 목록은 스킬을 설치한 시점의 저장소를 기준으로 한다.

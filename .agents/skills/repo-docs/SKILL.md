@@ -1,6 +1,8 @@
 ---
 name: repo-docs
 description: 이 저장소(agent-context-manager)의 문서·ADR·논의 문서를 추가하거나 고칠 때 따르는 절차. 문서를 어디에 둘지 정하고, 정본과 중복을 확인하고, ADR·논의 문서의 상태와 기록을 갱신하고, 문서 소스 해시를 다시 기록해 `pnpm run check`를 통과시키는 단계를 담는다. 코드만 바꾸는 작업에는 쓰지 않는다.
+metadata:
+  internal: true
 ---
 
 # 저장소 문서 변경 절차

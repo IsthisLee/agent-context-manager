@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: b4d1f3cc982059a6aa2346b99bba5482a28cb6a962435d749fd68b44108e989f -->
+<!-- agctx-doc-sources-sha256: cec51729c2d6fbf7dafbf41df49031ecaddab6f6c9fc6b826f1c0552c5bc5f79 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -186,11 +186,12 @@ agctx's implementation is managed in stages around where the shared context live
 
 ## Open-source participation
 
-- [Contributing guide](https://github.com/IsthisLee/agent-context-manager/blob/main/CONTRIBUTING.md)
-- [Security policy](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md)
-- [Code of conduct](https://github.com/IsthisLee/agent-context-manager/blob/main/CODE_OF_CONDUCT.md)
+This is a personal project, so there is no separate contribution process. If something blocks you or needs fixing, open an issue.
+
 - [Report an issue](https://github.com/IsthisLee/agent-context-manager/issues)
+- [Security policy](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md) — report a vulnerability through the path described there, not in an issue
+- [Development rules](https://github.com/IsthisLee/agent-context-manager/blob/main/AGENTS.md) — the rules this repository follows when changing code and documentation
 
 ---
 
-[Apache License 2.0](LICENSE) · Built with Codex, Claude Code, and Antigravity.
+[MIT License](LICENSE) · Built with Codex, Claude Code, and Antigravity.

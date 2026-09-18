@@ -213,9 +213,10 @@ function checkDocumentationGovernance() {
     }
   }
 
+  // A one-person toy project keeps the files that do something and drops the
+  // ones that only signal an open-source process (ADR 0031). What is left is
+  // the vulnerability report path and the two workflows that gate a release.
   for (const file of [
-    path.join(root, 'CONTRIBUTING.md'),
-    path.join(root, 'CODE_OF_CONDUCT.md'),
     path.join(root, 'SECURITY.md'),
     path.join(root, '.github', 'workflows', 'ci.yml'),
     path.join(root, '.github', 'workflows', 'publish.yml')

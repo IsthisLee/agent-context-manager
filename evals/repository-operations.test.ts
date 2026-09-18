@@ -42,25 +42,24 @@ test('npm publishing requires prepublish verification and provenance', () => {
 
 test('public repository health and dependency automation files are present', () => {
   for (const relative of [
-    'CONTRIBUTING.md',
-    'CODE_OF_CONDUCT.md',
     'SECURITY.md',
     '.github/dependabot.yml',
-    '.github/ISSUE_TEMPLATE/bug-report.yml',
-    '.github/ISSUE_TEMPLATE/feature-request.yml',
-    '.github/ISSUE_TEMPLATE/config.yml',
     '.github/PULL_REQUEST_TEMPLATE.md',
-    '.github/CODEOWNERS',
     '.editorconfig',
     '.gitattributes'
   ]) assert(fs.existsSync(path.join(repoRoot, relative)), `${relative} must exist`);
+  // Dropped with ADR 0031: a code of conduct and issue templates need more than
+  // one person, and CODEOWNERS needs more than one owner.
+  for (const relative of ['CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', '.github/CODEOWNERS', '.github/ISSUE_TEMPLATE']) {
+    assert(!fs.existsSync(path.join(repoRoot, relative)), `${relative} was dropped and must stay dropped`);
+  }
   const dependabot = read('.github/dependabot.yml');
   assert.match(dependabot, /package-ecosystem: npm/);
   assert.match(dependabot, /package-ecosystem: github-actions/);
 });
 
 test('GitHub Actions references are pinned to immutable commits', () => {
-  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml', '.github/workflows/scorecard.yml']) {
+  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml']) {
     const workflow = read(relative);
     for (const match of workflow.matchAll(/uses:\s+([^\s#]+)@([^\s#]+)/g)) {
       assert.match(match[2], /^[0-9a-f]{40}$/, `${relative}: ${match[1]} must use a 40-character commit SHA`);
@@ -69,7 +68,7 @@ test('GitHub Actions references are pinned to immutable commits', () => {
 });
 
 test('every GitHub workflow disables checkout credential persistence', () => {
-  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml', '.github/workflows/scorecard.yml']) {
+  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml']) {
     const workflow = read(relative);
     const checkouts = [...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n      - name:|\n  jobs:|$)/g)];
     assert(checkouts.length > 0, `${relative} must use checkout`);

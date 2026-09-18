@@ -47,7 +47,7 @@
     "github"
   ],
   "author": "Isthis",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "publishConfig": {
     "access": "public"
   },

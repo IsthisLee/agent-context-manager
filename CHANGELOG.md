@@ -6,6 +6,8 @@
 
 ### Changed
 
+- 라이선스를 Apache-2.0에서 **MIT**로 바꿨다. 이미 게시한 0.3.0과 0.3.1은 Apache-2.0으로 남고, MIT는 다음 게시 버전부터다. 근거는 [ADR 0031](docs/adr/0031-drop-open-source-process-files.md)
+- 한 사람이 만드는 프로젝트에 맞게 공개 운영 파일 일곱 개(182줄)를 뺐다. `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `.github/CODEOWNERS`, 이슈 템플릿 세 개, OpenSSF Scorecard workflow다. 여러 사람이 상호작용할 때 값어치가 생기는 것과, 점수를 외부에 보이기만 하는 것이다. `SECURITY.md`와 `dependency-review`·`codeql`·`dependabot`처럼 막거나 알리는 것은 남겼다. 저장소를 고치는 규칙은 `AGENTS.md`와 `docs/contributing/`에 있다
 - **호환성 파괴:** 지침 항목의 값을 `off`·`recommended`·`strict` 셋에서 `on`·`off` 둘로 줄였다. `--tdd strict`처럼 옛 값을 넘기던 스크립트는 사용법 오류(64)로 멈추므로 `on`으로 바꾼다. 이미 저장된 프로필의 `recommended`·`strict`는 `on`으로 읽으므로 기존 프로필은 그대로 동작한다. 산출물에서는 적용 수준 정의 범례와 항목마다 붙던 `적용 수준:` 줄이 빠지고, 항목이 블록에 있으면 켜진 것이다. 모든 항목을 켠 블록은 한국어 39줄 8,476바이트, 영어 39줄 7,680바이트다. `recommended`는 "이유를 적으면 예외를 둔다"는 뜻이라 승인·비밀값·테스트 무결성 규칙에 빠져나갈 길을 붙였고, 두 수준이 에이전트 행동을 다르게 만든다는 근거도 없었다. 근거는 [ADR 0028](docs/adr/0028-guidance-on-off.md)
 - **호환성 파괴:** 배포 지침 항목을 6개에서 10개로 나누고 더했다. 작업 흐름에서 `--context`(맥락 관리)를, 보안에서 `--untrusted`(믿을 수 없는 입력)를 떼어내고, `--docs`(문서화)와 `--language`(응답 언어)를 더했다. 응답 언어만 기본값이 `off`이고 나머지는 `recommended`다. 지침 옵션 없이 표준 입력으로 수준을 넘기던 자동화는 줄이 6개에서 10개로 늘어나므로, 6줄만 주면 나머지 항목이 기본값으로 만들어진다. 기존 프로필에 저장된 6개 항목의 값은 그대로 읽는다. 근거는 [ADR 0026](docs/adr/0026-guidance-items-and-evidence-tiers.md)
 - 근거 등급을 세 단계로 넓혔다. 공급사 공식 문서·표준 기관 문서(A)에 더해, 그 실천법을 만든 사람의 1차 저작과 방법을 공개한 동료 심사 연구(B)를 정의·절차의 단독 근거로 인정한다. 효과 주장은 A급만 쓴다
@@ -18,6 +20,7 @@
 
 ### Added
 
+- 에이전트용 스킬 두 개를 한국어로 다시 썼다. 이 저장소의 문서 기본 언어와 맞추고, 사용자가 한국어로 요청할 때 스킬 `description`과의 대조가 한 겹 멀어지지 않게 한다. `description`에는 영어 한 줄을 함께 둔다. 생성되는 명령 목록은 `src/i18n/messages-ko.ts`에서 읽는다. CLI 출력의 기본 언어는 영어 그대로다. 근거는 [ADR 0030](docs/adr/0030-korean-skills.md)
 - 에이전트를 CLI·TUI와 같은 계약 아래 두는 세 번째 표면으로 뒀다. 명령 등록부의 `agent` 정책(`auto`·`ask`·`never`)이 어느 스킬이 그 명령을 싣는지 정하고, `evals/agent-surface.test.ts`가 정책에 맞는 스킬 소속과 시나리오 덮음을 검사한다. 정책은 `changes`에서 유도되므로 새 명령이 정책 없이 존재할 수 없다. 근거는 [ADR 0029](docs/adr/0029-agent-surface-contract.md)
 - TUI의 **Apply to a project**(프로젝트에 적용)가 Git 프로필이면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. Yes는 `profile apply --pin`과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있어, 메뉴에서 다시 적용해도 고정이 조용히 풀리지 않는다. 지금까지는 TUI로 적용하면 항상 고정 없이 적용했다
 - TUI 첫 화면에 **Check a project**(`check`·`explain`·`verify`)와 **Repositories**(`repos list`·`status`·`sync`·`pr`) 메뉴를 더했다. 이제 모든 명령을 TUI에서 실행할 수 있다. 원격 확인·에이전트·probe·프로필·없는 폴더 정리·PR 대상 파일·base 브랜치·초안·메시지는 질문으로 고른다. 답은 CLI와 같은 옵션 검사와 처리기로 실행되고, 종료 코드가 0이 아니면 결과의 뜻과 종료 코드를 보여 준다

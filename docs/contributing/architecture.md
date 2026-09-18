@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 917b5f11596288bbf98dded898ee0909d36874bb1ad8c6b4e249144e2a77e090 -->
+<!-- agctx-doc-sources-sha256: bd6966b9c8a052a82e3b0b3dc8f4fcebd89b5f02664157ae194e1530eb082cd0 -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -111,7 +111,7 @@ agent-context-manager/
 ├── CONTRIBUTING.md              # 기여 절차와 품질 게이트
 ├── SECURITY.md                  # 보안 신고·안전한 사용 정책
 ├── CODE_OF_CONDUCT.md           # 커뮤니티 행동 규범
-├── LICENSE                      # Apache-2.0 라이선스
+├── LICENSE                      # MIT 라이선스
 ├── package.json                 # npm 패키지·CLI·스크립트 정의
 ├── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
 ├── tsconfig.json                # src·evals·tools 형식 검사 설정(파일을 만들지 않음)

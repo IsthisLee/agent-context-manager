@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: 8221d40924943ba0d50765df825d1bf77463de5a2f2d0366bd29dfa99fe9ad31 -->
+<!-- agctx-doc-sources-sha256: fd70296bbcecb80886be04bb5c7046da8324712b7fff798c72bbbc0cf69c92a2 -->
 
 ## 설치와 실행
 
@@ -21,7 +21,7 @@ agctx help
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
 - 모든 명령은 전역 옵션 `--json`, `--lang <en|ko>`, `--help`를 받는다. 명령이 받지 않는 옵션을 주거나 위치 인자가 많으면 종료 코드 64로 멈춘다.
-- `off`, `recommended`, `strict`는 지침 수준이며 대소문자를 구분한다.
+- `on`과 `off`는 지침 항목을 켜고 끄는 값이며 대소문자를 구분한다.
 
 ### 도움말
 
@@ -251,11 +251,11 @@ agctx profile remove [--yes] [<name>]
 
 ### `profile setup`
 
-프로필에 담을 공통 개발 지침 10개 항목의 수준을 정해 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 수준의 뜻은 [지침 수준](../concepts/profiles.md#지침-수준)에 있다.
+프로필에 담을 공통 개발 지침 10개 항목을 켜고 꺼서 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
 <!-- agctx:generated:usage:profile.setup:start -->
 ```bash
-agctx profile setup [--workflow <level>] [--context <level>] [--tdd <level>] [--review <level>] [--verification <level>] [--instructions <level>] [--docs <level>] [--security <level>] [--untrusted <level>] [--language <level>] [<name>]
+agctx profile setup [--workflow <on|off>] [--context <on|off>] [--tdd <on|off>] [--review <on|off>] [--verification <on|off>] [--instructions <on|off>] [--docs <on|off>] [--security <on|off>] [--untrusted <on|off>] [--language <on|off>] [<name>]
 ```
 
 종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
@@ -264,18 +264,18 @@ agctx profile setup [--workflow <level>] [--context <level>] [--tdd <level>] [--
 | 인자·옵션 | 설정 대상 |
 | --- | --- |
 | `<name>` | 설정할 프로필; 생략하면 TUI에서 `scope · 이름` 목록으로 선택 |
-| `--workflow <level>` | 작업 흐름 지침 |
-| `--context <level>` | 맥락 관리 지침 |
-| `--tdd <level>` | TDD 지침 |
-| `--review <level>` | 변경 검토 지침 |
-| `--verification <level>` | 검증 지침 |
-| `--instructions <level>` | 지침 파일 지침 |
-| `--docs <level>` | 문서화 지침 |
-| `--security <level>` | 보안 지침 |
-| `--untrusted <level>` | 믿을 수 없는 입력 지침 |
-| `--language <level>` | 응답 언어 지침 (기본값 `off`) |
+| `--workflow <on|off>` | 작업 흐름 지침 |
+| `--context <on|off>` | 맥락 관리 지침 |
+| `--tdd <on|off>` | TDD 지침 |
+| `--review <on|off>` | 변경 검토 지침 |
+| `--verification <on|off>` | 검증 지침 |
+| `--instructions <on|off>` | 지침 파일 지침 |
+| `--docs <on|off>` | 문서화 지침 |
+| `--security <on|off>` | 보안 지침 |
+| `--untrusted <on|off>` | 믿을 수 없는 입력 지침 |
+| `--language <on|off>` | 응답 언어 지침 (기본값 `off`) |
 
-모든 지침 옵션의 `<level>`은 `off`, `recommended`, `strict` 중 하나다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 응답 언어가 `off`이고 나머지는 `recommended`다.
+모든 지침 옵션의 `<on|off>`는 `on` 또는 `off`다. 기본값은 각 항목의 기존 설정이며, 최초 설정에서는 응답 언어가 `off`이고 나머지는 `on`이다. ADR 0028 이전에 저장된 `recommended`·`strict`는 `on`으로 읽는다.
 
 지침 옵션을 하나라도 전달하면 `<name>`이 필요하고, 전달한 항목만 바꾼다. 지침 옵션을 하나도 전달하지 않으면 TUI가 열린다. `<name>`도 없으면 먼저 프로필을 고르고, 그다음 각 지침의 설명과 현재값을 확인해 수준을 고른다. 마지막에 전체 설정 요약을 보여 주며, 사용자가 승인한 경우에만 프로필에 저장한다.
 
@@ -285,7 +285,7 @@ Git 프로필이면 `setup`이 바꾼 `AGENTS.md`와 `profile.json`은 커밋하
 
 ```bash
 agctx profile setup
-agctx profile setup company --tdd strict --security strict
+agctx profile setup company --tdd on --security on
 ```
 
 ### `profile apply`
@@ -1033,7 +1033,7 @@ agctx profile remove
 
 ```bash
 agctx profile create company --scope company
-agctx profile setup company --tdd recommended --security strict
+agctx profile setup company --tdd on --security on
 agctx profile apply company /path/to/project --dry-run
 agctx profile apply company /path/to/project --yes
 agctx check --refresh /path/to/project --json

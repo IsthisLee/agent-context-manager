@@ -44,7 +44,7 @@ try {
   assert.match(help, /profile list \[--scope <scope>\]/);
   fs.mkdirSync(projectDir);
   runCommand(agctx, ['profile', 'create', 'smoke-profile', '--scope', 'workspace'], { env, stdio: 'ignore' });
-  runCommand(agctx, ['profile', 'setup', 'smoke-profile', '--tdd', 'strict'], { env, stdio: 'ignore' });
+  runCommand(agctx, ['profile', 'setup', 'smoke-profile', '--tdd', 'on'], { env, stdio: 'ignore' });
   runCommand(agctx, ['profile', 'apply', 'smoke-profile', projectDir, '--yes'], { env, stdio: 'ignore' });
   runCommand(agctx, ['profile', 'sync', projectDir, '--yes'], { env, stdio: 'ignore' });
   assert(fs.existsSync(path.join(profilesHome, 'profiles', 'smoke-profile', 'AGENTS.md')));

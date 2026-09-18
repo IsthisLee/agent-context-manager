@@ -1,7 +1,7 @@
 # 성격이 다른 저장소 여럿에 프로필 나눠 쓰기
 
 <!-- agctx-doc-sources: src/repos, src/profile/git-profile.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5f279b281ecb41525ec97a1966f0c58e79cbf9266571143fb223a988fad73dd4 -->
+<!-- agctx-doc-sources-sha256: 246142d166cbd95101af46b23df27858ce74c0e2623b93a2048e4de6833886ef -->
 
 개인 블로그와 사이드 프로젝트에는 내 작업 습관을, 회사 API 서버에는 회사 규칙을 적용하는 경우다. 사용자 수준 지침 파일(`~/.claude/CLAUDE.md` 등)은 저장소를 구분하지 못하므로, 저장소마다 프로필을 골라 적용한다.
 

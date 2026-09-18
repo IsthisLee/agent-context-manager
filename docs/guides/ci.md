@@ -115,7 +115,7 @@ TUI(터미널에서 메뉴로 고르는 화면)를 쓸 수 없는 환경에서�
 ```bash
 npm install -g agent-context-manager
 agctx profile create company --scope company
-agctx profile setup company --tdd recommended --security strict
+agctx profile setup company --tdd on --security on
 agctx profile apply company /path/to/project --dry-run
 agctx profile apply company /path/to/project --yes
 ```

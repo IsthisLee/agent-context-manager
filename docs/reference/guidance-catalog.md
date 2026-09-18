@@ -3,7 +3,7 @@
 이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
 <!-- agctx-doc-sources: src/i18n/index.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 7c09075152f141545314b68cf4a286428bcc31b7e3a5f969094f0fb3ea371c26 -->
+<!-- agctx-doc-sources-sha256: f3ef46383050d35fda172fb154bc3737ac6647eac2ac0ea94b0c0b056402aa01 -->
 
 ## 지침이 만들어지는 두 경로
 
@@ -18,8 +18,7 @@ flowchart TB
     direction TB
     TEMPLATE["템플릿 본문<br/>profile create가 생성"]
     subgraph GUIDANCE["agctx:guidance 블록 · profile setup이 통째로 교체"]
-      LEGEND["적용 수준 정의 범례"]
-      ITEMS["off가 아닌 항목의 규칙"]
+      ITEMS["on인 항목의 규칙"]
     end
     USER["블록 밖 직접 편집<br/>setup이 건드리지 않음"]
   end
@@ -32,24 +31,24 @@ flowchart TB
 
 ## 지침 항목 10개
 
-아래는 현재 배포되는 10개 항목이다. 각 항목의 규칙 문구는 적용 수준과 무관하게 하나다([ADR 0005](../adr/0005-guidance-level-semantics.md)). `off`면 그 항목이 산출물에서 빠지고, 모든 항목이 `off`면 블록 안에 범례도 넣지 않는다.
+아래는 현재 배포되는 10개 항목이다. 항목마다 값은 `on`과 `off` 둘이고 규칙 문구는 하나다([ADR 0028](../adr/0028-guidance-on-off.md)). `off`면 그 항목이 산출물에서 빠지고, 모든 항목이 `off`면 블록 안이 빈다.
 
 | 옵션 | 항목 | 목적 | 기본값 | 근거 |
 | --- | --- | --- | --- | --- |
-| `--workflow` | 작업 흐름 | 계획을 언제 세우고, 무엇을 끝으로 보고, 어디까지 손대고, 언제 멈출지 | `recommended` | [근거](../references.md#작업-흐름-지침의-근거) |
-| `--context` | 맥락 관리 | 조사와 기록으로 맥락을 관리하는 방식 | `recommended` | [근거](../references.md#맥락-관리-지침의-근거) |
-| `--tdd` | TDD | Red → Green → Refactor 순서와 테스트를 지키는 규칙 | `recommended` | [근거](../references.md#tdd-지침의-근거) |
-| `--review` | 변경 검토 | 끝내기 전에 새 맥락에서 diff를 검토하는 방식 | `recommended` | [근거](../references.md#변경-검토-지침의-근거) |
-| `--verification` | 검증 | 확인 명령을 실행하고 결과를 증거로 보여 주는 방식 | `recommended` | [근거](../references.md#검증-지침의-근거) |
-| `--instructions` | 지침 파일 | 에이전트 지침 파일에 무엇을 두고 언제 고칠지 | `recommended` | [근거](../references.md#지침-파일-지침의-근거) |
-| `--docs` | 문서화 | 동작이 바뀔 때 문서를 맞추는 방식 | `recommended` | [근거](../references.md#문서화-지침의-근거) |
-| `--security` | 보안 | 비밀값·권한·승인·의존성에 관한 규칙 | `recommended` | [근거](../references.md#보안-지침의-근거) |
-| `--untrusted` | 믿을 수 없는 입력 | 외부에서 온 지시를 다루는 방식 | `recommended` | [근거](../references.md#믿을-수-없는-입력-지침의-근거) |
+| `--workflow` | 작업 흐름 | 계획을 언제 세우고, 무엇을 끝으로 보고, 어디까지 손대고, 언제 멈출지 | `on` | [근거](../references.md#작업-흐름-지침의-근거) |
+| `--context` | 맥락 관리 | 조사와 기록으로 맥락을 관리하는 방식 | `on` | [근거](../references.md#맥락-관리-지침의-근거) |
+| `--tdd` | TDD | Red → Green → Refactor 순서와 테스트를 지키는 규칙 | `on` | [근거](../references.md#tdd-지침의-근거) |
+| `--review` | 변경 검토 | 끝내기 전에 새 맥락에서 diff를 검토하는 방식 | `on` | [근거](../references.md#변경-검토-지침의-근거) |
+| `--verification` | 검증 | 확인 명령을 실행하고 결과를 증거로 보여 주는 방식 | `on` | [근거](../references.md#검증-지침의-근거) |
+| `--instructions` | 지침 파일 | 에이전트 지침 파일에 무엇을 두고 언제 고칠지 | `on` | [근거](../references.md#지침-파일-지침의-근거) |
+| `--docs` | 문서화 | 동작이 바뀔 때 문서를 맞추는 방식 | `on` | [근거](../references.md#문서화-지침의-근거) |
+| `--security` | 보안 | 비밀값·권한·승인·의존성에 관한 규칙 | `on` | [근거](../references.md#보안-지침의-근거) |
+| `--untrusted` | 믿을 수 없는 입력 | 외부에서 온 지시를 다루는 방식 | `on` | [근거](../references.md#믿을-수-없는-입력-지침의-근거) |
 | `--language` | 응답 언어 | 설명과 질문에 쓰는 언어 | `off` | [근거](../references.md#응답-언어-지침의-근거) |
 
 항목을 나누는 기준은 근거 문서다. 한 항목의 문장들이 서로 다른 문서에서 나오고 사용자가 따로 켜고 끌 이유가 있으면 나눈다([ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)). 항목 선택 계약과 재실행 정책은 [setup과 지침 옵션](../discussion/architecture/topics/setup-and-guidance.md)에서 관리한다.
 
-문장을 더하거나 고칠 때는 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)의 채택 조건과 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)의 근거 등급을 따른다. 원문 인용은 [references.md](../references.md#기본-지침-문장의-근거)에 두고, 위 표의 근거 열이 그 절을 가리키게 한다. 근거 링크가 없는 행이 있으면 `pnpm run check`의 `check:docs`가 실패한다. 모든 항목을 `strict`로 켠 guidance 블록은 ko·en 각각 120줄·10 KiB 이하여야 하며 `evals/guidance-budget.test.ts`가 이를 검사한다.
+문장을 더하거나 고칠 때는 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)의 채택 조건과 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)의 근거 등급을 따른다. 원문 인용은 [references.md](../references.md#기본-지침-문장의-근거)에 두고, 위 표의 근거 열이 그 절을 가리키게 한다. 근거 링크가 없는 행이 있으면 `pnpm run check`의 `check:docs`가 실패한다. 모든 항목을 `on`으로 켠 guidance 블록은 ko·en 각각 120줄·10 KiB 이하여야 하며 `evals/guidance-budget.test.ts`가 이를 검사한다.
 
 아래 문구는 한국어 산출물의 정본이다. 영어 문구는 같은 뜻으로 `src/i18n/index.ts`의 `guidance.en`에 있다.
 
@@ -114,10 +113,9 @@ flowchart TB
 근거: [응답 언어 지침의 근거](../references.md#응답-언어-지침의-근거)
 
 
-## 적용 수준 (off / recommended / strict)
+## 켜고 끄기 (on / off)
 
-- `off`: 이 항목을 프로필 지침에서 뺀다.
-- `recommended`: 기본값이다. 일반적으로 지키되 합당한 이유가 있으면 예외를 두고 그 이유를 기록한다.
-- `strict`: 예외 없이 항상 적용한다. 위반을 발견하면 작업을 멈추고 해결한 뒤 진행한다.
+- `on`: 이 항목을 프로필 지침에 넣는다. 응답 언어를 뺀 나머지 항목의 기본값이다.
+- `off`: 넣지 않는다.
 
-두 수준의 정의는 `src/i18n/index.ts`의 `levelDefinitions` 상수 한 곳에 있고 `setup` 산출물의 "## 적용 수준 정의" 범례와 setup TUI 힌트가 같은 문구를 공유한다. 규칙 문구는 항목마다 하나다. 그 항목을 얼마나 엄격히 지킬지를 이 수준이 정한다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. 근거와 대안은 [ADR 0005](../adr/0005-guidance-level-semantics.md)와 [지침 적용 수준의 의미 정의](../discussion/architecture/topics/guidance-level-semantics.md)에 있다.
+값은 `src/profile/setup.ts`의 `isGuidanceLevel`이 검사하고 TUI 선택지는 `src/i18n/index.ts`의 `levelOptions`가 만든다. 예외를 허용하는 중간 값은 두지 않는다. 지침은 지켜지기를 원해서 넣는 것이고, 두 단계가 에이전트의 행동을 실제로 다르게 만든다는 근거도 없었다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. ADR 0028 이전에 저장된 `recommended`·`strict`는 `on`으로 읽는다. 결정은 [ADR 0028](../adr/0028-guidance-on-off.md)이며 [ADR 0005](../adr/0005-guidance-level-semantics.md)를 대체한다.

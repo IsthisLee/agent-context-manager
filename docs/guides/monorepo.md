@@ -1,7 +1,7 @@
 # 모노레포에서 쓰기
 
 <!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts, templates/CLAUDE.link.md, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: b63de12a2d55397f26ce7ff696c6b2c60df0e96bdfe27a61010d35e4d33fba67 -->
+<!-- agctx-doc-sources-sha256: a7e02a0eec801353d287056355306007d3e7e5fbf0f8e97b95f454a12c90f70f -->
 
 모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일을 대신 만들어 준다. 연결 파일은 그 폴더의 `AGENTS.md`를 `@AGENTS.md`로 가져오는 `CLAUDE.md`다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문이다. 결정과 근거는 [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
 

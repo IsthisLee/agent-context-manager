@@ -59,7 +59,7 @@ test('repos status checks every listed repository and exits with the most severe
   me.ok(['profile', 'apply', 'client-a', api, '--yes']);
   assert.match(me.ok(['repos', 'status']).stdout, /ok\s+client-a\s+.*status-api/);
 
-  me.ok(['profile', 'setup', 'personal', '--tdd', 'strict']);
+  me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claude = path.join(api, 'CLAUDE.md');
   fs.writeFileSync(claude, fs.readFileSync(claude, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
 
@@ -90,7 +90,7 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
   gitIn(three, 'add', '-A');
   gitIn(three, 'commit', '--quiet', '-m', 'Apply personal');
 
-  me.ok(['profile', 'setup', 'personal', '--tdd', 'strict']);
+  me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claudeTwo = path.join(two, 'CLAUDE.md');
   fs.writeFileSync(claudeTwo, fs.readFileSync(claudeTwo, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
   fs.appendFileSync(path.join(three, 'AGENTS.md'), '\n- A note not committed yet.\n');
@@ -112,7 +112,7 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
   const synced = me.run(['repos', 'sync', '--profile', 'personal', '--yes']);
   assert.equal(synced.status, 2, 'the conflict still decides the exit code after the others are updated');
   assert.match(synced.stdout, /updated\s+\S*sync-one/);
-  assert.match(read(one), /Level: strict/);
+  assert.match(read(one), /## TDD/);
   assert.equal(read(two), before[1]);
   assert.equal(read(three), before[2]);
 

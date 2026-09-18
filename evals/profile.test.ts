@@ -5,7 +5,6 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { guidanceLevelDefinitions } from '../src/i18n/index.ts';
 import { hashManagedDocument } from '../src/project/analyzer.ts';
 import { makeWorkspace } from './support/git-workspace.ts';
 
@@ -143,49 +142,30 @@ test('setup applies selected guidance to the profile and preserves its project-i
     execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [
       cli, 'profile', 'setup', 'team',
-      '--workflow', 'recommended', '--context', 'recommended', '--tdd', 'strict', '--review', 'off',
-      '--verification', 'recommended', '--instructions', 'off', '--docs', 'recommended',
-      '--security', 'strict', '--untrusted', 'recommended', '--language', 'off'
+      '--workflow', 'on', '--context', 'on', '--tdd', 'on', '--review', 'off',
+      '--verification', 'on', '--instructions', 'off', '--docs', 'on',
+      '--security', 'on', '--untrusted', 'on', '--language', 'off'
     ], { cwd: repoRoot, env, encoding: 'utf8' });
 
     const profileDir = path.join(home, 'profiles', 'team');
     const metadata = JSON.parse(fs.readFileSync(path.join(profileDir, 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
-      workflow: 'recommended',
-      context: 'recommended',
-      tdd: 'strict',
+      workflow: 'on',
+      context: 'on',
+      tdd: 'on',
       review: 'off',
-      verification: 'recommended',
+      verification: 'on',
       instructions: 'off',
-      docs: 'recommended',
-      security: 'strict',
-      untrusted: 'recommended',
+      docs: 'on',
+      security: 'on',
+      untrusted: 'on',
       language: 'off'
     });
     const instructions = fs.readFileSync(path.join(profileDir, 'AGENTS.md'), 'utf8');
     assert.match(instructions, /## TDD/);
-    assert.match(instructions, /strict/);
     assert.doesNotMatch(instructions, /## 변경 검토/);
     assert.doesNotMatch(instructions, /## 지침 파일/);
     assert.doesNotMatch(instructions, /## 응답 언어/, 'a level of off keeps the item out of the block');
-  } finally {
-    fs.rmSync(home, { recursive: true, force: true });
-  }
-});
-
-test('setup writes a level-definition legend that shares its wording with the level constant', () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-legend-test-'));
-
-  try {
-    const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'ko' };
-    execFileSync(process.execPath, [cli, 'profile', 'create', 'team', '--scope', 'team'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--security', 'strict'], { cwd: repoRoot, env });
-
-    const instructions = fs.readFileSync(path.join(home, 'profiles', 'team', 'AGENTS.md'), 'utf8');
-    const definitions = guidanceLevelDefinitions('ko');
-    assert.match(instructions, /## 적용 수준 정의/);
-    assert.ok(instructions.includes(definitions.recommended), 'legend must reuse the recommended definition from the level constant');
-    assert.ok(instructions.includes(definitions.strict), 'legend must reuse the strict definition from the level constant');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
@@ -200,7 +180,7 @@ test('apply applies the selected profile to a project without changing the profi
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'on'], { cwd: repoRoot, env });
     const profileAgentsBefore = fs.readFileSync(path.join(home, 'profiles', 'company', 'AGENTS.md'), 'utf8');
 
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project, '--yes'], { cwd: repoRoot, env });
@@ -239,7 +219,7 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
   try {
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'company', '--scope', 'company'], { cwd: repoRoot, env });
-    execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'strict'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'setup', 'company', '--tdd', 'on'], { cwd: repoRoot, env });
     execFileSync(process.execPath, [cli, 'profile', 'apply', 'company', project, '--yes'], { cwd: repoRoot, env });
 
     const ruleRelativePath = '.agents/rules/agctx.md';
@@ -536,22 +516,22 @@ test('profile create and setup support interactive TUI input when options are om
     const setup = spawnSync(process.execPath, [cli, 'profile', 'setup', 'company-main'], {
       cwd: repoRoot,
       env,
-      input: 'recommended\nrecommended\nstrict\noff\nrecommended\noff\nrecommended\nstrict\nrecommended\noff\n',
+      input: 'on\non\non\noff\non\noff\non\non\non\noff\n',
       encoding: 'utf8'
     });
     assert.equal(setup.status, 0, setup.stderr);
 
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
     assert.deepEqual(metadata.settings, {
-      workflow: 'recommended',
-      context: 'recommended',
-      tdd: 'strict',
+      workflow: 'on',
+      context: 'on',
+      tdd: 'on',
       review: 'off',
-      verification: 'recommended',
+      verification: 'on',
       instructions: 'off',
-      docs: 'recommended',
-      security: 'strict',
-      untrusted: 'recommended',
+      docs: 'on',
+      security: 'on',
+      untrusted: 'on',
       language: 'off'
     });
   } finally {
@@ -569,13 +549,13 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
     const setup = spawnSync(process.execPath, [cli, 'profile', 'setup'], {
       cwd: repoRoot,
       env,
-      input: '1\nrecommended\nrecommended\nrecommended\nrecommended\nstrict\noff\nrecommended\nrecommended\nrecommended\noff\n',
+      input: '1\non\non\non\non\non\noff\non\non\non\noff\n',
       encoding: 'utf8'
     });
     assert.equal(setup.status, 0, setup.stderr);
 
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'company-main', 'profile.json'), 'utf8'));
-    assert.equal(metadata.settings.verification, 'strict');
+    assert.equal(metadata.settings.verification, 'on');
     assert.equal(metadata.settings.instructions, 'off');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

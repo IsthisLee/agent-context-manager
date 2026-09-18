@@ -1,7 +1,7 @@
 # 갱신 방식 고르기: 고정과 예약 봇
 
 <!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts, src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: bd1e831202405fb2fd1b4bef24dee1fa7f3b9ec9bc8c41d3606bec78c7ae3d50 -->
+<!-- agctx-doc-sources-sha256: 32b4240f9d80388754463fa63bc7ea65d4c7752b3c650130e74991fc0eb41868 -->
 
 프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않은 상태다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
 
@@ -9,10 +9,10 @@
 - **고정:** 저장소가 적용할 때 기록한 프로필 커밋에 머문다. 보관함이 최신이 되어도 `sync`는 그 커밋의 내용을 그대로 다시 쓴다. 새 커밋으로 옮기려면 `apply --pin`을 다시 실행하거나 `repos pr`로 연 PR을 병합한다.
 
 ```text
-프로필 커밋:  ab35396 (변경 검토: recommended) ──pull──→ c61bea6 (변경 검토: strict)
+프로필 커밋:  ab35396 (변경 검토: on)      ──pull──→ c61bea6 (변경 검토: off)   
 
-고정하지 않은 저장소   sync → c61bea6 내용으로 바뀐다     (변경 검토: strict)
-고정한 저장소          sync → ab35396 내용 그대로 남는다  (변경 검토: recommended)
+고정하지 않은 저장소   sync → c61bea6 내용으로 바뀐다     (변경 검토: off)   
+고정한 저장소          sync → ab35396 내용 그대로 남는다  (변경 검토: on)     
                       apply --pin 또는 repos pr로 옮겨야 c61bea6이 된다
 ```
 

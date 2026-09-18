@@ -188,12 +188,12 @@ test('resolve moves edits made in the AGENTS.md profile region into the extensio
 test('resolve keeps edits through a profile change when the base is available', t => {
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
-  fixture.ok(['profile', 'setup', 'team', '--tdd', 'strict']);
+  fixture.ok(['profile', 'setup', 'team', '--tdd', 'on']);
 
   fixture.ok(['profile', 'resolve', fixture.project, '--yes']);
 
   const agents = fixture.read('AGENTS.md');
-  assert.match(agents, /Level: strict/);
+  assert.match(agents, /## TDD/, 'the profile change reached the project');
   assert.ok(agents.indexOf('- Test: `pnpm test`') > agents.indexOf(EXTENSION));
   assertCleanSync(fixture);
 });
@@ -202,7 +202,7 @@ test('resolve stops without writing when the base is unknown and the profile als
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
   fs.rmSync(fixture.file('.agctx/base'), { recursive: true, force: true });
-  fixture.ok(['profile', 'setup', 'team', '--tdd', 'strict']);
+  fixture.ok(['profile', 'setup', 'team', '--tdd', 'on']);
   const before = snapshot(fixture.project);
 
   const result = fixture.run(['profile', 'resolve', fixture.project, '--yes']);
@@ -216,7 +216,7 @@ test('resolve --discard backs up the conflicting file before regenerating it', t
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
   fs.rmSync(fixture.file('.agctx/base'), { recursive: true, force: true });
-  fixture.ok(['profile', 'setup', 'team', '--tdd', 'strict']);
+  fixture.ok(['profile', 'setup', 'team', '--tdd', 'on']);
   const edited = fixture.read('AGENTS.md');
 
   const result = fixture.ok(['profile', 'resolve', '--discard', fixture.project, '--yes']);
@@ -226,7 +226,7 @@ test('resolve --discard backs up the conflicting file before regenerating it', t
   const [stamp] = fs.readdirSync(backupRoot);
   assert.equal(fs.readFileSync(path.join(backupRoot, stamp, 'AGENTS.md'), 'utf8'), edited);
   assert.doesNotMatch(fixture.read('AGENTS.md'), /Test: `pnpm test`/);
-  assert.match(fixture.read('AGENTS.md'), /Level: strict/);
+  assert.match(fixture.read('AGENTS.md'), /## TDD/, 'the profile change reached the project');
   assertCleanSync(fixture);
 });
 

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: c6044a6de2f67b62c17646ecb46e59c770d1709972572f73f95562251c6dfb20 -->
+<!-- agctx-doc-sources-sha256: 5c146c033fdae594f4ae29cfea51def7f1465b8dc77e9b6779f1bbbd5a5e727b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -10,7 +10,9 @@
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#supported-agents)
 
-[한국어](README.md) · **English** | [Getting Started](#getting-started) · [Core goals](#core-goals) · [Use cases](#use-cases) · [Core features](#core-features) · [Supported agents](#supported-agents) · [Not supported](#not-supported) · [Architecture direction](#architecture-direction-and-progress) · [Documentation](#documentation) · [Open-source participation](#open-source-participation)
+[Getting Started](#getting-started) · [Core goals](#core-goals) · [Use cases](#use-cases) · [Core features](#core-features) · [Supported agents](#supported-agents) · [Not supported](#not-supported) · [Architecture direction](#architecture-direction-and-progress) · [Documentation](#documentation) · [Open-source participation](#open-source-participation)
+
+Read in: **English** · [한국어](README.md)
 
 <p align="center">
 

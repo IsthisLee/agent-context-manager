@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 865c33850e7937c76bccf2fa871515db9fb6ed3b72d52f045205abcffe78d44b -->
+<!-- agctx-doc-sources-sha256: f0660162dace49706c01c28462f94a31036ff2abf8e7429ff6d6f53959470478 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -10,7 +10,9 @@
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#지원-에이전트)
 
-**한국어** · [English](README.en.md) | [시작하기](#시작하기) · [핵심 목표](#핵심-목표) · [사용 사례](#사용-사례) · [핵심 기능](#핵심-기능) · [지원 에이전트](#지원-에이전트) · [지원하지 않는 기능](#지원하지-않는-기능) · [아키텍처 방향](#아키텍처-방향과-진행-상태) · [문서](#문서) · [공개 프로젝트 참여](#공개-프로젝트-참여)
+[시작하기](#시작하기) · [핵심 목표](#핵심-목표) · [사용 사례](#사용-사례) · [핵심 기능](#핵심-기능) · [지원 에이전트](#지원-에이전트) · [지원하지 않는 기능](#지원하지-않는-기능) · [아키텍처 방향](#아키텍처-방향과-진행-상태) · [문서](#문서) · [공개 프로젝트 참여](#공개-프로젝트-참여)
+
+읽는 언어: **한국어** · [English](README.en.md)
 
 <p align="center">
 

@@ -109,7 +109,7 @@
 
   **대상 표기:** 네 인용 가운데 에이전트에게 직접 지시하는 것은 첫 번째다. 나머지 셋은 프롬프트를 쓰는 사람과 평가를 설계하는 사람에게 한 말이다.
 
-- **요청 범위 밖의 파일을 바꾸지 않는다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex), [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-16)
+- **요청 범위 밖의 파일을 바꾸지 않는다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex), [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
 
   > "Do not create or modify: Application code · Tests · Dependencies · Package manifests · Infrastructure or deployment configuration · `AGENTS.md` … Git branches, commits, or remote state"
   >
@@ -117,11 +117,9 @@
 
   이 목록은 계획 단계 프롬프트가 에이전트에게 준 범위 제한이다. 배포 문구는 여기서 "승인된 범위 밖의 파일은 바꾸지 않는다"는 원칙만 가져왔고, 어떤 폴더만 허용할지는 프로젝트가 정한다.
 
-  범위 밖에서 자주 바뀌는 파일의 목록과 의존성 버전은 OWASP가 적는다. "Agents routinely touch files beyond the scope of the requested change: lockfiles, CI configurations, unrelated tests, formatting changes, and dependency updates."(번역: 에이전트는 요청한 변경의 범위를 넘어 파일을 건드리는 일이 잦습니다. 잠금 파일, CI 설정, 관련 없는 테스트, 서식 변경, 의존성 갱신입니다.) 같은 문서는 "Pin dependencies to specific versions and update them through your normal dependency management process, not through AI suggestions."(번역: 의존성을 특정 버전에 고정하고, AI의 제안이 아니라 평소의 의존성 관리 절차로 갱신하십시오.)라고 적는다. [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §7·§2 (확인일: 2026-09-18)
+  범위 밖 파일에 갱신이 필요할 때 어떻게 하는지는 같은 쿡북이 적는다. "If the evidence indicates that another file needs an update, report it as a follow-up rather than modifying it."(번역: 증거가 다른 파일에 갱신이 필요하다고 가리키면, 그 파일을 수정하지 말고 후속 작업으로 보고하십시오.)
 
-  > "Check that every requirement is implemented, the listed edge cases have tests, and nothing outside the task's scope changed."
-  >
-  > 번역: 모든 요구사항이 구현됐는지, 나열된 경계 조건에 테스트가 있는지, 작업 범위 밖의 것이 바뀌지 않았는지 확인하십시오.
+  범위 밖에서 자주 바뀌는 파일의 목록과 의존성 버전은 OWASP가 적는다. "Agents routinely touch files beyond the scope of the requested change: lockfiles, CI configurations, unrelated tests, formatting changes, and dependency updates."(번역: 에이전트는 요청한 변경의 범위를 넘어 파일을 건드리는 일이 잦습니다. 잠금 파일, CI 설정, 관련 없는 테스트, 서식 변경, 의존성 갱신입니다.) 같은 문서는 "Pin dependencies to specific versions and update them through your normal dependency management process, not through AI suggestions."(번역: 의존성을 특정 버전에 고정하고, AI의 제안이 아니라 평소의 의존성 관리 절차로 갱신하십시오.)라고 적는다. [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §7·§2 (확인일: 2026-09-18)
 
 - **여러 번 시도해도 풀리지 않으면 멈추고 사용자에게 알린다.** [OpenAI 실무 가이드](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) (확인일: 2026-09-16)
 
@@ -131,19 +129,25 @@
 
   Building effective agents도 "it's also common to include stopping conditions (such as a maximum number of iterations) to maintain control"(번역: 제어를 유지하기 위해 반복 횟수 상한과 같은 중단 조건을 두는 것도 흔합니다.)이라고 적는다. [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents) (확인일: 2026-09-18)
 
+  무엇을 알릴지는 쿡북이 적는다. 기록해야 할 것으로 "Blockers and unresolved questions"(번역: 막힌 곳과 해소되지 않은 질문.)를, 하지 말아야 할 것으로 "Hide a blocker, unresolved assumption, accepted limitation, or required follow-up"(번역: 막힌 곳, 해소되지 않은 가정, 받아들인 한계, 필요한 후속 작업을 감추는 것.)과 "Do not silently rewrite prior evidence or remove failed attempts."(번역: 앞선 증거를 조용히 다시 쓰거나 실패한 시도를 없애지 마십시오.)를 든다. [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex) (확인일: 2026-09-18)
+
+  **합성 표기:** 배포 문구의 "시도한 것과 막힌 곳을 사용자에게 알린다"는 두 문서를 합친 것이다. 사용자에게 제어를 되돌려 준다는 부분은 OpenAI 실무 가이드, 무엇을 알릴지는 위 쿡북에서 왔다. 한 문장에서 나온 표현이 아니다.
+
   **횟수를 적지 않은 이유:** 원문은 한도를 두라고만 하고 몇 번인지 정하지 않는다. 초안에 있던 "두세 번"은 근거가 없어 지웠다. Claude Code best practices의 "After two failed corrections, `/clear` and write a better initial prompt"는 사용자에게 한 조언이라 C급으로만 쓴다. [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
 
 ### 맥락 관리 지침의 근거
 
-- **단일 에이전트에서 시작하고 복잡한 구조는 필요할 때만 더한다.** [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI 실무 가이드](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf) (확인일: 2026-09-16)
+- **단일 에이전트에서 시작하고 복잡한 구조는 필요할 때만 더한다.** [Anthropic Building effective agents](https://www.anthropic.com/engineering/building-effective-agents), [OpenAI 실무 가이드](https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf), [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
 
   > "When building applications with LLMs, we recommend finding the simplest solution possible, and only increasing complexity when needed. … Agentic systems often trade latency and cost for better task performance, and you should consider when this tradeoff makes sense."
   >
   > 번역: LLM으로 애플리케이션을 만들 때는 가능한 가장 단순한 해법을 찾고, 필요할 때만 복잡도를 높이기를 권합니다. … 에이전트 시스템은 더 나은 작업 성능을 위해 지연 시간과 비용을 맞바꾸는 경우가 많으므로, 그 맞바꿈이 언제 합당한지 따져 보아야 합니다.
 
-  > "Our general recommendation is to maximize a single agent's capabilities first."
+  > "Our general recommendation is to maximize a single agent's capabilities first." / "A single agent can handle many tasks by incrementally adding tools, keeping complexity manageable and simplifying evaluation and maintenance."
   >
-  > 번역: 저희가 일반적으로 권하는 것은 단일 에이전트의 역량을 먼저 최대한 끌어올리는 것입니다.
+  > 번역: 저희가 일반적으로 권하는 것은 단일 에이전트의 역량을 먼저 최대한 끌어올리는 것입니다. / 단일 에이전트는 도구를 점진적으로 더해 많은 작업을 처리할 수 있고, 복잡도를 다룰 만하게 유지하며 평가와 유지보수를 단순하게 합니다.
+
+  **합성 표기:** 배포 문구의 "탐색·계획·구현을 이어서 진행한다"는 위 두 문서에서 온 "단일 에이전트"에, Claude Code best practices가 권하는 작업 단계를 합친 것이다. 그 문서는 "Explore first, then plan, then code"라는 절에서 "The recommended workflow has four phases"(번역: 권장 작업 흐름은 네 단계입니다.)로 탐색·계획·구현·커밋을 든다. 한 문장에서 나온 표현이 아니다.
 
 - **조사는 서브에이전트에 맡겨 주 작업의 맥락을 비워 둔다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (확인일: 2026-09-16)
 
@@ -165,7 +169,19 @@
   >
   > 번역: 에이전트의 맥락을 그 작업에 필요한 최소한의 파일과 내용으로 제한하십시오.
 
-- **긴 작업은 상태를 파일로 남겨 다시 읽고, 단계마다 확인한 뒤 넘어간다.** [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [OpenAI, How Codex works on long-horizon tasks](https://developers.openai.com/blog/codex-long-horizon-tasks) (확인일: 2026-09-16)
+- **서브에이전트에 맡긴 일은 돌려받은 결과가 맡긴 범위 안인지 확인하고, 대화 기록이나 도구 응답 원문을 그대로 넘기지 않는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §13 (확인일: 2026-09-18)
+
+  > "Validate that sub-agent actions remain within the scope defined by the parent task."
+  >
+  > 번역: 서브에이전트의 동작이 부모 작업이 정한 범위 안에 머무는지 검증하십시오.
+
+  > "Implement context boundaries between agents. Do not pass full conversation history or raw tool responses between agents without sanitization."
+  >
+  > 번역: 에이전트 사이에 맥락 경계를 두십시오. 정제 없이 전체 대화 기록이나 도구 응답 원문을 에이전트 사이에 넘기지 마십시오.
+
+  **범위 표기:** 원문은 "정제 없이"라는 조건을 달지만, 무엇이 정제인지는 적지 않는다. 배포 문구는 확인할 수 있는 형태로 원문을 그대로 넘기지 않는 것까지만 담았다.
+
+- **긴 작업은 상태를 파일로 남겨 다시 읽고, 단계마다 확인한 뒤 넘어간다.** [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents), [OpenAI, How Codex works on long-horizon tasks](https://developers.openai.com/blog/codex-long-horizon-tasks) (확인일: 2026-09-18)
 
   > "Structured note-taking, or agentic memory, is a technique where the agent regularly writes notes persisted to memory outside of the context window. These notes get pulled back into the context window at later times."
   >
@@ -174,6 +190,8 @@
   > "Codex did not just write code and hope it worked. After milestones, it ran verification commands and repaired failures before continuing."
   >
   > 번역: Codex는 코드를 쓰고 동작하기를 바라기만 하지 않았습니다. 이정표를 지난 뒤에는 검증 명령을 실행하고 실패를 고친 다음에 계속 진행했습니다.
+
+  무엇을 적을지는 같은 글이 목록으로 적는다. "Goals + non-goals"(번역: 목표 + 비목표) / "Acceptance criteria + validation commands per milestone"(번역: 이정표마다 인수 기준 + 검증 명령) / "Current milestone status (what's done, what's next)"(번역: 현재 이정표 상태(끝난 것, 다음 것)) / "Decisions made (and why)"(번역: 내린 결정(과 그 이유)). 단계마다 확인하고 넘어가는 규칙도 같은 목록에 있다. "Stop-and-fix rule: if validation fails, repair before moving on"(번역: 멈추고 고치는 규칙: 검증이 실패하면 계속 진행하기 전에 고친다.)
 
 - **넣지 않은 것.** Context Engineering은 서브에이전트가 "returns only a condensed, distilled summary of its work (often 1,000-2,000 tokens)"(번역: 자기 작업의 압축되고 정제된 요약만 돌려줍니다(보통 1,000~2,000 토큰).)라고 적는다. 이것은 도구가 원래 그렇게 동작한다는 설명이라 지워도 에이전트가 실수하지 않는다. 채택 조건의 첫 질문을 통과하지 못해 배포 문구에 넣지 않았다. [Anthropic Context Engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) (확인일: 2026-09-18)
 
@@ -188,6 +206,20 @@
   > 번역: 구현에서 red, green, refactor와 검증 체크포인트를 사용하십시오. / red 단계에는 의미 있는 가장 작은 실패 테스트나 확인을 포함하십시오. / green 단계에 필요한 최소한의 구현을 기술하십시오. / 리팩터링은 승인된 동작과 범위를 보존할 때만 허용하십시오.
 
   이름의 출처는 Martin Fowler의 TDD 글이다. "Although these three steps, often summarized as Red - Green - Refactor, are the heart of the process"(번역: 흔히 Red - Green - Refactor로 요약되는 이 세 단계가 과정의 핵심입니다.) 같은 글은 "The most common way that I hear to screw up TDD is neglecting the third step."(번역: TDD를 그르치는 가장 흔한 방식은 세 번째 단계를 소홀히 하는 것입니다.)라고 적는다. 보조 근거다. [Martin Fowler, Test Driven Development](https://martinfowler.com/bliki/TestDrivenDevelopment.html) (확인일: 2026-09-16)
+
+- **적용할 수 없거나 정리하지 않았으면 이유를 남긴다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex) (확인일: 2026-09-18)
+
+  > "**Red:** Exact check and observed expected failure, or `Not applicable` with justification / **Refactor:** Material refactor and repeated checks, or the reason no refactor was needed"
+  >
+  > 번역: Red: 정확한 확인과 관찰한 예상된 실패, 또는 정당화를 붙인 `Not applicable`. / Refactor: 실질적인 리팩터와 다시 실행한 확인, 또는 리팩터가 필요 없었던 이유.
+
+- **적대적·부정 테스트 사례를 따로 더한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §8 (확인일: 2026-09-18)
+
+  > "Add adversarial and negative test cases that the AI did not generate: invalid inputs, expired tokens, malformed payloads, boundary conditions, concurrent access."
+  >
+  > 번역: AI가 만들지 않은 적대적·부정 테스트 사례를 더하십시오. 잘못된 입력, 만료된 토큰, 형식이 깨진 payload, 경계 조건, 동시 접근입니다.
+
+  **대상 표기:** 원문의 "that the AI did not generate"는 사람이 AI 밖에서 더하라는 뜻이다. 배포 문구는 에이전트가 지킬 수 있는 형태로 "처음에 떠올리지 않은 적대적 사례를 따로 더한다"로 옮겼다.
 
 - **버그는 재현하는 실패 테스트부터 쓴다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-16)
 
@@ -225,21 +257,41 @@
   >
   > 번역: 빠진 곳을 찾으라는 프롬프트를 받은 검토자는 작업이 튼튼할 때에도 보통 몇 가지를 보고합니다. … 검토자에게 정확성이나 명시된 요구사항에 영향을 주는 빠진 곳만 표시하라고 말하고, 나머지는 선택 사항으로 다루십시오.
 
-- **빌드·설치·배포 때 자동으로 실행되는 파일의 변경을 따로 짚는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §10 (확인일: 2026-09-16)
+- **빌드·설치·테스트·배포 때 자동으로 실행되는 파일의 변경을 따로 짚고, 그 가운데 네트워크 접근을 더하는 변경은 표시한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §10 (확인일: 2026-09-18)
 
   > "AI coding agents modify not just application code but also build scripts, CI/CD configurations, package scripts, and deployment infrastructure. Changes to these files execute automatically in trusted contexts with elevated privileges."
   >
   > 번역: AI 코딩 에이전트는 애플리케이션 코드뿐 아니라 빌드 스크립트, CI/CD 설정, 패키지 스크립트, 배포 인프라도 수정합니다. 이 파일들의 변경은 상승된 권한을 가진 신뢰된 맥락에서 자동으로 실행됩니다.
 
+  대상 파일의 범위와 표시할 변경은 같은 절이 두 줄로 적는다. "Any file that executes automatically during build, install, test, or deploy"(번역: 빌드, 설치, 테스트, 배포 때 자동으로 실행되는 모든 파일.) / "Flag any AI-generated change that adds network access, downloads external resources, or executes shell commands in build/deploy context."(번역: 빌드/배포 맥락에서 네트워크 접근을 더하거나, 외부 리소스를 내려받거나, 셸 명령을 실행하는 AI 생성 변경은 무엇이든 표시하십시오.)
+
   같은 절은 "Allow AI to modify CI/CD pipelines, Dockerfiles, or package scripts without explicit human review."(번역: 명시적인 사람 검토 없이 AI가 CI/CD 파이프라인, Dockerfile, 패키지 스크립트를 수정하게 두는 것.)를 하지 말아야 할 일로 든다.
 
-- **파일을 하나씩 보고 사람이 검토한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §14 (확인일: 2026-09-16)
+  **대상 표기:** 뒤 인용의 "any AI-generated change"는 AI가 만든 변경을 검토하는 사람에게 한 말이다. 배포 문구는 이를 에이전트가 자기 변경을 검토할 때의 규칙으로 옮겼다. 원문이 한정한 "in build/deploy context"에 맞추려고, 표시 대상은 자동으로 실행되는 파일의 변경으로 묶고 지침 파일은 따로 짚는 문장으로 떼었다.
+
+  **뺀 것:** 원문의 대응책 가운데 샌드박스 실행, egress 통제, 리소스 한도(§5)는 에이전트가 자기 실행 환경을 바꿀 수 없어 지침에 넣지 않았다. `--dangerously-skip-permissions` 같은 도구별 플래그의 위험을 판단하라는 줄도 판단 주체가 사용자이고 특정 도구에 매여 있어 넣지 않았다.
+
+- **변경 설명만 보지 말고 파일을 하나씩 본다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §7, [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
+
+  > "Review every file in an agent-generated PR individually. Do not approve based on the PR description alone."
+  >
+  > 번역: 에이전트가 만든 PR의 모든 파일을 하나씩 검토하십시오. PR 설명만 보고 승인하지 마십시오.
+
+  > "Use a subagent to review the rate limiter diff against PLAN.md. Check that every requirement is implemented, the listed edge cases have tests, and nothing outside the task's scope changed."
+  >
+  > 번역: 서브에이전트로 rate limiter diff를 PLAN.md와 대조해 검토하게 하십시오. 모든 요구사항이 구현됐는지, 나열된 경계 조건에 테스트가 있는지, 작업 범위 밖의 것이 바뀌지 않았는지 확인하십시오.
+
+  **범위 표기:** 원문의 "the listed edge cases"는 앞 문장의 `PLAN.md`가 가리키는, 계획에 적어 둔 경계 조건이다. 초안은 한정어를 지워 경계 조건 일반으로 넓혔으므로 "계획에 적어 둔 경계 조건"으로 되돌렸다.
+
+- **사람이 검토하고 승인한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §14 (확인일: 2026-09-18)
 
   > "Every AI-assisted change should be reviewed, approved, and attributable to a developer who is responsible for its security and maintainability."
   >
   > 번역: AI의 도움을 받은 모든 변경은 검토되고 승인되어야 하며, 그 보안과 유지보수성에 책임지는 개발자에게 귀속되어야 합니다.
 
   같은 절은 "Treat AI approval (e.g. AI-generated code review comments) as a substitute for human review."(번역: AI의 승인(예: AI가 생성한 코드 리뷰 댓글)을 사람 검토의 대체물로 취급하는 것.)를 하지 말아야 할 일로 든다.
+
+  **대상 표기:** 앞 인용은 조직과 개발자에게 하는 말이라 에이전트가 지킬 수 있는 규칙이 아니다. 배포 문구가 담은 것은 뒤의 하지 말아야 할 일뿐이며, "이 검토는 사람의 검토를 대신하지 않는다" 한 문장으로 옮겼다. 이 항목이 요구하는 에이전트의 자체 검토가 사람 검토를 끝냈다는 뜻이 되지 않게 막는다.
 
 - **보안에 중요한 코드는 같은 에이전트가 코드와 테스트를 모두 쓰고 끝내지 않는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §8, [Anthropic 하네스 설계 글](https://www.anthropic.com/engineering/harness-design-long-running-apps) (확인일: 2026-09-16)
 
@@ -261,7 +313,43 @@
   >
   > 번역: 일련의 코드 변경을 마쳤을 때는 반드시 타입 검사를 하십시오. / 성능을 위해 전체 테스트 묶음이 아니라 단일 테스트를 실행하는 편을 택하십시오.
 
-  이 두 줄은 공식 문서가 예로 든 `CLAUDE.md` 내용이다.
+  이 두 줄은 공식 문서가 예로 든 `CLAUDE.md` 내용이다. 뒤 줄은 순서 규칙이 아니라 **성능을 이유로 전체 묶음을 피하라**는 선호이며, 원문이 "끝났을 때" 하라고 정한 것은 타입 검사 하나다. 끝내기 전에 무엇을 확인할지는 다른 문서에서 왔다. Claude Code는 확인 수단으로 "a test suite, a build exit code, a linter"를, Codex는 "Running the right test suites · Checking lint, formatting, or type checks · Confirming the final behavior matches the request"를 든다(번역: 올바른 테스트 묶음 실행 · 린트·서식·타입 검사 확인 · 최종 동작이 요청과 맞는지 확인). **합성 표기:** 배포 문구의 첫 두 문장은 이 세 문서를 합친 것이다. [Codex best practices](https://developers.openai.com/codex/guides/best-practices) (확인일: 2026-09-18)
+
+- **화면이 바뀌면 결과 화면을 보고, 버그를 고쳤으면 재현 절차를 다시 실행한다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Codex 프롬프트 가이드](https://developers.openai.com/codex/guides/prompting) (확인일: 2026-09-18)
+
+  > "take a screenshot of the result and compare it to the original. list differences and fix them"
+  >
+  > 번역: 결과 화면을 캡처해 원본과 비교하십시오. 차이를 나열하고 고치십시오.
+
+  > "Codex should re-run the repro steps after the fix."
+  >
+  > 번역: Codex는 수정한 뒤 재현 절차를 다시 실행해야 합니다.
+
+- **직접 본 증거와 옮겨 적은 내용을 구분하고, 계획한 명령을 증거로 쓰지 않는다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex) (확인일: 2026-09-18)
+
+  > "Distinguish observed evidence from reported or historical evidence. / Never claim that a test, integration, recovery procedure, or external check passed unless it was actually run and the result was observed. / Never convert planned commands from a build file into passing evidence."
+  >
+  > 번역: 관찰한 증거를 보고받은 증거나 과거 증거와 구분하십시오. / 실제로 실행되고 결과를 관찰한 것이 아니면 테스트·통합·복구 절차·외부 확인이 통과했다고 절대 주장하지 마십시오. / 빌드 파일에 계획된 명령을 통과 증거로 절대 바꾸지 마십시오.
+
+  **범위 표기:** 원문은 계획된 명령의 출처를 "from a build file"로 한정한다. 배포 문구는 그 한정을 빼고 계획해 둔 명령 전반으로 적용했다. 원문보다 넓지만 금지의 방향이 같아 그대로 두었다.
+
+- **건너뛴 확인은 이유와 함께 밝히고, 확인할 수단이 없으면 끝났다고 보지 않는다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex), [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
+
+  > "Record skipped and unavailable checks explicitly, including the reason."
+  >
+  > 번역: 건너뛰었거나 쓸 수 없었던 확인은 이유를 포함해 명시적으로 기록하십시오.
+
+  > "Always provide verification (tests, scripts, screenshots). If you can't verify it, don't ship it."
+  >
+  > 번역: 항상 검증 수단(테스트, 스크립트, 스크린샷)을 제공하십시오. 검증할 수 없다면 내보내지 마십시오.
+
+  **대상 표기:** 뒤 인용의 앞부분("검증 수단을 제공하라")은 사용자에게 하는 말이라, 배포 문구는 뒷부분만 에이전트의 규칙으로 옮겼다.
+
+- **앞선 증거를 지우지 않고, 증거가 어긋나면 양쪽을 남긴다.** [OpenAI Cookbook, Iterating Development Workflows with Codex](https://cookbook.openai.com/examples/codex/iterating_development_workflows_with_codex) (확인일: 2026-09-18)
+
+  > "Do not silently rewrite prior evidence or remove failed attempts. If an earlier entry is incorrect: 1. Append a correction 2. Identify the entry being corrected 3. Explain what changed / If evidence conflicts, preserve both observations and mark the phase `Blocked` until the conflict is resolved."
+  >
+  > 번역: 앞선 증거를 조용히 다시 쓰거나 실패한 시도를 없애지 마십시오. 이전 항목이 틀렸다면 1. 정정을 덧붙이고 2. 정정되는 항목을 밝히고 3. 무엇이 바뀌었는지 설명하십시오. / 증거가 충돌하면 두 관찰을 모두 보존하고 충돌이 해소될 때까지 그 단계를 `Blocked`로 표시하십시오.
 
 - **성공했다고 주장하지 말고 실행한 명령과 결과를 보인다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-16)
 
@@ -301,6 +389,14 @@
   >
   > 번역: 좋은 `AGENTS.md`는 다음을 다룹니다. 저장소 구조와 중요한 디렉터리 · 프로젝트 실행 방법 · 빌드·테스트·린트 명령 · 엔지니어링 관례와 PR 기대사항 · 제약과 하지 말아야 할 규칙 · 완료의 의미와 작업을 검증하는 방법. / 실용적으로 유지하십시오. 짧고 정확한 `AGENTS.md`가 모호한 규칙으로 가득한 긴 파일보다 유용합니다.
 
+- **엇갈리는 근거: 저장소 구조를 지침에 둘지.** Codex는 좋은 `AGENTS.md`가 담을 것으로 "repo layout and important directories"(번역: 저장소 구조와 중요한 디렉터리)를 들지만, Claude Code memory는 `/doctor`가 "directory layouts, dependency lists, and architecture overviews"(번역: 디렉터리 구조, 의존성 목록, 아키텍처 개요)를 코드에서 도출할 수 있는 내용으로 보고 잘라내자고 제안한다고 적는다. 배포 문구는 두 문서가 함께 지지하는 부분만 담아 저장소 구조를 목록에서 뺐다. [Codex best practices](https://developers.openai.com/codex/guides/best-practices), [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-18)
+
+- **기본값과 다른 관례, 알기 어려운 함정을 둔다.** [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-18)
+
+  > "keeps pitfalls, rationale, and conventions that differ from tool defaults"
+  >
+  > 번역: 함정, 근거, 도구 기본값과 다른 관례는 남깁니다.
+
 - **지켰는지 확인할 수 있는 구체적인 문장으로 쓴다.** [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-16)
 
   > "\"Use 2-space indentation\" instead of \"Format code properly\""
@@ -325,7 +421,13 @@
   >
   > 번역: 규칙은 간결하게 유지하고, 표시할 동작과 안전한 경로나 예외를 설명하며, 서식과 린트 검사는 CI에 맡기십시오.
 
-- **자세한 문서는 옮겨 적지 말고 링크한다.** [Codex best practices](https://developers.openai.com/codex/guides/best-practices) (확인일: 2026-09-16)
+  **범위 표기:** hook을 뒷받침하는 인용은 "매번 반드시 일어나야 하는 동작"을 그대로 다루지만, CI를 뒷받침하는 마지막 인용이 다루는 것은 **서식과 린트 검사** 둘뿐이다. 배포 문구는 CI를 같은 자리에 묶어 매번 일어나야 하는 동작 전반으로 넓혔다.
+
+- **자세한 API 문서는 옮겨 적지 말고 링크한다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices), [Codex best practices](https://developers.openai.com/codex/guides/best-practices) (확인일: 2026-09-18)
+
+  > "Detailed API documentation (link to docs instead)"
+  >
+  > 번역: 자세한 API 문서(대신 문서로 링크한다) — 지침 파일에서 제외할 것으로 제시됨
 
   > "If `AGENTS.md` starts getting too large, keep the main file concise and reference task-specific markdown files for things like planning, code review, or architecture."
   >
@@ -341,13 +443,18 @@
   >
   > 번역: Claude가 한 지침을 계속 건너뛴다면 그 줄에만 "IMPORTANT" 같은 강조를 더하십시오. 여러 줄을 강조하면 어느 것도 두드러지지 않습니다.
 
+  > "If Claude already does something correctly without the instruction, delete it or convert it to a hook."
+  >
+  > 번역: 지침 없이도 Claude가 이미 올바르게 한다면 그 지침을 지우거나 hook으로 바꾸십시오.
+
+
 - **같은 실수가 두 번 나오거나 같은 정정을 다시 입력하게 되면 지침에 더할 내용을 제안한다.** [Codex best practices](https://developers.openai.com/codex/guides/best-practices), [Claude Code memory](https://code.claude.com/docs/en/memory), [Extend Claude Code](https://code.claude.com/docs/en/features-overview) (확인일: 2026-09-18)
 
   > "When Codex makes the same mistake twice, ask it for a retrospective and update `AGENTS.md`." / "Start with the basics, then add new rules only after you notice repeated mistakes."
   >
   > 번역: Codex가 같은 실수를 두 번 하면 회고를 요청하고 `AGENTS.md`를 갱신하십시오. / 기본부터 시작하고, 반복되는 실수를 발견한 뒤에만 새 규칙을 더하십시오.
 
-  Claude Code memory는 지침에 더할 때를 네 가지로 든다. "Claude makes the same mistake a second time · A code review catches something Claude should have known about this codebase · You type the same correction or clarification into chat that you typed last session · A new teammate would need the same context to be productive"(번역: Claude가 같은 실수를 두 번째로 한다 · 코드 리뷰가 Claude가 이 코드베이스에 대해 알았어야 할 것을 잡아낸다 · 지난 세션에 입력했던 정정이나 설명을 대화에 또 입력한다 · 새 팀원이 생산성을 내려면 같은 맥락이 필요하다.) 확장 기능 문서도 같은 신호를 적는다. "Claude gets a convention or command wrong twice → Add it to CLAUDE.md"(번역: Claude가 관례나 명령을 두 번 틀리면 CLAUDE.md에 더하십시오.)
+  Claude Code memory는 지침에 더할 때를 네 가지로 든다. "Claude makes the same mistake a second time · A code review catches something Claude should have known about this codebase · You type the same correction or clarification into chat that you typed last session · A new teammate would need the same context to be productive"(번역: Claude가 같은 실수를 두 번째로 한다 · 코드 리뷰가 Claude가 이 코드베이스에 대해 알았어야 할 것을 잡아낸다 · 지난 세션에 입력했던 정정이나 설명을 대화에 또 입력한다 · 새 팀원이 생산성을 내려면 같은 맥락이 필요하다.) 확장 기능 문서의 표에도 같은 신호가 한 행으로 있다. `Claude gets a convention or command wrong twice`(번역: Claude가 관례나 명령을 두 번 틀린다.) 행의 오른쪽 칸이 `Add it to CLAUDE.md`(번역: CLAUDE.md에 더하십시오.)다.
 
   배포 문구는 이 가운데 에이전트가 스스로 알아챌 수 있는 세 가지(같은 실수 두 번, 같은 정정 반복, 리뷰에서 발견)를 담았다. 네 번째(새 팀원)는 사람이 판단하는 것이라 넣지 않았다.
 
@@ -369,7 +476,15 @@
   >
   > 번역: 계획한 작업이 완료된 작업으로 표현되지 않았는지 확인하십시오. / 한계: 시험하지 않은 영역, 받아들인 위험, 불완전한 증거. / 남은 한계가 기록되어 있다.
 
-- **동작을 바꾸면 그 동작을 쓰는 사람이 보는 문서를 같은 변경에서 고친다.** 근거는 Codex 문서가 보여 준 저장소 **예시 한 줄**이다. "- Document public utilities in `docs/` when you change behavior."(번역: 동작을 바꿀 때 공개 유틸리티를 `docs/`에 문서화하십시오.) 원문은 권고가 아니라 한 저장소의 예시이고 다루는 대상도 공개 유틸리티다. 초안에 있던 "계약"은 원문에 없어 지웠다. 이 항목의 세 문장 가운데 이 문장만 근거가 예시에 기댄다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-18)
+- **동작을 바꾸면 그 동작을 쓰는 공개 유틸리티의 문서를 함께 고친다.** [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-18)
+
+  > "In your repository root, add an `AGENTS.md` that covers basic setup:" / "- Run `npm run lint` before opening a pull request. - Document public utilities in `docs/` when you change behavior."
+  >
+  > 번역: 저장소 루트에 기본 설정을 다루는 `AGENTS.md`를 추가하십시오. / `npm run lint`를 pull request를 열기 전에 실행하십시오. 동작을 바꿀 때 공개 유틸리티를 `docs/`에 문서화하십시오.
+
+  **근거의 형태:** 이 문장은 공식 문서가 기본 설정의 예로 제시한 `AGENTS.md` 규칙이다. 에이전트에게 직접 내리는 지시문이 아니라, 지침 파일에 둘 만한 규칙으로 문서가 보여 준 것이다. 같은 항목의 다른 두 문장은 쿡북의 지시문에서 왔다.
+
+  **범위 표기:** 원문이 다루는 대상은 `docs/`의 공개 유틸리티다. 초안의 "그 동작을 쓰는 사람이 보는 문서"는 대상을 문서 일반으로 넓힌 것이라 "그 동작을 쓰는 공개 유틸리티의 문서"로 좁혔다. 초안에 있던 "계약"도 원문에 없어 지웠다.
 
 ### 보안 지침의 근거
 
@@ -381,11 +496,13 @@
 
   OWASP Secrets Management 문서는 환경 변수에 대해 "environment variables are generally accessible to all processes and may be included in logs or system dumps. Using environment variables is therefore not recommended unless the other methods are not possible."(번역: 환경 변수는 일반적으로 모든 프로세스가 접근할 수 있고 로그나 시스템 덤프에 포함될 수 있습니다. 따라서 다른 방법이 불가능하지 않다면 환경 변수 사용은 권장되지 않습니다.)라고 적어, 두 문서가 환경 변수에서 엇갈린다. 배포 문구는 두 문서가 함께 지지하는 부분, 곧 "프로젝트 안의 파일과 로그에 두지 않고 비밀값 저장소처럼 프로젝트 밖에서 읽는다"만 담는다. 초안에 있던 "출력"은 어느 원문에도 없어 지웠다. 로그에 두지 않는 근거는 같은 문서의 "Never be logged (must implement either an encryption or masking approach in place to avoid logging plaintext secrets)"(번역: 절대 로그에 남기지 마십시오(평문 비밀값이 로그에 남지 않도록 암호화나 마스킹을 구현해야 합니다).)다. [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) (확인일: 2026-09-16)
 
-- **노출된 비밀값은 폐기하고 교체한다.** [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) (확인일: 2026-09-16)
+- **노출된 비밀값은 폐기하고 교체한다.** [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html) (확인일: 2026-09-18)
 
   > "When secrets are no longer required or potentially compromised, you must securely revoke them to restrict access."
   >
   > 번역: 비밀값이 더 이상 필요 없거나 침해되었을 가능성이 있으면, 접근을 제한하기 위해 안전하게 폐기해야 합니다.
+
+  교체까지 요구하는 근거는 같은 문서 §9.2다. "Revocation: Keys that were exposed should undergo immediate revocation."(번역: 폐기: 노출된 키는 즉시 폐기되어야 합니다.) / "Rotation: A new secret must be able to be quickly created and implemented"(번역: 교체: 새 비밀값을 빠르게 만들어 적용할 수 있어야 합니다.)
 
 - **작업에 필요 없는 도구와 권한은 쓰지 않는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html), [OWASP LLM06 Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/) (확인일: 2026-09-16)
 
@@ -407,15 +524,53 @@
   >
   > 번역: 커밋, push, 배포, 자격 증명, 외부 쓰기는 별도의 명시적 승인 뒤에 두십시오.
 
-  > "High-risk actions: Actions that are sensitive, irreversible, or have high stakes should trigger human oversight until confidence in the agent's reliability grows."
+  > "High-risk actions: Actions that are sensitive, irreversible, or have high stakes should trigger human oversight until confidence in the agent's reliability grows. Examples include canceling user orders, authorizing large refunds, or making payments."
   >
-  > 번역: 위험이 큰 동작: 민감하거나 되돌릴 수 없거나 이해관계가 큰 동작은, 에이전트의 신뢰성에 대한 확신이 커질 때까지 사람의 감독을 촉발해야 합니다.
+  > 번역: 위험이 큰 동작: 민감하거나 되돌릴 수 없거나 이해관계가 큰 동작은, 에이전트의 신뢰성에 대한 확신이 커질 때까지 사람의 감독을 촉발해야 합니다. 예로는 사용자 주문 취소, 큰 금액의 환불 승인, 결제 실행이 있습니다.
 
-- **새 의존성은 실제로 있는 패키지인지와 취약점을 확인한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §1 (확인일: 2026-09-16)
+  같은 쿡북의 다른 절은 승인이 필요한 항목을 한 줄로 나열한다. "Require separate approval for credentials, external systems, infrastructure, branch changes, commits, pushes, and deployments."(번역: 자격 증명, 외부 시스템, 인프라, 브랜치 변경, 커밋, push, 배포에는 별도의 승인을 요구하십시오.)
+
+  OWASP LLM06은 삭제와 사용자를 대신한 게시를 예로 든다. 취약점 설명은 "an extension that allows a user's documents to be deleted performs deletions without any confirmation from the user"(번역: 사용자의 문서를 삭제할 수 있는 확장이 사용자의 확인 없이 삭제를 수행하는 것.)를 들고, 대응책 6번은 "an LLM-based app that creates and posts social media content on behalf of a user should include a user approval routine within the extension that implements the 'post' operation"(번역: 사용자를 대신해 소셜 미디어 콘텐츠를 만들고 게시하는 LLM 기반 앱은 'post' 동작을 구현하는 확장 안에 사용자 승인 절차를 포함해야 합니다.)이라고 적는다.
+
+  **합성 표기:** 배포 문구의 목록은 세 문서를 합친 것이다. 커밋·브랜치 변경·push·배포·자격 증명 사용은 쿡북, 데이터 삭제와 사용자를 대신한 게시는 OWASP LLM06, 결제는 OpenAI 실무 가이드에서 왔다. 전송은 쿡북의 "external writes"(외부 쓰기)에 해당하는 것으로 보아 같은 자리에 두었고, 이 낱말 자체는 원문에 없다.
+
+- **도구를 호출하기 전에 넘기는 인자를 확인한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §4 (확인일: 2026-09-18)
+
+  > "Validate tool arguments before execution. Agents may pass sensitive data (credentials, file contents, environment variables) as tool arguments without awareness of the data classification."
+  >
+  > 번역: 실행 전에 도구 인자를 검증하십시오. 에이전트는 데이터 등급을 인지하지 못한 채 민감한 데이터(자격 증명, 파일 내용, 환경 변수)를 도구 인자로 넘길 수 있습니다.
+
+  **서법 표기:** 원문이 요구하는 것은 검증 하나이고, 뒤 문장은 금지 조항이 아니라 위험 설명이다. 초안은 이것을 "그대로 실어 보내지 않는다"라는 절대 금지로 옮겼으나, 파일 내용을 인자로 넘기는 것은 파일 쓰기·패치 적용처럼 정상적인 동작이라 지킬 수 없는 규칙이 된다. 그래서 원문대로 확인하는 것까지만 담았다.
+
+- **비밀값 파일은 작업에 꼭 필요하지 않으면 열지 않는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §9 (확인일: 2026-09-18)
+
+  > "Add `.env`, `.env.*`, `*.pem`, `*.key`, `credentials.json`, `serviceAccountKey.json`, and similar sensitive files to your AI tool's context exclusion list"
+  >
+  > 번역: `.env`, `.env.*`, `*.pem`, `*.key`, `credentials.json`, `serviceAccountKey.json`과 그 밖의 민감한 파일을 AI 도구의 맥락 제외 목록에 추가하십시오.
+
+  > "Open `.env` files or private keys in your IDE while an AI coding assistant is active. The file contents may be sent as context."
+  >
+  > 번역: AI 코딩 도우미가 켜져 있는 동안 IDE에서 `.env` 파일이나 개인 키를 여는 것. 파일 내용이 맥락으로 전송될 수 있습니다.
+
+  **대상 표기:** 두 인용 모두 사람에게 하는 말이다. 앞은 도구의 제외 목록을 설정하라는 것이고, 뒤는 사람이 IDE에서 열지 말라고 든 하지 말아야 할 일이다. 배포 문구는 같은 파일 목록을 에이전트가 지킬 수 있는 규칙으로 옮겼다.
+
+  **뺀 것:** 초안에는 "열어야 하면 값을 출력하지 않는다"가 있었다. §9 전문에서 가장 가까운 줄은 "Paste API keys, tokens, or credentials into your terminal while AI tools with terminal context access are running."(번역: 터미널 맥락에 접근하는 AI 도구가 실행 중일 때 API 키, 토큰, 자격 증명을 터미널에 붙여 넣는 것.)인데, 이는 사람이 붙여 넣는 행위이지 에이전트가 값을 출력하는 행위가 아니다. 같은 낱말("출력")을 비밀값 문장에서는 근거가 없다며 지웠으므로 여기서도 지웠다.
+
+- **개발 환경에서 프로덕션 자격 증명에 접근하지 않는다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §5 (확인일: 2026-09-18)
+
+  > "Allow agents to access production credentials, deployment keys, or org-level secrets from the development environment."
+  >
+  > 번역: 개발 환경에서 에이전트가 프로덕션 자격 증명, 배포 키, 조직 수준 비밀값에 접근하게 두는 것. (하지 말아야 할 일로 제시됨)
+
+  **대상 표기:** 원문은 사람에게 "에이전트가 접근하게 두지 마라"라고 한 하지 말아야 할 일이다. 배포 문구는 이를 에이전트 자신의 규칙으로 옮겼다. 같은 절의 나머지(샌드박스 실행, egress 통제, 리소스 한도)는 에이전트가 스스로 지킬 수 없어 지침에 넣지 않았다.
+
+- **새 의존성은 실제로 있는 패키지인지와 취약점을 확인한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §1 (확인일: 2026-09-18)
 
   > "AI coding assistants frequently suggest package names that do not exist on public registries. Attackers monitor these hallucinated names and register malicious packages with matching names" / "Verify every AI-suggested package exists on the public registry before installing."
   >
   > 번역: AI 코딩 도우미는 공개 레지스트리에 존재하지 않는 패키지 이름을 자주 제안합니다. 공격자는 이렇게 환각된 이름을 지켜보다가 같은 이름으로 악성 패키지를 등록합니다. / 설치하기 전에 AI가 제안한 모든 패키지가 공개 레지스트리에 존재하는지 확인하십시오.
+
+  취약점을 확인하는 방법은 같은 문서 §2가 적는다. "Run dependency auditing tools (npm audit, pip audit, govulncheck, cargo audit) on every AI-generated dependency list before merging."(번역: 병합하기 전에 AI가 만든 모든 의존성 목록에 의존성 감사 도구(npm audit, pip audit, govulncheck, cargo audit)를 실행하십시오.) / "Cross-reference AI-suggested versions against vulnerability databases (NVD, GitHub Advisory Database, OSV)."(번역: AI가 제안한 버전을 취약점 데이터베이스(NVD, GitHub Advisory Database, OSV)와 대조하십시오.)
 
   추가하기 전에 확인받는 부분은 Codex 공식 문서가 전역 `AGENTS.md` 예시로 직접 싣는다. "- Ask for confirmation before adding new production dependencies."(번역: 새 프로덕션 의존성을 추가하기 전에 확인을 받으십시오.) [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-18)
 
@@ -431,7 +586,11 @@
   >
   > 번역: README와 문서 파일. 복제한 저장소, 의존성, 가져온 문서에는 사람 독자에게는 보이지 않지만 에이전트가 해석하는 지시가 들어 있을 수 있습니다.
 
+  같은 문서 §3은 배포 문구가 나열한 대상을 한 줄로 모은다. "Issue bodies, PR descriptions, PR comments, README files, dependency changelogs, error traces, fetched web pages, and MCP tool responses all become instructions when the agent reads them."(번역: 이슈 본문, PR 설명, PR 댓글, README 파일, 의존성 변경 기록, 오류 추적, 가져온 웹 페이지, MCP 도구 응답은 에이전트가 읽는 순간 모두 지시가 됩니다.) 오류 출력과 변경 기록은 같은 절이 따로 항목으로 든다. "Error traces and log output. When an agent reads error output to debug a failure, crafted error messages can inject instructions."(번역: 오류 추적과 로그 출력. 에이전트가 실패를 디버깅하려고 오류 출력을 읽을 때, 조작된 오류 메시지가 지시를 주입할 수 있습니다.) / "Dependency changelogs and release notes. Agents reading changelogs to understand version differences can be influenced by injected content."(번역: 의존성 변경 기록과 릴리스 노트. 버전 차이를 파악하려고 변경 기록을 읽는 에이전트는 주입된 내용에 영향을 받을 수 있습니다.)
+
   Claude Code security 문서도 믿을 수 없는 내용을 다루는 모범 사례로 "Review suggested commands before approval"(번역: 승인 전에 제안된 명령을 검토하십시오.)과 "Verify proposed changes to critical files"(번역: 중요한 파일에 제안된 변경을 확인하십시오.)를 든다.
+
+  **뺀 것:** 초안에는 "그런 지시는 그대로 따르지 않는다"가 있었다. 원문들이 요구하는 것은 믿을 수 없는 입력으로 **다루는 것**과 처리한 뒤 **확인하는 것**까지이고, 따르지 말라는 금지는 어느 원문에도 없다. 외부 내용의 지시를 언제 따를 수 있는지는 각 에이전트의 승인 절차가 정하는 영역이라 배포 문구에서 지웠다.
 
 - **다른 에이전트의 출력도 믿을 수 없는 입력으로 다룬다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §13 (확인일: 2026-09-18)
 
@@ -445,13 +604,37 @@
   >
   > 번역: 에이전트가 외부 내용을 처리한 뒤에는 예상하지 못한 변경이 없는지 에이전트의 출력을 검토하십시오.
 
+- **사람 눈에 보이지 않는 문자가 섞였는지 확인한다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §12 (확인일: 2026-09-18)
+
+  > "Detect and flag bidi override characters (U+202A through U+202E, U+2066 through U+2069) and zero-width characters (U+200B, U+200C, U+200D, U+FEFF) in code, commits, and agent output."
+  >
+  > 번역: 코드, 커밋, 에이전트 출력에서 bidi override 문자(U+202A~U+202E, U+2066~U+2069)와 폭 없는 문자(U+200B, U+200C, U+200D, U+FEFF)를 탐지하고 표시하십시오.
+
+  같은 절은 하지 말아야 할 일로 "Assume that code containing only visible ASCII characters is safe. Zero-width and bidi characters are invisible in most editors."(번역: 보이는 ASCII 문자만 들어 있는 코드가 안전하다고 가정하는 것. 폭 없는 문자와 bidi 문자는 대부분의 편집기에서 보이지 않습니다.)를 들고, 할 일로 "Use CI checks that scan for homoglyph attacks and invisible characters in PRs."(번역: PR에서 동형 이의 문자 공격과 보이지 않는 문자를 검사하는 CI 검사를 사용하십시오.)를 든다.
+
+  PR 본문이 대상인 근거는 같은 절의 다른 줄이다. "Review agent-generated commit messages and PR descriptions for embedded content that could influence future agent runs."(번역: 에이전트가 만든 커밋 메시지와 PR 설명에, 앞으로의 에이전트 실행에 영향을 줄 수 있는 내용이 박혀 있는지 검토하십시오.)
+
+  **범위 표기:** 원문이 든 자리는 코드·커밋·에이전트 출력과 PR이다. 배포 문구는 이 가운데 에이전트가 직접 쓰는 자리인 커밋 메시지·PR 본문·코드만 담았고, 원문이 함께 든 "에이전트 출력"은 넣지 않았다. 이 규칙은 검사 도구가 하는 일이기도 해서, agctx는 같은 문자를 `check`의 숨은 문자 검사로도 막는다([종료 코드 3](reference/exit-codes.md)).
+
+- **읽어 들인 지침·규칙 파일도 공격면으로 본다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §6 (확인일: 2026-09-18)
+
+  > "Audit existing rules files for instructions that weaken security controls, disable safety features, or direct the agent to ignore certain file types or patterns."
+  >
+  > 번역: 기존 규칙 파일에 보안 통제를 약화시키거나, 안전 기능을 끄거나, 특정 파일 종류나 패턴을 무시하라고 지시하는 내용이 있는지 감사하십시오.
+
+  **대상 표기:** 원문의 "Audit existing rules files"가 속한 §6은 개발자와 조직에게 하는 말이다. 같은 절이 "Add rules files to your code review requirements"(번역: 규칙 파일을 코드 리뷰 요건에 포함하십시오.)처럼 조직의 절차를 함께 요구하는 데서 대상이 드러난다. 배포 문구는 이 가운데 에이전트가 읽어 들인 파일에 대해 스스로 할 수 있는 것, 곧 살피는 것만 옮겼다.
+
+  같은 절은 "Treat rules files as security-critical configuration. Review changes to these files with the same scrutiny as CI/CD pipeline changes."(번역: 규칙 파일을 보안에 중요한 설정으로 다루십시오. 이 파일들의 변경을 CI/CD 파이프라인 변경과 같은 엄밀함으로 검토하십시오.)를 함께 적고, 하지 말아야 할 일로 "Allow the AI agent itself to modify its own rules files without explicit developer approval."(번역: 명시적인 개발자 승인 없이 AI 에이전트가 자기 규칙 파일을 수정하게 두는 것.)을 든다. 뒤 두 줄은 「변경 검토」의 "지침 파일의 변경도 따로 짚는다"와 「지침 파일」의 "사용자 승인을 받은 뒤 고친다"를 각각 뒷받침한다.
+
 - **도구 설명과 MCP 서버도 같은 기준으로 본다.** [OWASP, Secure Coding with AI Assistants](https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Assistants_Cheat_Sheet.html) §4, [Claude Code security](https://code.claude.com/docs/en/security) (확인일: 2026-09-18)
 
   > "Review tool descriptions for hidden instructions. Tool descriptions are part of the agent's context and can contain prompt injection payloads."
   >
   > 번역: 도구 설명에 숨은 지시가 있는지 검토하십시오. 도구 설명은 에이전트 맥락의 일부이며 프롬프트 인젝션 페이로드를 담을 수 있습니다.
 
-  같은 절은 "Connect to MCP servers from untrusted sources without security review."(번역: 보안 검토 없이 믿을 수 없는 출처의 MCP 서버에 연결하는 것.)를 하지 말아야 할 일로 든다. Claude Code security 문서도 "We encourage either writing your own MCP servers or using MCP servers from providers that you trust."(번역: 직접 MCP 서버를 작성하거나 신뢰하는 제공자의 MCP 서버를 사용하기를 권합니다.)라고 적는다.
+  같은 절은 "Connect to MCP servers from untrusted sources without security review."(번역: 보안 검토 없이 믿을 수 없는 출처의 MCP 서버에 연결하는 것.)를 하지 말아야 할 일로 들고, 할 일로는 "Audit all MCP servers connected to your development environment. Maintain an allowlist of approved servers and tools."(번역: 개발 환경에 연결된 모든 MCP 서버를 감사하십시오. 승인된 서버와 도구의 허용 목록을 유지하십시오.)를 든다. Claude Code security 문서도 "We encourage either writing your own MCP servers or using MCP servers from providers that you trust."(번역: 직접 MCP 서버를 작성하거나 신뢰하는 제공자의 MCP 서버를 사용하기를 권합니다.)라고 적는다.
+
+  **범위 표기:** 원문은 보안 검토를 거치면 연결할 수 있다는 여지를 둔다. 초안의 "믿을 수 있는 출처만 연결한다"는 그 경로를 닫아 원문보다 셌으므로, "보안 검토를 거치지 않은 출처의 MCP 서버는 연결하지 않는다"로 고쳤다.
 
 ### 응답 언어 지침의 근거
 
@@ -460,6 +643,36 @@
 - **그래서 기본값을 `off`로 둔다.** 근거 없는 문장을 기본 지침에 넣지 않는다는 원칙의 예외이며, 조건은 켜는 사람만 받는 것과 근거가 없다는 사실을 밝히는 것이다. 결정은 [ADR 0026](adr/0026-guidance-items-and-evidence-tiers.md)에 있다.
 
 - **찾지 못한 주장.** 다국어 출력이 토큰을 낭비한다는 주장은 공식 문서에서 확인하지 못했다. 확인하지 못했다고 적어 둔다.
+
+## 출력 스타일을 담지 않는 근거
+
+[ADR 0027](adr/0027-no-output-styles.md)의 근거다. 아래는 모두 [Claude Code Output styles](https://code.claude.com/docs/en/output-styles) 문서에서 확인했다. (확인일: 2026-09-18)
+
+- **스타일 파일은 프로젝트 범위로 공유할 수 있다.** 파일은 사용자(`~/.claude/output-styles`), 프로젝트(`.claude/output-styles`), 관리 정책 세 위치에 둘 수 있고 frontmatter와 본문으로 된 마크다운이다. (확인일: 2026-09-18)
+
+  > "A custom output style is a Markdown file: frontmatter for metadata, then the instructions for Claude." / "Project output styles load from every `.claude/output-styles/` between the working directory and the repository root."
+  >
+  > 번역: 커스텀 출력 스타일은 마크다운 파일입니다. 메타데이터용 frontmatter 다음에 Claude를 위한 지침이 옵니다. / 프로젝트 출력 스타일은 작업 디렉터리와 저장소 루트 사이의 모든 `.claude/output-styles/`에서 로드됩니다.
+
+- **그러나 어떤 스타일을 쓸지는 개인 설정에 저장된다.** 그래서 파일을 공유해도 선택은 공유되지 않는다. (확인일: 2026-09-18)
+
+  > "Claude Code saves your selection to `.claude/settings.local.json` at the local project level."
+  >
+  > 번역: Claude Code는 여러분의 선택을 로컬 프로젝트 수준의 `.claude/settings.local.json`에 저장합니다.
+
+- **커스텀 스타일은 기본적으로 내장 엔지니어링 지침을 뺀다.** 그래서 agctx가 배포하는 검증·범위·변경 검토 지침과 충돌할 수 있다. (확인일: 2026-09-18)
+
+  > "Custom output styles leave out Claude Code's built-in software engineering instructions, such as how to scope changes, write comments, and verify work, unless `keep-coding-instructions` is set to `true`."
+  >
+  > 번역: 커스텀 출력 스타일은 `keep-coding-instructions`를 `true`로 두지 않으면, 변경 범위를 잡는 방법·주석을 쓰는 방법·작업을 검증하는 방법 같은 Claude Code의 내장 소프트웨어 엔지니어링 지침을 빼놓습니다.
+
+- **프로젝트 관례를 담는 자리는 출력 스타일이 아니라 지침 파일이다.** 같은 문서가 그렇게 구분한다. (확인일: 2026-09-18)
+
+  > "For instructions about your project, conventions, or codebase, use CLAUDE.md instead."
+  >
+  > 번역: 프로젝트, 관례, 코드베이스에 관한 지침에는 대신 CLAUDE.md를 사용하십시오.
+
+- **대응하는 개념을 다른 에이전트에서 찾지 못했다.** Codex 공식 문서가 설명하는 설정은 모델·추론 수준·샌드박스 모드·승인 정책·프로필·MCP이고 응답 형식을 고정하는 기능은 없다. Antigravity 규칙 문서에도 없다. 확인하지 못한 것이 아니라 해당 문서에 없다는 뜻이다. [Codex best practices](https://developers.openai.com/codex/guides/best-practices), [Google Antigravity Rules](https://antigravity.google/docs/rules-workflows/) (확인일: 2026-09-18)
 
 ## 에이전트 규칙 파일 로드 근거
 
@@ -831,6 +1044,7 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 | [agents-lint](https://github.com/giacomo/agents-lint) | 에이전트 지침 파일의 오래된 참조와 컨텍스트 부패 발견 | 지침 파일이 참조하는 경로·npm 스크립트·의존성이 저장소에 있는지, 프레임워크의 낡은 패턴을 언급하는지를 검사하고 권장 섹션 구조와 여러 지침 파일 간 충돌을 점검 | `AGENTS.md`·`CLAUDE.md`·Claude 메모리 파일의 최신성 관리 | agents-lint가 지침의 오래된 참조와 파일 간 충돌을 진단한다면, agctx는 사용자가 선택한 공통 지침을 만들고 여러 에이전트에 전달하는 관리 계층이다. | agctx가 생성·적용한 지침을 최신성 관점에서 별도로 lint하는 보완 조합이 적합하다. 공식적인 agctx 통합은 확인하지 않았으므로 CI 명령을 사용자가 직접 연결해야 한다. (확인일: 2026-09-14) |
 | [Harness Doctor](https://www.npmjs.com/package/%40andypai/harness-doctor) | 에이전트 하네스의 구성 상태 점검 | 하네스 파일·문서·설정의 문제를 찾아 진단 | 하네스 유지보수와 문제 해결 | Harness Doctor는 진단 도구이고, agctx는 공통 지침을 생성·설정·적용하는 패키지다. agctx가 자체 진단을 제공하더라도 하네스 런타임을 소유하거나 감싸는 것을 목표로 하지 않는다. | 적용 후 대상 프로젝트의 하네스 상태를 독립적으로 점검하는 용도로 함께 사용할 수 있다. 다만 두 도구의 진단 결과를 하나의 성공 판정으로 간주하지 말고 각각의 검사 범위를 보고해야 한다. (확인일: 2026-09-14) |
 | [Everything Claude Code (ECC)](https://github.com/affaan-m/ECC) | 에이전트의 개발 능력과 작업 방법을 확장 | 전문 에이전트, 스킬, 명령, 훅, 규칙, 메모리·보안 도구와 워크플로를 제공하며 여러 하네스에 어댑터를 제공 | Claude Code 중심의 에이전트 작업 자동화·전문화, Codex 등 인접 하네스 지원 | ECC는 에이전트가 계획·구현·리뷰·보안·도메인 작업을 수행하도록 기능과 방법론을 제공한다. agctx는 ECC 같은 도구를 실행·통제하지 않고, 조직·팀·프로젝트가 선택한 공통 개발 지침을 프로필에서 관리해 여러 에이전트와 프로젝트에 적용하는 데 집중한다. | ECC는 선택한 에이전트의 능력·워크플로를 제공하고 agctx는 조직·프로젝트 공통 지침을 관리하는 식으로 역할을 나눌 수 있다. ECC 지침을 프로필에 자동 수입하는 공식 계약은 확인하지 않았으므로, 채택할 내용은 검토 후 별도로 복사·정리해야 한다. (확인일: 2026-09-14) |
+| [microsoft/agentrc](https://github.com/microsoft/agentrc) | 저장소를 AI 에이전트가 쓰기 좋은 상태로 만들기 | 저장소의 AI 준비도를 아홉 가지 기준으로 재고, 그 코드베이스에 맞는 지침 파일과 설정을 만들며, 코드가 바뀌어도 그 지침이 여전히 도움이 되는지 평가로 확인 | 한 저장소의 지침 초안 작성과 품질 측정 | agentrc는 코드베이스를 분석해 그 저장소의 지침을 만든다. agctx는 코드베이스를 분석하지 않고, 사람이 정한 공통 지침을 여러 저장소와 에이전트에 배포한다([ADR 0006](adr/0006-no-codebase-analysis-guidance.md)). 기본 산출물은 `.github/copilot-instructions.md`와 `.vscode/mcp.json`이며 `--output AGENTS.md`로 `AGENTS.md`도 만든다. | 저장소 고유 지침의 초안은 agentrc로 만들고, 사람이 다듬어 프로젝트 `AGENTS.md`의 확장 영역에 둔다. 관리 영역 안에 두면 다음 `profile sync`가 충돌로 멈춘다. (확인일: 2026-09-18) |
 | [GitHub Spec Kit](https://github.com/github/spec-kit) | 명세 중심 개발을 돕기 | 요구사항·설계·구현으로 이어지는 spec-driven 개발 템플릿과 흐름 제공 | 신규 기능의 명세화와 계획 수립 | Spec Kit은 기능 개발 방법론과 산출물에 초점을 둔다. agctx는 특정 명세 방법론을 강제하지 않고, 프로젝트가 선택한 공통 지침을 에이전트별 파일로 적용하는 기반을 제공한다. | Spec Kit의 명세·계획 산출물을 프로젝트 도메인 작업에 사용하고, agctx로 그 프로젝트의 공통 지침을 여러 에이전트에 적용하는 조합이 자연스럽다. 이는 역할 분리에 따른 활용 방식이며 공식 agctx 플러그인 통합을 뜻하지 않는다. (확인일: 2026-09-14) |
 | [obra/superpowers](https://github.com/obra/superpowers) | 에이전트의 개발 작업 품질과 습관 개선 | 스킬과 개발 방법론을 조합해 계획·구현·검토 흐름을 안내 | 에이전트 주도 개발 프로세스와 재사용 스킬 | superpowers는 에이전트가 작업하는 방법을 제공하고, agctx는 그런 방법론을 프로필에 선택적으로 포함·관리하고 여러 에이전트에 전달하는 역할을 맡는다. | Superpowers를 특정 에이전트의 작업 방법으로 사용하고, agctx에는 팀·프로젝트가 실제로 채택한 공통 규칙만 관리한다. 양쪽의 자동 동기화나 공식 연동은 확인하지 않았으므로 동일 규칙을 양쪽에 중복 관리하지 않는다. (확인일: 2026-09-14) |
 | [revfactory/harness](https://github.com/revfactory/harness) | Claude Code에서 에이전트 팀 패턴을 쉽게 구성 | 도메인 설명과 코드베이스 탐색 결과로 팀 아키텍처를 고르고 `.claude/agents/` 에이전트 정의와 `.claude/skills/` 스킬을 생성한다. 코드베이스 탐색은 팀·스킬 설계의 재료로만 쓰며, `CLAUDE.md`에는 트리거 포인터와 변경 이력만 기록하고 디렉터리 구조 같은 프로젝트 설명은 넣지 않는다. | 복잡하거나 병렬화 가능한 작업의 역할 분담·오케스트레이션 | 두 도구의 "멀티 에이전트"는 뜻이 다르다. harness는 Claude Code 한 도구 안에서 협업하는 에이전트 팀을 설계한다. agctx는 Claude Code·Codex·Cursor 같은 여러 에이전트 도구에 같은 공통 지침을 배포한다. 위아래 계층이 아니라 서로 다른 축이며, harness는 프로젝트 지침을 작성하는 도구도 아니다. | agctx가 공통 작업·안전·문서 지침을 제공하고 복잡한 작업에서만 harness가 Claude Code 팀 구성을 담당하는 조합이 가능하다. harness는 Claude Code 전용 커뮤니티 플러그인이며 agctx가 이를 다른 에이전트에서 실행해 주지 않는다. 두 도구 모두 `CLAUDE.md`를 수정하므로 harness 포인터는 agctx 관리 블록 밖에 있어야 한다. (확인일: 2026-09-14) |

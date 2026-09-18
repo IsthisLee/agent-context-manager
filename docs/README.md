@@ -112,12 +112,13 @@
     - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md) (일부 대체: ADR 0025)
     - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md)
     - [ADR 0020: APM이 다시 만드는 파일에는 쓰지 않고, 하위 AGENTS.md마다 Claude Code 연결 파일을 만듦](adr/0020-apm-coexistence-and-monorepo-links.md)
-    - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md)
+    - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md) (일부 대체: ADR 0022, ADR 0027)
     - [ADR 0022: 프로필이 담을 대상에 hooks를 더함](adr/0022-profile-scope-hooks.md)
     - [ADR 0023: 기존 저장소에서 프로필을 만들 때 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦](adr/0023-profile-drafting-through-agent-skill.md)
     - [ADR 0024: 기본 지침 문장은 공식 문서·표준 근거가 있어야 하고 분량 예산 안에 머묾](adr/0024-guidance-evidence-and-budget.md)
     - [ADR 0025: 모든 명령은 CLI와 TUI에서 실행할 수 있어야 함](adr/0025-every-command-in-cli-and-tui.md)
     - [ADR 0026: 지침 항목을 열 개로 나누고 근거 등급을 세 단계로 넓힘](adr/0026-guidance-items-and-evidence-tiers.md)
+    - [ADR 0027: 출력 스타일은 프로필이 담지 않음](adr/0027-no-output-styles.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

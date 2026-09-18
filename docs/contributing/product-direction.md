@@ -28,7 +28,7 @@
 
 ## 범위와 경계
 
-agctx는 프로필이 담는 에이전트 컨텍스트의 생성·설정·동기화·적용과, 적용한 내용이 에이전트에 닿는지 확인하는 일을 담당한다. 프로필이 담을 대상은 규칙·스킬·MCP 서버 설정·subagent 정의·hooks이며, 지금 구현된 것은 규칙이다. 스킬·MCP·subagents·hooks는 확정된 범위지만 아직 동작하지 않고, 구현 순서와 안전 병합 계약은 [프로필 설정 표면 확장](../discussion/architecture/topics/profile-config-surface.md) 논의에서 정한다. 결정은 [ADR 0021](../adr/0021-profile-scope-skills-mcp-subagents.md)과 [ADR 0022](../adr/0022-profile-scope-hooks.md)에 있다. 모델 호출, 인증, 세션, CLI 스트리밍, 에이전트 런타임 오케스트레이션은 담당하지 않으며, subagent와 hooks도 설정을 전달할 뿐 실행하거나 조율하지 않는다. 프로젝트의 비즈니스 코드·데이터·도메인 지침은 대상 프로젝트가 소유한다.
+agctx는 프로필이 담는 에이전트 컨텍스트의 생성·설정·동기화·적용과, 적용한 내용이 에이전트에 닿는지 확인하는 일을 담당한다. 프로필이 담을 대상은 규칙·스킬·MCP 서버 설정·subagent 정의·hooks이며, 지금 구현된 것은 규칙이다. 스킬·MCP·subagents·hooks는 확정된 범위지만 아직 동작하지 않고, 구현 순서와 안전 병합 계약은 [프로필 설정 표면 확장](../discussion/architecture/topics/profile-config-surface.md) 논의에서 정한다. 결정은 [ADR 0021](../adr/0021-profile-scope-skills-mcp-subagents.md)과 [ADR 0022](../adr/0022-profile-scope-hooks.md)에 있다. 출력 스타일은 담지 않는다. 어떤 스타일을 쓸지가 개인 설정에 저장돼 공유되지 않고, 커스텀 스타일이 에이전트의 내장 엔지니어링 지침을 빼서 우리가 배포하는 검증·범위 지침과 충돌하며, 지원하는 세 에이전트 가운데 하나에만 있는 기능이기 때문이다([ADR 0027](../adr/0027-no-output-styles.md)). 모델 호출, 인증, 세션, CLI 스트리밍, 에이전트 런타임 오케스트레이션은 담당하지 않으며, subagent와 hooks도 설정을 전달할 뿐 실행하거나 조율하지 않는다. 프로젝트의 비즈니스 코드·데이터·도메인 지침은 대상 프로젝트가 소유한다.
 
 ```mermaid
 flowchart LR

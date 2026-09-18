@@ -1,11 +1,10 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: df18d5eea5e953d19d4679872cf2c01c786b9590de474e555ca5f1b043f2fedf -->
+<!-- agctx-doc-sources-sha256: a8c08054ae21da392c21d660ae1f7c4106cecbfaa944b78a418945183d4c5f9a -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/IsthisLee/agent-context-manager/badge)](https://securityscorecards.dev/viewer/?uri=github.com/IsthisLee/agent-context-manager)
 [![npm](https://img.shields.io/npm/v/agent-context-manager?logo=npm&color=cb3837)](https://www.npmjs.com/package/agent-context-manager)
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/en/about/previous-releases)
 [![Supported agents](https://img.shields.io/badge/agents-Codex%20%C2%B7%20Claude%20Code%20%C2%B7%20Antigravity-6f42c1)](https://github.com/IsthisLee/agent-context-manager#지원-에이전트)
@@ -50,11 +49,11 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 
 ## 사용 사례
 
-| 누가 | 이렇게 씁니다 | 얻는 것 |
-| --- | --- | --- |
-| 개인 개발자 | 프로젝트 성격별로 `Personal` 프로필을 만들고 저장소마다 `profile apply`로 적용합니다. | AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 그대로 다시 씁니다. |
-| 팀 | 팀 프로필을 Git 저장소로 공유하고, 적용을 맡은 사람이 `profile clone`·`pull`로 받아 담당 저장소에 적용해 커밋합니다. 검토한 버전에 머물려면 `--pin`으로 고정합니다. | 공통 컨텍스트가 바뀔 때마다 같은 이력으로 검토하고 배포하므로, 사람마다 설정이 달라지는 일이 줄어듭니다. 역할과 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나)에 있습니다. |
-| 조직 | 조직 프로필의 공통 기준을 Git으로 관리하고, 팀과 프로젝트는 자기 도메인 규칙만 프로젝트 `AGENTS.md`에 적습니다. | 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 따로 관리합니다. CI에서 `agctx check --refresh`로 각 저장소가 최신 기준을 반영했는지 확인합니다. |
+| 누가        | 이렇게 씁니다                                                                                                                                                       | 얻는 것                                                                                                                                                                                                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 개인 개발자 | 프로젝트 성격별로 `Personal` 프로필을 만들고 저장소마다 `profile apply`로 적용합니다.                                                                               | AI 도구를 바꾸거나 새 프로젝트를 시작해도 같은 개발 기준을 그대로 다시 씁니다.                                                                                                                                                                                        |
+| 팀          | 팀 프로필을 Git 저장소로 공유하고, 적용을 맡은 사람이 `profile clone`·`pull`로 받아 담당 저장소에 적용해 커밋합니다. 검토한 버전에 머물려면 `--pin`으로 고정합니다. | 공통 컨텍스트가 바뀔 때마다 같은 이력으로 검토하고 배포하므로, 사람마다 설정이 달라지는 일이 줄어듭니다. 역할과 절차는 [팀과 Git으로 공유하기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#누가-무엇을-하나)에 있습니다. |
+| 조직        | 조직 프로필의 공통 기준을 Git으로 관리하고, 팀과 프로젝트는 자기 도메인 규칙만 프로젝트 `AGENTS.md`에 적습니다.                                                     | 회사 공통 기준과 프로젝트별 요구사항을 섞지 않고 따로 관리합니다. CI에서 `agctx check --refresh`로 각 저장소가 최신 기준을 반영했는지 확인합니다.                                                                                                                     |
 
 다른 팀원은 저장소만 받으면 되고 agctx를 설치하지 않아도 됩니다. 에이전트는 커밋된 지침 파일을 그대로 읽습니다.
 
@@ -156,12 +155,12 @@ skills CLI는 익명 사용 통계를 보내며, 위처럼 `DISABLE_TELEMETRY=1`
 
 **코드베이스를 분석해 프로젝트 지침을 자동으로 작성하는 기능은 지원하지 않습니다.** agctx는 프로필의 공통 컨텍스트를 프로젝트와 여러 에이전트에 배포합니다. 프로젝트 고유 지침은 프로젝트가 소유하며 agctx가 대신 작성하지 않습니다.
 
-| 이유                                  | 근거                                                                                                                                                                                                                      |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 각 에이전트가 이미 제공합니다.        | Claude Code와 Codex의 `/init`이 코드베이스를 분석해 지침 초안을 만듭니다.                                                                                                                                                 |
+| 이유                                  | 근거                                                                                                                                                                                                                                      |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 각 에이전트가 이미 제공합니다.        | Claude Code와 Codex의 `/init`이 코드베이스를 분석해 지침 초안을 만듭니다.                                                                                                                                                                 |
 | 공식 가이드가 권하지 않는 내용입니다. | Anthropic은 에이전트가 코드를 읽어 알아낼 수 있는 내용과 파일별 설명을 지침에서 빼라고 안내합니다. 지침에 넣을 것은 에이전트가 추측할 수 없는 명령·관례·결정·주의할 점입니다. 지침이 길어지면 중요한 규칙이 묻혀 무시된다고도 경고합니다. |
-| 효과가 확인되지 않았습니다.           | 연구에서 에이전트는 컨텍스트 파일의 지시를 따랐지만 과제 성공률은 일반적으로 오르지 않았고 추론 비용은 평균 20% 넘게 늘었습니다. 저장소 개요는 도움이 되지 않았습니다.                                                    |
-| agctx의 범위 밖입니다.                | 깊은 분석에는 모델 호출이 필요합니다. agctx는 모델 호출과 에이전트 런타임을 다루지 않습니다.                                                                                                                              |
+| 효과가 확인되지 않았습니다.           | 연구에서 에이전트는 컨텍스트 파일의 지시를 따랐지만 과제 성공률은 일반적으로 오르지 않았고 추론 비용은 평균 20% 넘게 늘었습니다. 저장소 개요는 도움이 되지 않았습니다.                                                                    |
+| agctx의 범위 밖입니다.                | 깊은 분석에는 모델 호출이 필요합니다. agctx는 모델 호출과 에이전트 런타임을 다루지 않습니다.                                                                                                                                              |
 
 > [!Tip]
 > 저장소에 맞는 지침 초안이 필요하면 각 에이전트의 `/init`이나 [microsoft/agentrc](https://github.com/microsoft/agentrc)를 쓸 수 있습니다. agentrc는 저장소의 AI 준비도를 재고 그 코드베이스에 맞는 지침 파일을 만들며, `--output AGENTS.md`로 `AGENTS.md`도 만듭니다. 비교와 함께 쓰는 방법은 [참고 자료](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/references.md#비교-대상)에 있습니다.

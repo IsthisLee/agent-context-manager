@@ -1,7 +1,7 @@
 # 에이전트에게 agctx를 맡기기
 
 <!-- agctx-doc-sources: skills, tools/generate-skills.ts -->
-<!-- agctx-doc-sources-sha256: f09c6ec50256c0a1bf2dc4f098395db3c98a035518b02e08cbdc9e5d149dcffd -->
+<!-- agctx-doc-sources-sha256: 494c72cc02eb3619e2c2d8f50cc2b7703df8232fa7b0ddf2c73b46feba8d7215 -->
 
 "이 폴더에서 규칙이 안 먹는 이유를 찾아 줘"나 "새 팀 규칙을 이 저장소에 반영해 줘"처럼 에이전트에게 말로 맡기려면 에이전트용 스킬을 설치한다. 스킬은 상황별로 쓸 명령, 쓰기 전에 승인을 받는 규칙, 종료 코드의 뜻을 에이전트에게 알려 준다.
 
@@ -23,8 +23,10 @@
 
 | 스킬 | 맡는 일 | 에이전트가 스스로 쓰는가 |
 | --- | --- | --- |
-| `agctx` | 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 새 프로필 버전 반영(`profile pull`·`profile sync`) | 쓴다 |
-| `agctx-author` | 프로필 지침 수정과 커밋 확인, `profile push`, 저장소마다 `repos pr`·`repos sync` | 사용자가 이름으로 부를 때만 |
+| `agctx` | **읽기만 한다.** 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 프로필 내용과 원격 상태 보기(`profile list`·`view`·`status`) | 쓴다 |
+| `agctx-author` | **바꾸는 일 전부.** 프로필 만들기와 지침 고르기(`profile create`·`setup`), 프로젝트에 적용(`apply`·`sync`·`resolve`), Git 연결과 게시(`clone`·`connect`·`pull`·`push`), 저장소마다 반영(`repos sync`·`pr`) | 사용자가 이름으로 부를 때만 |
+
+어느 명령이 어느 스킬에 들어가는지는 명령 등록부의 에이전트 정책이 정한다. 아무것도 바꾸지 않는 명령은 `auto`라서 `agctx` 스킬에 들어가고, 파일이나 원격을 바꾸는 명령은 `ask`라서 `agctx-author` 스킬에만 들어간다. `profile remove`·`config lang`·`help`는 `never`라서 어느 스킬에도 없다([ADR 0029](../adr/0029-agent-surface-contract.md)).
 
 표에 나온 명령이 각각 무엇을 하는지는 [CLI Reference](../reference/cli.md#명령어)의 명령 목록에 한 줄씩 있다.
 

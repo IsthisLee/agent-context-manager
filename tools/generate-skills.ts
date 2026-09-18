@@ -2,11 +2,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import en from '../src/i18n/messages-en.ts';
-import { COMMANDS, usageLine } from '../src/commands/registry.ts';
+import { COMMANDS, agentPolicy, usageLine, type AgentPolicy } from '../src/commands/registry.ts';
 
 /**
  * Keep the command lists in skills/ in step with the command registry, so a
  * skill never tells an agent about an option that does not exist.
+ *
+ * Which command goes in which skill comes from its agent policy, not from a
+ * list kept here by hand: a new command then cannot be left out of the agent
+ * surface by forgetting to add it (ADR 0029).
  *
  *   node tools/generate-skills.ts          rewrite the lists
  *   node tools/generate-skills.ts --check  exit 1 when a list is out of date
@@ -18,29 +22,33 @@ const END = '<!-- agctx:commands:end -->';
 
 export interface SkillSpec {
   file: string;
-  /** Command ids to list, or null for every command. */
-  commands: readonly string[] | null;
+  /** Agent policies this skill lists. */
+  policies: readonly AgentPolicy[];
 }
 
 export const SKILLS: readonly SkillSpec[] = [
-  { file: 'skills/agctx/SKILL.md', commands: null },
-  { file: 'skills/agctx-author/SKILL.md', commands: ['profile.view', 'profile.setup', 'profile.status', 'profile.pull', 'profile.push', 'check', 'repos.status', 'repos.sync', 'repos.pr'] }
+  // The model may load this skill on its own, so it lists only what the agent
+  // may start without being asked.
+  { file: 'skills/agctx/SKILL.md', policies: ['auto'] },
+  // Invoked by name only (disable-model-invocation), so it adds the commands
+  // that write, plus the reads it needs to check state before publishing.
+  { file: 'skills/agctx-author/SKILL.md', policies: ['auto', 'ask'] }
 ];
 
 const summaries = en as Record<string, string>;
 
-export function commandList(ids: readonly string[] | null): string {
+export function commandList(policies: readonly AgentPolicy[]): string {
   return COMMANDS
-    .filter(command => command.id !== 'help' && (!ids || ids.includes(command.id)))
+    .filter(command => policies.includes(agentPolicy(command)))
     .map(command => `- \`${usageLine(command)}\`: ${summaries[`command.${command.id}.summary`]}`)
     .join('\n');
 }
 
-export function renderSkill(content: string, ids: readonly string[] | null): string {
+export function renderSkill(content: string, policies: readonly AgentPolicy[]): string {
   const start = content.indexOf(START);
   const end = content.indexOf(END);
   if (start < 0 || end < start) throw new Error(`A skill needs ${START} and ${END} around its command list.`);
-  return `${content.slice(0, start + START.length)}\n${commandList(ids)}\n${content.slice(end)}`;
+  return `${content.slice(0, start + START.length)}\n${commandList(policies)}\n${content.slice(end)}`;
 }
 
 function main(argv: readonly string[]): void {
@@ -49,7 +57,7 @@ function main(argv: readonly string[]): void {
   for (const skill of SKILLS) {
     const file = path.join(repoRoot, skill.file);
     const current = fs.readFileSync(file, 'utf8');
-    const next = renderSkill(current, skill.commands);
+    const next = renderSkill(current, skill.policies);
     if (current === next) continue;
     if (check) stale.push(skill.file);
     else fs.writeFileSync(file, next);

@@ -3,7 +3,7 @@
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: fd70296bbcecb80886be04bb5c7046da8324712b7fff798c72bbbc0cf69c92a2 -->
+<!-- agctx-doc-sources-sha256: b5e6270d4486b7f308c22711a1d93988ba917258733b755d54be35e6d0ee0208 -->
 
 ## 설치와 실행
 

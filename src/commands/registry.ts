@@ -24,6 +24,17 @@ export type Surface = 'profile' | 'repository' | 'global';
 /** What a command may change; commands that change a repository or send to a remote ask before they act. */
 export type Changes = 'none' | 'profile-store' | 'repository' | 'remote';
 
+/**
+ * How the agent surface offers a command. An agent decides whether to load a
+ * skill from its description, so a command with no policy has no way in.
+ *
+ * - `auto`: the agent may run it on its own. Reading only.
+ * - `ask`: only when the user asks for it by name. Lives in the agctx-author
+ *   skill, which blocks the model from invoking itself.
+ * - `never`: no skill offers it. The person runs it in the CLI or the TUI.
+ */
+export type AgentPolicy = 'auto' | 'ask' | 'never';
+
 export interface CommandSpec {
   id: string;
   words: readonly string[];
@@ -39,6 +50,21 @@ export interface CommandSpec {
   profileMenu?: string;
   /** Message key of the hint shown when the command gets an option or argument it does not take. */
   misuseHint?: string;
+  /**
+   * Agent policy when it does not follow from `changes`. Leave it out and the
+   * policy is derived, so a new command is never missing from the agent surface.
+   */
+  agent?: AgentPolicy;
+}
+
+/**
+ * A command that changes nothing is safe for the agent to start; anything that
+ * writes waits for the user to ask. `agent` overrides this for the few commands
+ * no skill should offer at all.
+ */
+export function agentPolicy(command: CommandSpec): AgentPolicy {
+  if (command.agent) return command.agent;
+  return command.changes === 'none' ? 'auto' : 'ask';
 }
 
 const common = [EXIT.ok, EXIT.usage, EXIT.software];
@@ -54,7 +80,7 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'profile.apply', words: ['profile', 'apply'], args: ['<name>', '[<project>]'], options: [dryRun, { name: 'pin' }, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.apply.label', profileMenu: 'actions.apply.label' },
   { id: 'profile.sync', words: ['profile', 'sync'], args: ['[<project>]'], options: [dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.sync.label', profileMenu: 'actions.sync.label', misuseHint: 'hint.sync.no-switch' },
   { id: 'profile.resolve', words: ['profile', 'resolve'], args: ['[<project>]'], options: [dryRun, { name: 'discard' }, { name: 'edit' }, yes], exitCodes: [...common, EXIT.conflict, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.resolve.label', profileMenu: 'actions.resolve.label' },
-  { id: 'profile.remove', words: ['profile', 'remove'], args: ['[<name>]'], options: [yes], exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'actions.remove.label', profileMenu: 'actions.remove.label' },
+  { id: 'profile.remove', words: ['profile', 'remove'], args: ['[<name>]'], options: [yes], exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'actions.remove.label', profileMenu: 'actions.remove.label', agent: 'never' },
   { id: 'profile.clone', words: ['profile', 'clone'], args: ['<git-url>'], options: [{ name: 'branch', value: '<branch>' }], exitCodes: [...common, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'main.clone.label', profileMenu: 'list.clone.label' },
   { id: 'profile.status', words: ['profile', 'status'], args: ['[<name>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.unavailable], surface: 'profile', changes: 'none', tui: 'actions.status.label', profileMenu: 'actions.status.label' },
   { id: 'profile.pull', words: ['profile', 'pull'], args: ['<name>'], options: [dryRun], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.pull.label', profileMenu: 'actions.pull.label' },
@@ -67,8 +93,8 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'repos.menu.status.label' },
   { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository', tui: 'repos.menu.sync.label' },
   { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote', tui: 'repos.menu.pr.label' },
-  { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label' },
-  { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label' }
+  { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label', agent: 'never' },
+  { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label', agent: 'never' }
 ];
 
 /** Options every command accepts. */

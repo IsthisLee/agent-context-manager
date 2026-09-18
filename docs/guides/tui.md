@@ -1,7 +1,7 @@
 # TUI로 쓰기
 
 <!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: 89d02cb1904e9c38506976cc3c7239780ba1e45b53198cb23e5777c88af4de45 -->
+<!-- agctx-doc-sources-sha256: 6eada2bfcc25043575fd8996ea0a629dc500eb0b18d6f2e690a8be4efe83860d -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서에 실은 화면은 실제로 실행한 결과에서 긴 경로만 `/work`로 바꾼 것이다. 대부분 표시 언어를 영어로 두고 찍었으며, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 

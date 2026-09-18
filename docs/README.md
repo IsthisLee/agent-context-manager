@@ -121,6 +121,7 @@
   - [ADR 0027: 출력 스타일은 프로필이 담지 않음](adr/0027-no-output-styles.md)
   - [ADR 0028: 지침 항목은 켜고 끄는 두 값만 받음](adr/0028-guidance-on-off.md)
   - [ADR 0029: 에이전트를 CLI·TUI와 같은 계약 아래 둠](adr/0029-agent-surface-contract.md)
+  - [ADR 0030: 에이전트용 스킬은 한국어로 씀](adr/0030-korean-skills.md)
 
 저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
 

@@ -186,11 +186,12 @@ agctx's implementation is managed in stages around where the shared context live
 
 ## Open-source participation
 
-- [Contributing guide](https://github.com/IsthisLee/agent-context-manager/blob/main/CONTRIBUTING.md)
-- [Security policy](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md)
-- [Code of conduct](https://github.com/IsthisLee/agent-context-manager/blob/main/CODE_OF_CONDUCT.md)
+This is a personal project, so there is no separate contribution process. If something blocks you or needs fixing, open an issue.
+
 - [Report an issue](https://github.com/IsthisLee/agent-context-manager/issues)
+- [Security policy](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md) — report a vulnerability through the path described there, not in an issue
+- [Development rules](https://github.com/IsthisLee/agent-context-manager/blob/main/AGENTS.md) — the rules this repository follows when changing code and documentation
 
 ---
 
-[Apache License 2.0](LICENSE) · Built with Codex, Claude Code, and Antigravity.
+[MIT License](LICENSE) · Built with Codex, Claude Code, and Antigravity.

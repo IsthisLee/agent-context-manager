@@ -111,7 +111,7 @@ agent-context-manager/
 ├── CONTRIBUTING.md              # 기여 절차와 품질 게이트
 ├── SECURITY.md                  # 보안 신고·안전한 사용 정책
 ├── CODE_OF_CONDUCT.md           # 커뮤니티 행동 규범
-├── LICENSE                      # Apache-2.0 라이선스
+├── LICENSE                      # MIT 라이선스
 ├── package.json                 # npm 패키지·CLI·스크립트 정의
 ├── pnpm-lock.yaml               # 저장소 개발 의존성 잠금
 ├── tsconfig.json                # src·evals·tools 형식 검사 설정(파일을 만들지 않음)

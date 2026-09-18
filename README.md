@@ -188,11 +188,12 @@ agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 
 
 ## 공개 프로젝트 참여
 
-- [기여 가이드](https://github.com/IsthisLee/agent-context-manager/blob/main/CONTRIBUTING.md)
-- [보안 정책](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md)
-- [행동 규범](https://github.com/IsthisLee/agent-context-manager/blob/main/CODE_OF_CONDUCT.md)
+개인 프로젝트라 기여 절차를 따로 두지 않습니다. 쓰면서 막히거나 고칠 것을 찾으면 이슈로 알려 주세요.
+
 - [이슈 제보](https://github.com/IsthisLee/agent-context-manager/issues)
+- [보안 정책](https://github.com/IsthisLee/agent-context-manager/blob/main/SECURITY.md) — 취약점은 이슈 대신 여기 적힌 경로로 알려 주세요
+- [개발 규약](https://github.com/IsthisLee/agent-context-manager/blob/main/AGENTS.md) — 이 저장소에서 코드와 문서를 고칠 때 따르는 규칙
 
 ---
 
-[Apache License 2.0](LICENSE) · Built with Codex, Claude Code, and Antigravity.
+[MIT License](LICENSE) · Built with Codex, Claude Code, and Antigravity.

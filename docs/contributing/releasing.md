@@ -15,7 +15,7 @@
 
 ### 릴리스 전 점검
 
-- GitHub repository가 Public이며 README·License·Contributing·Code of Conduct·Security가 실제 화면에서 노출되는지 확인한다.
+- GitHub repository가 Public이며 README·License·Security가 실제 화면에서 노출되는지 확인한다. 기여 안내와 행동 규범은 두지 않는다([ADR 0031](../adr/0031-drop-open-source-process-files.md)).
 - `repository.url`이 실제 공개 저장소 URL과 일치하는지 확인한다.
 - npm에서 패키지 이름·scope 소유권과 public package 게시 권한을 확인한다.
 - npm trusted publisher가 정확한 저장소와 `.github/workflows/publish.yml`에 연결되어 있는지 확인한다.
@@ -64,16 +64,14 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 - Dependabot은 npm 의존성과 GitHub Actions 참조를 주기적으로 확인한다.
 - 공개 저장소의 PR에는 Dependency Review를 활성화하고, 취약한 의존성 도입 여부를 검토한다.
 - CodeQL workflow는 `javascript-typescript`와 `actions` 두 언어를 매트릭스로 돌려 security-extended 쿼리로 분석한다. GitHub Actions는 자기 쿼리 팩을 가진 별도 언어이므로 매트릭스에 넣지 않으면 워크플로 파일이 추출만 되고 검사되지 않는다.
-- OpenSSF Scorecard workflow는 공급망 보안 지표를 주기적으로 계산해 결과를 code scanning에 업로드하고 OpenSSF API에 게시한다. README에는 점수 뱃지를 두지 않으므로, 점수는 securityscorecards.dev의 viewer에서 본다.
 - GitHub의 secret scanning, push protection, code scanning을 저장소 설정에서 활성화한다.
 - `SECURITY.md`의 비공개 신고 절차를 통해 취약점을 접수한다.
-- GitHub Actions는 필요한 최소 권한만 선언한다. 배포 workflow와 Scorecard workflow가 `id-token: write`를 사용한다(각각 npm trusted publishing과 결과 게시).
+- GitHub Actions는 필요한 최소 권한만 선언한다. `id-token: write`를 쓰는 것은 npm 신뢰된 게시를 하는 배포 workflow 하나다.
 - 모든 외부 GitHub Action은 검토한 버전의 불변 commit SHA로 고정하고 버전 주석을 함께 둔다. 모든 checkout 단계에서 `persist-credentials: false`를 사용해 workflow 작업 공간에 GitHub token을 유지하지 않는다.
-- [`CODEOWNERS`](../../.github/CODEOWNERS)는 기본 브랜치와 저장소 자동화 변경의 기본 검토 소유자를 지정한다. 실제 병합 보호와 required review 적용은 GitHub 저장소 설정에서 별도로 활성화한다.
 
 ## 기여와 변경 관리
 
-기여자는 [`CONTRIBUTING.md`](../../CONTRIBUTING.md), [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md), [`SECURITY.md`](../../SECURITY.md)를 따른다. 사용자에게 보이는 CLI·TUI·파일 형식·설치·보안 변경은 README, 관련 정본 문서, `CHANGELOG.md`를 같은 변경에서 갱신한다. 되돌리기 어려운 공개 계약은 [`docs/adr/`](../adr/)에 기록한다.
+저장소를 고치는 규칙은 [`AGENTS.md`](../../AGENTS.md)에 있고, 취약점 신고는 [`SECURITY.md`](../../SECURITY.md)의 경로를 따른다. 기여 안내와 행동 규범은 두지 않는다([ADR 0031](../adr/0031-drop-open-source-process-files.md)). 사용자에게 보이는 CLI·TUI·파일 형식·설치·보안 변경은 README, 관련 정본 문서, `CHANGELOG.md`를 같은 변경에서 갱신한다. 되돌리기 어려운 공개 계약은 [`docs/adr/`](../adr/)에 기록한다.
 
 ## 병합 정책
 

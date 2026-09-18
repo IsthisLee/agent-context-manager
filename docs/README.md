@@ -122,7 +122,8 @@
   - [ADR 0028: 지침 항목은 켜고 끄는 두 값만 받음](adr/0028-guidance-on-off.md)
   - [ADR 0029: 에이전트를 CLI·TUI와 같은 계약 아래 둠](adr/0029-agent-surface-contract.md)
   - [ADR 0030: 에이전트용 스킬은 한국어로 씀](adr/0030-korean-skills.md)
+  - [ADR 0031: 공개 운영 파일을 줄이고 라이선스를 MIT로 바꿈](adr/0031-drop-open-source-process-files.md)
 
-저장소 공개 운영 파일: [`CONTRIBUTING.md`](../CONTRIBUTING.md) · [`SECURITY.md`](../SECURITY.md) · [`CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [이슈 템플릿](../.github/ISSUE_TEMPLATE/)
+저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 
 문서 변경 시 루트 [`AGENTS.md`](../AGENTS.md)와 [`구현 계약`](discussion/architecture/topics/implementation-contracts.md)의 규칙을 따른다. 논의 문서의 계약을 구현하면 같은 변경에서 그 문서에 [구현 기록](discussion/architecture/topics/implementation-contracts.md#구현-기록)을 남긴다.

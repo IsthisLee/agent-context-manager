@@ -713,6 +713,12 @@
 
 `agctx explain`의 로드 규칙, `agctx verify`의 세션 기록 판독과 probe, 에이전트용 스킬 배포([ADR 0019](adr/0019-explain-verify-and-agent-skills.md))가 기대는 외부 사실이다. Antigravity 규칙 파일의 `trigger` 실측은 [에이전트 규칙 파일 로드 근거](#에이전트-규칙-파일-로드-근거)에 있다.
 
+- **공식 문서(Claude Code 메모리, 2026-09-19 갱신 확인):** Claude Code는 `AGENTS.md`를 프로젝트 지침으로 직접 읽을 수 있고, 이때 `CLAUDE.md`나 가져오기가 필요 없다. 직접 읽기는 v2.1.277 이상이 필요하다. `@AGENTS.md`를 가져오는 `CLAUDE.md`는 그대로 둬도 두 번 읽지 않는다. 이 문서의 아래 기록 가운데 "`CLAUDE.md`가 가져오지 않는 `AGENTS.md`는 읽지 않는다"는 이전 버전 기준이다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-19)
+
+  > "Claude Code can read AGENTS.md as your project instructions, so a repository already set up for other coding agents works without adding a CLAUDE.md, an import, or a setting."
+  >
+  > 번역: Claude Code는 AGENTS.md를 프로젝트 지침으로 읽을 수 있으므로, 다른 코딩 에이전트용으로 이미 설정된 저장소는 CLAUDE.md나 가져오기, 설정을 더하지 않아도 동작합니다.
+
 - **공식 문서(Codex 지침 파일):** Codex는 Codex 홈(기본 `~/.codex`)에서 `AGENTS.override.md`가 있으면 그것을, 없으면 `AGENTS.md`를 읽는다. 프로젝트에서는 Git 저장소 루트부터 현재 작업 폴더까지 내려가며 폴더마다 `AGENTS.override.md`, `AGENTS.md`, `project_doc_fallback_filenames`에 적은 이름 순서로 찾고, 한 폴더에서 파일을 최대 하나만 넣는다. 파일은 루트부터 차례로 이어 붙이며 합산 크기가 `project_doc_max_bytes`(기본 32 KiB)에 닿으면 더 넣지 않는다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 지침 파일):** 작업 폴더와 그 위 모든 폴더의 `CLAUDE.md`·`CLAUDE.local.md`를 시작할 때 읽고, 작업 폴더 아래 폴더의 파일은 Claude가 그 폴더의 파일을 읽을 때 넣는다. 프로젝트 지침은 `./CLAUDE.md` 또는 `./.claude/CLAUDE.md`, 사용자 지침은 `~/.claude/CLAUDE.md`, 관리 정책 파일은 macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`, Linux·WSL `/etc/claude-code/CLAUDE.md`, Windows `C:\Program Files\ClaudeCode\CLAUDE.md`에 둔다. `.claude/rules/`에서 `paths` frontmatter가 없는 규칙은 시작할 때, 있는 규칙은 맞는 파일을 읽을 때 들어간다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 가져오기):** `@path` 가져오기는 가져오는 파일 기준 상대 경로로 풀리고 최대 네 단계까지 이어진다. 코드 블록과 코드 스팬 안의 `@`는 가져오지 않는다. 프로젝트 수준 파일이 작업 폴더 밖을 가져오면 처음 한 번 승인 창을 띄우며, 사용자 수준 파일(`~/.claude/CLAUDE.md`, `~/.claude/rules/`)의 가져오기는 묻지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
@@ -1066,6 +1072,12 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
   > "End the session by writing a git commit and progress update."
   >
   > 번역: git 커밋과 진행 기록 갱신으로 세션을 끝내세요.
+
+- **공식 자료(Anthropic 연구 글, 2026-03-23):** 진행 파일을 에이전트의 이동 가능한 장기 기억으로 쓰고, 현재 상태·끝낸 작업·실패한 접근과 그 이유·알려진 한계를 담으라고 한다. 실패한 접근이 없으면 다음 세션이 같은 막다른 길을 다시 시도한다. [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-Claude) (확인일: 2026-09-19)
+
+  > "The failed approaches are important—without them, successive sessions will re-attempt the same dead ends."
+  >
+  > 번역: 실패한 접근이 중요합니다. 이것이 없으면 다음 세션들이 같은 막다른 길을 다시 시도합니다.
 
 ## 비교 대상
 

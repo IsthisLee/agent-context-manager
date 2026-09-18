@@ -15,11 +15,22 @@
 | --- | --- | --- | --- | --- |
 | 1 | 논의 상태의 정본을 JSON 한 파일로 | [논의 문서 상태의 정본](docs/discussion/repository/topics/discussion-status-source.md) | 결정됨, 구현 전 | 상태 JSON과 색인 생성기를 만들고 `pnpm run check`에 연결한다. 같은 변경에서 `AGENTS.md`의 구현 기록 규칙, `implementation-contracts.md`, `repo-docs` 스킬 4단계를 고친다 |
 | 2 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 결정됨, 구현 전 | 그 문서의 "결정" 절 순서대로 구현하고 두 지표를 다시 잰다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
+| 3 | Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
+| 4 | `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 28줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
+
+## 버린 접근
+
+같은 막다른 길을 다시 시도하지 않도록 이유와 함께 남긴다. 자세한 근거는 링크한 정본에 있다.
+
+- 문서를 심볼 단위로 핀하는 방법: 줄 번호가 밀리는 변화를 놓친다([검토한 대안](docs/discussion/repository/topics/doc-gate-pin-scope.md#검토한-대안)).
+- 규칙 파일을 폴더별 `AGENTS.md`로 나누는 방법: 루트에서 시작한 세션에 전달되지 않았다(PR #52).
+- 논의 상태를 주제 문서에서 생성하거나 색인에만 쓰는 방법: [검토한 대안](docs/discussion/repository/topics/discussion-status-source.md#검토한-대안).
 
 ## 최근 기록
 
 최근 10줄까지만 둔다. 더 오래된 이력은 git 기록으로 본다.
 
+- 2026-09-19: 진행 파일에 버린 접근 절과 작업 두 개를 더했다.
 - 2026-09-19: 진행 파일을 두고, 논의 상태의 정본과 문서 게이트 개편의 결정을 각 논의 문서에 기록했다.
 - 2026-09-19: 라이선스를 MIT로 바꾸고 공개 운영 파일을 줄였다 (#65).
 - 2026-09-19: 에이전트용 스킬을 한국어로 다시 썼다 (#64).
@@ -29,5 +40,6 @@
 ## 갱신 규칙
 
 - 세션을 끝낼 때 "진행 중인 작업"의 상태와 다음에 할 일, "최근 기록"을 고쳐 그 세션의 마지막 커밋에 함께 넣는다.
+- 해 보고 버린 접근은 이유와 함께 "버린 접근"에 남긴다.
 - 끝난 작업은 표에서 지우고 "최근 기록"에 한 줄로 옮긴다.
 - 결정·근거·측정값은 이 파일에 쓰지 않는다. 정본 문서에 쓰고 여기서는 링크한다.

@@ -307,7 +307,7 @@
 
 ### 검증 지침의 근거
 
-- **좁은 확인을 먼저 실행하고 끝내기 전에 넓은 확인을 실행한다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-16)
+- **가장 작은 확인을 먼저 실행하고, 일련의 변경을 마쳤을 때 타입 검사를 한다.** [Claude Code best practices](https://code.claude.com/docs/en/best-practices) (확인일: 2026-09-18)
 
   > "Be sure to typecheck when you're done making a series of code changes" / "Prefer running single tests, and not the whole test suite, for performance"
   >

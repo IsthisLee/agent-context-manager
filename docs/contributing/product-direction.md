@@ -22,7 +22,7 @@
 ### Goal 2: 프로필의 개발 지침을 사용자가 선택해 구성한다
 
 - **Why:** 안정적인 기본 환경을 제공하면서도 회사·팀·프로젝트에 필요한 지침만 선택할 수 있도록 하기 위해서다.
-- **How:** `agctx profile create <name>`으로 프로필을 생성한 뒤 `agctx profile setup <name>`에서 작업 흐름, TDD, 변경 검토, 검증, 지침 파일, 보안 지침을 선택하고 프로필의 `AGENTS.md`에 반영한다.
+- **How:** `agctx profile create <name>`으로 프로필을 생성한 뒤 `agctx profile setup <name>`에서 작업 흐름, 맥락 관리, TDD, 변경 검토, 검증, 지침 파일, 문서화, 보안, 믿을 수 없는 입력, 응답 언어 지침을 선택하고 프로필의 `AGENTS.md`에 반영한다.
 
 외부 연구와 사례는 [`references.md`](../references.md)에서 검토한다. 외부 자료는 선택의 근거이며, 실제 기본 지침의 정본은 프로필의 `AGENTS.md`와 패키지 템플릿이다. 외부 자료는 링크한 문서에서 주장을 확인한 날짜와 함께 기록한다.
 

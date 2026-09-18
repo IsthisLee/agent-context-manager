@@ -63,8 +63,8 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 
 - Dependabot은 npm 의존성과 GitHub Actions 참조를 주기적으로 확인한다.
 - 공개 저장소의 PR에는 Dependency Review를 활성화하고, 취약한 의존성 도입 여부를 검토한다.
-- CodeQL workflow는 JavaScript 변경을 security-extended 쿼리로 분석한다.
-- OpenSSF Scorecard workflow는 공급망 보안 지표를 주기적으로 계산해 결과를 code scanning에 업로드하고 OpenSSF API에 게시하며 README의 자동 계산 점수 뱃지를 갱신한다. 뱃지는 기본 브랜치에서 workflow가 처음 성공적으로 게시된 뒤에 값을 표시한다.
+- CodeQL workflow는 `javascript-typescript`와 `actions` 두 언어를 매트릭스로 돌려 security-extended 쿼리로 분석한다. GitHub Actions는 자기 쿼리 팩을 가진 별도 언어이므로 매트릭스에 넣지 않으면 워크플로 파일이 추출만 되고 검사되지 않는다.
+- OpenSSF Scorecard workflow는 공급망 보안 지표를 주기적으로 계산해 결과를 code scanning에 업로드하고 OpenSSF API에 게시한다. README에는 점수 뱃지를 두지 않으므로, 점수는 securityscorecards.dev의 viewer에서 본다.
 - GitHub의 secret scanning, push protection, code scanning을 저장소 설정에서 활성화한다.
 - `SECURITY.md`의 비공개 신고 절차를 통해 취약점을 접수한다.
 - GitHub Actions는 필요한 최소 권한만 선언한다. 배포 workflow와 Scorecard workflow가 `id-token: write`를 사용한다(각각 npm trusted publishing과 결과 게시).

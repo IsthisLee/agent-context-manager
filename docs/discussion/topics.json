@@ -76,13 +76,13 @@
     {
       "stage": 7,
       "file": "guidance-level-semantics.md",
-      "title": "지침 적용 수준의 의미 정의",
-      "titleEn": "guidance level semantics",
+      "title": "지침 항목 켜고 끄기",
+      "titleEn": "turning guidance items on and off",
       "importance": "Medium",
       "prerequisites": [
         2
       ],
-      "outcome": "off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출",
+      "outcome": "지침 항목마다 on·off 두 값만 받고, 켠 항목만 산출물에 넣음",
       "status": "Implemented"
     },
     {

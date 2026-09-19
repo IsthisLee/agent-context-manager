@@ -22,7 +22,6 @@
 지금 알고 있는 약점이다. 수치와 근거는 링크한 정본에 있다.
 
 - 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 진행 중인 작업 1번이 이 한계를 다룬다.
-- 논의 주제의 중요도는 `topics.json`과 주제 문서의 제안 요약 두 곳에 쓰고 서로 대조하지 않는다. 7단계의 색인 제목과 핵심 결과는 PR #61 전의 표현이라 README 목록에도 그대로 나온다([제약](docs/discussion/repository/topics/discussion-status-source.md#구현-기록-상태-json과-생성기)).
 - README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 진행 중인 작업 2번이 다룬다.
 
 ## 버린 접근
@@ -37,7 +36,7 @@
 
 최근 10줄까지만 둔다. 더 오래된 이력은 git 기록으로 본다.
 
-- 2026-09-19: 논의 상태의 정본을 `docs/discussion/topics.json` 한 파일로 모으고, 상태 줄·색인·README 목록을 생성하게 했다.
+- 2026-09-19: 논의 상태의 정본을 `docs/discussion/topics.json` 한 파일로 모으고, 상태 줄·색인·README 목록을 생성하게 했다. 중요도 대조 검사를 더하고 7단계의 옛 이름을 고쳤다.
 - 2026-09-19: 0.4.0을 릴리스했다 (#66).
 - 2026-09-19: 진행 파일에 알려진 한계 절을 더했다.
 - 2026-09-19: 진행 파일에 버린 접근 절과 작업 두 개를 더했다.

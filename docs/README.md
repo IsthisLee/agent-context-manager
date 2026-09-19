@@ -85,6 +85,7 @@
 | `docs/contributing/adapters.md`                  | 새 에이전트를 지원하는 절차                                                                                                           |
 | `docs/discussion/architecture/`                  | 패키지 기능의 구현 단계별 논의와 계약: 아직 채택되지 않았거나 구현·검증 중인 주제                                                     |
 | `docs/discussion/repository/`                    | 저장소 운영(문서 게이트·CI·PR 리뷰·기여 절차)의 논의와 계약                                                                           |
+| `docs/discussion/topics.json`                    | 논의 주제의 상태·중요도·선행 단계·핵심 결과의 정본. 주제 문서의 상태 줄, 색인 표, README 상태 목록은 여기서 생성                      |
 | `docs/adr/`                                      | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력                                                                                        |
 | `docs/references.md`                             | 외부 근거와 참고 자료                                                                                                                 |
 | `CHANGELOG.md`                                   | 사용자 영향 변경과 릴리스 버전 이력                                                                                                   |

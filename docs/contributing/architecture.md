@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 9bd5fc2cdc5b971244ef751ea660058023362df49c8a5bd3b7915756d144656c -->
+<!-- agctx-doc-sources-sha256: a6b0f3a43544d6cdf86e2a9ea8b79c94c87210a7539545703cae0cf4910df152 -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -86,10 +86,13 @@ agent-context-manager/
 │   ├── build.ts                 # src/를 dist/로 컴파일(prepack에서 실행)
 │   ├── check-docs.ts            # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
 │   ├── check-release.ts         # 릴리스 태그·버전·CHANGELOG 일치 검사
-│   ├── discussion-record.ts     # Implemented 논의 문서에 구현 기록 제목이 있는지 판정
+│   ├── discussion-record.ts     # 논의 문서의 상태와 구현 기록 제목이 맞는지 판정
 │   ├── discussion-roots.ts      # docs/discussion 아래에서 topics/를 가진 논의 영역 목록
+│   ├── discussion-topics.ts     # 논의 주제 상태의 정본 docs/discussion/topics.json 읽기와 필드 검사
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
+│   ├── doc-sources.ts           # 핀 범위 규칙과, 핀한 문서를 해시할 때 뺄 해시 줄·생성 블록
+│   ├── generate-discussion-status.ts # topics.json에서 논의 상태 줄·색인 표·README 목록 생성(--check로 검사)
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
 │   ├── generate-skills.ts       # 명령 등록부에서 스킬의 명령 목록 생성(--check로 검사)
 │   ├── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행
@@ -102,7 +105,7 @@ agent-context-manager/
 │   ├── reference/               # CLI·종료 코드·파일 형식·지원 에이전트·문제 해결
 │   ├── faq.md                   # 자주 묻는 질문
 │   ├── contributing/            # 제품 방향·아키텍처·테스트·릴리스·문서 게이트·에이전트 추가
-│   ├── discussion/              # 논의 영역별 계획·계약(architecture: 패키지 기능, repository: 저장소 운영)
+│   ├── discussion/              # 논의 영역별 계획·계약(architecture: 패키지 기능, repository: 저장소 운영)과 상태 정본 topics.json
 │   ├── adr/                     # 장기 설계 결정 기록
 │   └── references.md            # 외부 근거와 비교 자료
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본

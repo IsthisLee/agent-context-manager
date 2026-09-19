@@ -34,3 +34,16 @@ const RECORDED_HASH = /<!--\s*agctx-doc-sources-sha256:\s*(?:[0-9a-f]{64}|PENDIN
 export function withoutRecordedHash(text: string): string {
   return text.replace(RECORDED_HASH, '<!-- agctx-doc-sources-sha256 -->');
 }
+
+/** A block between `<!-- agctx:generated:<name>:start -->` and its end marker, markers included. */
+const GENERATED_BLOCK = /(<!-- agctx:generated:(\S+):start -->)[\s\S]*?(<!-- agctx:generated:\2:end -->)/g;
+
+/**
+ * A pinned document as the gate hashes it, without the contents of its
+ * generated blocks. Evaluations already compare those blocks with their data,
+ * so regenerating the status list in one README does not fail the README that
+ * pins it.
+ */
+export function withoutGeneratedBlocks(text: string): string {
+  return text.replace(GENERATED_BLOCK, '$1\n$3');
+}

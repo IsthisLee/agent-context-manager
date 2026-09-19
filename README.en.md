@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
-<!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.md -->
-<!-- agctx-doc-sources-sha256: 5139a790bf072ef0b71427adcce14e0c101be5e24e21f65949754841689be317 -->
+<!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, README.md -->
+<!-- agctx-doc-sources-sha256: 3eba4c211328a3141015def3538581b1ddff44fd6c8ef8f40a54f8fb09360796 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -167,11 +167,13 @@ Refine such a draft by hand, then place it in the project extension area of `AGE
 
 ## Architecture direction and progress
 
-agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) is the canonical list of topics and their status. The commands you can use today are listed under [Core features](#core-features).
+agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) lists the topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
-- **Implemented:** Profile model and store, setup and guidance options, guidance level semantics, project application, agent artifact synchronization, agent rule discovery, Git-based Profile management
-- **In progress:** use through natural-language requests (skills, `--json`, `explain`, and `verify` work; evaluating agent scenarios against the published package remains), safe synchronization of managed artifacts (managed-area hashes, dry-run, and conflict recovery work; recording who owns each file and deciding how to treat existing files without agctx markers remain), evidence criteria and length budget for default guidance
-- **Proposed:** Profile configuration surface expansion (MCP, skills, subagents, hooks), choosing agents and context types per repository, creating a Profile from an existing repository, scope expansion and guidance composition. These are not current behavior yet.
+<!-- agctx:generated:discussion-status:start -->
+- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, guidance level semantics, agent rule discovery, Git-based Profile management
+- **In progress:** use through natural-language requests, safe synchronization of managed artifacts, evidence criteria and length budget for default guidance
+- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository. These are not current behavior yet.
+<!-- agctx:generated:discussion-status:end -->
 
 ## Documentation
 

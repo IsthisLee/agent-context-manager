@@ -1,6 +1,8 @@
 # 기본 지침의 근거 기준과 분량 예산
 
+<!-- agctx:generated:status:start -->
 **상태:** Implementing
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

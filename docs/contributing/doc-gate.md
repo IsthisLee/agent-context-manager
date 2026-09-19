@@ -1,7 +1,7 @@
 # 문서 게이트
 
-<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 08ea0448dc11b93b7e8642b036e964f06fce75c32f144a096091c430afb8402c -->
+<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts -->
+<!-- agctx-doc-sources-sha256: 0e71aacfd1a40e040f3b5b6a56b7558bc5132961d07628ec6eacec562ae377e0 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -24,7 +24,7 @@ flowchart TD
 
 - 마커는 `<!-- agctx-doc-sources: <쉼표로 구분한 경로> -->`와 `<!-- agctx-doc-sources-sha256: <64자리 hex> -->` 두 줄이다. 경로에는 파일뿐 아니라 디렉터리도 넣을 수 있다. 디렉터리를 넣으면 그 아래 모든 파일을 해싱하므로 안에서 파일이 추가·삭제·수정되면 목록을 고치지 않아도 게이트가 걸린다.
 - 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.ts --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
-- 문서도 소스로 핀할 수 있다. 핀한 문서의 `agctx-doc-sources-sha256` 줄은 해싱에서 빼므로(`withoutRecordedHash`, `tools/doc-sources.ts`), 그 문서를 다시 stamp해도 핀한 쪽은 실패하지 않고 본문이 바뀔 때만 실패한다. `README.md`와 `README.en.md`는 이 방식으로 서로를 핀한다. 한 언어의 README를 고치면 다른 언어 README가 실패하므로, 두 파일을 같은 내용으로 맞춘 뒤 stamp한다.
+- 문서도 소스로 핀할 수 있다. 핀한 문서의 `agctx-doc-sources-sha256` 줄과 생성 블록의 내용은 해싱에서 빼므로(`withoutRecordedHash`·`withoutGeneratedBlocks`, `tools/doc-sources.ts`), 그 문서를 다시 stamp하거나 생성 블록을 다시 생성해도 핀한 쪽은 실패하지 않고 사람이 쓴 본문이 바뀔 때만 실패한다. 생성 블록은 평가가 원본 데이터와 대조하므로 해시로 다시 지키지 않는다. `README.md`와 `README.en.md`는 이 방식으로 서로를 핀한다. 한 언어의 README를 고치면 다른 언어 README가 실패하므로, 두 파일을 같은 내용으로 맞춘 뒤 stamp한다.
 - 인용하는 소스가 늘거나 줄면 마커의 목록도 같은 변경에서 갱신한다. 다만 디렉터리로 고정한 범위 안에서 파일이 늘거나 줄면 목록 갱신 없이 자동 반영된다.
 - stamp만 다시 기록한 변경을 자동으로 잡아내는 리뷰는 아직 구현되지 않았다. 계획은 [문서 정확성 자동 리뷰 논의](../discussion/repository/topics/doc-accuracy-review.md)에 있다.
 
@@ -52,3 +52,33 @@ flowchart TD
 - `evals/reference-docs.test.ts`가 생성 결과와 파일 내용이 같은지, 명령마다 자기 절 안에 사용법 블록이 있는지, 명령 표가 등록부의 인터페이스를 빠짐없이 적는지 검사한다. 명령·옵션·종료 코드를 바꾸고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
 - 표지 밖의 설명·예시·표는 사람이 쓰며, 해시 게이트가 다시 읽게 한다.
 - 새 명령을 등록하면 CLI Reference에 그 명령의 `###` 절과 사용법 표지를 먼저 만든 뒤 생성한다.
+
+## 생성하는 논의 상태
+
+논의 주제의 상태·중요도·선행 단계·핵심 결과는 [`docs/discussion/topics.json`](../discussion/topics.json) 한 파일에만 쓴다. 상태를 보여 주는 다른 자리는 모두 이 파일에서 생성하므로, 상태를 바꿀 때 사람이 고치는 파일은 이 파일 하나다. 다음은 그 파일의 첫 항목이다.
+
+```json
+{
+  "stage": 1,
+  "file": "profile-model.md",
+  "title": "프로필 모델과 저장소",
+  "titleEn": "Profile model and store",
+  "importance": "Critical",
+  "outcome": "named 프로필, scope, 경로, 소유권 계약",
+  "status": "Implemented"
+}
+```
+
+`node tools/generate-discussion-status.ts`가 이 파일로 아래 표지 사이를 다시 쓰고, `--check`를 주면 다를 때 1로 끝난다.
+
+| 생성하는 곳 | 표지 이름 | 내용 |
+| --- | --- | --- |
+| 주제 문서 맨 위 | `status` | `**상태:** <status>` 한 줄 |
+| 영역 색인 `docs/discussion/<영역>/README.md` | `topics` | 주제 표. `stage`가 있는 영역은 단계와 선행 단계 열을 더한다 |
+| 아키텍처 색인의 단계 그림 | `stage-classes` | 단계 노드 `S<단계>`를 상태별로 칠하는 `class` 줄 |
+| `README.md`·`README.en.md` | `discussion-status` | architecture 영역의 구현됨·구현 중·제안 단계 목록. 영어판은 `titleEn`을 쓴다 |
+
+- 최상위 키는 논의 영역 이름이고, 배열 순서가 색인 표의 행 순서다. `stage`·`titleEn`·`importance`·`prerequisites`는 필요한 주제에만 둔다. 영어 README에 나오는 주제에 `titleEn`이 없으면 생성기가 실패한다.
+- mermaid 안에서는 HTML 주석을 쓸 수 없으므로 단계 그림의 표지는 `%% agctx:generated:stage-classes:start`와 `%% agctx:generated:stage-classes:end`다. 그림의 노드·화살표와 그림 아래 설명은 사람이 쓴다. 새 단계를 더하면 그림에 `S<단계>` 노드를 먼저 만든다.
+- `evals/discussion-status.test.ts`가 생성 결과와 파일 내용이 같은지 검사하므로, `topics.json`을 고치고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
+- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES` 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.

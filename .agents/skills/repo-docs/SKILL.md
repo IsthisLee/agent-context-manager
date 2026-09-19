@@ -40,10 +40,11 @@ metadata:
 
 논의 문서의 계약을 구현했거나 구현하면서 계약이 바뀌었으면 같은 변경에서 갱신한다.
 
-- 그 문서의 `**상태:**`
+- `docs/discussion/topics.json`에서 그 주제의 `status`
 - 구현 기록(`#### 구현 기록: <범위>`)
-- 그 주제가 속한 영역의 색인(`docs/discussion/<영역>/README.md`)의 상태
 - 제안 요약의 `권장 다음 작업`
+
+그다음 `node tools/generate-discussion-status.ts`로 주제 문서의 상태 줄, 영역 색인, README 상태 목록을 다시 생성한다. 이 세 곳은 손으로 고치지 않는다. 새 주제를 더하면 `topics.json`에 항목을 넣고, 주제 문서의 제목 아래에 `<!-- agctx:generated:status:start -->`와 `<!-- agctx:generated:status:end -->` 표지를 둔 뒤 생성한다.
 
 형식과 기록 시점의 정본은 `docs/discussion/architecture/topics/implementation-contracts.md`다.
 

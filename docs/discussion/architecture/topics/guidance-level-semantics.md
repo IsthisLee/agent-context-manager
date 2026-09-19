@@ -1,6 +1,8 @@
 # 지침 적용 수준(off/recommended/strict)의 의미 정의
 
+<!-- agctx:generated:status:start -->
 **상태:** Implemented
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

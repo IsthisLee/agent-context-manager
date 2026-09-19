@@ -1,6 +1,8 @@
 # Git 기반 프로필 관리
 
+<!-- agctx:generated:status:start -->
 **상태:** Implemented
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

@@ -8,6 +8,7 @@
 
 ## 단계
 
+<!-- agctx:generated:topics:start -->
 | 단계 | 주제 | 중요도 | 선행 단계 | 핵심 결과 | 상태 |
 | --- | --- | --- | --- | --- | --- |
 | 1 | [프로필 모델과 저장소](topics/profile-model.md) | Critical | — | named 프로필, scope, 경로, 소유권 계약 | Implemented |
@@ -25,8 +26,11 @@
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
+<!-- agctx:generated:topics:end -->
 
 > **중요도**는 각 토픽의 제안 요약을 요약한 값이다: Critical(다른 단계의 기반·데이터 안전 경계), High(사용자 경계·전달 경로), Medium(계약 확장이나 기존 모델 유지). **선행 단계**는 해당 제안이 의존하는 단계 번호다. 근거와 세부는 각 토픽 문서의 `## 제안 요약`을 본다.
+
+표와 아래 그림의 색은 [`topics.json`](../topics.json)에서 `node tools/generate-discussion-status.ts`로 생성한다. 상태를 바꾸려면 표가 아니라 그 파일을 고친다.
 
 ## 단계 의존 관계
 
@@ -61,9 +65,11 @@ flowchart LR
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
+  %% agctx:generated:stage-classes:start
   class S1,S2,S3,S4,S7,S8,S11 done
-  class S5,S6 doing
-  class S9,S10,S12,S13,S14 todo
+  class S5,S6,S12 doing
+  class S9,S10,S13,S14 todo
+  %% agctx:generated:stage-classes:end
 ```
 
 화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다. 13단계는 2026-09-16 제품 소유자 결정으로 9단계의 MCP보다 먼저 구현한다.

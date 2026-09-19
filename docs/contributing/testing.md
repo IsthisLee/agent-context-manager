@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
-<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 4f2b5efb36825619070099514328d72858c5e46b87e4b470762e925c462e340c -->
+<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, evals/doc-examples.test.ts -->
+<!-- agctx-doc-sources-sha256: 458ce58e2d2bccd7541b7db779cbb8e869fea1a72595451e33f3d078216f0e7a -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 
@@ -26,6 +26,7 @@ pnpm run audit
 - 빠른 시작의 명령 예시는 `evals/doc-examples.test.ts`가 실제 출력과 대조한다. 명령 출력을 바꿨다면 문서의 예시를 실제 출력으로 고친다.
 - 에이전트 관련 평가는 `HOME`·`USERPROFILE`·`CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 임시 폴더로 바꿔 이 컴퓨터의 사용자 파일과 세션 기록이 섞이지 않게 한다.
 - 명령 등록부를 바꾸면 `node tools/generate-skills.ts`와 `node tools/generate-reference.ts`로 스킬의 명령 목록과 레퍼런스의 생성 블록을 다시 만든다. 다르면 `evals/skills.test.ts`와 `evals/reference-docs.test.ts`가 실패한다.
+- `docs/discussion/topics.json`을 바꾸면 `node tools/generate-discussion-status.ts`로 논의 상태 줄·색인·README 목록을 다시 만든다. 다르면 `evals/discussion-status.test.ts`가 실패한다.
 
 ## CI 환경
 

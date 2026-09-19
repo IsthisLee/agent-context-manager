@@ -5,10 +5,11 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
-import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
+import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
+import { readTopics, STATUSES, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
-import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutRecordedHash } from './doc-sources.ts';
+import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
 import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -116,61 +117,77 @@ function checkDiscussionStatuses() {
     errors.push('docs/discussion/architecture/topics: must exist');
     return;
   }
-  for (const area of areas) checkDiscussionArea(area);
+  let topics: DiscussionTopics;
+  try {
+    topics = readTopics(root);
+  } catch (error) {
+    errors.push(`${TOPICS_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+    return;
+  }
+  for (const area of Object.keys(topics).filter(area => !areas.includes(area))) {
+    errors.push(`${TOPICS_FILE}: ${area} has no docs/discussion/${area}/topics folder`);
+  }
+  for (const area of areas) checkDiscussionArea(area, topics[area]);
 }
 
-function checkDiscussionArea(area: string) {
+// The status of each topic comes from topics.json. The status lines, indexes
+// and README lists are generated from it, and evals/discussion-status.test.ts
+// checks that they are up to date.
+function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined) {
   const discussionDir = path.join(root, 'docs', 'discussion', area);
   const topicsDir = path.join(discussionDir, 'topics');
-  const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
   const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
-  const indexPath = path.join(discussionDir, 'README.md');
-  if (!fs.existsSync(indexPath)) {
+  if (!fs.existsSync(path.join(discussionDir, 'README.md'))) {
     errors.push(`docs/discussion/${area}/README.md: a discussion area needs an index listing its topics and their status`);
     return;
   }
-  const index = fs.readFileSync(indexPath, 'utf8');
+  if (!Array.isArray(listed)) {
+    errors.push(`${TOPICS_FILE}: add the ${area} area with its topics`);
+    return;
+  }
 
   for (const name of fs.readdirSync(discussionDir).filter(name => name.endsWith('.md') && name !== 'README.md')) {
     errors.push(`docs/discussion/${area}/${name}: move topic documents into topics/`);
   }
 
+  for (const topic of listed) {
+    for (const problem of topicFieldErrors(topic)) errors.push(`${TOPICS_FILE}: ${area}/${topic.file}: ${problem}`);
+  }
+
   const topicFiles = fs.readdirSync(topicsDir).filter(name => name.endsWith('.md')).sort();
-  const indexedTopics = [...index.matchAll(/\]\(topics\/([^\s)#]+\.md)\)/g)].map(match => match[1]);
   for (const name of topicFiles) {
-    const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
-    const match = content.match(/^\*\*상태:\*\* (.+)$/m);
-    if (!match || !allowed.has(match[1].trim())) {
-      errors.push(`docs/discussion/${area}/topics/${name}: use an allowed **상태:** value`);
+    const entries = listed.filter(topic => topic.file === name);
+    if (entries.length !== 1) {
+      errors.push(`${TOPICS_FILE}: ${area}/${name} must be indexed exactly once`);
+      continue;
+    }
+    const status = entries[0].status;
+    if (!STATUSES.includes(status)) {
+      errors.push(`${TOPICS_FILE}: ${area}/${name} needs an allowed status (${STATUSES.join(', ')})`);
       continue;
     }
 
-    if (requiresImplementationRecord(match[1].trim()) && !hasImplementationRecord(content)) {
-      errors.push(`docs/discussion/${area}/topics/${name}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+    const document = `docs/discussion/${area}/topics/${name}`;
+    const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
+    if (requiresImplementationRecord(status) && !hasImplementationRecord(content)) {
+      errors.push(`${document}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+    }
+    if (forbidsImplementationRecord(status) && hasImplementationRecord(content)) {
+      errors.push(`${document}: a topic with an implementation record is at least Implementing; update its status in ${TOPICS_FILE}`);
     }
 
-    if (['Proposed', 'Implementing'].includes(match[1].trim())) {
+    if (['Proposed', 'Implementing'].includes(status)) {
       for (const field of proposalSummaryFields) {
         if (!content.includes(`| ${field} |`)) {
-          errors.push(`docs/discussion/${area}/topics/${name}: missing proposal summary field (${field})`);
+          errors.push(`${document}: missing proposal summary field (${field})`);
         }
       }
     }
-
-    const occurrences = indexedTopics.filter(indexedName => indexedName === name).length;
-    if (occurrences !== 1) {
-      errors.push(`docs/discussion/${area}/README.md: ${name} must be indexed exactly once`);
-    }
-    const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
-    const indexStatus = indexRow?.split('|').map(cell => cell.trim()).filter(Boolean).at(-1);
-    if (indexStatus !== match[1].trim()) {
-      errors.push(`docs/discussion/${area}/README.md: status for ${name} must match its document`);
-    }
   }
 
-  for (const indexedName of new Set(indexedTopics)) {
-    if (!topicFiles.includes(indexedName)) {
-      errors.push(`docs/discussion/${area}/README.md: index references missing topic ${indexedName}`);
+  for (const topic of listed) {
+    if (!topicFiles.includes(topic.file)) {
+      errors.push(`${TOPICS_FILE}: index references missing topic ${area}/${topic.file}`);
     }
   }
 }
@@ -309,7 +326,7 @@ function computeDocSourcesHash(sources: string[]) {
       hash.update(docSourceHashPath(root, filePath));
       hash.update('\0');
       const bytes = fs.readFileSync(filePath);
-      hash.update(filePath.endsWith('.md') ? withoutRecordedHash(bytes.toString('utf8')) : bytes);
+      hash.update(filePath.endsWith('.md') ? withoutGeneratedBlocks(withoutRecordedHash(bytes.toString('utf8'))) : bytes);
       hash.update('\0');
     }
   }

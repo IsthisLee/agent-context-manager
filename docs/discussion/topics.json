@@ -1,0 +1,211 @@
+{
+  "architecture": [
+    {
+      "stage": 1,
+      "file": "profile-model.md",
+      "title": "프로필 모델과 저장소",
+      "titleEn": "Profile model and store",
+      "importance": "Critical",
+      "outcome": "named 프로필, scope, 경로, 소유권 계약",
+      "status": "Implemented"
+    },
+    {
+      "stage": 2,
+      "file": "setup-and-guidance.md",
+      "title": "setup과 지침 옵션",
+      "titleEn": "setup and guidance options",
+      "importance": "High",
+      "prerequisites": [
+        1
+      ],
+      "outcome": "선택 가능한 규칙 preset과 프로필 `AGENTS.md`",
+      "status": "Implemented"
+    },
+    {
+      "stage": 3,
+      "file": "project-application.md",
+      "title": "프로젝트 적용",
+      "titleEn": "project application",
+      "importance": "Critical",
+      "prerequisites": [
+        1,
+        2
+      ],
+      "outcome": "선택 프로필을 프로젝트에 적용, 도메인 지침 분리",
+      "status": "Implemented"
+    },
+    {
+      "stage": 4,
+      "file": "agent-sync.md",
+      "title": "에이전트 산출물 동기화",
+      "titleEn": "agent artifact synchronization",
+      "importance": "High",
+      "prerequisites": [
+        3
+      ],
+      "outcome": "도구별 포인터 생성·갱신·프로젝트 규칙 보존",
+      "status": "Implemented"
+    },
+    {
+      "stage": 5,
+      "file": "agent-mediated-usage.md",
+      "title": "자연어 요청을 통한 agctx 사용",
+      "titleEn": "use through natural-language requests",
+      "importance": "High",
+      "prerequisites": [
+        1,
+        3
+      ],
+      "outcome": "사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계",
+      "status": "Implementing"
+    },
+    {
+      "stage": 6,
+      "file": "managed-artifact-safety.md",
+      "title": "agctx 관리 산출물의 안전한 동기화",
+      "titleEn": "safe synchronization of managed artifacts",
+      "importance": "Critical",
+      "prerequisites": [
+        1,
+        3,
+        4
+      ],
+      "outcome": "관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화",
+      "status": "Implementing"
+    },
+    {
+      "stage": 7,
+      "file": "guidance-level-semantics.md",
+      "title": "지침 적용 수준의 의미 정의",
+      "titleEn": "guidance level semantics",
+      "importance": "Medium",
+      "prerequisites": [
+        2
+      ],
+      "outcome": "off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출",
+      "status": "Implemented"
+    },
+    {
+      "stage": 8,
+      "file": "agent-rule-discovery.md",
+      "title": "에이전트 규칙 위치 탐지",
+      "titleEn": "agent rule discovery",
+      "importance": "Medium",
+      "prerequisites": [
+        3,
+        4
+      ],
+      "outcome": "적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공",
+      "status": "Implemented"
+    },
+    {
+      "stage": 9,
+      "file": "profile-config-surface.md",
+      "title": "프로필 설정 표면 확장",
+      "titleEn": "Profile configuration surface expansion",
+      "importance": "Critical",
+      "prerequisites": [
+        3,
+        4,
+        6,
+        13
+      ],
+      "outcome": "프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화",
+      "status": "Proposed"
+    },
+    {
+      "stage": 10,
+      "file": "scope-composition.md",
+      "title": "스코프 확장과 지침 합성",
+      "titleEn": "scope expansion and guidance composition",
+      "importance": "Medium",
+      "prerequisites": [
+        1,
+        6
+      ],
+      "outcome": "사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합",
+      "status": "Proposed"
+    },
+    {
+      "stage": 11,
+      "file": "git-profile-management.md",
+      "title": "Git 기반 프로필 관리",
+      "titleEn": "Git-based Profile management",
+      "importance": "Critical",
+      "prerequisites": [
+        1
+      ],
+      "outcome": "표준 Git 원격을 통한 프로필 공유·확인·안전한 갱신",
+      "status": "Implemented"
+    },
+    {
+      "stage": 12,
+      "file": "guidance-evidence-and-budget.md",
+      "title": "기본 지침의 근거 기준과 분량 예산",
+      "titleEn": "evidence criteria and length budget for default guidance",
+      "importance": "High",
+      "prerequisites": [
+        2,
+        7
+      ],
+      "outcome": "근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴",
+      "status": "Implementing"
+    },
+    {
+      "stage": 13,
+      "file": "apply-selection.md",
+      "title": "적용할 에이전트와 대상 종류 고르기",
+      "titleEn": "choosing agents and context types per repository",
+      "importance": "High",
+      "prerequisites": [
+        3,
+        4
+      ],
+      "outcome": "저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현",
+      "status": "Proposed"
+    },
+    {
+      "stage": 14,
+      "file": "profile-import.md",
+      "title": "기존 저장소에서 프로필 만들기",
+      "titleEn": "creating a Profile from an existing repository",
+      "importance": "Medium",
+      "prerequisites": [
+        1,
+        3,
+        5
+      ],
+      "outcome": "기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦",
+      "status": "Proposed"
+    },
+    {
+      "file": "implementation-contracts.md",
+      "title": "구현 계약 및 문서 규칙",
+      "outcome": "단계별 구현·검증·문서 정합성 규칙",
+      "status": "Active process"
+    }
+  ],
+  "repository": [
+    {
+      "file": "doc-gate-pin-scope.md",
+      "title": "문서 소스 해시 게이트의 핀 범위와 승인 단위",
+      "importance": "High",
+      "outcome": "관련 없는 문서까지 실패시키는 범위를 줄이고, 실패 원인을 보여 주며, 문서를 하나씩 승인",
+      "status": "Proposed"
+    },
+    {
+      "file": "doc-accuracy-review.md",
+      "title": "문서 정확성 자동 리뷰",
+      "importance": "Medium",
+      "outcome": "해시만 다시 기록한 PR에서 문서와 코드의 일치를 에이전트가 리뷰",
+      "status": "Proposed"
+    },
+    {
+      "file": "discussion-status-source.md",
+      "title": "논의 문서 상태의 정본",
+      "importance": "Medium",
+      "outcome": "논의 주제의 상태를 JSON 한 파일에만 쓰고 색인 표와 README 상태 목록은 생성",
+      "status": "Implemented"
+    }
+  ]
+}

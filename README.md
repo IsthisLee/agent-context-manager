@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
-<!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, docs/discussion/architecture/README.md, docs/discussion/architecture/topics, README.en.md -->
-<!-- agctx-doc-sources-sha256: 49f2aedd6b6b29f8329a4a9964be76a58eeecb78dd4ef4ab33ba7853758c360b -->
+<!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, README.en.md -->
+<!-- agctx-doc-sources-sha256: f71988990854e48ec53e68af465fbdffd1773dd7adc0eae8ea9dc8d07621b2db -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -169,11 +169,13 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 ## 아키텍처 방향과 진행 상태
 
-agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태의 정본은 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)입니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
+agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태는 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에 있습니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
-- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 지침 항목 켜고 끄기, 프로젝트 적용, 에이전트 산출물 동기화, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
-- **구현 중:** 자연어 요청을 통한 agctx 사용(스킬·`--json`·`explain`·`verify`는 동작하고, 배포 패키지로 에이전트 시나리오를 평가하는 일이 남았습니다), agctx 관리 산출물의 안전한 동기화(관리 영역 해시·dry-run·충돌 복구는 동작하고, 파일마다 누가 소유하는지 기록하는 일과 agctx 표지가 없는 기존 파일을 어떻게 다룰지 정하는 일이 남았습니다), 기본 지침의 근거 기준과 분량 예산
-- **제안 단계:** 프로필 설정 표면 확장(MCP·skills·subagents·hooks), 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기, 스코프 확장과 지침 합성. 아직 현재 동작이 아니므로 보장하지 않습니다.
+<!-- agctx:generated:discussion-status:start -->
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 적용 수준의 의미 정의, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리
+- **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 기본 지침의 근거 기준과 분량 예산
+- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
+<!-- agctx:generated:discussion-status:end -->
 
 ## 문서
 

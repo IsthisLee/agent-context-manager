@@ -1,6 +1,8 @@
 # 구현 계약 및 문서 규칙
 
+<!-- agctx:generated:status:start -->
 **상태:** Active process
+<!-- agctx:generated:status:end -->
 
 ## 구현 단계 계약
 
@@ -70,15 +72,17 @@ flowchart LR
   I -->|"다음 부분 구현"| I
   I -->|"남은 계약까지 구현"| D["Implemented<br/>마지막 구현 기록 추가"]
   P -->|"한 번에 전체 구현"| D
-  D --> SYNC["논의 색인 상태 · 권장 다음 작업 갱신<br/>현재 사실은 docs/contributing/architecture.md · 결정은 ADR"]
+  D --> SYNC["topics.json 상태 · 권장 다음 작업 갱신<br/>현재 사실은 docs/contributing/architecture.md · 결정은 ADR"]
 ```
 
 구현이 한 단계 진행될 때마다 논의 문서에 기록이 하나씩 쌓인다. 상태를 바꾸는 변경과 기록을 추가하는 변경은 같은 커밋이나 PR에 들어간다.
 
+상태는 [`docs/discussion/topics.json`](../../topics.json)에서만 바꾼다. 주제 문서의 상태 줄, 논의 색인, README 상태 목록은 `node tools/generate-discussion-status.ts`가 그 파일에서 생성한다. 생성 대상과 검사는 [문서 게이트](../../../contributing/doc-gate.md#생성하는-논의-상태)에 있다.
+
 | 시점 | 논의 문서에서 갱신할 것 |
 | --- | --- |
-| 일부 계약을 구현했을 때 | 상태를 `Implementing`으로 바꾸고 구현한 범위마다 구현 기록을 하나 추가한다. 논의 색인의 상태와 제안 요약의 `권장 다음 작업`을 남은 계약 기준으로 고친다. |
-| 남은 계약까지 모두 구현했을 때 | 상태를 `Implemented`로 바꾸고 마지막 구현 기록을 추가한다. 논의 색인의 상태를 맞추고 현재 사실은 `docs/contributing/architecture.md`에, 되돌리기 어려운 결정은 ADR에 옮긴다. |
+| 일부 계약을 구현했을 때 | 상태를 `Implementing`으로 바꾸고 구현한 범위마다 구현 기록을 하나 추가한다. 제안 요약의 `권장 다음 작업`을 남은 계약 기준으로 고친다. |
+| 남은 계약까지 모두 구현했을 때 | 상태를 `Implemented`로 바꾸고 마지막 구현 기록을 추가한다. 현재 사실은 `docs/contributing/architecture.md`에, 되돌리기 어려운 결정은 ADR에 옮긴다. |
 | 구현하면서 계약이 제안과 달라졌을 때 | 제안 본문을 지우지 않는다. 달라진 내용과 이유를 구현 기록의 `계획과 달라진 점`에 적는다. |
 
 ```markdown
@@ -92,6 +96,6 @@ flowchart LR
 * **다음 단계:** 남은 계약과 선행 조건
 ```
 
-- 제목은 `#### 구현 기록: <구현한 범위>` 형식으로 쓴다. `pnpm run check`의 `check:docs`는 상태가 `Implemented`인 문서에 이 형식의 제목이 코드 블록 밖에 하나 이상 있는지 검사한다. 기록 내용이 정확한지는 검사하지 않으므로 리뷰에서 확인한다.
+- 제목은 `#### 구현 기록: <구현한 범위>` 형식으로 쓴다. `pnpm run check`의 `check:docs`는 상태가 `Implemented`인 문서에 이 형식의 제목이 코드 블록 밖에 하나 이상 있는지 검사하고, 구현 기록이 있는데 상태가 `Proposed`로 남은 문서도 실패시킨다. 기록 내용이 정확한지는 검사하지 않으므로 리뷰에서 확인한다.
 - `Implementing` 문서도 같은 규칙을 따르지만 아직 검사로 강제하지 않는다. 구현 기록이 없는 `Implementing` 문서가 남아 있기 때문이며, 모두 기록을 갖추면 검사 대상에 넣는다.
 - 이 형식보다 먼저 쓴 기록은 항목 구성이 달라도 그대로 둔다. 새로 추가하는 기록부터 위 항목을 채운다.

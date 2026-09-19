@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts -->
-<!-- agctx-doc-sources-sha256: 0e71aacfd1a40e040f3b5b6a56b7558bc5132961d07628ec6eacec562ae377e0 -->
+<!-- agctx-doc-sources-sha256: 1e0b0bd08a70e5bb5c734dc654fd6179cb39851e07e03240e6b4384366141215 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -81,4 +81,4 @@ flowchart TD
 - 최상위 키는 논의 영역 이름이고, 배열 순서가 색인 표의 행 순서다. `stage`·`titleEn`·`importance`·`prerequisites`는 필요한 주제에만 둔다. 영어 README에 나오는 주제에 `titleEn`이 없으면 생성기가 실패한다.
 - mermaid 안에서는 HTML 주석을 쓸 수 없으므로 단계 그림의 표지는 `%% agctx:generated:stage-classes:start`와 `%% agctx:generated:stage-classes:end`다. 그림의 노드·화살표와 그림 아래 설명은 사람이 쓴다. 새 단계를 더하면 그림에 `S<단계>` 노드를 먼저 만든다.
 - `evals/discussion-status.test.ts`가 생성 결과와 파일 내용이 같은지 검사하므로, `topics.json`을 고치고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
-- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES` 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.
+- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES` 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. 주제 문서의 제안 요약에 적은 `중요도`의 첫 단어(`High — 이유`의 `High`)는 `importance`와 같아야 한다. 이유는 주제 문서에, 수준은 `topics.json`에 둔다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.

@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
-import { readTopics, STATUSES, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
+import { readTopics, STATUSES, summaryImportance, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
 import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
@@ -174,6 +174,10 @@ function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined
     }
     if (forbidsImplementationRecord(status) && hasImplementationRecord(content)) {
       errors.push(`${document}: a topic with an implementation record is at least Implementing; update its status in ${TOPICS_FILE}`);
+    }
+    const stated = summaryImportance(content);
+    if (stated !== entries[0].importance) {
+      errors.push(`${document}: 중요도 in the proposal summary (${stated ?? 'none'}) must match importance in ${TOPICS_FILE} (${entries[0].importance ?? 'none'})`);
     }
 
     if (['Proposed', 'Implementing'].includes(status)) {

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readTopics, TOPICS_FILE, type DiscussionTopics } from '../tools/discussion-topics.ts';
+import { readTopics, summaryImportance, TOPICS_FILE, type DiscussionTopics } from '../tools/discussion-topics.ts';
 import { discussionOutputs } from '../tools/generate-discussion-status.ts';
 import { forbidsImplementationRecord } from '../tools/discussion-record.ts';
 import { withoutGeneratedBlocks } from '../tools/doc-sources.ts';
@@ -65,6 +65,21 @@ test('a topic that already has an implementation record cannot stay Proposed', (
   assert.match(checker, /forbidsImplementationRecord/);
   assert.match(checker, /readTopics/);
   assert.ok(fs.existsSync(path.join(repoRoot, TOPICS_FILE)));
+});
+
+test('the importance a topic states in its proposal summary must match topics.json', () => {
+  assert.equal(summaryImportance('| 항목 | 내용 |\n| 중요도 | High — 사용자 경계를 정한다. |\n'), 'High');
+  assert.equal(summaryImportance('| 중요도 | Medium: 문서 유지 비용을 줄인다. |'), 'Medium');
+  assert.equal(summaryImportance('| 제안 목표 | 중요도를 적지 않은 문서 |'), undefined, 'a document without the field states no importance');
+
+  const topics = readTopics(repoRoot);
+  for (const [area, list] of Object.entries(topics)) {
+    for (const topic of list) {
+      const stated = summaryImportance(read(`docs/discussion/${area}/topics/${topic.file}`));
+      assert.equal(stated, topic.importance, `${area}/${topic.file} states ${stated} but topics.json says ${topic.importance}`);
+    }
+  }
+  assert.match(read('tools/check-docs.ts'), /summaryImportance/);
 });
 
 test('a pinned document is hashed without its generated blocks, so regenerating one README does not fail the other', () => {

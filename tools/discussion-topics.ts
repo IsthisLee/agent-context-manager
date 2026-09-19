@@ -33,6 +33,15 @@ export function readTopics(repoRoot: string): DiscussionTopics {
   return JSON.parse(fs.readFileSync(path.join(repoRoot, TOPICS_FILE), 'utf8')) as DiscussionTopics;
 }
 
+/**
+ * The importance a topic document states in its proposal summary, such as
+ * `High` from `| 중요도 | High — 이유 |`. The document keeps the reason and
+ * topics.json keeps the level, so the checker compares the two.
+ */
+export function summaryImportance(content: string): string | undefined {
+  return content.match(/^\| 중요도 \| ([A-Za-z]+)/m)?.[1];
+}
+
 /** Fields a topic must carry, with a reason when one is missing or has the wrong type. */
 export function topicFieldErrors(topic: DiscussionTopic): string[] {
   const errors: string[] = [];

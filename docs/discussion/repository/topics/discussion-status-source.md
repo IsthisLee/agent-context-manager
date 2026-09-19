@@ -95,14 +95,13 @@ README의 구현됨·구현 중·제안 단계 목록 ──┘
 **2026-09-19.**
 
 * **결정:** [결정](#결정) 절의 세 항목대로 구현했다. 생성 대상과 `check:docs`가 하는 검사의 정본은 [문서 게이트의 생성하는 논의 상태](../../../contributing/doc-gate.md#생성하는-논의-상태)다.
-* **구현:** `tools/discussion-topics.ts`가 `docs/discussion/topics.json`을 읽고, `tools/generate-discussion-status.ts`가 주제 문서의 상태 줄, 영역 색인 표, 아키텍처 색인의 단계 그림 색, 두 README의 목록을 생성한다. `check:docs`는 주제 문서의 상태 줄 대신 `topics.json`을 읽는다. 두 README에서 논의 폴더 핀을 뺐고, 핀한 문서를 해시할 때 생성 블록의 내용을 뺀다(`withoutGeneratedBlocks`). `AGENTS.md`의 구현 기록 규칙, [구현 계약](../../architecture/topics/implementation-contracts.md#구현-기록), `repo-docs` 스킬 4단계, 두 색인의 안내를 같은 변경에서 고쳤다.
-* **평가:** `evals/discussion-status.test.ts`의 5개 평가가 생성 결과가 최신인지, 상태 하나를 바꾸면 주제 문서·아키텍처 색인·두 README가 함께 바뀌는지, 구현 기록이 있는 주제가 `Proposed`로 남으면 막히는지, 생성 블록이 해시에서 빠지는지 검사한다. 직접 실험으로 `topics.json`에서 `apply-selection.md`의 상태 하나만 바꾸고 생성했더니, 사람이 고친 파일은 1개, 생성기가 고친 파일은 4개였고, 다시 stamp하지 않아도 `node tools/check-docs.ts`가 종료 코드 0으로 끝났다. 전에는 아키텍처 주제 하나의 상태를 네 파일 다섯 곳에 손으로 썼고, 주제 문서를 고치면 두 README가 해시 게이트에 걸렸다.
+* **구현:** `tools/discussion-topics.ts`가 `docs/discussion/topics.json`을 읽고, `tools/generate-discussion-status.ts`가 주제 문서의 상태 줄, 영역 색인 표, 아키텍처 색인의 단계 그림 색, 두 README의 목록을 생성한다. `check:docs`는 주제 문서의 상태 줄 대신 `topics.json`을 읽고, 주제 문서의 제안 요약에 남은 `중요도`의 첫 단어가 `topics.json`의 `importance`와 같은지 대조한다. 두 README에서 논의 폴더 핀을 뺐고, 핀한 문서를 해시할 때 생성 블록의 내용을 뺀다(`withoutGeneratedBlocks`). `AGENTS.md`의 구현 기록 규칙, [구현 계약](../../architecture/topics/implementation-contracts.md#구현-기록), `repo-docs` 스킬 4단계, 두 색인의 안내를 같은 변경에서 고쳤다.
+* **평가:** `evals/discussion-status.test.ts`의 6개 평가가 생성 결과가 최신인지, 상태 하나를 바꾸면 주제 문서·아키텍처 색인·두 README가 함께 바뀌는지, 구현 기록이 있는 주제가 `Proposed`로 남으면 막히는지, 요약표의 중요도가 `topics.json`과 같은지, 생성 블록이 해시에서 빠지는지 검사한다. 직접 실험으로 `topics.json`에서 `apply-selection.md`의 상태 하나만 바꾸고 생성했더니, 사람이 고친 파일은 1개, 생성기가 고친 파일은 4개였고, 다시 stamp하지 않아도 `node tools/check-docs.ts`가 종료 코드 0으로 끝났다. 전에는 아키텍처 주제 하나의 상태를 네 파일 다섯 곳에 손으로 썼고, 주제 문서를 고치면 두 README가 해시 게이트에 걸렸다.
 * **계획과 달라진 점:**
   - [제안 동작](#제안-동작) 3번은 "구현 기록이 있는데 `Implemented`가 아니면 실패"였다. 그러나 `Implementing` 주제도 구현 기록을 쌓는다(`agent-mediated-usage.md` 3개, `managed-artifact-safety.md` 2개). 그래서 "구현 기록이 있는데 `Proposed`면 실패"로 구현했다.
   - [현재 동작](#현재-동작)은 상태를 세 곳에 쓴다고 적었지만 실제로는 다섯 곳이었다. 아키텍처 색인의 단계 그림과 영어 README가 더 있었고, 둘 다 생성 대상에 넣었다. 처음 생성하자 12단계가 표에서는 `Implementing`인데 그림에서는 회색(`Proposed`)이던 불일치가 고쳐졌다.
   - 두 README가 서로를 핀하므로 목록만 다시 생성해도 상대 README가 해시 게이트에 걸렸다. 상태 변경이 다시 stamp를 요구하지 않도록 핀한 문서의 생성 블록을 해시에서 뺐다.
 * **제약:**
-  - 주제 문서의 제안 요약에 있는 `중요도` 칸은 JSON의 `importance`와 따로 쓰며, 두 값을 대조하는 검사는 없다. 2026-09-19에는 17개 모두 일치했다.
   - 단계 그림의 노드·화살표와 그림 아래 설명은 사람이 쓴다. 설명에 "아직 Implementing인 6단계" 같은 상태 서술이 남아 있다.
   - JSON의 `title`은 색인의 짧은 제목이며 주제 문서의 H1과 대조하지 않는다. 7단계의 색인 제목과 핵심 결과는 항목 값을 켜고 끄는 두 값으로 줄이기(PR #61) 전의 표현이다.
 * **다음 단계:** 없음. 위 제약 가운데 고칠 것이 있으면 따로 정한다.

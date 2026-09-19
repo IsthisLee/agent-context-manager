@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 내부 코드 로직(apply/sync·관리 영역 병합·hash·안전한 파일 쓰기 등)은 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: a6b0f3a43544d6cdf86e2a9ea8b79c94c87210a7539545703cae0cf4910df152 -->
+<!-- agctx-doc-sources-sha256: 36bf5910d5ed4cec59c0ca891578877e00354d9fdca6205c770bee8cacebb314 -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -88,7 +88,7 @@ agent-context-manager/
 │   ├── check-release.ts         # 릴리스 태그·버전·CHANGELOG 일치 검사
 │   ├── discussion-record.ts     # 논의 문서의 상태와 구현 기록 제목이 맞는지 판정
 │   ├── discussion-roots.ts      # docs/discussion 아래에서 topics/를 가진 논의 영역 목록
-│   ├── discussion-topics.ts     # 논의 주제 상태의 정본 docs/discussion/topics.json 읽기와 필드 검사
+│   ├── discussion-topics.ts     # 논의 주제 상태의 정본 docs/discussion/topics.json 읽기, 필드 검사, 주제 문서의 중요도 읽기
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
 │   ├── doc-sources.ts           # 핀 범위 규칙과, 핀한 문서를 해시할 때 뺄 해시 줄·생성 블록

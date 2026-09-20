@@ -19,7 +19,7 @@
 | 주제 | 다음에 할 일 |
 | --- | --- |
 | [자연어 요청을 통한 agctx 사용](docs/discussion/architecture/topics/agent-mediated-usage.md) | 노출과 트리거 계약은 [ADR 0029](docs/adr/0029-agent-surface-contract.md)로 확정해 구현했다. 남은 것은 명령별 `data` 필드의 스키마를 문서로 정하는 일과, 배포한 npm 패키지를 임시 프로젝트에 설치해 에이전트가 스킬대로 agctx를 호출하는 시나리오 평가다. |
-| [agctx 관리 산출물의 안전한 동기화](docs/discussion/architecture/topics/managed-artifact-safety.md) | 파일별 소유권을 `agctx.project.json`에 기록하고, 마커가 없는 파일은 자동 덮어쓰지 않는 정책부터 확정한다. |
+| [agctx 관리 산출물의 안전한 동기화](docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 영역의 경계 표시와 포매터 차이 판정은 [ADR 0034](docs/adr/0034-managed-end-marker-in-agents-md.md)로 확정해 구현했다. 남은 것은 마커가 없는 기존 파일을 자동으로 덮어쓰지 않는 기본 정책과, 파일별 소유권을 `agctx.project.json`에 기록하는 일이다. |
 | [기본 지침의 근거 기준과 분량 예산](docs/discussion/architecture/topics/guidance-evidence-and-budget.md) | 근거 기준·문구·분량 예산은 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](docs/adr/0026-guidance-items-and-evidence-tiers.md)으로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | [결정](docs/discussion/repository/topics/doc-gate-pin-scope.md#결정) 절의 구현 순서대로 진행하고, 끝나면 [측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정) 절과 같은 방법으로 두 지표를 다시 잰다. |
 <!-- agctx:generated:in-progress:end -->
@@ -54,6 +54,9 @@
 `main`에 병합된 최근 커밋 10개다. 이 목록은 `node tools/generate-progress.ts`가 `git log main`에서 만든다. PR은 squash로 병합되므로 브랜치의 커밋은 병합하면서 하나로 합쳐진다. 그래서 병합된 이력만 적는다. 손으로 고치지 않는다. 더 오래된 이력과 각 변경의 이유는 git 기록에서 본다.
 
 <!-- agctx:generated:recent:start -->
+- 2026-09-21: feat!: AGENTS.md의 관리 영역 경계를 마커로 표시하고 포매터 변경을 걸러낸다 (#70)
+- 2026-09-20: chore(deps): @clack/prompts를 1.8.1로 올린다
+- 2026-09-20: docs: 문서가 코드를 가리키는 방식을 바꾸고 게이트 범위를 절 단위로 좁힌다 (#69)
 - 2026-09-19: chore(release): 0.4.0 (#66)
 - 2026-09-19: chore!: 라이선스를 MIT로 바꾸고 공개 운영 파일을 줄인다 (#65)
 - 2026-09-19: feat: 에이전트용 스킬을 한국어로 다시 쓴다 (#64)
@@ -61,9 +64,6 @@
 - 2026-09-19: fix: CodeQL이 워크플로 파일을 검사하지 않던 것을 고친다 (#62)
 - 2026-09-19: feat!: 지침 항목의 값을 켜고 끄는 둘로 줄인다 (#61)
 - 2026-09-19: fix: 스킬 설치 안내가 기여자 전용 스킬까지 설치하던 것을 고친다 (#60)
-- 2026-09-19: docs: 전역 지침 공유 실측과 FAQ 항목을 더한다 (#59)
-- 2026-09-18: docs: 해시 게이트의 핀 범위와 승인 단위를 논의 주제로 연다 (#57)
-- 2026-09-18: docs: 지침 카탈로그를 레퍼런스로 옮기고 README 구성을 다시 짠다 (#56)
 <!-- agctx:generated:recent:end -->
 
 ## 갱신 규칙

@@ -30,7 +30,7 @@
 | 후속 제안 | 비대화형 실행·충돌 결과 계약, 버전 업그레이드와 복구 정책 |
 | 연관 제안 | [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md), [구현 계약 및 문서 규칙](implementation-contracts.md) |
 | 후속 작업 | 관리 파일 manifest·마커 없는 파일 정책·여러 파일 롤백을 추가하고, 기존 프로젝트 업그레이드 경로를 검증한다. |
-| 권장 다음 작업 | 파일별 소유권을 `agctx.project.json`에 기록하고, 마커가 없는 파일은 자동 덮어쓰지 않는 정책부터 확정한다. |
+| 권장 다음 작업 | 관리 영역의 경계 표시와 포매터 차이 판정은 [ADR 0034](../../../adr/0034-managed-end-marker-in-agents-md.md)로 확정해 구현했다. 남은 것은 마커가 없는 기존 파일을 자동으로 덮어쓰지 않는 기본 정책과, 파일별 소유권을 `agctx.project.json`에 기록하는 일이다. |
 
 ## 목차
 
@@ -59,7 +59,9 @@
 ```mermaid
 flowchart TD
   START["profile apply · profile sync"] --> HASH{"managedHashes에 기록이 있고<br/>현재 관리 영역 hash와 다른가?"}
-  HASH -->|예| STOP["충돌로 중단 · 어떤 파일도 쓰지 않음<br/>dry-run은 conflict와 diff 출력 후 exit 1<br/>profile resolve로 복구"]
+  HASH -->|예| SETTLED{"이번에 쓸 내용과 같거나<br/>.agctx/base의 원문과<br/>표현만 다른가?"}
+  SETTLED -->|예| MARK
+  SETTLED -->|아니오| STOP["충돌로 중단 · 어떤 파일도 쓰지 않음<br/>dry-run은 conflict와 diff 출력 후 exit 1<br/>profile resolve로 복구"]
   HASH -->|아니오| MARK{"관리 마커 시작·종료가<br/>모두 있는가?"}
   MARK -->|있음| REPLACE["관리 블록만 교체"]
   MARK -->|없음 또는 새 파일| APPEND["기존 내용 뒤에<br/>관리 블록 추가"]
@@ -71,7 +73,7 @@ flowchart TD
   PRE --> WRITE["파일 단위 원자적 교체<br/>새 hash와 .agctx/base 기록"]
 ```
 
-쓰기 전에 모든 대상의 hash를 먼저 비교하므로 한 파일이라도 충돌하면 어떤 파일도 바뀌지 않는다. 한쪽 마커만 남은 파일은 hash 기록이 있으면 불일치로 중단된다. 기록이 없으면 마커가 없는 파일처럼 관리 블록이 덧붙는다. `AGENTS.md`는 마커 대신 프로젝트 확장 헤딩으로 영역을 나누지만 hash 비교 순서는 같다.
+쓰기 전에 모든 대상의 hash를 먼저 비교하므로 한 파일이라도 충돌하면 어떤 파일도 바뀌지 않는다. 한쪽 마커만 남은 파일은 hash 기록이 있으면 불일치로 중단된다. 기록이 없으면 마커가 없는 파일처럼 관리 블록이 덧붙는다. `AGENTS.md`는 파일 처음부터 `<!-- agctx:managed:end -->`까지를 관리 영역으로 보고, 그 마커가 없는 파일에서만 프로젝트 확장 헤딩으로 경계를 찾는다([ADR 0034](../../../adr/0034-managed-end-marker-in-agents-md.md)). hash 비교 순서는 두 경우 모두 같다.
 
 ## 보존 범위
 
@@ -242,3 +244,12 @@ flowchart TD
 * **제약:** APM 말고 다른 도구의 생성 파일은 알아보지 않는다. 연결 파일은 Claude Code만을 위한 것이다. 하위 폴더에서 시작한 Claude Code가 루트 `CLAUDE.md`의 `@AGENTS.md`를 읽으려면 여전히 한 번 승인해야 하고, Antigravity는 하위 폴더 `AGENTS.md`를 세션 시작에 받지 않는다.
 * **다음 단계:** 사람이 쓴 마커 없는 루트 파일의 기본 처리, 마커 손상 진단, 여러 파일 전체 롤백, 관리 파일 manifest.
 
+#### 구현 기록: AGENTS.md의 경계 마커와 포매터 차이 판정 (2026-09-21)
+
+* **결정:** [ADR 0034](../../../adr/0034-managed-end-marker-in-agents-md.md). 프로젝트 `AGENTS.md`의 관리 영역은 파일 처음부터 `<!-- agctx:managed:end -->`까지이고, 마커 아래는 확장 섹션 제목과 그 아래 안내 한 줄까지 전부 사용자 것이다. 마커가 없는 파일은 지금까지처럼 확장 섹션 제목으로 경계를 찾되 이 경로는 마이그레이션 전용이며, `profile sync` 한 번이면 마커가 들어간다. 관리 영역이 마지막으로 쓴 원문과 표현만 다르면 사람이 고친 것으로 보지 않는다.
+* **구현:** 경계 상수는 `src/project/conflicts.ts`의 `MANAGED_END`이고, 그 마커로 관리 영역을 자르고 아래를 보존하는 판정은 `src/project/analyzer.ts`의 `extractAgentsManagedDocument`와 `mergeAgentsMd`가 한다. 표현 차이를 평탄화해 비교하는 것은 같은 파일의 `formatterNormalized`이며, 포매터가 다시 쓸 줄을 찾아내는 것은 `formatterUnstableLines`다. 마커를 넣고 프로필 전용 표지 `<!-- agctx:guidance:start/end -->` 두 줄을 빼는 곳은 `src/profile/apply.ts`의 `renderProfileAgents`다. 충돌 여부는 `src/project/plan.ts`의 `planProject`가 정하고, `src/check.ts`의 `checkProject`는 프로필이 보관함에 있으면 같은 계획을 만들어 `sync`와 같은 기준으로 판정한다. `templates/CLAUDE.md`와 `templates/antigravity-rules/agctx.md`의 목록 기호와 제목 뒤 빈 줄도 포매터가 바꾸지 않는 형태로 맞췄다.
+* **평가:** `evals/formatter-stability.test.ts` 11개를 새로 넣어 템플릿과 `renderProfileAgents`의 출력이 포매터를 통과해도 바뀌지 않는지, 표현만 다른 관리 영역이 충돌이 아닌지, 낱말이 바뀌면 여전히 충돌인지 검사한다. `evals/sync-merge.test.ts`에 마커가 경계를 정하는 경우와 마커가 없는 파일이 제목으로 경계를 찾는 경우 5개를 더했다. `pnpm run check`로 평가 246개와 문서 검사가 통과한다.
+* **측정:** 제보된 프로젝트의 사본에서 `agctx check`가 `conflict`(2)에서 `behind`(1)로 바뀌어 `profile sync` 한 번에 풀렸다. `npx prettier@3 --prose-wrap always`로 포맷한 프로젝트도 같았고, 같은 파일에서 낱말 하나를 바꾸자 다시 `conflict`(2)로 멈췄다([근거](../../../references.md#포매터가-관리-영역을-바꾸는-범위)).
+* **계획과 달라진 점:** [권장 설계](#관리-영역과-사용자-영역의-명시적-분리)는 시작과 종료 마커를 쌍으로 두자고 제안했으나, 프로젝트 `AGENTS.md`에는 종료 마커만 뒀다. 이 파일은 첫 줄부터 관리 영역이라 시작을 적을 곳이 없고, 표지를 둘 두면 사용자가 쓸 수 있는 자리가 위아래로 갈리기 때문이다. 포인터 파일의 마커 쌍은 그대로다.
+* **제약:** 마커를 지우면 제목 탐지로 되돌아가고, 제목까지 없으면 파일 전체가 관리 영역이 되어 충돌한다. 표현 차이 판정은 `.agctx/base/`에 마지막으로 쓴 원문이 있을 때만 쓸 수 있고, 원문을 알 수 없으면 지금까지처럼 해시만 비교한다. 마커 손상에 대한 세분화된 진단과 여러 파일 전체 롤백은 여전히 없다.
+* **다음 단계:** 마커가 없는 기존 파일의 기본 처리를 [제안 1·2·3](#마커-없는-파일은-자동-덮어쓰지-않음) 가운데 하나로 확정하고, 관리 파일 manifest를 `agctx.project.json`에 기록해 파일별 소유권을 남긴다.

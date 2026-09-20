@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: d0c7b0133f5b6ff243dc99db6eb99ec8ccb4f335dad8cad632e1190f4e16632b -->
+<!-- agctx-doc-sources-sha256: 9e66720019d0860b7f109101038c8f5a3674eae605f29fab46e2330efed93221 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -52,7 +52,7 @@ flowchart TD
 판정은 `src/check.ts`의 `checkProject`가 한다.
 ```
 
-- `check:docs`는 문서마다 두 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패한다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:8bffb32b5286-->에 있다.
+- `check:docs`는 문서마다 세 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패하며, 그 이름이 최상위 선언이나 키가 아니면 실패한다. 함수 안의 지역 이름처럼 잘라 낼 수 없는 것은 지문을 만들 수 없기 때문이다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:29704713ed9a-->에 있다.
 - 검사 대상은 이 저장소가 소유한 경로(`src/`·`tools/`·`evals/`·`templates/`·`skills/`·`.agents/`·`.github/`·`docs/`와 루트 설정 파일)뿐이다. 다른 도구가 만드는 `apm.yml`이나 사용자 프로젝트에 생기는 `agctx.project.json`처럼 저장소에 없는 파일은 검사하지 않는다.
 - 이력을 남기는 `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 대상이 아니다. 그 문서들은 쓰던 당시의 인용을 그대로 둔다.
 - 코드 블록 안의 내용은 검사하지 않으므로, 옛 형식을 예시로 보여 줄 수 있다.
@@ -63,6 +63,7 @@ flowchart TD
 ```
 
 - 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->). 다른 Markdown 문서를 가리키는 인용은 지문을 붙이지 않는다.
+- 지문은 줄바꿈을 LF로 맞춘 뒤 계산하므로, CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다.
 - 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 

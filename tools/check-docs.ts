@@ -65,8 +65,15 @@ function checkCitations(markdownFile: string) {
       errors.push(`${relative}: cited file is missing (${file})`);
       continue;
     }
-    if (!new RegExp(`\\b${name.replaceAll('$', '\\$')}\\b`).test(fs.readFileSync(target, 'utf8'))) {
+    const source = fs.readFileSync(target, 'utf8');
+    if (!new RegExp(`\\b${name.replaceAll('$', '\\$')}\\b`).test(source)) {
       errors.push(`${relative}: ${file} no longer has ${name}; re-read the document and fix the citation`);
+      continue;
+    }
+    // A citation points at a declaration or a key, never at a name that only
+    // appears inside one: the gate can fingerprint the former and not the latter.
+    if (!file.endsWith('.md') && citedText(file, source, name) === null) {
+      errors.push(`${relative}: ${name} in ${file} is not a top-level declaration or key; cite one that is`);
     }
   }
 

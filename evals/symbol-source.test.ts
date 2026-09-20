@@ -67,3 +67,15 @@ test('every name the documents cite can be cut out of its file', () => {
   }
   assert.deepEqual(failures, [], 'a cited name that cannot be cut out needs a different pointer');
 });
+
+test('a name that is not a declaration cannot be cut, so the gate can reject it', () => {
+  const body = ['export function run(): void {', '  const helper = 1;', '  return;', '}'].join('\n');
+  assert.equal(symbolText(body, 'helper'), null, 'a local inside a function is not a declaration this repository cites');
+  assert.equal(citedText('src/a.ts', body, 'helper'), null);
+  assert.ok(symbolText(body, 'run'));
+});
+
+test('the digest ignores the line endings a checkout happens to use', () => {
+  const lf = 'export const A = {\n  b: 1\n};';
+  assert.equal(symbolDigest(citedText('src/a.ts', lf, 'A')!), symbolDigest(citedText('src/a.ts', lf.replaceAll('\n', '\r\n'), 'A')!));
+});

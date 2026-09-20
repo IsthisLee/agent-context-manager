@@ -93,7 +93,11 @@ export function citedText(filePath: string, source: string, name: string): strin
   return symbolText(source, name);
 }
 
-/** Short digest recorded beside a citation; long enough to make a collision unlikely, short enough to read. */
+/**
+ * Short digest recorded beside a citation; long enough to make a collision
+ * unlikely, short enough to read. Line endings are normalized so a checkout
+ * that uses CRLF records the same digest as one that uses LF.
+ */
 export function symbolDigest(text: string): string {
-  return createHash('sha256').update(text).digest('hex').slice(0, 12);
+  return createHash('sha256').update(text.replaceAll('\r\n', '\n')).digest('hex').slice(0, 12);
 }

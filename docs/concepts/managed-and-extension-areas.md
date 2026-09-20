@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
-<!-- agctx-doc-sources: src/project, src/profile/resolve.ts -->
-<!-- agctx-doc-sources-sha256: b49d5b083ceca5d14f3b68f9c4f30f9bb46e988b7a83d01a8e4d68b121fbfa1d -->
+<!-- agctx-doc-sources: src/project -->
+<!-- agctx-doc-sources-sha256: 8f97063bf6aeb099d71297bd078b4616c255030d32f3ea7c60c06272b9a36892 -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 
@@ -21,17 +21,44 @@ flowchart TB
   end
 ```
 
+적용된 `AGENTS.md`에서 줄마다 주인은 이렇다.
+
+```text
+# Profile: team                              ← 프로필 것
+이 프로필의 공통 에이전틱 개발 지침을 관리한다.   ← 프로필 것
+## Project context                           ← 프로필 것
+* **Project:** repo                          ← 프로필 것
+
+## 4. 프로젝트 규칙 확장 (SSOT)                ← 프로필 것 (경계)
+이 프로젝트에만 적용되는 도메인 규칙은…          ← 프로필 것 (안내 한 줄)
+
+- 배포 전에 QA를 받는다.                       ← 여기부터 사용자 것
+```
+
+경계 아래 안내 한 줄까지 프로필이 소유한다. `AGENTS.md`에는 관리 블록 표지가 없으므로 이 제목과 안내문이 눈에 보이는 유일한 경계 표시이고, 지워도 `sync`가 다시 넣는다.
+
+무엇을 고치면 어떤 판정이 나오는지는 이렇다(2026-09-20 실측).
+
+| 고친 곳 | `agctx check` | 다음에 할 일 |
+| --- | --- | --- |
+| 경계 아래에 규칙을 더하거나 고침 | 통과(0) | 없음. `sync`도 필요 없다 |
+| 경계 제목이나 안내 한 줄을 고치거나 지움 | 뒤처짐(1) | `profile sync`. 제목과 안내문이 돌아오고 사용자가 쓴 규칙은 남는다 |
+| 경계 위(프로필 영역)를 고침 | 충돌(2) | `profile resolve`. 고친 내용을 경계 아래로 옮긴다 |
+
 agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외가 하나 있다. `.agents/rules/agctx.md`는 관리 블록 위, 파일 맨 앞에 frontmatter(`---` 두 줄 사이에 적는 설정)를 둔다. Antigravity는 파일 첫 줄부터 시작하는 frontmatter의 `trigger: always_on`을 보고 이 규칙을 항상 읽기 때문이다. 그래서 agctx는 파일 맨 앞에 frontmatter가 없을 때만 템플릿의 frontmatter를 넣고, 사람이 이미 둔 frontmatter는 고치지 않는다.
 
-프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 표시 언어가 한국어면 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어면 `## 4. Project rule extensions (SSOT)`이고, agctx는 두 제목을 모두 인식한다. 그래서 적용할 때와 다른 언어로 동기화해도 확장 섹션을 찾는다.
+프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 확장 섹션 아래에 직접 쓴다. 확장 섹션의 제목은 표시 언어가 한국어면 `## 4. 프로젝트 규칙 확장 (SSOT)`, 영어면 `## 4. Project rule extensions (SSOT)`이다. agctx는 두 제목을 모두 인식하고, 번호와 점이 없거나 제목 단계가 `###`로 바뀌어도 같은 경계로 본다. 경계를 찾지 못하면 파일 전체를 관리 영역으로 보므로 확장 영역에 쓴 내용까지 충돌로 판정된다. 그래서 적용할 때와 다른 언어로 동기화해도 확장 섹션을 찾는다.
 
 - **초안 만들기:** agctx는 코드베이스를 분석해 이 섹션을 채우지 않는다. 초안이 필요하면 Claude Code나 Codex의 `/init`으로 만든 뒤, 사람이 다듬어 이 확장 섹션으로 옮긴다. 지침에 무엇을 둘지와 그 근거는 [ADR 0006](../adr/0006-no-codebase-analysis-guidance.md)에 있다.
 - **어디에 둘지:** 여러 에이전트가 공통으로 읽는 파일은 `AGENTS.md`이므로, 에이전트들이 함께 따를 규칙은 여기에 둔다. Claude Code에만 줄 지침을 `CLAUDE.md`에 남기려면 `<!-- agctx:managed:start -->`와 `<!-- agctx:managed:end -->` 사이의 관리 블록 밖에 둔다.
-- **관리 영역 안을 고쳤을 때:** 다음 `apply`·`sync`가 `Managed file changed outside agctx`로 멈추고 어떤 파일도 쓰지 않는다. `agctx profile resolve <project>`를 실행하면 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 바로 아래 [관리 영역을 고쳐서 멈췄을 때](#관리-영역을-고쳐서-멈췄을-때)에 있다.
+- **관리 영역 안을 고쳤을 때:** 다음 `apply`·`sync`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈추고 어떤 파일도 쓰지 않는다. `agctx profile resolve <project>`를 실행하면 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 바로 아래 [관리 영역을 고쳐서 멈췄을 때](#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ## 관리 영역을 고쳐서 멈췄을 때
 
-`apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
+<!-- agctx-doc-sources: src/profile/resolve.ts -->
+<!-- agctx-doc-sources-sha256: 03a416e8203688c5519068e098f4d72d0733b592aa60d2689de753e96c10edbc -->
+
+`apply`·`sync`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
 
 - 멈춘 시점에는 어떤 파일도 쓰지 않았다.
 - 오류 메시지 아래에 차이를 볼 명령과 푸는 명령이 함께 나온다.
@@ -39,7 +66,7 @@ agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 �
 
 ```mermaid
 flowchart TD
-  STOP["apply·sync 중단<br/>Managed file changed outside agctx"] --> SEE["1. profile sync --dry-run<br/>conflict 파일과 diff 확인"]
+  STOP["apply·sync 중단<br/>프로필이 관리하는 영역을 직접 고침"] --> SEE["1. profile sync --dry-run<br/>conflict 파일과 diff 확인"]
   SEE --> RESOLVE["2. profile resolve"]
   RESOLVE --> Q{"마지막 적용본을<br/>알 수 있는가?"}
   Q -->|"예"| MOVE["편집한 줄을 관리 영역 밖으로 옮기고<br/>관리 영역을 새로 생성"]

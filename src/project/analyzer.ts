@@ -9,7 +9,12 @@ import { SUPPORTED_LOCALES, t } from '../i18n/index.ts';
 // The extension header is rendered in the active locale, so recognize every
 // locale's heading. Otherwise an English project loses its boundary and any
 // domain rule added under it reads as an edit to the profile-owned region.
-const EXTENSION_HEADER = /## \d+\.\s*(?:프로젝트 규칙 확장|Project rule extensions)[^\n]*\n+/i;
+// The boundary between the profile-owned area and the project's own rules is
+// this heading. People renumber and re-level headings in their own AGENTS.md,
+// so the number, the dot and the heading level are all optional: a boundary
+// that is not recognised would make the whole file managed and every edit a
+// conflict.
+const EXTENSION_HEADER = /^#{2,6}\s*(?:\d+\.?\s*)?(?:프로젝트 규칙 확장|Project rule extensions)[^\n]*\n+/im;
 const EXTENSION_BOILERPLATES = SUPPORTED_LOCALES.map(locale => t(locale, 'scaffold.extBody'));
 
 /**

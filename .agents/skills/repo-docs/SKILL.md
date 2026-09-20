@@ -23,7 +23,13 @@ metadata:
 
 - 그림·예시 형식은 `docs/contributing/doc-style.md`를 따른다. 현재 동작 예시는 실제로 실행한 출력에서 옮긴다.
 - 외부 사실은 `docs/references.md`에 출처 링크와 `(확인일: YYYY-MM-DD)`를 붙여 쓰고, 다른 문서는 그 절로 링크한다.
-- 코드 동작을 서술하면 `파일:줄`로 인용하고, 그 소스를 문서 상단 마커에 핀한다.
+- 코드를 가리킬 때는 파일과 그 안의 **최상위 선언이나 키** 이름으로 쓴다. 함수 안의 지역 이름은 가리킬 수 없다. 줄 번호와 코드 발췌는 쓰지 않는다. 지문 주석은 사람이 쓰지 않고 `--stamp`가 붙인다. 형식은 아래와 같다.
+
+```markdown
+판정은 `src/check.ts`의 `checkProject`가 한다.
+```
+ 이름이 그 파일에 있는지는 `check:docs`가 검사한다. 이유는 `docs/discussion/repository/topics/code-citation-style.md`에 있다.
+- 코드 동작을 서술한 문서는 그 소스를 문서 상단 마커에 핀한다.
 
 ## 3. ADR이 필요한지 판단한다
 
@@ -40,10 +46,11 @@ metadata:
 
 논의 문서의 계약을 구현했거나 구현하면서 계약이 바뀌었으면 같은 변경에서 갱신한다.
 
-- 그 문서의 `**상태:**`
+- `docs/discussion/topics.json`에서 그 주제의 `status`
 - 구현 기록(`#### 구현 기록: <범위>`)
-- 그 주제가 속한 영역의 색인(`docs/discussion/<영역>/README.md`)의 상태
 - 제안 요약의 `권장 다음 작업`
+
+그다음 `node tools/generate-discussion-status.ts`로 주제 문서의 상태 줄, 영역 색인, README 상태 목록을 다시 생성한다. 이 세 곳은 손으로 고치지 않는다. 새 주제를 더하면 `topics.json`에 항목을 넣고, 주제 문서의 제목 아래에 `<!-- agctx:generated:status:start -->`와 `<!-- agctx:generated:status:end -->` 표지를 둔 뒤 생성한다.
 
 형식과 기록 시점의 정본은 `docs/discussion/architecture/topics/implementation-contracts.md`다.
 
@@ -55,10 +62,11 @@ node tools/check-docs.ts --stamp  # 문서를 다시 읽고 고친 뒤에만 실
 pnpm run check                    # 형식 검사·문서 계약·평가 전체
 ```
 
-`doc sources changed` 실패는 핀한 소스가 바뀌었다는 뜻이다. **stamp만 다시 실행해도 통과하므로**, 먼저 문서를 열어 인용한 줄 번호와 서술이 지금 코드와 맞는지 확인한 뒤에 stamp한다. 게이트 계약과 대상 문서 목록은 `docs/contributing/doc-gate.md`가 정본이다.
+`가리킨 코드가 바뀌었다` 실패는 인용한 심볼의 내용이 바뀌었다는 뜻이다. 그 항목만 다시 읽고 고친 뒤 stamp한다. `doc sources changed` 실패는 핀한 소스가 바뀌었다는 뜻이다. **stamp만 다시 실행해도 통과하므로**, 먼저 문서를 열어 가리킨 위치와 서술이 지금 코드와 맞는지 확인한 뒤에 stamp한다. 게이트 계약과 대상 문서 목록은 `docs/contributing/doc-gate.md`가 정본이다.
 
 ## 6. 함께 갱신할 문서를 확인한다
 
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경: `CHANGELOG.md`의 `Unreleased`
 - 패키지의 목적·책임 경계·작업 모델: `docs/contributing/product-direction.md`와 README 요약
 - 공개 저장소 운영 계약: `docs/contributing/releasing.md`와 관련 GitHub 파일·workflow
+- 진행 중인 작업이 생기거나 바뀌거나 끝남: 루트 `PROGRESS.md`. 결정·근거는 정본 문서에 두고, 진행 파일에는 링크와 다음에 할 일만 적는다.

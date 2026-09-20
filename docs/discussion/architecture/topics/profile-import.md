@@ -1,6 +1,8 @@
 # 기존 저장소에서 프로필 만들기
 
+<!-- agctx:generated:status:start -->
 **상태:** Proposed
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

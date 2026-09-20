@@ -1,6 +1,8 @@
 # 프로필 모델과 저장소
 
+<!-- agctx:generated:status:start -->
 **상태:** Implemented
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

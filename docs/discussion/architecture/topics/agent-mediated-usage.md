@@ -1,6 +1,8 @@
 # 자연어 요청을 통한 agctx 사용
 
+<!-- agctx:generated:status:start -->
 **상태:** Implementing
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

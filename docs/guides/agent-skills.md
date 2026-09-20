@@ -1,7 +1,5 @@
 # 에이전트에게 agctx를 맡기기
 
-<!-- agctx-doc-sources: skills, tools/generate-skills.ts -->
-<!-- agctx-doc-sources-sha256: d2c739a541c62e70931f0ed5715a056a3f2553fcf71e5379d1da0dc7dfc2be93 -->
 
 "이 폴더에서 규칙이 안 먹는 이유를 찾아 줘"나 "새 팀 규칙을 이 저장소에 반영해 줘"처럼 에이전트에게 말로 맡기려면 에이전트용 스킬을 설치한다. 스킬은 상황별로 쓸 명령, 쓰기 전에 승인을 받는 규칙, 종료 코드의 뜻을 에이전트에게 알려 준다.
 
@@ -21,6 +19,9 @@
 
 ## 스킬이 맡는 일
 
+<!-- agctx-doc-sources: tools/generate-skills.ts -->
+<!-- agctx-doc-sources-sha256: 3313465bb1b05d8ada2fd6997b3189cc3542a2dfa7a98f193ccf320439a731bf -->
+
 | 스킬 | 맡는 일 | 에이전트가 스스로 쓰는가 |
 | --- | --- | --- |
 | `agctx` | **읽기만 한다.** 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 프로필 내용과 원격 상태 보기(`profile list`·`view`·`status`) | 쓴다 |
@@ -33,6 +34,9 @@
 표에 나온 명령이 각각 무엇을 하는지는 [CLI Reference](../reference/cli.md#명령어)의 명령 목록에 한 줄씩 있다.
 
 ## 설치하기
+
+<!-- agctx-doc-sources: skills -->
+<!-- agctx-doc-sources-sha256: 33ce9e59363046f460417725ab2f263112d3eade5ec869e2e5d88d91580511cb -->
 
 1. 아래 명령을 실행한다. 이 컴퓨터의 모든 프로젝트에서 쓰도록 설치하므로 실행 위치는 상관없다.
 

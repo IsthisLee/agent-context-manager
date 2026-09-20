@@ -26,6 +26,14 @@
   - 커밋 메시지는 Conventional Commits 형식을 따르고 제목과 본문을 한국어로 쓴다. 타입(`feat`, `fix`, `docs` 등)과 코드 식별자·명령은 원문 그대로 둔다. 예: `docs: README 상단에 가로 목차 추가`
   - 브랜치는 squash로 병합되므로 `main`의 커밋 하나가 PR 하나다. PR은 되돌릴 단위로 끊고 관련 없는 정리는 다른 PR로 뺀다. 병합 절차와 저장소 설정의 정본은 [릴리스와 저장소 운영](docs/contributing/releasing.md)이다.
   - 커밋이 여러 개인 PR은 PR 제목이 `main` 커밋 제목이 되므로 제목도 Conventional Commits 형식으로 쓴다.
+  - push, PR 생성, `main` 병합(관리자 병합 포함)은 사용자가 요청할 때만 한다. 그 전까지는 로컬 브랜치에서 수정·검증·커밋까지 하고 결과를 보고한다. 한 번의 요청은 그 PR에만 적용된다.
+  - 작업은 사용자가 연 체크아웃에서 브랜치를 바꿔 가며 하고, 저장소 밖에 별도 worktree를 만들지 않는다. 브랜치를 바꾸기 전에 `git status`로 커밋하지 않은 변경을 확인하고, 다른 사람이나 다른 세션의 변경이 있으면 먼저 묻는다.
+6. **세션 시작과 끝.**
+  - 세션을 시작하면 루트 [`PROGRESS.md`](PROGRESS.md)를 읽고 진행 중인 작업을 이어받는다.
+  - 세션을 끝낼 때는 그 파일의 갱신 규칙대로 고쳐 마지막 커밋에 함께 넣는다. "최근 기록"과 "구현 중인 논의 주제" 표는 손으로 쓰지 말고 `node tools/generate-progress.ts`로 다시 만든다. 무엇을 했는지는 git이, 주제의 상태와 다음 작업은 `topics.json`과 논의 문서가 갖고 있다.
+  - 진행 파일은 Markdown으로 쓴다. 정본 문서로 가는 링크와 표가 주 내용이고, `check:docs`의 링크·앵커 검사가 Markdown 파일만 순회하기 때문이다. 기계가 고치는 상태는 `docs/discussion/topics.json`에 둔다.
+  - 진행 파일은 루트에 한 파일로 둔다. 항목마다 별도 문서가 필요해지거나 루트가 어수선해지면 `docs/`로 옮긴다([근거](docs/references.md#세션-사이-작업-상태-근거)). 주제별 계획과 상태는 이미 `docs/discussion/`과 `topics.json`이 맡으므로 새 계획 폴더를 만들지 않는다.
+  - 이 컴퓨터에서만 유효한 관찰이나 아직 확정되지 않은 것은 진행 파일이 아니라 에이전트의 메모리에 둔다. 메모리는 저장소에 커밋되지 않고 Claude Code에서만 쓰므로, 다른 에이전트와 기여자가 함께 봐야 하는 것은 진행 파일에 적는다.
 
 ---
 
@@ -79,13 +87,15 @@
   | npm·Node.js·CLI 일반 원리와 구현의 연결 해설 | `docs/contributing/implementation-principles.md` |
   | 되돌리기 어렵거나 장기 영향을 주는 결정의 이유·결과 | `docs/adr/` |
   | 사용자 영향 변경의 버전별 기록 | `CHANGELOG.md` |
+  | 진행 중인 작업과 다음 세션이 이어받을 순서(링크와 다음 할 일만) | `PROGRESS.md` |
   | 외부 소개·탐색용 요약 | `README.md`, `docs/README.md` |
   
 - **외부 근거는 출처와 확인일을 붙여 `docs/references.md` 한 곳에 둔다.** 링크한 문서를 열어 그 주장이 실제로 있는지 확인한 뒤에 쓰고, 공식 문서·비공식 자료·직접 실험을 구분한다. 다른 문서는 외부 사실을 다시 쓰지 말고 `references.md`의 절로 링크한다. 확인일 표기 규칙과 ADR 근거 필드는 [문서 근거 게이트](docs/contributing/doc-gate.md#문서-근거-게이트)가 정본이며 `check:docs`가 강제한다.
 - **정본·상태·링크 확인을 변경 완료 조건으로 한다.** 문서를 추가·수정할 때 (1) 내용 상태와 정본 위치, (2) 기존 정본과의 중복·모순 여부, (3) 다른 문서에는 요약·링크만 둘지, (4) 논의가 결정 또는 구현으로 승격됐는지를 확인하라. 이 확인 없이 편의상 이미 열어 둔 문서에 내용을 섞어 넣지 마라.
 - **기능 인터페이스 동등성:** 모든 사용자 기능은 CLI 명령·옵션과 TUI 흐름에서 모두 실행 가능해야 하고, 에이전트가 쓸 수 있는지는 등록부의 `agent` 정책이 정한다(ADR 0029). 특정 프로필을 다루는 기능은 `agctx profile list`의 프로필 관리 메뉴에서도 실행 가능해야 한다. 명령은 `src/commands/registry.ts`에 표면(`profile`·`repository`·`global`)과 TUI 항목(`tui`)을 함께 등록하고 각 경로의 동작 평가를 추가하라. TUI로 옮길 수 없는 명령은 새 ADR로 예외를 정한다. 기준의 정본은 `implementation-contracts.md`의 "인터페이스 동등성" 절과 ADR 0025다.
 - `Proposed`·`Implementing` 논의 문서는 상태 아래에 **제안 요약**과 **목차**를 둔다. 필수 항목·묶음·표기 방식은 정본인 `docs/discussion/architecture/topics/implementation-contracts.md`를 따른다.
-- **구현하면 논의 문서에 결과를 남긴다.** 논의 문서의 계약을 구현하거나 구현하면서 계약이 바뀌면, 같은 변경에서 그 문서의 `**상태:**`, 구현 기록, 그 주제가 속한 논의 영역의 색인(`docs/discussion/<영역>/README.md`)의 상태, 제안 요약의 `권장 다음 작업`을 갱신하라. 제안 본문은 결정 이력이므로 지우지 마라. 기록 형식과 시점은 정본인 `implementation-contracts.md`의 "구현 기록" 절을 따르고, `check:docs`가 강제한다.
+- **구현하면 논의 문서에 결과를 남긴다.** 논의 문서의 계약을 구현하거나 구현하면서 계약이 바뀌면, 같은 변경에서 `docs/discussion/topics.json`의 상태, 그 문서의 구현 기록과 제안 요약의 `권장 다음 작업`을 갱신하라. 주제 문서의 상태 줄, 논의 색인, README 상태 목록은 손으로 고치지 말고 `node tools/generate-discussion-status.ts`로 다시 생성한다. 제안 본문은 결정 이력이므로 지우지 마라. 기록 형식과 시점은 정본인 `implementation-contracts.md`의 "구현 기록" 절을 따르고, `check:docs`가 강제한다.
+- **코드는 복사하지 말고 가리킨다.** 문서에서 코드를 가리킬 때는 `판정은 <파일>의 <이름>이 한다`처럼 파일과 그 안의 이름으로 쓰고, 줄 번호와 코드 발췌는 쓰지 않는다. 가리킨 이름이 그 파일에 있는지와, 그 코드의 지문이 문서에 기록된 값과 같은지는 `check:docs`가 검사한다. 가리킨 코드가 바뀌면 그 항목만 실패하므로 문서를 다시 읽고 `node tools/check-docs.ts --stamp`로 지문을 갱신한다. 결정과 측정은 [문서가 코드를 인용하는 방식](docs/discussion/repository/topics/code-citation-style.md)에 있다. 이력을 남기는 `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 이 규칙의 대상이 아니다.
 - **문서는 그림과 예시로 먼저 보여 준다.** 글로만 따라가기 어려운 내용은 다이어그램·명령 출력·파일 발췌로 보여 준다. 보여 줄 내용별 형식과 예시 작성 규칙의 정본은 [`docs/contributing/doc-style.md`](docs/contributing/doc-style.md)다. 현재 동작 예시는 실제 실행 출력에서 옮기고, 구현되지 않은 예시는 "제안 예시"라고 밝힌다.
 - 이 원칙은 `references.md`뿐 아니라 README, 사용자 문서, 제품 방향, 아키텍처, ADR, discussion 전체에 적용된다. 예를 들어 외부 비교에서 나온 TODO는 비교 문서가 아니라 논의 문서에, 구현 중 발견한 장기 결정은 작업 문서가 아니라 ADR에, 확정 전 제안은 현재 아키텍처 문서가 아니라 discussion에 둔다.
 - 문서에는 최종 동작 또는 정책, 영향 범위, 검증 증거, 알려진 제약과 후속 작업을 기록하라.

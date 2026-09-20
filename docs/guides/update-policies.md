@@ -1,7 +1,5 @@
 # 갱신 방식 고르기: 고정과 예약 봇
 
-<!-- agctx-doc-sources: src/repos/pr.ts, src/repos/sync.ts, src/profile/apply.ts, src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ffb1164000148dcfee3ab7ebbae18521276a0c964050f72aef629794178fb4c8 -->
 
 프로필이 바뀌었을 때 저장소가 새 지침을 받는 방식은 두 가지다. 적용할 때 `--pin`을 붙이면 고정이고, 붙이지 않으면 고정하지 않은 상태다. 차이는 프로필에 새 커밋이 생긴 뒤 `sync`를 실행했을 때 드러난다.
 
@@ -55,6 +53,9 @@ flowchart LR
 
 ## 두 방식의 차이 확인하기
 
+<!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: c67bc86f7d64b3ce6db9e4ed493e4aa685c1d57131d4923675ba2262525ad88b -->
+
 두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 
 고정하지 않은 `web-app`은 `sync`로 새 커밋의 내용을 받는다.
@@ -99,9 +100,15 @@ Plan: 0 file(s) to change.
 
 ## 고정하지 않은 저장소
 
+<!-- agctx-doc-sources: src/repos/sync.ts -->
+<!-- agctx-doc-sources-sha256: d58f3b82546b629add7a39c82b27773f15f5044efeea6d7b5fe8c69f93cae448 -->
+
 프로필을 고치거나 `profile pull`로 받은 뒤 `agctx repos sync --profile <이름>`을 실행한다. 절차와 출력은 [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](multi-repo-individual.md#여러-저장소를-한-번에-맞추기)에 있다.
 
 ## 고정한 저장소를 PR로 갱신
+
+<!-- agctx-doc-sources: src/repos/pr.ts -->
+<!-- agctx-doc-sources-sha256: 24efaa3a9ca0a15b10033f95ea4a19c34be4967fee2aa86241b21d6d6dcd827b -->
 
 ```bash
 agctx profile pull team-backend
@@ -154,6 +161,9 @@ jobs:
 - 봇이 연 PR은 각 저장소의 CI에서 `agctx check`로 검사한 뒤 리뷰해 병합한다([CI에서 확인하기](ci.md#ci에서-확인하기)).
 
 ## 고정하거나 풀기
+
+<!-- agctx-doc-sources: src/profile/apply.ts -->
+<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
 
 - 처음 고정하거나 새 커밋으로 옮기려면 `agctx profile apply <이름> <프로젝트> --pin`을 실행한다. Git에 연결했고 커밋하지 않은 수정이 없는 프로필이어야 한다.
 - 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.

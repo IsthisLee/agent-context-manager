@@ -1,7 +1,5 @@
 # 팀과 Git으로 공유하기
 
-<!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/apply.ts, src/profile/setup.ts, src/check.ts, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 4cb4de0d2cd2dd08fd681eed1ec9b08f05d29262a5fcd7fbc48d912c185678bd -->
 
 팀·조직 프로필은 표준 Git 원격(GitHub·GitLab 등)에 두고 주고받는다. 권한·리뷰·변경 이력은 Git 호스트가 맡고, agctx는 사용자의 Git 인증으로 `git`을 실행할 뿐이다. `clone`·`status`·`pull`·`push`·`connect`는 프로필만 다루고 프로젝트 파일은 건드리지 않는다. 결정과 안전 계약은 [ADR 0017](../adr/0017-git-profile-sharing.md)에 있다.
 
@@ -85,6 +83,9 @@ flowchart TB
 
 ## 관리자: 팀 프로필 올리기
 
+<!-- agctx-doc-sources: src/profile/setup.ts, src/profile/git-profile.ts -->
+<!-- agctx-doc-sources-sha256: 10d09fc4e8661ef84b0780155318f4c2689362d7876faa8fd9fb27710a46fa2d -->
+
 ### 1. 프로필 만들기
 
 ```bash
@@ -101,7 +102,7 @@ $ agctx profile setup team-backend --tdd on --security on
 Configured profile: team-backend
 ```
 
-작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts:15-26`, `:48`). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->·`setupProfile`<!--s:605737432754-->). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
 
 ### 3. 첫 커밋 만들기
 
@@ -140,6 +141,9 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 `clean`과 `ahead 0, behind 0`이 보이면 로컬 프로필과 원격이 같다.
 
 ## 적용 담당: 저장소에 적용하기
+
+<!-- agctx-doc-sources: src/profile/apply.ts -->
+<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
 
 ### 1. 프로필 받기
 
@@ -245,6 +249,9 @@ Antigravity · started in the project root
 
 ## 프로필이 바뀌었을 때
 
+<!-- agctx-doc-sources: src/check.ts -->
+<!-- agctx-doc-sources-sha256: 43bc5c76f07d49780d37bca01231974354feec0c76861475e15ba8665175d766 -->
+
 ```mermaid
 sequenceDiagram
   actor A as 관리자
@@ -317,6 +324,9 @@ Applied profile team-backend to /path/to/orders-api
 - 저장소가 여럿이면 [갱신 방식 고르기](update-policies.md)에 있는 명령으로 한 번에 처리한다. `repos sync`는 고정하지 않은 저장소들을 한 번에 다시 적용하고, `repos pr`은 고정한 저장소마다 새 버전 PR을 연다. `repos pr`은 예약 봇에 맡길 수도 있다.
 
 ## 개발자: 저장소 받기
+
+<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: fe1f09f851a4add870358fe620652227f6a02abdf88b1d911bd2acf52830b51d -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

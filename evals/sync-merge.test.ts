@@ -166,3 +166,27 @@ test('mergeManagedDocument preserves an unmarked legacy file instead of replacin
   assert.match(merged, /Keep this content/);
   assert.match(merged, /Generated guidance/);
 });
+
+test('the extension boundary is found even when the heading lost its number, dot or level', () => {
+  const managed = '# Profile: demo\n\n지침 본문\n';
+  const variants = [
+    '## 4. 프로젝트 규칙 확장 (SSOT)',
+    '## 4 프로젝트 규칙 확장',
+    '## 프로젝트 규칙 확장',
+    '### 4. 프로젝트 규칙 확장 (SSOT)',
+    '## Project rule extensions',
+    '#### Project rule extensions (SSOT)'
+  ];
+
+  for (const heading of variants) {
+    const content = `${managed}\n${heading}\n\n- 우리 팀 규칙\n`;
+    assert.equal(extractAgentsManagedDocument(content), managed.trimEnd(), `boundary: ${heading}`);
+    assert.equal(hashAgentsManagedDocument(content), hashAgentsManagedDocument(`${managed}\n${heading}\n\n- 다른 규칙\n`), `the project side does not change the managed hash: ${heading}`);
+  }
+});
+
+test('a document with no extension heading is managed as a whole, which the caller reports as a missing boundary', () => {
+  const content = '# Profile: demo\n\n지침 본문\n\n- 사람이 더한 줄\n';
+
+  assert.equal(extractAgentsManagedDocument(content), content.trimEnd(), 'without a boundary the whole document is managed');
+});

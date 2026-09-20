@@ -1,15 +1,19 @@
 # 파일 형식과 저장 위치
 
-<!-- agctx-doc-sources: src/shared/home.ts, src/shared/types.ts, src/project/plan.ts, src/repos/registry.ts, src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 0f1409f8689f977f2b4541bb15a87f859a7dd838d41472a4e5f50e4ff69797b2 -->
 
 ## 저장 위치
+
+<!-- agctx-doc-sources: src/shared/home.ts -->
+<!-- agctx-doc-sources-sha256: 4f44840c1ba3bb152200dbff3b5c94090a8d18f85bf22ee77d82b3e1572d19cf -->
 
 프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 지침 `AGENTS.md`로 저장된다. Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다. `verify`는 `CODEX_HOME`(기본 `~/.codex`)과 `CLAUDE_CONFIG_DIR`(기본 `~/.claude`) 아래의 세션 기록을 읽기만 한다.
 
 프로젝트에는 `AGENTS.md`, `CLAUDE.md`, `.agents/rules/agctx.md`, `agctx.project.json`(적용한 프로필·프로젝트 이름·적용 버전·관리 영역 해시), `.agctx/`(마지막 적용본 `base/`, 충돌을 풀 때 만드는 백업 `backups/`)가 생긴다.
 
 ## agctx.project.json
+
+<!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
+<!-- agctx-doc-sources-sha256: 3f43bee6bb5cfffa53003083dc11a544d5f474b9acca2d6f6dc0e1bcfb481b93 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -44,9 +48,15 @@
 
 ## profile.json
 
+<!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
+<!-- agctx-doc-sources-sha256: bb813364da46641a593304be1846602fa6cafebd17c0c2871d7a9585d4468459 -->
+
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다.
 
 ## repos.json
+
+<!-- agctx-doc-sources: src/repos/registry.ts -->
+<!-- agctx-doc-sources-sha256: 27b931137e98513f178f3920dea7d305170bbffb2a2efeafbb8968b996ebd53a -->
 
 `$AGCTX_HOME/repos.json`(기본 `~/.agctx/repos.json`)은 이 컴퓨터에서 프로필을 적용한 저장소 목록이다. `{ "schemaVersion": 1, "repos": [...] }` 형식이고 항목마다 `path`(폴더의 실제 경로)·`profile`·`pinned`·`updatedAt`이 있다. 어떤 저장소에도 커밋하지 않는다.
 

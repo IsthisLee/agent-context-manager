@@ -2,16 +2,20 @@
 
 이 문서는 agctx 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture.md`](architecture.md), 외부 근거는 [`references.md`](../references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](../discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
-<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 35b0cd2366dc7034c4550046b5fe961cc93b6ac12c6b46758124d59779d08178 -->
 
 `agent-context-manager`는 공개 GitHub 저장소와 npm registry로 배포하는 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
 ## 품질 게이트
 
+<!-- agctx-doc-sources: tsconfig.json, tools/check-docs.ts, tools/package-smoke.ts -->
+<!-- agctx-doc-sources-sha256: 4829c29fe430905b38ae011ca70a04bb63ec44d058d7f366ce231c3ef3d39a18 -->
+
 변경을 올리기 전의 검사 순서와 평가 작성 방법은 [테스트와 품질 게이트](testing.md)에, 문서 소스 해시 게이트와 근거 게이트는 [문서 게이트](doc-gate.md)에 있다.
 
 ## 릴리스
+
+<!-- agctx-doc-sources: package.json, .github/workflows, tools/build.ts -->
+<!-- agctx-doc-sources-sha256: 315cddddbfd9c1575f0824394b2baf919c49c26a3f3f19adbfefa680a41648fd -->
 
 ### 릴리스 전 점검
 
@@ -54,12 +58,15 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 2. 패키지 소유자가 `npm login`으로 로그인한 컴퓨터에서 병합된 main을 체크아웃하고 `npm publish`를 실행한다. `prepublishOnly`가 `check`와 `pack:check`를 먼저 실행한다. 이 버전에는 provenance가 없다. 계정이 쓰기 작업에 2단계 인증을 요구하면 레지스트리에 올리기 직전에 브라우저 인증이나 일회용 비밀번호를 묻으므로 대화형 터미널에서 실행한다. 대화형이 아닌 셸에서는 인증 주소만 출력하고 `EOTP`로 멈춘다(npm 11.19.0에서 2026-09-16 실측, 아무것도 게시되지 않음).
 3. npmjs.com 패키지 설정의 Trusted Publisher에 `IsthisLee/agent-context-manager` 저장소와 `publish.yml`을 연결한다. 명령줄로는 `npm trust github --repo IsthisLee/agent-context-manager --file publish.yml --allow-publish`이며 계정 2단계 인증이 필요하다. 화면에서 연결할 때는 허용 동작(allowed actions)에 `npm publish`도 선택한다. 2026-09-03 이후 만든 설정은 기본으로 `npm stage publish`만 허용해서, workflow의 `npm publish`가 provenance 서명까지 마친 뒤 `403 Forbidden … OIDC permission denied for this action`으로 거부된다(v0.3.1에서 실측). 설정을 고친 뒤에는 Release를 다시 만들지 않고 실패한 workflow를 다시 실행한다.
 4. 같은 패키지 설정의 Publishing access에서 "Require two-factor authentication and disallow tokens"를 골라 토큰 게시를 막는다.
-5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml:35-47`).
+5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml`의 `Check whether the release is already published` 단계).
 6. 앞 절차의 5번처럼 임시 디렉터리에서 설치와 `agctx help`를 확인한다.
 
 그다음 버전부터는 앞 절차의 1~5번대로 GitHub Release만 게시한다.
 
 ## 의존성과 보안
+
+<!-- agctx-doc-sources: .github/dependabot.yml -->
+<!-- agctx-doc-sources-sha256: 258f88f1b3d7c68f5f5d35c4f0078deef62f1ece112ecae1f8c64512843a6749 -->
 
 - Dependabot은 npm 의존성과 GitHub Actions 참조를 주기적으로 확인한다.
 - 공개 저장소의 PR에는 Dependency Review를 활성화하고, 취약한 의존성 도입 여부를 검토한다.

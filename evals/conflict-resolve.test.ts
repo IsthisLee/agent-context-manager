@@ -106,7 +106,7 @@ test('a conflicting sync names every changed managed file and how to see and res
   const result = fixture.run(['profile', 'sync', fixture.project]);
 
   assert.equal(result.status, 2);
-  assert.match(result.stderr, /Managed file changed outside agctx: AGENTS\.md, CLAUDE\.md/);
+  assert.match(result.stderr, /edits inside the profile-owned area: AGENTS\.md, CLAUDE\.md/);
   assert.match(result.stderr, /profile sync --dry-run/);
   assert.match(result.stderr, /profile resolve/);
   assert.deepEqual(snapshot(fixture.project), before);

@@ -13,7 +13,7 @@
 
 | 순서 | 작업 | 정본 | 상태 | 다음에 할 일 |
 | --- | --- | --- | --- | --- |
-| 1 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 범위 재검토 필요 | 인용을 이름으로 바꾼 뒤([ADR 0032](docs/adr/0032-cite-code-by-name.md)) 게이트가 울릴 이유가 줄었으므로 범위를 다시 정한 뒤 구현한다. README의 논의 폴더 핀은 이미 뺐다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
+| 1 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 구현 중 | 절 단위 핀은 구현했고 `testing.md`로 시범했다. 남은 27개 문서를 옮겨 문서 전체 단위 핀을 없앤다. 명령 출력을 싣는 문서는 실행 대조로, 코드 사실을 말하는 문서는 인용과 절 단위 핀으로 나눈다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
 | 2 | Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
 | 3 | `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 28줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
 

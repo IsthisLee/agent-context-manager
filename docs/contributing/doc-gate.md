@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: 9e66720019d0860b7f109101038c8f5a3674eae605f29fab46e2330efed93221 -->
+<!-- agctx-doc-sources-sha256: ceeb936a1096bb46078d209c23ca0d060e1af8a1d02e7d576a1678beba5666d5 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -42,6 +42,7 @@ flowchart TD
 
 게이트는 소스가 바뀌었다는 사실만 알린다. 문서를 고치는 단계를 건너뛰고 `--stamp`만 실행해도 다시 통과하므로, 문서가 정확한지는 사람이 확인해야 한다.
 
+- **마커는 절마다 둘 수 있다.** 한 마커는 그 위치부터 다음 마커 전까지를 맡고, 실패 메시지에 그 마커 위의 제목이 함께 나온다. 문서 하나를 통째로 핀하면 관련 없는 변경에도 문서 전체를 다시 읽어야 하므로, 절이 기대는 소스만 그 절에 단다. 예를 들어 [테스트와 품질 게이트](testing.md)는 `.github/workflows/ci.yml`을 "CI 환경" 절에만 달아, 그 파일이 바뀌면 그 절만 걸린다.
 - 마커는 `<!-- agctx-doc-sources: <쉼표로 구분한 경로> -->`와 `<!-- agctx-doc-sources-sha256: <64자리 hex> -->` 두 줄이다. 경로에는 파일뿐 아니라 디렉터리도 넣을 수 있다. 디렉터리를 넣으면 그 아래 모든 파일을 해싱하므로 안에서 파일이 추가·삭제·수정되면 목록을 고치지 않아도 게이트가 걸린다.
 - 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.ts --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
 - 문서도 소스로 핀할 수 있다. 핀한 문서의 `agctx-doc-sources-sha256` 줄과 생성 블록의 내용은 해싱에서 빼므로(`withoutRecordedHash`·`withoutGeneratedBlocks`, `tools/doc-sources.ts`), 그 문서를 다시 stamp하거나 생성 블록을 다시 생성해도 핀한 쪽은 실패하지 않고 사람이 쓴 본문이 바뀔 때만 실패한다. 생성 블록은 평가가 원본 데이터와 대조하므로 해시로 다시 지키지 않는다. `README.md`와 `README.en.md`는 이 방식으로 서로를 핀한다. 한 언어의 README를 고치면 다른 언어 README가 실패하므로, 두 파일을 같은 내용으로 맞춘 뒤 stamp한다.

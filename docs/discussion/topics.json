@@ -191,7 +191,7 @@
       "title": "문서 소스 해시 게이트의 핀 범위와 승인 단위",
       "importance": "High",
       "outcome": "관련 없는 문서까지 실패시키는 범위를 줄이고, 실패 원인을 보여 주며, 문서를 하나씩 승인",
-      "status": "Proposed"
+      "status": "Implementing"
     },
     {
       "file": "doc-accuracy-review.md",

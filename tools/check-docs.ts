@@ -11,7 +11,7 @@ import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumbe
 import { citedText, symbolDigest } from './symbol-source.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
-import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
+import { docSourceSections, SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
 import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -331,21 +331,7 @@ function checkChangelog() {
 // sha256 of those files. When any listed source changes, the recorded hash no
 // longer matches and `pnpm run check` fails, forcing a re-read of the document.
 // `--stamp` re-records the hash after a human has re-verified the document.
-const DOC_SOURCES_LIST = /<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/;
-const DOC_SOURCES_HASH = /<!--\s*agctx-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
-
-function docSourceSpec(content: string) {
-  const listMatch = content.match(DOC_SOURCES_LIST);
-  // Documentation that describes the marker format uses <placeholder> text. Ignore
-  // it so the gate acts only on real markers whose list is concrete source paths.
-  if (listMatch && /[<>]/.test(listMatch[1])) return null;
-  const hashMatch = content.match(DOC_SOURCES_HASH);
-  if (!listMatch && !hashMatch) return null;
-  const sources = listMatch ? listMatch[1].split(',').map(value => value.trim()).filter(Boolean) : [];
-  return { listMatch, hashMatch, sources };
-}
-
-/** All files under a directory, absolute paths, collected recursively. */
+/** Every file below a directory, so a pinned folder covers what is inside it. */
 function walkFiles(dir: string, files: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === '.git' || entry.name === 'node_modules') continue;
@@ -385,33 +371,37 @@ function computeDocSourcesHash(sources: string[]) {
 function checkDocSources() {
   const pins: string[] = [];
   for (const markdownFile of walkMarkdown(root)) {
-    const spec = docSourceSpec(fs.readFileSync(markdownFile, 'utf8'));
-    if (!spec) continue;
+    const content = fs.readFileSync(markdownFile, 'utf8');
     const relative = path.relative(root, markdownFile);
-    if (!spec.listMatch || !spec.hashMatch) {
-      errors.push(`${relative}: doc-source marker needs both the agctx-doc-sources and agctx-doc-sources-sha256 lines`);
-      continue;
-    }
-    if (!spec.sources.length) {
-      errors.push(`${relative}: agctx-doc-sources list is empty`);
-      continue;
-    }
-    for (const pin of wholeRootPins(spec.sources)) {
-      errors.push(`${relative}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
-    }
-    pins.push(...spec.sources);
-    const computed = computeDocSourcesHash(spec.sources);
-    if (computed.error) {
-      errors.push(`${relative}: ${computed.error}`);
-      continue;
-    }
-    const recorded = spec.hashMatch[1];
-    if (recorded === 'PENDING') {
-      errors.push(`${relative}: doc-source hash is PENDING. Verify the doc against ${spec.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp\`.`);
-      continue;
-    }
-    if (recorded !== computed.digest) {
-      errors.push(`${relative}: doc sources changed since last verified. Re-read the doc against ${spec.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
+    // Documentation that describes the marker format uses <placeholder> text.
+    // Ignore it so the gate acts only on markers whose list is real paths.
+    for (const section of docSourceSections(content)) {
+      if (section.sources.some(source => /[<>]/.test(source))) continue;
+      const place = section.heading ? `${relative} (${section.heading})` : relative;
+      if (section.digest === null) {
+        errors.push(`${place}: doc-source marker needs both the agctx-doc-sources and agctx-doc-sources-sha256 lines`);
+        continue;
+      }
+      if (!section.sources.length) {
+        errors.push(`${place}: agctx-doc-sources list is empty`);
+        continue;
+      }
+      for (const pin of wholeRootPins(section.sources)) {
+        errors.push(`${place}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
+      }
+      pins.push(...section.sources);
+      const computed = computeDocSourcesHash(section.sources);
+      if (computed.error) {
+        errors.push(`${place}: ${computed.error}`);
+        continue;
+      }
+      if (section.digest === 'PENDING') {
+        errors.push(`${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp\`.`);
+        continue;
+      }
+      if (section.digest !== computed.digest) {
+        errors.push(`${place}: doc sources changed since last verified. Re-read this part against ${section.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
+      }
     }
   }
   const sourceFiles = SOURCE_ROOTS
@@ -443,16 +433,26 @@ function stampDocSources() {
   const updated = stampCitations();
   for (const markdownFile of walkMarkdown(root)) {
     const content = fs.readFileSync(markdownFile, 'utf8');
-    const spec = docSourceSpec(content);
-    if (!spec || !spec.listMatch || !spec.hashMatch || !spec.sources.length) continue;
-    const computed = computeDocSourcesHash(spec.sources);
-    if (computed.error) {
-      console.error(`- ${path.relative(root, markdownFile)}: ${computed.error}`);
-      failed = true;
-      continue;
+    const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
+    if (!sections.length) continue;
+    let next = content;
+    let changed = false;
+    for (const section of sections) {
+      if (section.digest === null) continue;
+      const computed = computeDocSourcesHash(section.sources);
+      if (computed.error) {
+        console.error(`- ${path.relative(root, markdownFile)}: ${computed.error}`);
+        failed = true;
+        continue;
+      }
+      if (section.digest === computed.digest) continue;
+      const from = next.indexOf(`<!-- agctx-doc-sources-sha256: ${section.digest} -->`);
+      if (from < 0) continue;
+      next = `${next.slice(0, from)}<!-- agctx-doc-sources-sha256: ${computed.digest} -->${next.slice(from + `<!-- agctx-doc-sources-sha256: ${section.digest} -->`.length)}`;
+      changed = true;
     }
-    if (spec.hashMatch[1] === computed.digest) continue;
-    fs.writeFileSync(markdownFile, content.replace(DOC_SOURCES_HASH, `<!-- agctx-doc-sources-sha256: ${computed.digest} -->`));
+    if (!changed) continue;
+    fs.writeFileSync(markdownFile, next);
     updated.push(path.relative(root, markdownFile));
   }
   if (updated.length) {

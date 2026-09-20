@@ -3,7 +3,7 @@
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 구현 위치와 그 이유를 가리키는 안내도는 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 77561fa2ab1dc1dbca4bf3cdd48fb229223dd470524e32024afe3008fb3f2217 -->
+<!-- agctx-doc-sources-sha256: cb5794758646f9da199d8ff03e2a0a772d4803cd7156f239c1e742bee727caba -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
@@ -92,7 +92,7 @@ agent-context-manager/
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
 │   ├── doc-citations.ts         # 문서가 코드를 가리키는 형식 검사(줄 번호 금지·이름 존재·지문 표지)
-│   ├── doc-sources.ts           # 핀 범위 규칙과, 핀한 문서를 해시할 때 뺄 해시 줄·생성 블록
+│   ├── doc-sources.ts           # 절 단위 핀 읽기, 핀 범위 규칙, 해시에서 뺄 해시 줄·생성 블록
 │   ├── generate-discussion-status.ts # topics.json에서 논의 상태 줄·색인 표·README 목록 생성(--check로 검사)
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
 │   ├── generate-skills.ts       # 명령 등록부에서 스킬의 명령 목록 생성(--check로 검사)

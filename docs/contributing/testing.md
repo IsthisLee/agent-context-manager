@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
-<!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows/ci.yml, evals/support, tools/package-smoke.ts, tools/skills-smoke.ts, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 458ce58e2d2bccd7541b7db779cbb8e869fea1a72595451e33f3d078216f0e7a -->
+<!-- agctx-doc-sources: package.json, tsconfig.json, tools/package-smoke.ts -->
+<!-- agctx-doc-sources-sha256: 4a46a2292fcc27ff2d49f3257ecb325a1eb50474f19a82abe68d942e0bd33ab9 -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 
@@ -19,6 +19,9 @@ pnpm run audit
 
 ## 평가 작성
 
+<!-- agctx-doc-sources: evals/support, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, evals/doc-examples.test.ts -->
+<!-- agctx-doc-sources-sha256: d693006f882f0cf079c50e26275beda439c5a8cba6d512b2e200b7792f7f94cd -->
+
 - 평가는 `evals/*.test.ts`이며 Node.js 내장 `node:test`로 실행한다. 코드를 바꾸기 전에 실패하는 평가를 먼저 쓰고(Red), 통과시킨 뒤(Green) 정리한다.
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.
 - `evals/support/git-workspace.ts`의 `makeWorkspace`<!--s:1e4191609400-->는 사람마다 따로 `AGCTX_HOME`을 둔 임시 컴퓨터를 만들고, `publishProfile`·`serviceRepo`는 bare 원격과 작업 저장소를, `fakeCommands`는 PATH에 두는 가짜 `gh`·에이전트 CLI를 만든다(Windows에서는 `.cmd` 래퍼).
@@ -30,11 +33,17 @@ pnpm run audit
 
 ## CI 환경
 
+<!-- agctx-doc-sources: .github/workflows/ci.yml -->
+<!-- agctx-doc-sources-sha256: 6a0a2745790ca3f86b1db3e3e39e495580bfef173740f3a7c3ad8475bf3d9bfc -->
+
 GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·24 LTS와 26 Current, macOS와 Windows의 Node.js 22 LTS 조합을 고정된 pnpm 버전으로 검증한다. 지원 하한인 22를 세 운영체제에서 모두 돌려 새 API를 실수로 쓰면 CI가 잡게 한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 같은 이유로 Node.js 22로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
 
 저장소 루트의 `.editorconfig`와 `.gitattributes`는 편집기·운영체제에 따른 인코딩, 줄바꿈, 공백 차이를 줄이는 기본 파일 형식 계약이다.
 
 ## 네트워크가 필요한 확인
+
+<!-- agctx-doc-sources: tools/skills-smoke.ts -->
+<!-- agctx-doc-sources-sha256: 89a242f8407fab433814fad48a8029b265b897ce63722095d02af4c7f71b1af4 -->
 
 - `node tools/skills-smoke.ts`: skills CLI로 스킬을 임시 프로젝트에 설치해 위치를 확인하고, 기여자 전용 스킬(`.agents/skills/repo-docs`)이 사용자 설치에서 빠지는지 검사한다. skills CLI가 저장소 전체를 순회하므로 사용자가 실제로 보는 것과 같게 `skills/`와 `.agents/skills/`를 모두 복사해 실행한다. npm에서 skills CLI를 받으므로 `pnpm run check`에는 넣지 않는다.
 - 실제 에이전트 CLI로 `agctx verify --probe`를 실행하는 확인은 요금제·로그인이 필요해 자동화하지 않는다. 에이전트 판정을 바꾸면 한 번 수동으로 실행하고 결과를 [외부 참고 문헌](../references.md)에 기록한다.

@@ -89,7 +89,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: 5894aa4a5f17d9363f3af0fa29b1d297a6fd171aefb81ef351050f96ff8552df -->
+<!-- agctx-doc-sources-sha256: b47950a7815409d3705e37c3f22aef16d65fca5923e56a58dfadad6ddcf1364c -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 

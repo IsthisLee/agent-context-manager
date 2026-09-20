@@ -115,19 +115,44 @@ export function hashManagedDocument(content: string | null | undefined): string 
 }
 
 /**
+ * A line that opens its own Markdown block, so a rewrapped paragraph is never
+ * joined across it: headings, list items, quotes, table rows, rules and HTML.
+ */
+const BLOCK_START = /^\s*(?:#{1,6}[ \t]|[-*+][ \t]|\d+[.)][ \t]|>|\||<|-{3,}\s*$|\*{3,}\s*$|(?:```|~~~))/;
+
+/** A line whose block is that one line, so the next line never joins onto it. */
+const BLOCK_CLOSES = /^\s*(?:#{1,6}[ \t]|\||<|-{3,}\s*$|\*{3,}\s*$|(?:```|~~~))/;
+
+/**
  * The same text with the differences a Markdown formatter makes flattened
  * away, for telling "the editor reformatted this on save" apart from "a person
  * edited this". Only shapes formatters converge on are touched, never words,
  * so two texts that normalise the same carry the same rules.
+ *
+ * Paragraphs are joined onto one line because a single newline inside a
+ * paragraph is a space in Markdown, which is what lets `proseWrap: always`
+ * refold every paragraph without changing what an agent reads. Fenced code is
+ * left alone, where a newline does mean something.
  */
 export function formatterNormalized(text: string): string {
-  return text
-    .replaceAll('\r\n', '\n')
-    .split('\n')
-    .map(line => line.replace(/[ \t]+$/, '').replace(/^(\s*)[*+]([ \t]+)/, '$1-$2'))
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trimEnd();
+  const lines = text.replaceAll('\r\n', '\n').split('\n').map(line => line.replace(/[ \t]+$/, '').replace(/^(\s*)[*+]([ \t]+)/, '$1-$2'));
+  const out: Array<{ text: string; fenced: boolean }> = [];
+  let fenced = false;
+  for (const line of lines) {
+    const opensFence = /^\s*(?:```|~~~)/.test(line);
+    const inFence = fenced || opensFence;
+    const joinable = !inFence && line.trim() !== '' && !BLOCK_START.test(line);
+    const previous = out.at(-1);
+    if (joinable && previous !== undefined && !previous.fenced && previous.text.trim() !== '' && !BLOCK_CLOSES.test(previous.text)) {
+      previous.text = `${previous.text} ${line.trim()}`;
+    } else {
+      out.push({ text: line, fenced: inFence });
+    }
+    if (opensFence) fenced = !fenced;
+  }
+  // Blank lines go last, after they have done their job of ending a paragraph.
+  // How many sit between two blocks is the formatter's business, not a rule.
+  return out.filter(entry => entry.fenced || entry.text.trim() !== '').map(entry => entry.text).join('\n').trimEnd();
 }
 
 export interface UnstableLine {

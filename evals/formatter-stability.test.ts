@@ -131,8 +131,35 @@ test('a word changed inside the managed area is still a conflict', t => {
 test('formatterNormalized flattens what a formatter changes and nothing else', () => {
   assert.equal(formatterNormalized('* 하나\n+ 둘\n'), '- 하나\n- 둘');
   assert.equal(formatterNormalized('본문   \n'), '본문');
-  assert.equal(formatterNormalized('가\n\n\n\n나\n'), '가\n\n나');
-  assert.equal(formatterNormalized('가\r\n나\r\n'), '가\n나');
+  assert.equal(formatterNormalized('가\n\n\n\n나\n'), '가\n나', 'blank lines between blocks are the formatter\'s business');
+  assert.equal(formatterNormalized('## 가\r\n\r\n나\r\n'), '## 가\n나');
   assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('- 둘'), 'words are never touched');
   assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('하나'), 'a bullet is not the same as a paragraph');
+});
+
+test('formatterNormalized joins a paragraph a formatter rewrapped, because Markdown reads it the same', () => {
+  assert.equal(formatterNormalized('한 문단이\n두 줄로 접혔다\n'), formatterNormalized('한 문단이 두 줄로 접혔다\n'));
+  assert.equal(formatterNormalized('- 목록 항목이\n  접혔다\n'), formatterNormalized('- 목록 항목이 접혔다\n'));
+
+  assert.notEqual(formatterNormalized('가\n나\n'), formatterNormalized('가\n\n나\n'), 'a blank line still separates two blocks');
+  assert.notEqual(formatterNormalized('- 가\n- 나\n'), formatterNormalized('- 가 - 나\n'), 'two list items are not one');
+  assert.notEqual(formatterNormalized('## 제목\n본문\n'), formatterNormalized('## 제목 본문\n'), 'a heading is its own block');
+  assert.notEqual(formatterNormalized('| 가 |\n| 나 |\n'), formatterNormalized('| 가 | | 나 |\n'), 'table rows stay rows');
+  assert.notEqual(formatterNormalized('문단에 낱말을 더했다\n'), formatterNormalized('문단에 낱말을 크게 더했다\n'), 'words are never touched');
+  assert.equal(formatterNormalized('```sh\necho 하나\necho 둘\n```\n'), '```sh\necho 하나\necho 둘\n```', 'fenced code keeps its line breaks');
+});
+
+test('a managed area a formatter rewrapped is not a conflict', t => {
+  // Prettier with `proseWrap: always` refolds every paragraph. Nothing the
+  // person wrote changed, so agctx must not treat it as an edit: `resolve`
+  // would copy the whole area into the extension section as "added lines".
+  const fixture = applied(t);
+  const before = fixture.read('AGENTS.md');
+  const rewrapped = before.split('\n').map(line => (line.length > 40 && !line.startsWith('#') && !line.startsWith('<') ? line.replace(/(.{1,40}) /g, '$1\n') : line)).join('\n');
+  assert.notEqual(rewrapped, before, 'the fixture actually rewrapped something');
+  fixture.write('AGENTS.md', rewrapped);
+
+  const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
+  assert.equal(result.status, 0, `a rewrapped managed area stopped the sync\n${result.stdout}\n${result.stderr}`);
+  assert.doesNotMatch(result.stdout, /conflict/);
 });

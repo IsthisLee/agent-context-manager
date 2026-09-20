@@ -38,7 +38,6 @@
 지금 알고 있는 약점이다. 수치와 근거는 링크한 정본에 있다.
 
 - 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 「문서 소스 해시 게이트의 핀 범위와 승인 단위」가 다룬다.
-- 문단을 정해진 너비로 다시 접는 포매터 설정(Prettier의 `proseWrap: always` 등)을 쓰는 저장소에서는 관리 영역이 통째로 다시 쓰이므로 충돌을 피할 수 없다. 68줄짜리 `AGENTS.md`에서 18줄이 사라지고 100줄이 새로 쓰였다([근거](docs/references.md#포매터가-관리-영역을-바꾸는-범위)). 목록 기호·공백·빈 줄 수준의 차이는 [ADR 0034](docs/adr/0034-managed-end-marker-in-agents-md.md)가 정한 대로 걸러내지만, 낱말의 배치가 바뀌는 것은 사람의 편집과 구분할 방법이 없다. 적용된 파일을 포맷 대상에서 빼라고 안내할 뿐이다.
 - 이름으로 가리킬 수 없는 동작(함수 안의 특정 분기 등)을 문서에서 어떻게 가리킬지는 정하지 않았다([제약](docs/discussion/repository/topics/code-citation-style.md#구현-기록-인용을-이름으로-바꾸고-두-문서를-다시-씀)).
 - README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 「Claude Code의 `AGENTS.md` 직접 읽기 반영」이 다룬다.
 

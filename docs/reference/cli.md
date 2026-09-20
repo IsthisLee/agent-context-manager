@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 8a2823fd1ba8d9b4438572187a302b36348b2123142748af79448cf7e29d74c3 -->
+<!-- agctx-doc-sources-sha256: e4b538380ec061351bb5e70496d173d36347419ca738c7326b3e1f9fb9a436ff -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

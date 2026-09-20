@@ -8,15 +8,23 @@ import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan, ProjectSource } from '../shared/types.ts';
-import { formatDiff } from '../project/conflicts.ts';
+import { formatDiff, MANAGED_END } from '../project/conflicts.ts';
 import { planProject } from '../project/plan.ts';
 import { assertNoHiddenCharacters } from './git-profile.ts';
 import { readProfile } from './store.ts';
 
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
 
+/**
+ * `<!-- agctx:guidance:start/end -->` belongs to the profile, where `profile
+ * setup` rewrites what sits between them. In a project the pair means nothing
+ * and reads as a second boundary above MANAGED_END, so only the text stays.
+ */
+const GUIDANCE_MARKERS = /^[ \t]*<!-- agctx:guidance:(?:start|end) -->[ \t]*\n*/gm;
+
 export function renderProfileAgents(content: string, profileName: string, projectName: string): string {
-  return `${content.trimEnd()}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n- **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
+  const body = content.replace(GUIDANCE_MARKERS, '').trimEnd();
+  return `${body}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n- **Project:** ${projectName}\n\n${MANAGED_END}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
 /**

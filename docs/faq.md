@@ -18,7 +18,7 @@
 
 ## 관리 영역 안을 고쳤더니 sync가 멈춰요.
 
-관리 영역은 `apply`·`sync`가 매번 다시 만드는 곳이라, 그 안을 고치면 고친 내용을 지우지 않으려고 멈춘다. `agctx profile resolve <프로젝트>`를 실행하면 고친 줄을 관리 영역 밖(`AGENTS.md`는 프로젝트 규칙 확장 섹션 끝, `CLAUDE.md` 같은 포인터 파일은 관리 블록 아래)으로 옮기고 관리 영역을 다시 만든다([관리 영역과 확장 영역](concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)).
+관리 영역은 `apply`·`sync`가 매번 다시 만드는 곳이라, 그 안을 고치면 고친 내용을 지우지 않으려고 멈춘다. `agctx profile resolve <프로젝트>`를 실행하면 고친 줄을 관리 영역 밖(`<!-- agctx:managed:end -->` 아래)으로 옮기고 관리 영역을 다시 만든다([관리 영역과 확장 영역](concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)).
 
 ## 모노레포 하위 폴더의 규칙이 Claude Code에 들어가지 않아요.
 

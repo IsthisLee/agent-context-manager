@@ -54,7 +54,7 @@ export default {
     'resolve.outro': '충돌 해결 완료',
     'resolve.edit.guide': '{file}: VS Code 병합 편집기를 엽니다. 다음 순서로 확인하세요.\n  1. 위쪽 `{pane}` 창에서 강조된 영역은 관리 영역 안에서 고쳤던 원래 위치입니다. 이 창의 수락 버튼은 누르지 않습니다.\n  2. 아래쪽 결과 창에는 그 줄이 {boundary} 이미 옮겨져 있습니다. 남길 내용이 모두 관리 영역 밖에 있는지 확인하고, 필요하면 고친 뒤 저장합니다.\n  3. 탭을 닫을 때 "파일에 처리되지 않은 충돌이 포함되어 있습니다" 경고가 뜨면, 결과 창을 확인했는지 다시 보고 \'충돌과 함께 닫기\'(Close with Conflicts)를 누릅니다. 저장한 결과가 적용됩니다.\n  4. 결과 창에서 관리 영역 안에 남긴 변경은 적용되지 않으며, 닫은 뒤 diff로 보여 줍니다.',
     'resolve.edit.boundary.pointer': '`<!-- agctx:managed:end -->` 아래로',
-    'resolve.edit.boundary.agents': '확장 섹션 끝으로',
+    'resolve.edit.boundary.agents': '`<!-- agctx:managed:end -->` 아래, 파일 끝으로',
 
     'main.intro': 'Agent Context Manager (agctx)',
     'main.message': '무엇을 할까요?',
@@ -419,7 +419,7 @@ export default {
     'error.resolve.unknown-base': '다음 파일에서 사용자 편집과 프로필 변경을 구분할 수 없습니다: {files}. 마지막 적용본을 알 수 없습니다.',
     'hint.resolve.discard': '남길 내용을 관리 영역 밖으로 옮긴 뒤 agctx profile resolve --discard {project}를 실행하세요. --discard는 먼저 {backups}/ 아래에 파일을 백업합니다.',
     'error.resolve.no-managed-area': '{file}의 병합 결과에 agctx 관리 영역이 없습니다. 결과 파일: {result}',
-    'hint.resolve.markers': '관리 표지(AGENTS.md는 확장 섹션 제목)를 남기고 resolve를 다시 실행하세요.',
+    'hint.resolve.markers': '관리 표지 `<!-- agctx:managed:end -->`를 남기고 resolve를 다시 실행하세요.',
     'error.resolve.still-conflicted': '해결한 계획에 아직 충돌이 남아 있습니다.',
     'resolve.done': '{project}에서 충돌 {count}개를 풀었습니다.',
     'resolve.edit.applied': '{file}: VS Code 병합 결과를 적용했습니다.',

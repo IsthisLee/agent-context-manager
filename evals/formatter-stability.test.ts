@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { extractAgentsManagedDocument, formatterUnstableLines, hashAgentsManagedDocument } from '../src/project/analyzer.ts';
+import { extractAgentsManagedDocument, formatterNormalized, formatterUnstableLines, hashAgentsManagedDocument } from '../src/project/analyzer.ts';
 import { renderProfileAgents } from '../src/profile/apply.ts';
 import { SUPPORTED_LOCALES, setLocale, t } from '../src/i18n/index.ts';
 
@@ -105,4 +105,34 @@ test('a formatter changing one bullet marker in the managed area changes its has
 
   assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument(formatted), 'one byte inside the managed area is enough to report a conflict');
   assert.deepEqual(reasons(formatted), [{ line: 5, reason: 'bullet marker is not -' }].map(found => `line ${found.line}: ${found.reason}`), 'so the check names the line before it ever reaches a project');
+});
+
+test('an area only a formatter touched is not a conflict, even when agctx would write something else', t => {
+  // The base file says what agctx last wrote. If the difference from it is only
+  // what a formatter does, nobody edited the area, so a sync that also changes
+  // the area for other reasons still has nothing to lose.
+  const fixture = applied(t);
+  const before = fixture.read('AGENTS.md');
+  fixture.write('AGENTS.md', before.replace('- **Project:**', '* **Project:**').replace(/\n## Project context\n/, '\n## Project context  \n'));
+
+  const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
+  assert.equal(result.status, 0, `a reformatted managed area stopped the sync\n${result.stdout}\n${result.stderr}`);
+  assert.doesNotMatch(result.stdout, /conflict/);
+});
+
+test('a word changed inside the managed area is still a conflict', t => {
+  const fixture = applied(t);
+  fixture.write('AGENTS.md', fixture.read('AGENTS.md').replace('- **Project:** ', '- **Project:** my-'));
+
+  const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
+  assert.equal(result.status, 2, 'normalising formatting must not hide a real edit');
+});
+
+test('formatterNormalized flattens what a formatter changes and nothing else', () => {
+  assert.equal(formatterNormalized('* 하나\n+ 둘\n'), '- 하나\n- 둘');
+  assert.equal(formatterNormalized('본문   \n'), '본문');
+  assert.equal(formatterNormalized('가\n\n\n\n나\n'), '가\n\n나');
+  assert.equal(formatterNormalized('가\r\n나\r\n'), '가\n나');
+  assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('- 둘'), 'words are never touched');
+  assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('하나'), 'a bullet is not the same as a paragraph');
 });

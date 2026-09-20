@@ -209,7 +209,7 @@ flowchart TD
 
 - 프로필 데이터의 기준 위치는 (`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있다(`src/profile/store.ts`의 `readProfile`<!--s:b0e88d759f98-->, `src/profile/store.ts`의 `createProfile`<!--s:122be23580b0-->).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->, `src/project/plan.ts`의 `planProject`<!--s:b91a2504e3e6-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -412,7 +412,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:d1ff5389600c-->). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:d1ff5389600c-->).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts`의 `writeTextAtomic`<!--s:b0a8d2c5de9a-->). 교체할 파일이 CRLF 줄 끝을 쓰고 있으면 새 내용도 CRLF로 쓴다. 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts`의 `writePlan`<!--s:ff58786507f2-->).
-- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts`의 `planProject`<!--s:b91a2504e3e6-->). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다` 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts`의 `planProject`<!--s:b91a2504e3e6-->). 다만 현재 관리 영역이 이번에 쓸 내용과 글자까지 같으면 덮어써도 잃을 것이 없으므로 멈추지 않는다. 편집기가 저장하면서 Markdown을 다시 포맷한 경우가 여기에 해당한다. `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
+- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다` 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->). 다만 현재 관리 영역이 이번에 쓸 내용과 글자까지 같으면 덮어써도 잃을 것이 없으므로 멈추지 않는다. 편집기가 저장하면서 Markdown을 다시 포맷한 경우가 여기에 해당한다. `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.ts`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.ts`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.

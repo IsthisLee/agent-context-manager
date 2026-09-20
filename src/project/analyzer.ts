@@ -1,21 +1,27 @@
 import { createHash } from 'node:crypto';
 import { SUPPORTED_LOCALES, t } from '../i18n/index.ts';
+import { MANAGED_END } from './conflicts.ts';
 
 /**
  * Project guidance merge helpers.
  * Profile instructions and project-specific instructions remain separate owners.
  */
 
-// The extension header is rendered in the active locale, so recognize every
-// locale's heading. Otherwise an English project loses its boundary and any
-// domain rule added under it reads as an edit to the profile-owned region.
-// The boundary between the profile-owned area and the project's own rules is
-// this heading. People renumber and re-level headings in their own AGENTS.md,
-// so the number, the dot and the heading level are all optional: a boundary
-// that is not recognised would make the whole file managed and every edit a
-// conflict.
+// Fallback boundary for an AGENTS.md written before agctx put a marker in the
+// file. Guessing where a heading ends is what made the boundary fragile: the
+// heading is rendered in the active locale, and people renumber and re-level
+// headings in their own file, so the number, the dot and the heading level are
+// all optional here. A boundary that is not recognised makes the whole file
+// managed and every edit a conflict, which is why MANAGED_END now decides and
+// this pattern only carries older files until the next sync writes the marker.
 const EXTENSION_HEADER = /^#{2,6}\s*(?:\d+\.?\s*)?(?:프로젝트 규칙 확장|Project rule extensions)[^\n]*\n+/im;
 const EXTENSION_BOILERPLATES = SUPPORTED_LOCALES.map(locale => t(locale, 'scaffold.extBody'));
+
+/** The profile-owned part of a rendered AGENTS.md: everything up to the marker. */
+function managedHead(rendered: string): string {
+  const marker = rendered.indexOf(MANAGED_END);
+  return marker === -1 ? rendered.trimEnd() : rendered.slice(0, marker + MANAGED_END.length);
+}
 
 /**
  * Merge a profile-rendered AGENTS.md with the project's domain-rule extension.
@@ -24,6 +30,15 @@ const EXTENSION_BOILERPLATES = SUPPORTED_LOCALES.map(locale => t(locale, 'scaffo
  */
 export function mergeAgentsMd(profileContent: string, existingContent?: string | null): string {
   if (!existingContent || typeof existingContent !== 'string') return profileContent;
+
+  // Everything below the marker is the project's, heading and all, so it is
+  // carried over as written instead of being rebuilt from the scaffold text.
+  const marker = existingContent.indexOf(MANAGED_END);
+  if (marker !== -1) {
+    const kept = existingContent.slice(marker + MANAGED_END.length).replace(/^\n+/, '').trimEnd();
+    const head = managedHead(profileContent);
+    return kept ? `${head}\n\n${kept}\n` : `${head}\n`;
+  }
 
   const match = existingContent.match(EXTENSION_HEADER);
   if (!match) {
@@ -48,6 +63,8 @@ export function mergeAgentsMd(profileContent: string, existingContent?: string |
  */
 export function extractAgentsManagedDocument(content: string | null | undefined): string | null {
   if (typeof content !== 'string') return null;
+  const marker = content.indexOf(MANAGED_END);
+  if (marker !== -1) return content.slice(0, marker + MANAGED_END.length);
   const extension = content.match(EXTENSION_HEADER);
   if (extension) return content.slice(0, extension.index).trimEnd();
   const preserved = content.match(/## Existing project guidance\s*\n+/i);
@@ -95,6 +112,22 @@ export function extractManagedDocument(content: string | null | undefined): stri
 export function hashManagedDocument(content: string | null | undefined): string | null {
   const managed = extractManagedDocument(content);
   return managed ? createHash('sha256').update(managed).digest('hex') : null;
+}
+
+/**
+ * The same text with the differences a Markdown formatter makes flattened
+ * away, for telling "the editor reformatted this on save" apart from "a person
+ * edited this". Only shapes formatters converge on are touched, never words,
+ * so two texts that normalise the same carry the same rules.
+ */
+export function formatterNormalized(text: string): string {
+  return text
+    .replaceAll('\r\n', '\n')
+    .split('\n')
+    .map(line => line.replace(/[ \t]+$/, '').replace(/^(\s*)[*+]([ \t]+)/, '$1-$2'))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trimEnd();
 }
 
 export interface UnstableLine {

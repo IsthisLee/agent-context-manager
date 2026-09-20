@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../src/project/analyzer.ts';
+import { MANAGED_END } from '../src/project/conflicts.ts';
+import { renderProfileAgents } from '../src/profile/apply.ts';
+import { _ } from '../src/i18n/index.ts';
 
 test('mergeAgentsMd preserves user custom rules under section 4', () => {
   const existingContent = `# Agent Guidelines for my-app
@@ -189,4 +192,49 @@ test('a document with no extension heading is managed as a whole, which the call
   const content = '# Profile: demo\n\n지침 본문\n\n- 사람이 더한 줄\n';
 
   assert.equal(extractAgentsManagedDocument(content), content.trimEnd(), 'without a boundary the whole document is managed');
+});
+
+test('the managed end marker bounds AGENTS.md, so the extension heading is the person\'s to rename', () => {
+  const managed = `# Profile: demo\n\n지침 본문\n\n${MANAGED_END}`;
+  for (const heading of ['## 4. 프로젝트 규칙 확장 (SSOT)', '## 우리 팀 규칙', '### 규칙', '']) {
+    const content = `${managed}\n\n${heading}\n\n- 우리 팀 규칙\n`;
+    assert.equal(extractAgentsManagedDocument(content), managed, `the marker bounds the area whatever follows it: ${heading || '(제목 없음)'}`);
+    assert.equal(hashAgentsManagedDocument(content), hashAgentsManagedDocument(`${managed}\n\n${heading}\n\n- 다른 규칙\n`), `editing below the marker leaves the hash alone: ${heading || '(제목 없음)'}`);
+  }
+});
+
+test('the marker wins over an extension heading that appears above it', () => {
+  // A profile whose own guidance mentions the heading must not cut the area short.
+  const content = `# Profile: demo\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n프로필이 쓴 안내\n\n${MANAGED_END}\n\n- 내 규칙\n`;
+  assert.equal(extractAgentsManagedDocument(content), content.slice(0, content.indexOf(MANAGED_END) + MANAGED_END.length));
+});
+
+test('a file written before the marker existed is still bounded by its extension heading', () => {
+  const content = '# Profile: demo\n\n지침 본문\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- 내 규칙\n';
+  assert.equal(extractAgentsManagedDocument(content), '# Profile: demo\n\n지침 본문', 'the heading keeps working until sync writes the marker');
+});
+
+test('merging keeps everything below the marker, including a renamed heading', () => {
+  const rendered = `# Profile: demo v2\n\n${MANAGED_END}\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n안내 한 줄\n`;
+  const existing = `# Profile: demo\n\n${MANAGED_END}\n\n## 우리 팀 규칙\n\n- 배포 전에 QA를 받는다.\n`;
+
+  const merged = mergeAgentsMd(rendered, existing);
+
+  assert.match(merged, /# Profile: demo v2/, 'the profile area is regenerated');
+  assert.match(merged, /## 우리 팀 규칙/, 'the renamed heading survives');
+  assert.match(merged, /배포 전에 QA를 받는다/);
+  assert.doesNotMatch(merged, /안내 한 줄/, 'the scaffold text is only for a first apply');
+  assert.equal(merged.split(MANAGED_END).length - 1, 1, 'exactly one marker');
+});
+
+test('a rendered project AGENTS.md carries the managed end marker and drops the profile-only guidance markers', () => {
+  const profileBody = '# Profile: demo\n\n<!-- agctx:guidance:start -->\n\n## 작업 흐름\n\n본문\n\n<!-- agctx:guidance:end -->\n';
+  const rendered = renderProfileAgents(profileBody, 'demo', 'my-app');
+
+  assert.match(rendered, /## 작업 흐름/, 'the guidance text itself stays');
+  assert.doesNotMatch(rendered, /agctx:guidance/, 'the profile-only markers would read as a second boundary');
+  assert.equal(rendered.split(MANAGED_END).length - 1, 1);
+  const heading = _('scaffold.extHeading');
+  assert.ok(rendered.includes(heading) && rendered.indexOf(MANAGED_END) < rendered.indexOf(heading), 'the marker sits above the extension heading');
+  assert.equal(extractAgentsManagedDocument(rendered), rendered.slice(0, rendered.indexOf(MANAGED_END) + MANAGED_END.length));
 });

@@ -106,7 +106,7 @@ flowchart LR
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
 - 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->
-- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:e2c25e47f058-->, `src/project/plan.ts`의 `planProject`<!--s:b91a2504e3e6-->
+- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:e2c25e47f058-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
 - 지키는 평가: `evals/profile.test.ts`, `evals/sync-merge.test.ts`
@@ -115,8 +115,8 @@ flowchart LR
 
 한 파일 안에서 agctx가 소유한 영역과 사용자가 쓴 영역을 나눠, 관리 영역만 다시 쓰고 사용자 영역은 보존한다. 관리 영역의 hash를 `agctx.project.json`에 기록해 사람이 고쳤는지 판정한다.
 
-- 영역 분리: `src/project/analyzer.ts`의 `EXTENSION_HEADER`<!--s:5c98e6075f22-->와 영역 판정 함수
-- 포매터가 다시 쓸 형태 검사: `src/project/analyzer.ts`의 `formatterUnstableLines`<!--s:6b6360574692-->
+- 영역 분리: `src/project/analyzer.ts`의 `extractAgentsManagedDocument`<!--s:0700d9cc618e-->와 `extractManagedDocument`<!--s:99daceed8803-->. `AGENTS.md`의 경계는 마커이고, 마커가 없는 옛 파일만 `EXTENSION_HEADER`로 찾는다([ADR 0034](../adr/0034-managed-end-marker-in-agents-md.md))
+- 포매터 대응: `src/project/analyzer.ts`의 `formatterUnstableLines`<!--s:6b6360574692-->가 다시 쓰일 형태를 찾고, `formatterNormalized`가 표현 차이를 사람의 편집과 가른다
 - 병합·hash 기록: `src/project/plan.ts`의 `managedRegion`<!--s:31135cae2bb1-->·`regionHash`<!--s:0ba5bd911327-->
 - 줄 끝 정규화: `src/shared/fs-utils.ts`의 `toLf`<!--s:ef4ef3119fe3-->
 - 이유: 규칙 파일 머리말은 [ADR 0009](../adr/0009-agent-rule-frontmatter.md), 편집 병합이 관리 영역을 다시 만드는 계약은 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)
@@ -194,7 +194,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 사람이 관리 영역을 고쳤으면 덮어쓰지 않고 멈춘다. 마지막 적용본을 `.agctx/base/`에 남겨 두어 3-way 병합으로 복구한다. 다만 현재 관리 영역이 이번에 쓸 내용과 같으면 잃을 것이 없으므로 멈추지 않는다.
 
-- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:b91a2504e3e6-->·`knownBase`<!--s:f7bb47b56e0a-->
+- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->·`knownBase`<!--s:f7bb47b56e0a-->
 - 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:80d94978e353-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:a24f886b7b75-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
 - 복구 명령: `src/profile/resolve.ts`의 `resolveProject`<!--s:47497f6548f1-->·`mergeWithEditor`<!--s:e89084f0da6c-->·`withBaseRegion`<!--s:e1ff5455598d-->, `src/project/merge-editor.ts`의 `mergeInVsCode`<!--s:43c7b8ec7fbd-->
 - TUI 복구: `src/tui/profile.ts`의 `resolveProjectTui`<!--s:9b0a5336057e-->

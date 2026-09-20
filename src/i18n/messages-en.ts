@@ -54,7 +54,7 @@ export default {
     'resolve.outro': 'Conflicts resolved',
     'resolve.edit.guide': '{file}: opening the VS Code merge editor. Check it in this order.\n  1. The highlighted area in the upper `{pane}` pane is where you edited inside the managed area. Do not press its accept buttons.\n  2. The Result pane below already has those lines moved {boundary}. Check that everything you want to keep is outside the managed area, edit if needed, and save.\n  3. If closing the tab warns "The file contains unhandled conflicts.", confirm the Result pane once more and press \'Close with Conflicts\'. The saved result is applied.\n  4. Changes left inside the managed area in the Result pane are not applied; a diff shows them after you close.',
     'resolve.edit.boundary.pointer': 'below `<!-- agctx:managed:end -->`',
-    'resolve.edit.boundary.agents': 'to the end of the extension section',
+    'resolve.edit.boundary.agents': 'below `<!-- agctx:managed:end -->`, at the end of the file',
 
     'main.intro': 'Agent Context Manager (agctx)',
     'main.message': 'What would you like to do?',
@@ -419,7 +419,7 @@ export default {
     'error.resolve.unknown-base': 'Cannot tell your edits from profile changes in: {files}. The last applied version is unknown.',
     'hint.resolve.discard': 'Keep what you need outside the managed area, then run agctx profile resolve --discard {project}. --discard backs up each file under {backups}/ first.',
     'error.resolve.no-managed-area': 'Merge result for {file} has no agctx managed area. Result kept at {result}',
-    'hint.resolve.markers': 'Keep the managed markers (the extension heading in AGENTS.md) and run resolve again.',
+    'hint.resolve.markers': 'Keep the `<!-- agctx:managed:end -->` marker and run resolve again.',
     'error.resolve.still-conflicted': 'The resolved plan still has conflicts.',
     'resolve.done': 'Resolved {count} conflict(s) in {project}',
     'resolve.edit.applied': '{file}: applied the VS Code merge result.',

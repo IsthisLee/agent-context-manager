@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { extractAgentsManagedDocument, extractManagedDocument, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
+import { extractAgentsManagedDocument, extractManagedDocument, formatterNormalized, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
 import { apmRegenerates } from './apm.ts';
 import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
 import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
@@ -82,13 +82,14 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     const currentRegion = managedRegion(kind, existing);
     const nextRegion = managedRegion(kind, regenerated);
     const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
-    // A managed area that already holds what this run would write costs nothing
-    // to overwrite, so it is not a conflict even when the recorded hash differs.
-    // Editors that format Markdown on save reach this case: they rewrite bytes
-    // agctx owns, and a later agctx writes the formatted shape itself.
-    const settled = currentRegion !== null && currentRegion === nextRegion;
+    // Two ways a differing hash still means nobody edited the managed area, both
+    // reached by editors that reformat Markdown on save. The area may already
+    // hold what this run would write, or it may differ from what agctx last
+    // wrote only in ways a formatter produces. Neither has anything to lose.
+    const base = recordedHash ? knownBase(targetDir, relativePath, recordedHash, nextRegion) : null;
+    const settled = currentRegion !== null && (currentRegion === nextRegion || (base !== null && formatterNormalized(base) === formatterNormalized(currentRegion)));
     const conflict = recordedHash && !settled && regionHash(currentRegion) !== recordedHash
-      ? { kind: existing === null ? 'missing' as const : 'edited' as const, base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
+      ? { kind: existing === null ? 'missing' as const : 'edited' as const, base }
       : null;
     files.push({ rel: relativePath, kind, target: path.join(targetDir, relativePath), existing, regenerated, currentRegion, nextRegion, conflict });
   };

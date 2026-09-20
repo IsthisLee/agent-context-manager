@@ -36,7 +36,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 25c7e5dbde9e2bb1f31cf9cbf0dfb1a0448c5bc2d091eb7d9fd260e2b345ab24 -->
+<!-- agctx-doc-sources-sha256: 3f3d5ffce1fed24101337036ed1396cbc62d6388007fc13a0327dac59eb0d9fd -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.

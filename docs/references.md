@@ -29,6 +29,7 @@
 - [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
 - [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
+- [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -1078,6 +1079,13 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
   > "The failed approaches are important—without them, successive sessions will re-attempt the same dead ends."
   >
   > 번역: 실패한 접근이 중요합니다. 이것이 없으면 다음 세션들이 같은 막다른 길을 다시 시도합니다.
+
+## 문서와 코드의 드리프트 검출 근거
+
+[문서 소스 해시 게이트](contributing/doc-gate.md#문서-소스-해시-게이트)와 [문서의 코드 인용 방식](discussion/repository/topics/code-citation-style.md)이 기대는 외부 사실이다.
+
+- **문서를 코드에 묶어 CI에서 검사하는 도구가 이미 있다.** fiberplane/drift는 Markdown 문서가 코드의 파일이나 AST 심볼에 앵커를 선언하게 한다. README는 "Bind docs to code and check for drift. Any markdown file in your repo can declare anchors to code — specific files or AST symbols."라고 적는다(번역: 문서를 코드에 묶고 드리프트를 검사한다. 저장소의 어떤 Markdown 파일이든 코드에 대한 앵커, 즉 특정 파일이나 AST 심볼을 선언할 수 있다). CI 사용은 "`drift check` exits 1 when any doc is stale, so it works as a CI gate."다(번역: 문서가 오래되면 `drift check`가 1로 끝나므로 CI 게이트로 쓸 수 있다). 지문에는 위치 정보를 넣지 않는다. 소개 글은 "Drift parses the code with tree-sitter and hashes a normalized AST fingerprint (node kinds + token text, no whitespace or position data)."라고 적는다(번역: tree-sitter로 코드를 파싱해 정규화한 AST 지문, 즉 노드 종류와 토큰 텍스트만 담고 공백이나 위치 정보는 없는 지문을 해시한다). 다시 확인했다는 표시는 `drift link`다. MIT 라이선스이고 저장소 생성은 2026-03-01, 소개 글은 2026-03-25다. [저장소](https://github.com/fiberplane/drift), [소개 글](https://fiberplane.com/blog/drift-documentation-linter/) (확인일: 2026-09-19)
+- **문서는 작고 최신인 편이 낫고, 코드와 같은 변경에서 고친다.** Google의 문서 작성 모범 사례는 "A small set of fresh and accurate docs is better than a large assembly of "documentation" in various states of disrepair."(번역: 작지만 최신이고 정확한 문서 몇 개가, 여러 상태로 망가져 가는 거대한 "문서" 더미보다 낫다)와 "Change your documentation in the same CL as the code change."(번역: 문서는 코드 변경과 같은 CL에서 함께 바꾼다)를 적는다. 코드가 왜 그렇게 되어 있는지에 대한 설명은 코드 옆 주석의 몫으로 둔다. "The primary purpose of inline comments is to provide information that the code itself cannot contain, such as why the code is there."(번역: 인라인 주석의 주된 목적은 코드 자체가 담을 수 없는 정보, 예를 들어 그 코드가 왜 거기 있는지를 제공하는 것이다). [Documentation Best Practices](https://google.github.io/styleguide/docguide/best_practices.html) (확인일: 2026-09-19)
 
 ## 비교 대상
 

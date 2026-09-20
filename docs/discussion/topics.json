@@ -206,6 +206,13 @@
       "importance": "Medium",
       "outcome": "논의 주제의 상태를 JSON 한 파일에만 쓰고 색인 표와 README 상태 목록은 생성",
       "status": "Implemented"
+    },
+    {
+      "file": "code-citation-style.md",
+      "title": "문서가 코드를 인용하는 방식",
+      "importance": "High",
+      "outcome": "코드를 복사하지 않고 파일과 이름으로 가리키게 하고, 그 이름이 있는지 검사",
+      "status": "Proposed"
     }
   ]
 }

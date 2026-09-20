@@ -1,7 +1,5 @@
 # 고객사 여러 곳의 규칙 따로 쓰기
 
-<!-- agctx-doc-sources: src/repos, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 91a4a876810326bfb1c814976c5623a8cea4f742ee69fc7cf0de863667a87a47 -->
 
 고객사 A와 B가 각자 규칙을 Git 저장소로 관리하고, 고객사 A가 규칙을 바꾸면 A의 저장소들에만 반영해야 하는 경우다.
 
@@ -33,6 +31,9 @@ flowchart LR
 
 ## 1. 고객사 프로필 받기
 
+<!-- agctx-doc-sources: src/profile/git-profile.ts -->
+<!-- agctx-doc-sources-sha256: 89add602fa8c1c917f883d31e0ef3475aa490a8a9b20a7c11fe55d8c145eed96 -->
+
 ```bash
 agctx profile clone https://git.client-a.example/rules.git
 agctx profile clone https://git.client-b.example/rules.git
@@ -41,6 +42,9 @@ agctx profile clone https://git.client-b.example/rules.git
 `clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함(`~/.agctx/profiles`)에 등록한다([프로필 보관함](../concepts/profiles.md#프로필-보관함)). 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
 
 ## 2. 고객사 저장소에 적용
+
+<!-- agctx-doc-sources: src/repos -->
+<!-- agctx-doc-sources-sha256: e41b1ee2304f6b07599f42eea59de52647e4bf806fdd49f2e170bf79bf394a80 -->
 
 ```bash
 agctx profile apply client-a ~/work/client-a-api

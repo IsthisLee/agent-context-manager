@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
-<!-- agctx-doc-sources: src/commands/registry.ts, src/project/plan.ts, src/i18n/messages-en.ts, package.json, README.md -->
-<!-- agctx-doc-sources-sha256: 3eba4c211328a3141015def3538581b1ddff44fd6c8ef8f40a54f8fb09360796 -->
+<!-- agctx-doc-sources: README.md -->
+<!-- agctx-doc-sources-sha256: f059e8affa8d18381315c471794466bf27cd0ce0620b755761acfbfb8a327f95 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -73,6 +73,9 @@ Pick the guide that fits your situation. The same list is in the [documentation 
 
 ## Getting Started
 
+<!-- agctx-doc-sources: package.json -->
+<!-- agctx-doc-sources-sha256: 8acfdb81ac78095841f4ccb59e9abcabea0d230e82f08d9cbd5fb7c22c74c2f5 -->
+
 > Runtime: Node.js 22 LTS or newer
 
 ```bash
@@ -120,6 +123,9 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 
 ## Core features
 
+<!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 596131e9e475cc9ab9de53477cfc70c7994a4ebf2d6d2918aaace0c72598d69a -->
+
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
 - **Share through Git** — `profile clone`, `status`, `pull`, `push`, `connect`. They use a standard Git remote, never touch project files, and stop when incoming Profile content carries hidden characters.
@@ -136,6 +142,9 @@ Options, exit codes, and usage for each command are in the [CLI Reference](https
 Repository developers run `pnpm run check` to verify agctx's own types, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
 
 ## Supported agents
+
+<!-- agctx-doc-sources: src/project/plan.ts -->
+<!-- agctx-doc-sources-sha256: 1c86410a5a019c2e5f080b32b7b3222509fb81ab93755dfa6d601e82813f7942 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 

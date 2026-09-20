@@ -6,8 +6,6 @@
 
 > 이 문서는 코드를 복사하지 않고 파일과 이름으로 가리킨다(예: `src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->). 이름은 편집기의 심볼 찾기나 `rg`로 찾는다. 가리킨 이름이 그 파일에 있는지는 `pnpm run check`가 검사하고, 인용한 소스가 바뀌면 소스 해시 게이트가 이 문서를 다시 읽게 한다([문서 게이트](doc-gate.md)). 인용 방식을 이렇게 정한 이유는 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다. 이 문서는 항상 **현재 구현**을 설명하는 단일 정본이며, 과거 버전의 설명은 git 이력에서 확인한다.
 
-<!-- agctx-doc-sources: src/agctx.ts, src/commands, src/profile, src/project, src/shared, src/tui, package.json, tsconfig.json, tsconfig.build.json, tools/build.ts, tools/package-smoke.ts, .github/workflows/ci.yml, .github/workflows/publish.yml, evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 655d303cd197042b6431f93b921ef4a29a9568557ad59fd31278866101a33c83 -->
 
 이 문서는 `agent-context-manager`가 **왜 이렇게 동작하는지**를 설명한다. 제품 사용법이 아니라, npm·Node.js·CLI의 일반 원리와 이 저장소의 실제 구현을 연결해 전체 그림을 이해하도록 돕는 것이 목적이다.
 
@@ -117,6 +115,9 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 ---
 
 ## 4. Shebang과 Node.js 실행 원리
+
+<!-- agctx-doc-sources: src/agctx.ts, tools/build.ts -->
+<!-- agctx-doc-sources-sha256: 8fbc137a9232a091a360d9fd8d44d4a03836b3fcb40bed11d4d7dd221739bec3 -->
 
 ### 핵심 원리
 
@@ -361,6 +362,9 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ---
 
 ## 12. package.json의 files 설정과 실제 배포 파일 범위
+
+<!-- agctx-doc-sources: evals/package-contents.test.ts -->
+<!-- agctx-doc-sources-sha256: d99806a8b1817a9391e1b6a5b36f0bb8ae7408b24173ad24e0ee002ca0dd7aa2 -->
 
 ### 핵심 원리
 

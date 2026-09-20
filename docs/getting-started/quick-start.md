@@ -1,7 +1,5 @@
 # 빠른 시작
 
-<!-- agctx-doc-sources: package.json, src/profile, src/project, src/check.ts, src/commands, templates, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5b53f86ac809b1b3e6f48185ac41c9d81c267b3f4b0a29627b33449702449dec -->
 
 agctx를 설치하고, 프로필을 하나 만들어 저장소에 적용하고, 저장소가 프로필과 맞는지 확인하는 최소 흐름이다. 개념은 [프로필과 적용](../concepts/profiles.md)에, 상황별 사용법은 [목적별 가이드](../README.md#목적별-가이드)에 있다.
 
@@ -37,6 +35,9 @@ flowchart LR
 
 ## 설치
 
+<!-- agctx-doc-sources: package.json -->
+<!-- agctx-doc-sources-sha256: 8acfdb81ac78095841f4ccb59e9abcabea0d230e82f08d9cbd5fb7c22c74c2f5 -->
+
 agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
 
 ```bash
@@ -52,6 +53,9 @@ agctx help
 
 ## 1. 프로필 만들기
 
+<!-- agctx-doc-sources: src/profile -->
+<!-- agctx-doc-sources-sha256: 83216cf0bf6236dc39b2bf86383e40e9d819c37871bb81a54f55247625cf9c1e -->
+
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
 ```bash
@@ -64,6 +68,9 @@ Created profile: team-backend (team)
 TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용도를 입력한다.
 
 ## 2. 지침 설정
+
+<!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: a9c4c8e24b9b5f2858e8e1eb73cc1624c6c2955017bf5d0110b16b94ad566a72 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -80,6 +87,9 @@ Configured profile: team-backend
 `setup`이 쓰는 것은 항목마다 짧은 기본 문장뿐이다. 팀 규칙을 더 넣으려면 `~/.agctx/profiles/team-backend/AGENTS.md`에서 `<!-- agctx:guidance:start -->` 블록 밖에 직접 쓴다. 블록 안은 `setup`을 다시 실행하면 새로 만들어진다. 10개 항목에 들어가는 문장의 정본은 [지침 카탈로그](../reference/guidance-catalog.md)에 있다.
 
 ## 3. 프로젝트에 적용
+
+<!-- agctx-doc-sources: src/project, templates -->
+<!-- agctx-doc-sources-sha256: cccb3bba95c341cf45ee558ea57bd969ad169ed0ac7fb3531c64ed199fc8ef31 -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -120,6 +130,9 @@ Applied profile team-backend to /work/shop
 생성된 파일은 `.agctx/base/`까지 모두 커밋한다. 그래야 저장소를 받는 팀원이 agctx 없이도 같은 지침을 받고, CI의 `check`가 기록한 버전과 비교할 수 있다.
 
 ## 4. 저장소 확인하기
+
+<!-- agctx-doc-sources: src/check.ts -->
+<!-- agctx-doc-sources-sha256: 43bc5c76f07d49780d37bca01231974354feec0c76861475e15ba8665175d766 -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

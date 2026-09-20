@@ -2,10 +2,11 @@
 
 `agent-context-manager` 패키지는 `agctx` 명령으로 실행한다. 아래 문서는 현재 구현된 명령어와 옵션을 기준으로 한다. 명령 목록과 사용법 줄은 명령 등록부(`src/commands/registry.ts`)에서 나오며, `agctx <명령> --help`가 같은 사용법을 출력한다.
 
-<!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared -->
-<!-- agctx-doc-sources-sha256: b5f6d1d73c68e3482e8d41cf1e5199beca1edea9b7271ebbabfd31c703ea36da -->
 
 ## 설치와 실행
+
+<!-- agctx-doc-sources: src/agctx.ts, src/shared -->
+<!-- agctx-doc-sources-sha256: c541b8fd38b89c570f0c460d0295eacd89a03d584b4c0fdfde86e1a29e561064 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -17,6 +18,9 @@ agctx help
 저장소 개발 환경에서는 고정된 pnpm 버전을 사용한다. Git 프로필 명령과 `check --refresh`는 `git`이 설치돼 있어야 한다.
 
 ## 공통 규칙
+
+<!-- agctx-doc-sources: src/i18n -->
+<!-- agctx-doc-sources-sha256: bffdda572494071ca8956ac56c26efea07dd18e3b3cfee38529b3766b4db7841 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -112,6 +116,9 @@ $ agctx check --refresh --json /work/orders-api
 
 ## 메인 TUI
 
+<!-- agctx-doc-sources: src/tui -->
+<!-- agctx-doc-sources-sha256: bf1c70077d74945ff7c7f0fa497e922fa9ac9f55393b666b6be7893256396fa4 -->
+
 ```bash
 agctx
 ```
@@ -133,6 +140,9 @@ agctx --tui
 `--tui`는 메인 TUI를 명시적으로 여는 선택적 플래그다. 터미널이 아니거나 `--json`을 주면 TUI 대신 도움말을 출력한다. 자동화 환경에서는 아래 CLI 명령과 옵션을 사용한다.
 
 ## 명령어
+
+<!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
+<!-- agctx-doc-sources-sha256: 9d31ca6857002b23128dc02d182d610308cb9223cc8aff3ae417c29d328e6c6f -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

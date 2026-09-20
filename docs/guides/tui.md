@@ -1,7 +1,5 @@
 # TUI로 쓰기
 
-<!-- agctx-doc-sources: src/tui, src/commands/options.ts, src/commands/registry.ts, src/i18n/messages-en.ts, src/i18n/messages-ko.ts -->
-<!-- agctx-doc-sources-sha256: 00997c18edb3806f4815196b39ac2be4fe6ed51c91c1bbe1de8f31dc6c57ce17 -->
 
 명령과 옵션을 외우지 않고, 터미널 화면의 메뉴에서 골라 agctx를 쓰는 방법이다. 프로필을 만들고, 지침을 고르고, 프로젝트에 적용하고(커밋 고정 포함), 동기화하고, Git으로 주고받는 일부터 프로젝트 점검(`check`·`explain`·`verify`)과 여러 저장소 처리(`repos`)까지 agctx의 모든 명령을 TUI 메뉴에서 실행할 수 있다. 이 문서에 실은 화면은 실제로 실행한 결과에서 긴 경로만 `/work`로 바꾼 것이다. 대부분 표시 언어를 영어로 두고 찍었으며, 한국어로 표시할 때의 메뉴 이름은 [메뉴와 명령 대응표](#메뉴와-명령-대응표)에 함께 적었다.
 
@@ -22,6 +20,9 @@
 
 ## 시작하기
 
+<!-- agctx-doc-sources: src/tui -->
+<!-- agctx-doc-sources-sha256: bf1c70077d74945ff7c7f0fa497e922fa9ac9f55393b666b6be7893256396fa4 -->
+
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
 
@@ -34,6 +35,9 @@
 - TUI는 터미널에서만 열린다. CI나 스크립트에서는 [CI와 자동화에서 쓰기](ci.md)처럼 옵션을 직접 넘긴다.
 
 ## 조작 방법
+
+<!-- agctx-doc-sources: src/commands/options.ts -->
+<!-- agctx-doc-sources-sha256: 66f3ecaed98d8751b7ae392a2cd2d158443dbf1b8cb992f3f79a97653dee518e -->
 
 화면 아래에 그 화면에서 쓰는 키가 나온다.
 
@@ -108,6 +112,9 @@ Created profile: team-backend (team)
 ```
 
 ## 지침 고르기
+
+<!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: b87cd5ffaea055643adc424b6ff73d9fadf3a4819dc5ee4b5f71c0e57f2b4e30 -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -293,6 +300,9 @@ Next: agctx repos sync --profile team-backend
 첫 화면에서 **Help**를 고르면 **All commands**와 명령 목록이 나온다. **All commands**는 전체 명령의 사용법을, 명령 하나를 고르면 그 명령의 사용법·설명·종료 코드를 보여 준다. `agctx help <명령>`과 같다.
 
 ## 메뉴와 명령 대응표
+
+<!-- agctx-doc-sources: src/commands/registry.ts -->
+<!-- agctx-doc-sources-sha256: 2292cc286fdde12ca473d873c7f7c5cb1f60b716978be3aae5b785e17ad4a929 -->
 
 TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으로 바뀌어 같은 처리기로 실행된다. 가이드에 나오는 CLI 명령은 아래 메뉴로 바꿔 실행할 수 있다. 표시 언어를 한국어로 두면 메뉴 이름이 둘째 열처럼 나온다.
 

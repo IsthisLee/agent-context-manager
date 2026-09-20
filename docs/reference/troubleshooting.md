@@ -1,15 +1,19 @@
 # 문제 해결
 
-<!-- agctx-doc-sources: src/i18n/messages-en.ts, src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 595acc9c2dca18ff3210d9e1d90ba8a0fe6c19b0cec096739a21e738d3055d9e -->
 
 agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로 실행할 명령)을 함께 출력한다. `Next:` 줄로 풀리지 않을 때 아래를 본다. 종료 코드의 뜻은 [종료 코드](exit-codes.md)에 있다.
 
 ## 관리 영역 충돌
 
+<!-- agctx-doc-sources: src/profile/apply.ts -->
+<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
+
 `Managed file changed outside agctx`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
 
 ## 그 밖의 오류
+
+<!-- agctx-doc-sources: src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 683febc776df6b39c5d2aac9904f359378d82734623c81bb8e7bdfb3796b3400 -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.

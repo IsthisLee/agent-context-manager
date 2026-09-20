@@ -2,12 +2,13 @@
 
 이 문서는 현재 구현되어 채택된 구조만 기록한다. 후속 개선 계약은 [`discussion/architecture/`](../discussion/architecture/)에서 관리한다. 기능별 구현 위치와 그 이유를 가리키는 안내도는 [기능 구현 메커니즘](implementation-mechanics.md)이, 프로필에 배포되는 공통 지침 목록은 [지침 카탈로그](../reference/guidance-catalog.md)가 정본이다.
 
-<!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, package.json, tsconfig.json, tsconfig.build.json, templates, tools -->
-<!-- agctx-doc-sources-sha256: 5137c0b6c014eab0e40927915527520ac44b7bc4dca1d54cdb9704f880ae9b1a -->
 
 agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설정하고 이를 프로젝트와 여러 AI 에이전트에 안전하게 적용·동기화한다.
 
 ## 현재 구조
+
+<!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
+<!-- agctx-doc-sources-sha256: a0abd7b250bd09d2814a626c0fbe98c40f78c9e93c5f20a6fb0adefcf28d17a5 -->
 
 ```mermaid
 flowchart LR
@@ -56,6 +57,9 @@ flowchart LR
 프로필은 로컬 파일 시스템의 `~/.agctx/profiles/<name>`에 보관하며, 이 폴더가 Git 저장소이면 원격과 공유할 수 있다. 원격 저장소의 권한·리뷰·보호 규칙은 Git 호스트가 맡는다.
 
 ## 저장소 파일 구조
+
+<!-- agctx-doc-sources: package.json, tsconfig.json, tsconfig.build.json, templates -->
+<!-- agctx-doc-sources-sha256: c1176365b0076074a6333c396941f708044e8531ba7065b5e4f28f013d111333 -->
 
 ```text
 agent-context-manager/

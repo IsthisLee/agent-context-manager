@@ -3,7 +3,27 @@
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
 <!-- agctx-doc-sources-sha256: 9e66720019d0860b7f109101038c8f5a3674eae605f29fab46e2330efed93221 -->
 
-`pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
+`pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
+
+## 한눈에 보기
+
+문서의 내용은 종류마다 지키는 방법이 다르다. 아래로 갈수록 사람의 판단에 의존한다.
+
+```text
+코드에서 뽑을 수 있는 사실   생성한다           틀릴 수가 없다
+명령의 출력 예시            실제로 실행해 비교   틀리면 평가가 실패
+코드의 위치(인용)           이름 + 지문         이름이 없거나 코드가 바뀌면 실패
+말로 쓴 동작 설명           소스 해시 게이트     소스가 바뀌면 "다시 읽어라"
+문서 자체의 계약            링크·색인·근거 검사  형식이 어긋나면 실패
+```
+
+| 지키는 방법 | 대상 | 실패했을 때 할 일 | 정본 절 |
+| --- | --- | --- | --- |
+| 생성 | CLI 명령표, 스킬 명령 목록, 논의 상태 | 생성기를 다시 실행한다 | [생성하는 레퍼런스](#생성하는-레퍼런스), [생성하는 논의 상태](#생성하는-논의-상태) |
+| 실행 대조 | 빠른 시작의 명령 예시 | 실제 출력으로 예시를 고친다 | [핀 범위와 예시 검사](#핀-범위와-예시-검사) |
+| 인용과 지문 | 문서가 가리키는 코드 위치 | 그 항목을 다시 읽고 `--stamp` | [코드를 가리키는 형식](#코드를-가리키는-형식) |
+| 소스 해시 | 코드 동작을 말로 설명한 문서 | 문서를 다시 읽고 `--stamp` | [문서 소스 해시 게이트](#문서-소스-해시-게이트) |
+| 근거·형식 검사 | 외부 근거의 확인일, ADR 머리말, 링크·앵커 | 형식을 맞춘다 | [문서 근거 게이트](#문서-근거-게이트) |
 
 ## 문서 소스 해시 게이트
 
@@ -46,25 +66,36 @@ flowchart TD
 
 ## 코드를 가리키는 형식
 
-문서는 코드를 복사하지 않고 가리킨다. 줄 번호는 위쪽에 줄이 하나만 생겨도 어긋나므로 쓰지 않고, 파일과 그 안의 이름으로 적는다.
+문서는 코드를 복사하지 않고 가리킨다. 줄 번호는 위쪽에 줄이 하나만 생겨도 어긋나므로 쓰지 않고, 파일과 그 안의 이름으로 적는다. 그 옆에는 가리킨 코드의 지문이 주석으로 붙는다. 지문은 사람이 쓰지 않는다.
 
-```markdown
-판정은 `src/check.ts`의 `checkProject`가 한다.
+```text
+① 사람이 쓴다      - 스킬 목록: `tools/generate-skills.ts`의 `SKILLS`
+② --stamp 가 붙인다  - 스킬 목록: `tools/generate-skills.ts`의 `SKILLS`<!--s:bcadeaf70618-->
+③ 누가 SKILLS 를 고친다
+④ check:docs 가 실패한다
+⑤ 그 항목을 다시 읽고 문서를 고친 뒤 --stamp 로 지문을 새로 적는다
 ```
 
-- `check:docs`는 문서마다 세 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패하며, 그 이름이 최상위 선언이나 키가 아니면 실패한다. 함수 안의 지역 이름처럼 잘라 낼 수 없는 것은 지문을 만들 수 없기 때문이다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:29704713ed9a-->에 있다.
-- 검사 대상은 이 저장소가 소유한 경로(`src/`·`tools/`·`evals/`·`templates/`·`skills/`·`.agents/`·`.github/`·`docs/`와 루트 설정 파일)뿐이다. 다른 도구가 만드는 `apm.yml`이나 사용자 프로젝트에 생기는 `agctx.project.json`처럼 저장소에 없는 파일은 검사하지 않는다.
-- 이력을 남기는 `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 대상이 아니다. 그 문서들은 쓰던 당시의 인용을 그대로 둔다.
-- 코드 블록 안의 내용은 검사하지 않으므로, 옛 형식을 예시로 보여 줄 수 있다.
-- 인용마다 가리킨 코드의 지문을 옆에 주석으로 기록한다. 렌더링에는 보이지 않고, 사람이 쓰지 않으며 `--stamp`가 붙인다. 가리킨 코드의 내용이 바뀌면 그 문서의 그 항목만 실패하므로, 다시 읽은 뒤 `node tools/check-docs.ts --stamp`로 지문을 갱신한다.
+④에서 나오는 실패 메시지는 이렇다. 어느 문서의 어느 인용인지까지 나온다.
 
-```markdown
-판정은 `src/check.ts`의 `checkProject`<!--s:0123456789ab-->가 한다.
+```text
+Documentation check failed:
+- docs/contributing/implementation-mechanics.md: tools/generate-skills.ts의 SKILLS: 가리킨 코드가 바뀌었다. Re-read the document, then run `node tools/check-docs.ts --stamp`
 ```
 
-- 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->). 다른 Markdown 문서를 가리키는 인용은 지문을 붙이지 않는다.
-- 지문은 줄바꿈을 LF로 맞춘 뒤 계산하므로, CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다.
+### 무엇을 가리킬 수 있나
+
+- **최상위 선언이나 키만 가리킨다.** TypeScript의 `export function`·`const`·`interface` 같은 선언, JSON의 키, YAML의 키다. 함수 안의 지역 이름은 잘라 낼 수 없어 지문을 만들 수 없으므로 `check:docs`가 실패시킨다.
+- **이 저장소가 소유한 경로만 검사한다.** `src/`·`tools/`·`evals/`·`templates/`·`skills/`·`.agents/`·`.github/`·`docs/`와 루트 설정 파일이다. 다른 도구가 만드는 `apm.yml`이나 사용자 프로젝트에 생기는 `agctx.project.json`은 검사하지 않는다.
+- **다른 Markdown 문서를 가리키는 인용에는 지문을 붙이지 않는다.** 그 문서의 문장은 계속 바뀌고, 가리키는 쪽이 그 내용을 설명하지도 않기 때문이다.
+- **이력 문서는 대상이 아니다.** `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 쓰던 당시의 인용을 그대로 둔다. 코드 블록 안의 예시도 검사하지 않으므로 옛 형식을 보여 줄 수 있다.
+
+### 어떻게 계산하나
+
+- 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->).
+- 줄바꿈을 LF로 맞춘 뒤 계산하므로 CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다. 공백과 주석은 빼지 않는다. 이 저장소는 코드 옆 주석을 이유의 정본으로 삼으므로, 주석이 바뀌면 문서를 다시 읽는 편이 맞다.
 - 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
+- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:29704713ed9a-->에 있다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스

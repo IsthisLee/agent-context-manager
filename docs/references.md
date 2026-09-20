@@ -1080,6 +1080,9 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
   >
   > 번역: 실패한 접근이 중요합니다. 이것이 없으면 다음 세션들이 같은 막다른 길을 다시 시도합니다.
 
+- **공식 문서(Claude Code):** auto memory는 Claude가 스스로 적는 메모이며 저장 위치는 저장소 밖이다. "Each project gets its own memory directory at `~/.claude/projects/<project>/memory/`. The `<project>` path is derived from the git repository, so all worktrees and subdirectories within the same repo share one auto memory directory."(번역: 프로젝트마다 `~/.claude/projects/<project>/memory/`에 자기 메모리 디렉터리를 갖는다. `<project>` 경로는 git 저장소에서 파생되므로 같은 저장소의 모든 worktree와 하위 디렉터리가 하나의 auto memory 디렉터리를 공유한다.) 용도는 "Your preferences, corrections you give Claude, project context Claude can't derive from the code"이고(번역: 사용자의 선호, 사용자가 준 교정, 코드에서 유도할 수 없는 프로젝트 맥락), 서브에이전트도 자기 auto memory를 가질 수 있다("Subagents can also maintain their own auto memory."). 저장소에 커밋되지 않고 Claude Code에서만 쓰므로, 여러 에이전트와 기여자가 함께 보는 진행 상태는 저장소 파일로 둔다. [How Claude remembers your project](https://code.claude.com/docs/en/memory) (확인일: 2026-09-20)
+- **비공식 자료(문서 배치 규약):** 루트 문서를 `docs/`로 옮길 시점의 기준이다. "Move a document to `docs/` when either trigger fires: 1. the root is getting cluttered with top-level files and folders … or 2. the document has outgrown a single file: it needs siblings, status, or structure"(번역: 둘 중 하나가 발생하면 문서를 `docs/`로 옮긴다. 1) 루트가 최상위 파일과 폴더로 어수선해지거나, 2) 문서가 한 파일을 넘어서서 형제 문서, 상태, 구조가 필요해질 때다.) 표준이 아니라 한 저장소가 제안하는 규약이며, `.planning/`이나 `plans/` 폴더를 쓰는 다른 방식도 있다. [Conventional Docs](https://github.com/phatblat/conventional-docs), [Plans](https://github.com/yrangana/Plans) (확인일: 2026-09-20)
+
 ## 문서와 코드의 드리프트 검출 근거
 
 [문서 소스 해시 게이트](contributing/doc-gate.md#문서-소스-해시-게이트)와 [문서의 코드 인용 방식](discussion/repository/topics/code-citation-style.md)이 기대는 외부 사실이다.

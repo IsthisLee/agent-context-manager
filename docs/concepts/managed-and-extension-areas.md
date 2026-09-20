@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
-<!-- agctx-doc-sources: src/project, src/profile/resolve.ts -->
-<!-- agctx-doc-sources-sha256: b49d5b083ceca5d14f3b68f9c4f30f9bb46e988b7a83d01a8e4d68b121fbfa1d -->
+<!-- agctx-doc-sources: src/project -->
+<!-- agctx-doc-sources-sha256: f6de5cad7a6269310c30b260d5ff7eb71fcce798d222a229c0d33c3bcc016766 -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 
@@ -30,6 +30,9 @@ agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 �
 - **관리 영역 안을 고쳤을 때:** 다음 `apply`·`sync`가 `Managed file changed outside agctx`로 멈추고 어떤 파일도 쓰지 않는다. `agctx profile resolve <project>`를 실행하면 그 편집을 관리 영역 밖으로 옮기고 관리 영역을 다시 만들어 푼다. 자세한 절차는 바로 아래 [관리 영역을 고쳐서 멈췄을 때](#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ## 관리 영역을 고쳐서 멈췄을 때
+
+<!-- agctx-doc-sources: src/profile/resolve.ts -->
+<!-- agctx-doc-sources-sha256: 03a416e8203688c5519068e098f4d72d0733b592aa60d2689de753e96c10edbc -->
 
 `apply`·`sync`가 `Managed file changed outside agctx: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
 

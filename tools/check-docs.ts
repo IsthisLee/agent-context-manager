@@ -370,11 +370,13 @@ function computeDocSourcesHash(sources: string[]) {
 
 function checkDocSources() {
   const pins: string[] = [];
+  const cited = new Set<string>();
   for (const markdownFile of walkMarkdown(root)) {
     const content = fs.readFileSync(markdownFile, 'utf8');
     const relative = path.relative(root, markdownFile);
     // Documentation that describes the marker format uses <placeholder> text.
     // Ignore it so the gate acts only on markers whose list is real paths.
+    for (const { file } of namedCitations(contentWithoutCodeBlocks(content))) cited.add(file);
     for (const section of docSourceSections(content)) {
       if (section.sources.some(source => /[<>]/.test(source))) continue;
       const place = section.heading ? `${relative} (${section.heading})` : relative;
@@ -409,8 +411,8 @@ function checkDocSources() {
     .flatMap(sourceRoot => walkFiles(path.join(root, sourceRoot)))
     .map(file => docSourceHashPath(root, file))
     .sort();
-  for (const file of unpinnedSources(sourceFiles, pins)) {
-    errors.push(`${file}: no document pins this source; add it, or the module folder holding it, to the agctx-doc-sources marker of the document that describes it`);
+  for (const file of unpinnedSources(sourceFiles, pins, [...cited])) {
+    errors.push(`${file}: no document pins or cites this source; add it to the agctx-doc-sources marker of the section that describes it, or cite a name inside it`);
   }
 }
 

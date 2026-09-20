@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: ceeb936a1096bb46078d209c23ca0d060e1af8a1d02e7d576a1678beba5666d5 -->
+<!-- agctx-doc-sources-sha256: 528bcf3181cb40d781497cb7cc10ec347d8e87997165009c9a347d955c21986c -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -52,7 +52,7 @@ flowchart TD
 ### 핀 범위와 예시 검사
 
 - 소스는 모듈 단위로 핀한다. `src` 폴더 전체를 핀하면 파일 하나만 바꿔도 모든 문서가 한꺼번에 실패해 다시 읽지 않고 stamp하게 되므로, `check:docs`가 이를 오류로 막는다. `src/commands`처럼 모듈 폴더나 파일을 나열한다.
-- `src` 아래의 모든 파일은 적어도 한 문서의 핀에 들어가야 한다. 새 모듈이나 새 최상위 파일을 더했는데 어느 문서도 핀하지 않으면 `check:docs`가 그 파일을 알린다. 규칙은 `tools/doc-sources.ts`에 있다.
+- `src` 아래의 모든 파일은 어느 문서든 **핀하거나 인용해야** 한다. 인용은 같은 지문을 같은 방식으로 지키므로 핀을 따로 두지 않아도 된다. 둘 다 없는 파일은 `check:docs`가 알린다. 규칙은 `tools/doc-sources.ts`의 `unpinnedSources`<!--s:d88deed8a300-->에 있다.
 - 빠른 시작의 명령 예시는 `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 줄마다 대조한다. 해시 게이트는 다시 읽으라고 알릴 뿐이지만, 이 검사는 예시가 실제 출력과 달라진 순간을 잡는다. 예시에 쓸 수 있는 명령은 `agctx`와 `mkdir`이다.
 
 ## 문서 근거 게이트

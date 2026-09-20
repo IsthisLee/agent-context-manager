@@ -15,12 +15,15 @@ export function wholeRootPins(sources: readonly string[]): string[] {
 }
 
 /**
- * Source files that no pin covers, directly or through a pinned folder.
- * Paths use `/` and are relative to the repository root.
+ * Source files that nothing covers. A file is covered when a document pins it,
+ * directly or through a pinned folder, or when a document cites a name inside
+ * it: a citation carries the same digest and fails the same way, so the pin
+ * would only repeat it. Paths use `/` and are relative to the repository root.
  */
-export function unpinnedSources(sourceFiles: readonly string[], pins: readonly string[]): string[] {
+export function unpinnedSources(sourceFiles: readonly string[], pins: readonly string[], citedFiles: readonly string[] = []): string[] {
   const covering = pins.map(trimSlash).filter(pin => !SOURCE_ROOTS.includes(pin));
-  return sourceFiles.filter(file => !covering.some(pin => file === pin || file.startsWith(`${pin}/`)));
+  const cited = new Set(citedFiles);
+  return sourceFiles.filter(file => !cited.has(file) && !covering.some(pin => file === pin || file.startsWith(`${pin}/`)));
 }
 
 /** The recorded-hash marker line of a document that pins sources. */

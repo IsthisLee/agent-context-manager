@@ -156,6 +156,13 @@ test('documents pin source modules rather than the whole src folder, and every s
   assert.match(checker, /unpinnedSources/);
 });
 
+test('a source a document cites by name counts as covered, so the pin can move to the section that needs it', async () => {
+  const { unpinnedSources } = await import('../tools/doc-sources.ts');
+
+  assert.deepEqual(unpinnedSources(['src/check.ts', 'src/explain.ts'], ['src/explain.ts'], ['src/check.ts']), [], 'a cited file needs no pin');
+  assert.deepEqual(unpinnedSources(['src/check.ts'], [], []), ['src/check.ts'], 'a file that is neither pinned nor cited is reported');
+});
+
 test('a document pinned as a source is hashed without its recorded hash, so the two READMEs can pin each other', async () => {
   const { withoutRecordedHash } = await import('../tools/doc-sources.ts');
   const doc = (hash: string, body: string) => `# Title\n\n<!-- agctx-doc-sources: README.en.md -->\n<!-- agctx-doc-sources-sha256: ${hash} -->\n\n${body}\n`;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { citationExempt, lineNumberCitations, namedCitations, repoFile } from '../tools/doc-citations.ts';
+import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumberCitations, namedCitations, repoFile } from '../tools/doc-citations.ts';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -15,10 +15,14 @@ test('a document may not cite code by line number', () => {
 });
 
 test('a citation names a file and a name inside it', () => {
-  assert.deepEqual(namedCitations('`src/check.ts`의 `checkProject`가 판정한다.'), [{ file: 'src/check.ts', name: 'checkProject' }]);
+  assert.deepEqual(namedCitations('`src/check.ts`의 `checkProject`가 판정한다.'), [{ file: 'src/check.ts', name: 'checkProject', digest: null }]);
+  assert.deepEqual(
+    namedCitations('`src/check.ts`의 `checkProject`<!--s:0123456789ab-->가 판정한다.'),
+    [{ file: 'src/check.ts', name: 'checkProject', digest: '0123456789ab' }]
+  );
   assert.deepEqual(
     namedCitations('`tools/generate-skills.ts`의 `SKILLS`·`renderSkill`'),
-    [{ file: 'tools/generate-skills.ts', name: 'SKILLS' }, { file: 'tools/generate-skills.ts', name: 'renderSkill' }]
+    [{ file: 'tools/generate-skills.ts', name: 'SKILLS', digest: null }, { file: 'tools/generate-skills.ts', name: 'renderSkill', digest: null }]
   );
   assert.deepEqual(namedCitations('`docs/README.md`의 `문서별 책임` 절'), [], 'prose names are not checked');
 });
@@ -52,4 +56,33 @@ test('the two rewritten documents point at names that exist and carry no line nu
   }
 
   assert.match(fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8'), /namedCitations/);
+});
+
+test('a citation carries the digest of what it points at', () => {
+  const digests = new Map([['src/check.ts|checkProject', 'aaaaaaaaaaaa']]);
+  const digestFor = (file: string, name: string) => digests.get(`${file}|${name}`) ?? null;
+
+  const plain = '판정은 `src/check.ts`의 `checkProject`가 한다.';
+  const stamped = applyCitationMarkers(plain, digestFor);
+  assert.equal(stamped, '판정은 `src/check.ts`의 `checkProject`<!--s:aaaaaaaaaaaa-->가 한다.');
+  assert.deepEqual(citationMarkerProblems(plain, digestFor), ['src/check.ts의 checkProject: 지문이 없다']);
+  assert.deepEqual(citationMarkerProblems(stamped, digestFor), []);
+
+  digests.set('src/check.ts|checkProject', 'bbbbbbbbbbbb');
+  assert.deepEqual(citationMarkerProblems(stamped, digestFor), ['src/check.ts의 checkProject: 가리킨 코드가 바뀌었다']);
+  assert.equal(applyCitationMarkers(stamped, digestFor), '판정은 `src/check.ts`의 `checkProject`<!--s:bbbbbbbbbbbb-->가 한다.');
+});
+
+test('an example inside a code block is left alone', () => {
+  const digestFor = () => 'cccccccccccc';
+  const text = '규칙은 이렇다.\n\n```markdown\n판정은 `src/check.ts`의 `checkProject`가 한다.\n```\n';
+  assert.equal(applyCitationMarkers(text, digestFor), text);
+  assert.deepEqual(citationMarkerProblems(text.replace(/```[\s\S]*?```/g, ''), digestFor), []);
+});
+
+test('a citation with no digest source keeps no marker', () => {
+  const none = () => null;
+  const text = '형식은 `CHANGELOG.md`의 `Unreleased` 절을 따른다.';
+  assert.equal(applyCitationMarkers(text, none), text);
+  assert.deepEqual(citationMarkerProblems(text, none), []);
 });

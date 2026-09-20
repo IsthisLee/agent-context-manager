@@ -1,6 +1,6 @@
 # 지침 카탈로그 (배포되는 공통 지침)
 
-이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance` 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
+이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance`<!--s:ac0eea31e97c--> 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
 <!-- agctx-doc-sources: src/i18n/index.ts, src/profile/setup.ts -->
 <!-- agctx-doc-sources-sha256: f3ef46383050d35fda172fb154bc3737ac6647eac2ac0ea94b0c0b056402aa01 -->
@@ -118,4 +118,4 @@ flowchart TB
 - `on`: 이 항목을 프로필 지침에 넣는다. 응답 언어를 뺀 나머지 항목의 기본값이다.
 - `off`: 넣지 않는다.
 
-값은 `src/profile/setup.ts`의 `isGuidanceLevel`이 검사하고 TUI 선택지는 `src/i18n/index.ts`의 `levelOptions`가 만든다. 예외를 허용하는 중간 값은 두지 않는다. 지침은 지켜지기를 원해서 넣는 것이고, 두 단계가 에이전트의 행동을 실제로 다르게 만든다는 근거도 없었다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. ADR 0028 이전에 저장된 `recommended`·`strict`는 `on`으로 읽는다. 결정은 [ADR 0028](../adr/0028-guidance-on-off.md)이며 [ADR 0005](../adr/0005-guidance-level-semantics.md)를 대체한다.
+값은 `src/profile/setup.ts`의 `isGuidanceLevel`<!--s:d0940af40762-->이 검사하고 TUI 선택지는 `src/i18n/index.ts`의 `levelOptions`<!--s:06d932e49129-->가 만든다. 예외를 허용하는 중간 값은 두지 않는다. 지침은 지켜지기를 원해서 넣는 것이고, 두 단계가 에이전트의 행동을 실제로 다르게 만든다는 근거도 없었다. 강제(빌드 차단 등)는 각 프로젝트 하네스의 몫이고 이 패키지의 범위 밖이다. ADR 0028 이전에 저장된 `recommended`·`strict`는 `on`으로 읽는다. 결정은 [ADR 0028](../adr/0028-guidance-on-off.md)이며 [ADR 0005](../adr/0005-guidance-level-semantics.md)를 대체한다.

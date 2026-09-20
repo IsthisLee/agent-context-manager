@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
 import { readTopics, STATUSES, summaryImportance, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
-import { citationExempt, lineNumberCitations, namedCitations } from './doc-citations.ts';
+import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumberCitations, namedCitations } from './doc-citations.ts';
+import { citedText, symbolDigest } from './symbol-source.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
 import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
@@ -41,6 +42,14 @@ function markdownHeadingSlug(heading: string) {
 // A document points at code by file and name, never by line number, so that a
 // change above the cited code cannot make the document wrong on its own. The
 // decision is in docs/discussion/repository/topics/code-citation-style.md.
+/** Digest of the code a citation points at, or null when the target carries none. */
+function citationDigest(file: string, name: string): string | null {
+  const target = path.join(root, file);
+  if (!fs.existsSync(target)) return null;
+  const text = citedText(file, fs.readFileSync(target, 'utf8'), name);
+  return text === null ? null : symbolDigest(text);
+}
+
 function checkCitations(markdownFile: string) {
   const relative = docSourceHashPath(root, markdownFile, path);
   if (citationExempt(relative)) return;
@@ -59,6 +68,10 @@ function checkCitations(markdownFile: string) {
     if (!new RegExp(`\\b${name.replaceAll('$', '\\$')}\\b`).test(fs.readFileSync(target, 'utf8'))) {
       errors.push(`${relative}: ${file} no longer has ${name}; re-read the document and fix the citation`);
     }
+  }
+
+  for (const problem of citationMarkerProblems(content, citationDigest)) {
+    errors.push(`${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp\``);
   }
 }
 
@@ -404,9 +417,23 @@ function checkDocSources() {
   }
 }
 
+function stampCitations(): string[] {
+  const updated: string[] = [];
+  for (const markdownFile of walkMarkdown(root)) {
+    const relative = docSourceHashPath(root, markdownFile, path);
+    if (citationExempt(relative)) continue;
+    const content = fs.readFileSync(markdownFile, 'utf8');
+    const stamped = applyCitationMarkers(content, citationDigest);
+    if (stamped === content) continue;
+    fs.writeFileSync(markdownFile, stamped);
+    updated.push(relative);
+  }
+  return updated;
+}
+
 function stampDocSources() {
   let failed = false;
-  const updated = [];
+  const updated = stampCitations();
   for (const markdownFile of walkMarkdown(root)) {
     const content = fs.readFileSync(markdownFile, 'utf8');
     const spec = docSourceSpec(content);
@@ -422,7 +449,7 @@ function stampDocSources() {
     updated.push(path.relative(root, markdownFile));
   }
   if (updated.length) {
-    console.log('Stamped doc-source hashes:');
+    console.log('Stamped documents:');
     for (const file of updated) console.log(`- ${file}`);
   } else if (!failed) {
     console.log('Doc-source hashes already current.');

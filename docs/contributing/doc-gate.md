@@ -1,7 +1,7 @@
 # 문서 게이트
 
-<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts -->
-<!-- agctx-doc-sources-sha256: 55d0c11b13d71a40bbbce5375d1d043710d237fbc07b30a38eab367d3d67e9a2 -->
+<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
+<!-- agctx-doc-sources-sha256: d0c7b0133f5b6ff243dc99db6eb99ec8ccb4f335dad8cad632e1190f4e16632b -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -36,7 +36,7 @@ flowchart TD
 
 ## 문서 근거 게이트
 
-외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정과 배포 지침이 근거를 밝히도록 `check:docs`가 세 가지를 검사한다. 확인일과 ADR 근거의 검사 로직은 `tools/doc-evidence.ts`에, 지침 카탈로그 검사는 `tools/check-docs.ts`의 `checkGuidanceCatalog`에 있다.
+외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정과 배포 지침이 근거를 밝히도록 `check:docs`가 세 가지를 검사한다. 확인일과 ADR 근거의 검사 로직은 `tools/doc-evidence.ts`에, 지침 카탈로그 검사는 `tools/check-docs.ts`의 `checkGuidanceCatalog`<!--s:c45ef0207675-->에 있다.
 
 - **확인일:** `docs/references.md`에서 코드 블록 밖의 외부 링크(`http`·`https`)가 들어 있는 줄은 같은 줄에 `확인일: YYYY-MM-DD`가 있어야 한다. 목록 항목은 줄 끝에, 표 행은 마지막 칸 안에 붙인다.
 - **ADR 근거:** 번호가 0009 이상인 ADR은 머리말에 `* **근거:**`(또는 `* **Evidence:**`)가 있어야 한다. 값에는 링크를 두거나, 외부 사실에 기대지 않는 결정이면 `외부 근거 없음: <이유>`(또는 `No external evidence: <reason>`)를 적는다. 0008 이전 ADR은 검사하지 않는다.
@@ -52,10 +52,18 @@ flowchart TD
 판정은 `src/check.ts`의 `checkProject`가 한다.
 ```
 
-- `check:docs`는 문서마다 두 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패한다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`에 있다.
+- `check:docs`는 문서마다 두 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패한다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:8bffb32b5286-->에 있다.
 - 검사 대상은 이 저장소가 소유한 경로(`src/`·`tools/`·`evals/`·`templates/`·`skills/`·`.agents/`·`.github/`·`docs/`와 루트 설정 파일)뿐이다. 다른 도구가 만드는 `apm.yml`이나 사용자 프로젝트에 생기는 `agctx.project.json`처럼 저장소에 없는 파일은 검사하지 않는다.
 - 이력을 남기는 `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 대상이 아니다. 그 문서들은 쓰던 당시의 인용을 그대로 둔다.
 - 코드 블록 안의 내용은 검사하지 않으므로, 옛 형식을 예시로 보여 줄 수 있다.
+- 인용마다 가리킨 코드의 지문을 옆에 주석으로 기록한다. 렌더링에는 보이지 않고, 사람이 쓰지 않으며 `--stamp`가 붙인다. 가리킨 코드의 내용이 바뀌면 그 문서의 그 항목만 실패하므로, 다시 읽은 뒤 `node tools/check-docs.ts --stamp`로 지문을 갱신한다.
+
+```markdown
+판정은 `src/check.ts`의 `checkProject`<!--s:0123456789ab-->가 한다.
+```
+
+- 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->). 다른 Markdown 문서를 가리키는 인용은 지문을 붙이지 않는다.
+- 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스
@@ -95,4 +103,4 @@ flowchart TD
 - 최상위 키는 논의 영역 이름이고, 배열 순서가 색인 표의 행 순서다. `stage`·`titleEn`·`importance`·`prerequisites`는 필요한 주제에만 둔다. 영어 README에 나오는 주제에 `titleEn`이 없으면 생성기가 실패한다.
 - mermaid 안에서는 HTML 주석을 쓸 수 없으므로 단계 그림의 표지는 `%% agctx:generated:stage-classes:start`와 `%% agctx:generated:stage-classes:end`다. 그림의 노드·화살표와 그림 아래 설명은 사람이 쓴다. 새 단계를 더하면 그림에 `S<단계>` 노드를 먼저 만든다.
 - `evals/discussion-status.test.ts`가 생성 결과와 파일 내용이 같은지 검사하므로, `topics.json`을 고치고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
-- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES` 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. 주제 문서의 제안 요약에 적은 `중요도`의 첫 단어(`High — 이유`의 `High`)는 `importance`와 같아야 한다. 이유는 주제 문서에, 수준은 `topics.json`에 둔다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.
+- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES`<!--s:f0f4dd050848--> 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. 주제 문서의 제안 요약에 적은 `중요도`의 첫 단어(`High — 이유`의 `High`)는 `importance`와 같아야 한다. 이유는 주제 문서에, 수준은 `topics.json`에 둔다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.

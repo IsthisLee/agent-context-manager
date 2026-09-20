@@ -32,14 +32,47 @@ export function lineNumberCitations(text: string): string[] {
 export interface NamedCitation {
   file: string;
   name: string;
+  /** Digest recorded beside the citation, or null when it carries none yet. */
+  digest: string | null;
 }
 
-/** `path/to/file.ts`의 `name`, with more names joined by `·`, `,`, `와` or `과`. */
-const NAMED_CITATION = /`([\w./-]+\.[A-Za-z0-9]+)`의((?:\s*`[A-Za-z_$][\w$]*`\s*[·,]?\s*(?:와|과)?)+)/g;
-const NAME = /`([A-Za-z_$][\w$]*)`/g;
+/** `path/to/file.ts`의 `name`, with more names joined by `·`, `,`, `와` or `과`, each carrying its digest marker. */
+const NAMED_CITATION = /`([\w./-]+\.[A-Za-z0-9]+)`의((?:\s*`[A-Za-z_$][\w$]*`(?:<!--\s*s:[0-9a-f]{12}\s*-->)?\s*[·,]?\s*(?:와|과)?)+)/g;
+const NAME = /`([A-Za-z_$][\w$]*)`(?:<!--\s*s:([0-9a-f]{12})\s*-->)?/g;
 
 export function namedCitations(text: string): NamedCitation[] {
   return [...text.matchAll(NAMED_CITATION)]
     .filter(match => repoFile(match[1]))
-    .flatMap(match => [...match[2].matchAll(NAME)].map(name => ({ file: match[1], name: name[1] })));
+    .flatMap(match => [...match[2].matchAll(NAME)].map(name => ({ file: match[1], name: name[1], digest: name[2] ?? null })));
+}
+
+/** The digest of what a citation points at, or null when that kind of target carries no digest. */
+export type DigestLookup = (file: string, name: string) => string | null;
+
+function rewriteNames(names: string, file: string, digestFor: DigestLookup): string {
+  return names.replace(NAME, (whole, name: string) => {
+    const digest = digestFor(file, name);
+    return digest ? `\`${name}\`<!--s:${digest}-->` : `\`${name}\``;
+  });
+}
+
+/** The document with every citation marker written or refreshed, leaving fenced code blocks alone. */
+export function applyCitationMarkers(text: string, digestFor: DigestLookup): string {
+  return text
+    .split(/(```[\s\S]*?```)/g)
+    .map(part => part.startsWith('```')
+      ? part
+      : part.replace(NAMED_CITATION, (whole, file: string, names: string) =>
+        repoFile(file) ? `\`${file}\`의${rewriteNames(names, file, digestFor)}` : whole))
+    .join('');
+}
+
+/** Citations whose marker is missing or no longer matches what they point at. */
+export function citationMarkerProblems(text: string, digestFor: DigestLookup): string[] {
+  return namedCitations(text).flatMap(({ file, name, digest }) => {
+    const current = digestFor(file, name);
+    if (!current) return [];
+    if (!digest) return [`${file}의 ${name}: 지문이 없다`];
+    return digest === current ? [] : [`${file}의 ${name}: 가리킨 코드가 바뀌었다`];
+  });
 }

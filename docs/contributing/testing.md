@@ -35,9 +35,11 @@ pnpm run audit
 ## CI 환경
 
 <!-- agctx-doc-sources: .github/workflows/ci.yml -->
-<!-- agctx-doc-sources-sha256: 6a0a2745790ca3f86b1db3e3e39e495580bfef173740f3a7c3ad8475bf3d9bfc -->
+<!-- agctx-doc-sources-sha256: 41472c8dfbd859b6c2ee1044c599d4e4c758f35a4d2f6660733ec13ca1e30517 -->
 
 GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·24 LTS와 26 Current, macOS와 Windows의 Node.js 22 LTS 조합을 고정된 pnpm 버전으로 검증한다. 지원 하한인 22를 세 운영체제에서 모두 돌려 새 API를 실수로 쓰면 CI가 잡게 한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 같은 이유로 Node.js 22로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
+
+CI는 전체 이력을 받는다(`fetch-depth: 0`). `PROGRESS.md`의 최근 기록이 실제 커밋과 맞는지 검사하려면 이력이 필요하기 때문이다. 얕은 복제에서는 그 두 평가가 건너뛴다.
 
 저장소 루트의 `.editorconfig`와 `.gitattributes`는 편집기·운영체제에 따른 인코딩, 줄바꿈, 공백 차이를 줄이는 기본 파일 형식 계약이다.
 

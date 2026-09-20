@@ -9,6 +9,9 @@ import { IN_PROGRESS_MARKER, progressRow, recentEntries, renderInProgress, rende
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const progress = () => fs.readFileSync(path.join(repoRoot, 'PROGRESS.md'), 'utf8');
 
+/** A shallow clone holds one commit, so the history checks have nothing to compare against. */
+const shallowClone = execSync('git rev-parse --is-shallow-repository', { cwd: repoRoot, encoding: 'utf8' }).trim() === 'true';
+
 test('the recent log is rendered from the commit history, one line per commit', () => {
   const entries = [
     { date: '2026-09-20', subject: 'docs: 진행 파일의 최근 기록을 생성한다' },
@@ -29,7 +32,8 @@ test('the progress file carries the generated block', () => {
   assert.ok(content.indexOf(start) < content.indexOf(end));
 });
 
-test('every line of the recent log matches a real commit, so nobody can write one by hand', () => {
+test('every line of the recent log matches a real commit, so nobody can write one by hand', t => {
+  if (shallowClone) return t.skip('shallow clone: no history to compare against');
   const [start, end] = RECENT_MARKER;
   const content = progress();
   const block = content.slice(content.indexOf(start) + start.length, content.indexOf(end)).trim();
@@ -42,7 +46,8 @@ test('every line of the recent log matches a real commit, so nobody can write on
   }
 });
 
-test('the entries come from the history newest first', () => {
+test('the entries come from the history newest first', t => {
+  if (shallowClone) return t.skip('shallow clone: no history to compare against');
   const entries = recentEntries(repoRoot, 5);
 
   assert.equal(entries.length, 5);

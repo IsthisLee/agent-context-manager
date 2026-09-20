@@ -143,7 +143,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
+<!-- agctx-doc-sources-sha256: 7666b969a4feb43022c604b2a8e60a5900f6384cf02512e6fa08cb6bb5ed3211 -->
 
 ### 1. 프로필 받기
 
@@ -250,7 +250,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 43bc5c76f07d49780d37bca01231974354feec0c76861475e15ba8665175d766 -->
+<!-- agctx-doc-sources-sha256: 3f8a91cee6f1fd80b2a0be0638c892e610ebc19ff634937b100fe514407e0747 -->
 
 ```mermaid
 sequenceDiagram

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: f0564105aa64fef42a452cca7298c96693e3172289f49b18f8a4c3ad408be786 -->
+<!-- agctx-doc-sources-sha256: 3211a25435f9ca6b89782ea76b89ae8165476e32a9ff66a3e7a20c117ee6c56b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -146,7 +146,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 1c86410a5a019c2e5f080b32b7b3222509fb81ab93755dfa6d601e82813f7942 -->
+<!-- agctx-doc-sources-sha256: 03d0f34d67cb6184add81d0361619d5a07521010a6ea486e5b13116c837fef16 -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 

@@ -82,7 +82,12 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     const currentRegion = managedRegion(kind, existing);
     const nextRegion = managedRegion(kind, regenerated);
     const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
-    const conflict = recordedHash && regionHash(currentRegion) !== recordedHash
+    // A managed area that already holds what this run would write costs nothing
+    // to overwrite, so it is not a conflict even when the recorded hash differs.
+    // Editors that format Markdown on save reach this case: they rewrite bytes
+    // agctx owns, and a later agctx writes the formatted shape itself.
+    const settled = currentRegion !== null && currentRegion === nextRegion;
+    const conflict = recordedHash && !settled && regionHash(currentRegion) !== recordedHash
       ? { kind: existing === null ? 'missing' as const : 'edited' as const, base: knownBase(targetDir, relativePath, recordedHash, nextRegion) }
       : null;
     files.push({ rel: relativePath, kind, target: path.join(targetDir, relativePath), existing, regenerated, currentRegion, nextRegion, conflict });

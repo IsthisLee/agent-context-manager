@@ -16,7 +16,7 @@ import { readProfile } from './store.ts';
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
 
 export function renderProfileAgents(content: string, profileName: string, projectName: string): string {
-  return `${content.trimEnd()}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n* **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
+  return `${content.trimEnd()}\n\n> Applied from agctx profile: ${profileName}\n\n## Project context\n\n- **Project:** ${projectName}\n\n${_('scaffold.extHeading')}\n\n${_('scaffold.extBody')}\n`;
 }
 
 /**

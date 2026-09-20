@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 0d1a58d1219226d735849a34486f268ee131903a75f270b0b422d44c346f6d9d -->
+<!-- agctx-doc-sources-sha256: 4af74e2c773615369fd8cdeda384aa457cc9b3033d57feb26623d7e1cebb17bf -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -144,7 +144,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, document
 ## Supported agents
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 1c86410a5a019c2e5f080b32b7b3222509fb81ab93755dfa6d601e82813f7942 -->
+<!-- agctx-doc-sources-sha256: 03d0f34d67cb6184add81d0361619d5a07521010a6ea486e5b13116c837fef16 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 

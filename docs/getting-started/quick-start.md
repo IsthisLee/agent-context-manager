@@ -54,7 +54,7 @@ agctx help
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 83216cf0bf6236dc39b2bf86383e40e9d819c37871bb81a54f55247625cf9c1e -->
+<!-- agctx-doc-sources-sha256: 1922f4b6aac2738c4fce12fd8b20342b955e8d1dc9c2d95bc32fb1229b9c1b4e -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -89,7 +89,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: 0d366dd101bf567dbb9b16bc06b3d38df9fe2526ccabc7d0f5a1efc3a14798ac -->
+<!-- agctx-doc-sources-sha256: aec9a39ce956aaed844034119909f231dc6e8a80f7b01ee254c8b8ccb0312b77 -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -132,7 +132,7 @@ Applied profile team-backend to /work/shop
 ## 4. 저장소 확인하기
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 43bc5c76f07d49780d37bca01231974354feec0c76861475e15ba8665175d766 -->
+<!-- agctx-doc-sources-sha256: 3f8a91cee6f1fd80b2a0be0638c892e610ebc19ff634937b100fe514407e0747 -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

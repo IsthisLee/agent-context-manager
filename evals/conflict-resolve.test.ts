@@ -233,7 +233,9 @@ test('resolve --discard backs up the conflicting file before regenerating it', t
 test('resolve restores template lines that were deleted inside the managed area', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
-  fixture.write('CLAUDE.md', original.replace('* Manage project-specific domain rules there.\n', ''));
+  const deleted = '- Manage project-specific domain rules there.\n';
+  assert.ok(original.includes(deleted), 'the template changed; pick a line this fixture can delete');
+  fixture.write('CLAUDE.md', original.replace(deleted, ''));
 
   const result = fixture.ok(['profile', 'resolve', fixture.project, '--yes']);
 

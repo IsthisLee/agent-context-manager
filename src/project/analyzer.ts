@@ -96,3 +96,36 @@ export function hashManagedDocument(content: string | null | undefined): string 
   const managed = extractManagedDocument(content);
   return managed ? createHash('sha256').update(managed).digest('hex') : null;
 }
+
+export interface UnstableLine {
+  /** 1-based line number inside the text that was checked. */
+  line: number;
+  reason: string;
+}
+
+/**
+ * Lines a Markdown formatter would rewrite.
+ *
+ * Editors that format on save rewrite the whole file, so a person who only
+ * edits their own rules below the boundary still changes bytes inside the
+ * managed area, and the changed bytes read as a conflict they did not cause.
+ * Prettier turned `* **Project:**` into `- **Project:**` in one project this
+ * way (2026-09-20 실측). Whatever agctx writes into a managed area therefore
+ * has to already be in the shape formatters converge on.
+ */
+export function formatterUnstableLines(text: string): UnstableLine[] {
+  const lines = text.replaceAll('\r\n', '\n').split('\n');
+  const found: UnstableLine[] = [];
+  let fenced = false;
+  lines.forEach((line, index) => {
+    if (/^\s*(?:```|~~~)/.test(line)) fenced = !fenced;
+    if (fenced) return;
+    const at = index + 1;
+    const next = lines[index + 1];
+    if (/^\s*[*+][ \t]+\S/.test(line)) found.push({ line: at, reason: 'bullet marker is not -' });
+    if (/[ \t]$/.test(line)) found.push({ line: at, reason: 'trailing whitespace' });
+    if (/^#{1,6}[ \t]/.test(line) && next !== undefined && next.trim() !== '') found.push({ line: at, reason: 'no blank line after heading' });
+    if (line === '' && index > 0 && lines[index - 1] === '') found.push({ line: at, reason: 'consecutive blank lines' });
+  });
+  return found;
+}

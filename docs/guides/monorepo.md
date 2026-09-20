@@ -22,7 +22,7 @@
 ## 설정하기
 
 <!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 80dca28540db34d6baf14e08528bd335a4cf5df5317ea95370ceac9f00ca3e05 -->
+<!-- agctx-doc-sources-sha256: 2ed2fe181f2c9072eebca93e2aa889acf1f0b21f776d3bdea3fa92e65ae8d63b -->
 
 1. 저장소 루트에서 프로필을 적용한다. 하위 폴더에 이미 `AGENTS.md`가 있으면 연결 파일도 함께 만든다. TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**에서 저장소 루트를 고른다.
 

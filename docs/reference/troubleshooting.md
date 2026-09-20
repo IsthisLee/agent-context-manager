@@ -6,9 +6,11 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
+<!-- agctx-doc-sources-sha256: 7666b969a4feb43022c604b2a8e60a5900f6384cf02512e6fa08cb6bb5ed3211 -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
+
+관리 영역을 고친 기억이 없는데도 이 오류가 난다면 편집기가 저장할 때 Markdown을 다시 포맷했을 수 있다. `git diff`에 목록 기호나 빈 줄만 바뀐 줄이 보이면 그 경우다. 어디까지가 관리 영역이고 포매터를 어떻게 다루는지는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
 
 ## 그 밖의 오류
 

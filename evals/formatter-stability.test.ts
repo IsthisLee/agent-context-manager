@@ -1,0 +1,108 @@
+import test, { type TestContext } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { extractAgentsManagedDocument, formatterUnstableLines, hashAgentsManagedDocument } from '../src/project/analyzer.ts';
+import { renderProfileAgents } from '../src/profile/apply.ts';
+import { SUPPORTED_LOCALES, setLocale, t } from '../src/i18n/index.ts';
+
+/**
+ * Editors that format Markdown on save rewrite the whole file. If anything
+ * agctx writes into a managed area is not already in the shape formatters
+ * produce, saving the file changes the managed bytes and `agctx check`
+ * reports a conflict the person never caused.
+ */
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), 'utf8');
+const reasons = (text: string) => formatterUnstableLines(text).map(found => `line ${found.line}: ${found.reason}`);
+
+test('formatterUnstableLines names what a Markdown formatter would rewrite', () => {
+  assert.deepEqual(formatterUnstableLines('- kept\n'), []);
+  assert.deepEqual(formatterUnstableLines('* changed\n'), [{ line: 1, reason: 'bullet marker is not -' }]);
+  assert.deepEqual(formatterUnstableLines('+ changed\n'), [{ line: 1, reason: 'bullet marker is not -' }]);
+  assert.deepEqual(formatterUnstableLines('본문 \n'), [{ line: 1, reason: 'trailing whitespace' }]);
+  assert.deepEqual(formatterUnstableLines('## 제목\n본문\n'), [{ line: 1, reason: 'no blank line after heading' }]);
+  assert.deepEqual(formatterUnstableLines('본문\n\n\n다음\n'), [{ line: 3, reason: 'consecutive blank lines' }]);
+
+  assert.deepEqual(formatterUnstableLines('*강조*는 목록이 아니다\n'), [], 'emphasis is not a bullet');
+  assert.deepEqual(formatterUnstableLines('```sh\n* echo\n```\n'), [], 'a formatter leaves fenced code alone');
+  assert.deepEqual(formatterUnstableLines('## 제목\n\n본문\n'), []);
+});
+
+test('every template agctx writes survives a formatter unchanged', () => {
+  const templates = ['templates/CLAUDE.md', 'templates/CLAUDE.link.md', 'templates/antigravity-rules/agctx.md', 'templates/profile/AGENTS.md', 'templates/profile/AGENTS.ko.md'];
+  for (const template of templates) {
+    assert.deepEqual(reasons(read(template)), [], `${template} would be rewritten on save, which turns into a conflict`);
+  }
+});
+
+test('the project context agctx appends to AGENTS.md survives a formatter unchanged', () => {
+  for (const locale of SUPPORTED_LOCALES) {
+    setLocale(locale);
+    const rendered = renderProfileAgents('# 프로필 지침\n\n- 규칙 하나.\n', 'isthis', 'my-app');
+    assert.deepEqual(reasons(rendered), [], `the ${locale} rendering would be rewritten on save`);
+    assert.deepEqual(reasons(t(locale, 'scaffold.extBody')), [], `the ${locale} extension body would be rewritten on save`);
+  }
+});
+
+/** A project with the profile already applied, in a throwaway agctx home. */
+function applied(t: TestContext) {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-formatter-'));
+  const project = path.join(home, 'project');
+  fs.mkdirSync(project);
+  t.after(() => fs.rmSync(home, { recursive: true, force: true }));
+  const run = (args: string[]) => spawnSync(process.execPath, [path.join(repoRoot, 'src', 'agctx.ts'), ...args], {
+    cwd: repoRoot,
+    env: { ...process.env, AGCTX_HOME: home },
+    encoding: 'utf8'
+  });
+  const ok = (args: string[]) => {
+    const result = run(args);
+    assert.equal(result.status, 0, `${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
+    return result;
+  };
+  ok(['profile', 'create', 'team', '--scope', 'team']);
+  ok(['profile', 'apply', 'team', project, '--yes']);
+  const read = (rel: string) => fs.readFileSync(path.join(project, rel), 'utf8');
+  const write = (rel: string, content: string) => fs.writeFileSync(path.join(project, rel), content);
+  return { project, run, read, write };
+}
+
+test('a managed area that already holds what agctx would write is not a conflict', t => {
+  // An older agctx wrote `* **Project:**`, the editor's formatter turned it into
+  // `- **Project:**` on save, and this version writes `-` too. The file already
+  // holds what sync would write, so stopping costs the person a conflict they
+  // cannot resolve into anything better.
+  const fixture = applied(t);
+  const region = extractAgentsManagedDocument(fixture.read('AGENTS.md')) ?? '';
+  assert.ok(region.includes('- **Project:**'), 'the applied managed area carries the project line');
+
+  const config = JSON.parse(fixture.read('agctx.project.json'));
+  config.managedHashes['AGENTS.md'] = createHash('sha256').update(region.replace('- **Project:**', '* **Project:**')).digest('hex');
+  fixture.write('agctx.project.json', `${JSON.stringify(config, null, 2)}\n`);
+
+  const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
+  assert.equal(result.status, 0, `sync stopped on a managed area it was about to write anyway\n${result.stdout}\n${result.stderr}`);
+  assert.doesNotMatch(result.stdout, /conflict/);
+});
+
+test('a managed area holding something else is still a conflict', t => {
+  const fixture = applied(t);
+  fixture.write('AGENTS.md', fixture.read('AGENTS.md').replace(/^(# .*\n)/, '$1\n## 내가 끼워 넣은 절\n'));
+
+  const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
+  assert.equal(result.status, 2, 'an edit agctx would overwrite still stops before writing anything');
+});
+
+test('a formatter changing one bullet marker in the managed area changes its hash', () => {
+  const document = '# 지침\n\n## Project context\n\n- **Project:** my-app\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- 내 규칙.\n';
+  const formatted = document.replace('- **Project:**', '* **Project:**');
+
+  assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument(formatted), 'one byte inside the managed area is enough to report a conflict');
+  assert.deepEqual(reasons(formatted), [{ line: 5, reason: 'bullet marker is not -' }].map(found => `line ${found.line}: ${found.reason}`), 'so the check names the line before it ever reaches a project');
+});

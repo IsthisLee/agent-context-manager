@@ -1,7 +1,5 @@
 # 모노레포에서 쓰기
 
-<!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts, templates/CLAUDE.link.md, src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: db5ff216b4844fa68db2416a904b48ac834b7699ec4d061bcebdf836e4b5b8a8 -->
 
 모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일을 대신 만들어 준다. 연결 파일은 그 폴더의 `AGENTS.md`를 `@AGENTS.md`로 가져오는 `CLAUDE.md`다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문이다. 결정과 근거는 [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
 
@@ -23,6 +21,9 @@
 
 ## 설정하기
 
+<!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts -->
+<!-- agctx-doc-sources-sha256: 80dca28540db34d6baf14e08528bd335a4cf5df5317ea95370ceac9f00ca3e05 -->
+
 1. 저장소 루트에서 프로필을 적용한다. 하위 폴더에 이미 `AGENTS.md`가 있으면 연결 파일도 함께 만든다. TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**에서 저장소 루트를 고른다.
 
    ```bash
@@ -34,6 +35,9 @@
 4. 새로 생긴 연결 파일(`<폴더>/CLAUDE.md`)도 다른 적용 파일과 함께 커밋한다.
 
 ## 연결 파일 구조
+
+<!-- agctx-doc-sources: templates/CLAUDE.link.md -->
+<!-- agctx-doc-sources-sha256: daa83f477aec323f8ff67b0c7dd4c64d1c8b8dc428d25aa5f861217d07c41ce1 -->
 
 ```mermaid
 flowchart TB
@@ -77,6 +81,9 @@ Dry-run: no files were changed.
 ```
 
 ## 확인하기
+
+<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: fe1f09f851a4add870358fe620652227f6a02abdf88b1d911bd2acf52830b51d -->
 
 에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 

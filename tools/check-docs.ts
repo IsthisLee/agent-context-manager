@@ -5,10 +5,13 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
-import { hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
+import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
+import { readTopics, STATUSES, summaryImportance, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
+import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumberCitations, namedCitations } from './doc-citations.ts';
+import { citedText, symbolDigest } from './symbol-source.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
-import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutRecordedHash } from './doc-sources.ts';
+import { docSourceSections, SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
 import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -34,6 +37,49 @@ function markdownHeadingSlug(heading: string) {
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s-]/gu, '')
     .replace(/\s+/g, '-');
+}
+
+// A document points at code by file and name, never by line number, so that a
+// change above the cited code cannot make the document wrong on its own. The
+// decision is in docs/discussion/repository/topics/code-citation-style.md.
+/** Digest of the code a citation points at, or null when the target carries none. */
+function citationDigest(file: string, name: string): string | null {
+  const target = path.join(root, file);
+  if (!fs.existsSync(target)) return null;
+  const text = citedText(file, fs.readFileSync(target, 'utf8'), name);
+  return text === null ? null : symbolDigest(text);
+}
+
+function checkCitations(markdownFile: string) {
+  const relative = docSourceHashPath(root, markdownFile, path);
+  if (citationExempt(relative)) return;
+  const content = contentWithoutCodeBlocks(fs.readFileSync(markdownFile, 'utf8'));
+
+  for (const citation of lineNumberCitations(content)) {
+    errors.push(`${relative}: cite code by name, not by line (${citation})`);
+  }
+
+  for (const { file, name } of namedCitations(content)) {
+    const target = path.join(root, file);
+    if (!fs.existsSync(target)) {
+      errors.push(`${relative}: cited file is missing (${file})`);
+      continue;
+    }
+    const source = fs.readFileSync(target, 'utf8');
+    if (!new RegExp(`\\b${name.replaceAll('$', '\\$')}\\b`).test(source)) {
+      errors.push(`${relative}: ${file} no longer has ${name}; re-read the document and fix the citation`);
+      continue;
+    }
+    // A citation points at a declaration or a key, never at a name that only
+    // appears inside one: the gate can fingerprint the former and not the latter.
+    if (!file.endsWith('.md') && citedText(file, source, name) === null) {
+      errors.push(`${relative}: ${name} in ${file} is not a top-level declaration or key; cite one that is`);
+    }
+  }
+
+  for (const problem of citationMarkerProblems(content, citationDigest)) {
+    errors.push(`${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp\``);
+  }
 }
 
 function checkInternalAnchors(markdownFile: string) {
@@ -116,61 +162,81 @@ function checkDiscussionStatuses() {
     errors.push('docs/discussion/architecture/topics: must exist');
     return;
   }
-  for (const area of areas) checkDiscussionArea(area);
+  let topics: DiscussionTopics;
+  try {
+    topics = readTopics(root);
+  } catch (error) {
+    errors.push(`${TOPICS_FILE}: ${error instanceof Error ? error.message : String(error)}`);
+    return;
+  }
+  for (const area of Object.keys(topics).filter(area => !areas.includes(area))) {
+    errors.push(`${TOPICS_FILE}: ${area} has no docs/discussion/${area}/topics folder`);
+  }
+  for (const area of areas) checkDiscussionArea(area, topics[area]);
 }
 
-function checkDiscussionArea(area: string) {
+// The status of each topic comes from topics.json. The status lines, indexes
+// and README lists are generated from it, and evals/discussion-status.test.ts
+// checks that they are up to date.
+function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined) {
   const discussionDir = path.join(root, 'docs', 'discussion', area);
   const topicsDir = path.join(discussionDir, 'topics');
-  const allowed = new Set(['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process']);
   const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
-  const indexPath = path.join(discussionDir, 'README.md');
-  if (!fs.existsSync(indexPath)) {
+  if (!fs.existsSync(path.join(discussionDir, 'README.md'))) {
     errors.push(`docs/discussion/${area}/README.md: a discussion area needs an index listing its topics and their status`);
     return;
   }
-  const index = fs.readFileSync(indexPath, 'utf8');
+  if (!Array.isArray(listed)) {
+    errors.push(`${TOPICS_FILE}: add the ${area} area with its topics`);
+    return;
+  }
 
   for (const name of fs.readdirSync(discussionDir).filter(name => name.endsWith('.md') && name !== 'README.md')) {
     errors.push(`docs/discussion/${area}/${name}: move topic documents into topics/`);
   }
 
+  for (const topic of listed) {
+    for (const problem of topicFieldErrors(topic)) errors.push(`${TOPICS_FILE}: ${area}/${topic.file}: ${problem}`);
+  }
+
   const topicFiles = fs.readdirSync(topicsDir).filter(name => name.endsWith('.md')).sort();
-  const indexedTopics = [...index.matchAll(/\]\(topics\/([^\s)#]+\.md)\)/g)].map(match => match[1]);
   for (const name of topicFiles) {
-    const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
-    const match = content.match(/^\*\*상태:\*\* (.+)$/m);
-    if (!match || !allowed.has(match[1].trim())) {
-      errors.push(`docs/discussion/${area}/topics/${name}: use an allowed **상태:** value`);
+    const entries = listed.filter(topic => topic.file === name);
+    if (entries.length !== 1) {
+      errors.push(`${TOPICS_FILE}: ${area}/${name} must be indexed exactly once`);
+      continue;
+    }
+    const status = entries[0].status;
+    if (!STATUSES.includes(status)) {
+      errors.push(`${TOPICS_FILE}: ${area}/${name} needs an allowed status (${STATUSES.join(', ')})`);
       continue;
     }
 
-    if (requiresImplementationRecord(match[1].trim()) && !hasImplementationRecord(content)) {
-      errors.push(`docs/discussion/${area}/topics/${name}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+    const document = `docs/discussion/${area}/topics/${name}`;
+    const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
+    if (requiresImplementationRecord(status) && !hasImplementationRecord(content)) {
+      errors.push(`${document}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+    }
+    if (forbidsImplementationRecord(status) && hasImplementationRecord(content)) {
+      errors.push(`${document}: a topic with an implementation record is at least Implementing; update its status in ${TOPICS_FILE}`);
+    }
+    const stated = summaryImportance(content);
+    if (stated !== entries[0].importance) {
+      errors.push(`${document}: 중요도 in the proposal summary (${stated ?? 'none'}) must match importance in ${TOPICS_FILE} (${entries[0].importance ?? 'none'})`);
     }
 
-    if (['Proposed', 'Implementing'].includes(match[1].trim())) {
+    if (['Proposed', 'Implementing'].includes(status)) {
       for (const field of proposalSummaryFields) {
         if (!content.includes(`| ${field} |`)) {
-          errors.push(`docs/discussion/${area}/topics/${name}: missing proposal summary field (${field})`);
+          errors.push(`${document}: missing proposal summary field (${field})`);
         }
       }
     }
-
-    const occurrences = indexedTopics.filter(indexedName => indexedName === name).length;
-    if (occurrences !== 1) {
-      errors.push(`docs/discussion/${area}/README.md: ${name} must be indexed exactly once`);
-    }
-    const indexRow = index.split('\n').find(line => line.includes(`](topics/${name})`));
-    const indexStatus = indexRow?.split('|').map(cell => cell.trim()).filter(Boolean).at(-1);
-    if (indexStatus !== match[1].trim()) {
-      errors.push(`docs/discussion/${area}/README.md: status for ${name} must match its document`);
-    }
   }
 
-  for (const indexedName of new Set(indexedTopics)) {
-    if (!topicFiles.includes(indexedName)) {
-      errors.push(`docs/discussion/${area}/README.md: index references missing topic ${indexedName}`);
+  for (const topic of listed) {
+    if (!topicFiles.includes(topic.file)) {
+      errors.push(`${TOPICS_FILE}: index references missing topic ${area}/${topic.file}`);
     }
   }
 }
@@ -265,21 +331,7 @@ function checkChangelog() {
 // sha256 of those files. When any listed source changes, the recorded hash no
 // longer matches and `pnpm run check` fails, forcing a re-read of the document.
 // `--stamp` re-records the hash after a human has re-verified the document.
-const DOC_SOURCES_LIST = /<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/;
-const DOC_SOURCES_HASH = /<!--\s*agctx-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
-
-function docSourceSpec(content: string) {
-  const listMatch = content.match(DOC_SOURCES_LIST);
-  // Documentation that describes the marker format uses <placeholder> text. Ignore
-  // it so the gate acts only on real markers whose list is concrete source paths.
-  if (listMatch && /[<>]/.test(listMatch[1])) return null;
-  const hashMatch = content.match(DOC_SOURCES_HASH);
-  if (!listMatch && !hashMatch) return null;
-  const sources = listMatch ? listMatch[1].split(',').map(value => value.trim()).filter(Boolean) : [];
-  return { listMatch, hashMatch, sources };
-}
-
-/** All files under a directory, absolute paths, collected recursively. */
+/** Every file below a directory, so a pinned folder covers what is inside it. */
 function walkFiles(dir: string, files: string[] = []): string[] {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === '.git' || entry.name === 'node_modules') continue;
@@ -309,7 +361,7 @@ function computeDocSourcesHash(sources: string[]) {
       hash.update(docSourceHashPath(root, filePath));
       hash.update('\0');
       const bytes = fs.readFileSync(filePath);
-      hash.update(filePath.endsWith('.md') ? withoutRecordedHash(bytes.toString('utf8')) : bytes);
+      hash.update(filePath.endsWith('.md') ? withoutGeneratedBlocks(withoutRecordedHash(bytes.toString('utf8'))) : bytes);
       hash.update('\0');
     }
   }
@@ -318,34 +370,40 @@ function computeDocSourcesHash(sources: string[]) {
 
 function checkDocSources() {
   const pins: string[] = [];
+  const cited = new Set<string>();
   for (const markdownFile of walkMarkdown(root)) {
-    const spec = docSourceSpec(fs.readFileSync(markdownFile, 'utf8'));
-    if (!spec) continue;
+    const content = fs.readFileSync(markdownFile, 'utf8');
     const relative = path.relative(root, markdownFile);
-    if (!spec.listMatch || !spec.hashMatch) {
-      errors.push(`${relative}: doc-source marker needs both the agctx-doc-sources and agctx-doc-sources-sha256 lines`);
-      continue;
-    }
-    if (!spec.sources.length) {
-      errors.push(`${relative}: agctx-doc-sources list is empty`);
-      continue;
-    }
-    for (const pin of wholeRootPins(spec.sources)) {
-      errors.push(`${relative}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
-    }
-    pins.push(...spec.sources);
-    const computed = computeDocSourcesHash(spec.sources);
-    if (computed.error) {
-      errors.push(`${relative}: ${computed.error}`);
-      continue;
-    }
-    const recorded = spec.hashMatch[1];
-    if (recorded === 'PENDING') {
-      errors.push(`${relative}: doc-source hash is PENDING. Verify the doc against ${spec.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp\`.`);
-      continue;
-    }
-    if (recorded !== computed.digest) {
-      errors.push(`${relative}: doc sources changed since last verified. Re-read the doc against ${spec.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
+    // Documentation that describes the marker format uses <placeholder> text.
+    // Ignore it so the gate acts only on markers whose list is real paths.
+    for (const { file } of namedCitations(contentWithoutCodeBlocks(content))) cited.add(file);
+    for (const section of docSourceSections(content)) {
+      if (section.sources.some(source => /[<>]/.test(source))) continue;
+      const place = section.heading ? `${relative} (${section.heading})` : relative;
+      if (section.digest === null) {
+        errors.push(`${place}: doc-source marker needs both the agctx-doc-sources and agctx-doc-sources-sha256 lines`);
+        continue;
+      }
+      if (!section.sources.length) {
+        errors.push(`${place}: agctx-doc-sources list is empty`);
+        continue;
+      }
+      for (const pin of wholeRootPins(section.sources)) {
+        errors.push(`${place}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
+      }
+      pins.push(...section.sources);
+      const computed = computeDocSourcesHash(section.sources);
+      if (computed.error) {
+        errors.push(`${place}: ${computed.error}`);
+        continue;
+      }
+      if (section.digest === 'PENDING') {
+        errors.push(`${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp\`.`);
+        continue;
+      }
+      if (section.digest !== computed.digest) {
+        errors.push(`${place}: doc sources changed since last verified. Re-read this part against ${section.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
+      }
     }
   }
   const sourceFiles = SOURCE_ROOTS
@@ -353,30 +411,54 @@ function checkDocSources() {
     .flatMap(sourceRoot => walkFiles(path.join(root, sourceRoot)))
     .map(file => docSourceHashPath(root, file))
     .sort();
-  for (const file of unpinnedSources(sourceFiles, pins)) {
-    errors.push(`${file}: no document pins this source; add it, or the module folder holding it, to the agctx-doc-sources marker of the document that describes it`);
+  for (const file of unpinnedSources(sourceFiles, pins, [...cited])) {
+    errors.push(`${file}: no document pins or cites this source; add it to the agctx-doc-sources marker of the section that describes it, or cite a name inside it`);
   }
+}
+
+function stampCitations(): string[] {
+  const updated: string[] = [];
+  for (const markdownFile of walkMarkdown(root)) {
+    const relative = docSourceHashPath(root, markdownFile, path);
+    if (citationExempt(relative)) continue;
+    const content = fs.readFileSync(markdownFile, 'utf8');
+    const stamped = applyCitationMarkers(content, citationDigest);
+    if (stamped === content) continue;
+    fs.writeFileSync(markdownFile, stamped);
+    updated.push(relative);
+  }
+  return updated;
 }
 
 function stampDocSources() {
   let failed = false;
-  const updated = [];
+  const updated = stampCitations();
   for (const markdownFile of walkMarkdown(root)) {
     const content = fs.readFileSync(markdownFile, 'utf8');
-    const spec = docSourceSpec(content);
-    if (!spec || !spec.listMatch || !spec.hashMatch || !spec.sources.length) continue;
-    const computed = computeDocSourcesHash(spec.sources);
-    if (computed.error) {
-      console.error(`- ${path.relative(root, markdownFile)}: ${computed.error}`);
-      failed = true;
-      continue;
+    const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
+    if (!sections.length) continue;
+    let next = content;
+    let changed = false;
+    for (const section of sections) {
+      if (section.digest === null) continue;
+      const computed = computeDocSourcesHash(section.sources);
+      if (computed.error) {
+        console.error(`- ${path.relative(root, markdownFile)}: ${computed.error}`);
+        failed = true;
+        continue;
+      }
+      if (section.digest === computed.digest) continue;
+      const from = next.indexOf(`<!-- agctx-doc-sources-sha256: ${section.digest} -->`);
+      if (from < 0) continue;
+      next = `${next.slice(0, from)}<!-- agctx-doc-sources-sha256: ${computed.digest} -->${next.slice(from + `<!-- agctx-doc-sources-sha256: ${section.digest} -->`.length)}`;
+      changed = true;
     }
-    if (spec.hashMatch[1] === computed.digest) continue;
-    fs.writeFileSync(markdownFile, content.replace(DOC_SOURCES_HASH, `<!-- agctx-doc-sources-sha256: ${computed.digest} -->`));
+    if (!changed) continue;
+    fs.writeFileSync(markdownFile, next);
     updated.push(path.relative(root, markdownFile));
   }
   if (updated.length) {
-    console.log('Stamped doc-source hashes:');
+    console.log('Stamped documents:');
     for (const file of updated) console.log(`- ${file}`);
   } else if (!failed) {
     console.log('Doc-source hashes already current.');
@@ -391,6 +473,7 @@ if (process.argv.includes('--stamp')) {
 for (const markdownFile of walkMarkdown(root)) {
   checkInternalLinks(markdownFile);
   checkInternalAnchors(markdownFile);
+  checkCitations(markdownFile);
 }
 checkAdrs();
 checkReferenceDates();

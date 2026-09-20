@@ -1,7 +1,5 @@
 # 성격이 다른 저장소 여럿에 프로필 나눠 쓰기
 
-<!-- agctx-doc-sources: src/repos, src/profile/git-profile.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 26c62c25f4c2a7f7320956c8426d9cbe0db935a3ed5f9fe0e870506a046d7796 -->
 
 개인 블로그와 사이드 프로젝트에는 내 작업 습관을, 회사 API 서버에는 회사 규칙을 적용하는 경우다. 사용자 수준 지침 파일(`~/.claude/CLAUDE.md` 등)은 저장소를 구분하지 못하므로, 저장소마다 프로필을 골라 적용한다.
 
@@ -48,6 +46,9 @@ agctx profile apply company ~/work/api-server
 프로젝트의 도메인 규칙은 저장소마다 `AGENTS.md`의 확장 섹션(agctx가 다시 만들지 않는 사람 소유 영역) 아래에 쓴다([관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md), [빠른 시작](../getting-started/quick-start.md)).
 
 ## 여러 저장소를 한 번에 맞추기
+
+<!-- agctx-doc-sources: src/repos, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 40da4e0a8b7bbace9e1747382037b133479b9f5effe24b9eaea185bcebc794a6 -->
 
 프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
 
@@ -96,6 +97,9 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 고정한 저장소를 새 버전으로 옮기는 방법은 [갱신 방식 고르기](update-policies.md#고정한-저장소를-pr로-갱신)에 있다.
 
 ## 다른 컴퓨터에서 같은 프로필 쓰기
+
+<!-- agctx-doc-sources: src/profile/git-profile.ts -->
+<!-- agctx-doc-sources-sha256: 89add602fa8c1c917f883d31e0ef3475aa490a8a9b20a7c11fe55d8c145eed96 -->
 
 프로필 보관함은 어떤 저장소에도 커밋되지 않는다. 컴퓨터를 옮겨도 같은 개인 프로필을 쓰려면 프로필 자체를 내 Git 저장소에 올린다.
 

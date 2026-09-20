@@ -1,6 +1,8 @@
 # 문서 정확성 자동 리뷰
 
+<!-- agctx:generated:status:start -->
 **상태:** Proposed
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

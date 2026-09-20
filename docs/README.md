@@ -51,7 +51,7 @@
 
 - [제품 방향](contributing/product-direction.md): 목표·범위·용어·단계별 완료 기준
 - [현재 아키텍처](contributing/architecture.md): 현재 구현된 구조와 소유권
-  - [기능 구현 메커니즘](contributing/implementation-mechanics.md): 각 기능의 내부 코드 로직
+  - [기능 구현 메커니즘](contributing/implementation-mechanics.md): 기능마다 어느 파일의 어느 이름에 구현됐고 왜 그런지 가리키는 안내도
 - [구현 원리](contributing/implementation-principles.md): npm·Node.js·CLI 원리와 구현의 연결
 - [테스트와 품질 게이트](contributing/testing.md)
 - [릴리스와 저장소 운영](contributing/releasing.md)
@@ -76,7 +76,7 @@
 | `docs/reference/`                                | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·배포 지침 목록·문제 해결의 정확한 사양                                                |
 | `docs/faq.md`                                    | 자주 묻는 질문의 짧은 답과 정본 링크                                                                                                  |
 | `docs/contributing/product-direction.md`         | 패키지의 목적, 책임 경계, 장기 방향의 정본                                                                                            |
-| `docs/contributing/architecture.md`              | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 내부 동작은 `implementation-mechanics.md`, 배포 지침 목록은 `docs/reference/guidance-catalog.md` |
+| `docs/contributing/architecture.md`              | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 구현 위치 안내는 `implementation-mechanics.md`, 배포 지침 목록은 `docs/reference/guidance-catalog.md` |
 | `docs/contributing/implementation-principles.md` | npm·Node.js·CLI 일반 원리와 이 패키지 구현의 연결 해설                                                                                |
 | `docs/contributing/testing.md`                   | 품질 게이트와 평가 작성 방법                                                                                                          |
 | `docs/contributing/releasing.md`                 | 공개 저장소 릴리스·보안·기여 운영 계약                                                                                                |
@@ -85,9 +85,11 @@
 | `docs/contributing/adapters.md`                  | 새 에이전트를 지원하는 절차                                                                                                           |
 | `docs/discussion/architecture/`                  | 패키지 기능의 구현 단계별 논의와 계약: 아직 채택되지 않았거나 구현·검증 중인 주제                                                     |
 | `docs/discussion/repository/`                    | 저장소 운영(문서 게이트·CI·PR 리뷰·기여 절차)의 논의와 계약                                                                           |
+| `docs/discussion/topics.json`                    | 논의 주제의 상태·중요도·선행 단계·핵심 결과의 정본. 주제 문서의 상태 줄, 색인 표, README 상태 목록은 여기서 생성                      |
 | `docs/adr/`                                      | 되돌리기 어렵거나 장기 영향을 주는 결정의 이력                                                                                        |
 | `docs/references.md`                             | 외부 근거와 참고 자료                                                                                                                 |
 | `CHANGELOG.md`                                   | 사용자 영향 변경과 릴리스 버전 이력                                                                                                   |
+| `PROGRESS.md`                                    | 진행 중인 작업과 다음 세션이 이어받을 순서. 결정·근거는 각 정본에 두고 링크와 다음 할 일만 적음                                        |
 
 ## 결정 기록
 
@@ -123,6 +125,8 @@
   - [ADR 0029: 에이전트를 CLI·TUI와 같은 계약 아래 둠](adr/0029-agent-surface-contract.md)
   - [ADR 0030: 에이전트용 스킬은 한국어로 씀](adr/0030-korean-skills.md)
   - [ADR 0031: 공개 운영 파일을 줄이고 라이선스를 MIT로 바꿈](adr/0031-drop-open-source-process-files.md)
+  - [ADR 0032: 문서는 코드를 파일과 이름으로 가리킴](adr/0032-cite-code-by-name.md)
+  - [ADR 0033: 인용한 코드의 지문으로 변경을 검출](adr/0033-fingerprint-cited-code.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

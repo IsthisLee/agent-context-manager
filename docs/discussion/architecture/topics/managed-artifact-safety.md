@@ -1,6 +1,8 @@
 # agctx 관리 산출물의 안전한 동기화
 
+<!-- agctx:generated:status:start -->
 **상태:** Implementing
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 

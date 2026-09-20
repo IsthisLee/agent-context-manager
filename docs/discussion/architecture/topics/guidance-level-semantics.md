@@ -1,6 +1,8 @@
 # 지침 적용 수준(off/recommended/strict)의 의미 정의
 
+<!-- agctx:generated:status:start -->
 **상태:** Implemented
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 
@@ -25,7 +27,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 선행 작업 | [setup과 지침 옵션](setup-and-guidance.md)의 항목별 3단계(off/recommended/strict) 구현 |
-| 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) (Implemented) |
+| 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) |
 | 후속 제안 | 없음 — 확정 시 ADR로 승격 |
 | 연관 제안 | [프로젝트 적용](project-application.md), [관리 산출물 안전](managed-artifact-safety.md) |
 | 후속 작업 | 확정 시 ADR 기록, `docs/contributing/architecture.md`·`docs/getting-started/quick-start.md`·`CHANGELOG.md` 정합화 |

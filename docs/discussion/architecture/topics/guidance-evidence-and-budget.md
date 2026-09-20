@@ -1,6 +1,8 @@
 # 기본 지침의 근거 기준과 분량 예산
 
+<!-- agctx:generated:status:start -->
 **상태:** Implementing
+<!-- agctx:generated:status:end -->
 
 ## 제안 요약
 
@@ -25,7 +27,7 @@
 | 항목 | 내용 |
 | --- | --- |
 | 선행 작업 | [지침 카탈로그](../../../reference/guidance-catalog.md)로 배포 문구의 정본을 한 곳에 모은 작업, [ADR 0005](../../../adr/0005-guidance-level-semantics.md)의 적용 수준 정의 |
-| 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md) (Implemented), [지침 적용 수준의 의미 정의](guidance-level-semantics.md) (Implemented) |
+| 선행 제안 | [setup과 지침 옵션](setup-and-guidance.md), [지침 적용 수준의 의미 정의](guidance-level-semantics.md) |
 | 후속 제안 | 항목별 문구 구체화(10개 항목마다), 필요할 때만 읽히는 지침 형태로의 분리([프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다) |
 | 연관 제안 | [스코프 확장과 지침 합성](scope-composition.md)(여러 계층을 합치면 분량도 합산된다), [문서 정확성 자동 리뷰](../../repository/topics/doc-accuracy-review.md) |
 | 후속 작업 | 근거 기준 ADR 작성, 현재 6개 문장의 근거 감사 결과 확정, 지침 카탈로그에 근거 열 추가, 분량 예산 평가와 분량 경고 구현, `docs/product-direction.md`에 원칙 반영 |

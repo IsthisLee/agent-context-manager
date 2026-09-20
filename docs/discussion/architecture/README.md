@@ -8,6 +8,7 @@
 
 ## 단계
 
+<!-- agctx:generated:topics:start -->
 | 단계 | 주제 | 중요도 | 선행 단계 | 핵심 결과 | 상태 |
 | --- | --- | --- | --- | --- | --- |
 | 1 | [프로필 모델과 저장소](topics/profile-model.md) | Critical | — | named 프로필, scope, 경로, 소유권 계약 | Implemented |
@@ -16,7 +17,7 @@
 | 4 | [에이전트 산출물 동기화](topics/agent-sync.md) | High | 3 | 도구별 포인터 생성·갱신·프로젝트 규칙 보존 | Implemented |
 | 5 | [자연어 요청을 통한 agctx 사용](topics/agent-mediated-usage.md) | High | 1·3 | 사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계 | Implementing |
 | 6 | [agctx 관리 산출물의 안전한 동기화](topics/managed-artifact-safety.md) | Critical | 1·3·4 | 관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화 | Implementing |
-| 7 | [지침 적용 수준의 의미 정의](topics/guidance-level-semantics.md) | Medium | 2 | off/recommended/strict의 뜻을 산출물·TUI에 정의로 노출 | Implemented |
+| 7 | [지침 항목 켜고 끄기](topics/guidance-level-semantics.md) | Medium | 2 | 지침 항목마다 on·off 두 값만 받고, 켠 항목만 산출물에 넣음 | Implemented |
 | 8 | [에이전트 규칙 위치 탐지](topics/agent-rule-discovery.md) | Medium | 3·4 | 적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공 | Implemented |
 | 9 | [프로필 설정 표면 확장](topics/profile-config-surface.md) | Critical | 3·4·6·13 | 프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화 | Proposed |
 | 10 | [스코프 확장과 지침 합성](topics/scope-composition.md) | Medium | 1·6 | 사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합 | Proposed |
@@ -25,8 +26,11 @@
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
+<!-- agctx:generated:topics:end -->
 
 > **중요도**는 각 토픽의 제안 요약을 요약한 값이다: Critical(다른 단계의 기반·데이터 안전 경계), High(사용자 경계·전달 경로), Medium(계약 확장이나 기존 모델 유지). **선행 단계**는 해당 제안이 의존하는 단계 번호다. 근거와 세부는 각 토픽 문서의 `## 제안 요약`을 본다.
+
+표와 아래 그림의 색은 [`topics.json`](../topics.json)에서 `node tools/generate-discussion-status.ts`로 생성한다. 상태를 바꾸려면 표가 아니라 그 파일을 고친다.
 
 ## 단계 의존 관계
 
@@ -41,7 +45,7 @@ flowchart LR
   S1 --> S6["6 관리 산출물 안전 동기화"]
   S3 --> S6
   S4 --> S6
-  S2 --> S7["7 적용 수준 의미"]
+  S2 --> S7["7 지침 켜고 끄기"]
   S3 --> S8["8 규칙 위치 탐지"]
   S4 --> S8
   S3 --> S9["9 설정 표면 확장"]
@@ -61,12 +65,14 @@ flowchart LR
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
+  %% agctx:generated:stage-classes:start
   class S1,S2,S3,S4,S7,S8,S11 done
-  class S5,S6 doing
-  class S9,S10,S12,S13,S14 todo
+  class S5,S6,S12 doing
+  class S9,S10,S13,S14 todo
+  %% agctx:generated:stage-classes:end
 ```
 
-화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 아직 Implementing인 6단계에 의존하므로 6단계가 끝나기 전에는 착수하지 않는다. 13단계는 2026-09-16 제품 소유자 결정으로 9단계의 MCP보다 먼저 구현한다.
+화살표는 선행 단계에서 후속 단계로 향한다. 초록은 Implemented, 노랑은 Implementing, 회색은 Proposed 단계다. 9단계와 10단계는 6단계에 의존하므로 6단계가 Implemented가 되기 전에는 착수하지 않는다. 13단계는 2026-09-16 제품 소유자 결정으로 9단계의 MCP보다 먼저 구현한다.
 
 ## 공통 구현 규칙
 

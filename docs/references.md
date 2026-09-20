@@ -28,6 +28,8 @@
 - [공개 npm·GitHub 저장소 운영 근거](#공개-npmgithub-저장소-운영-근거)
 - [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
+- [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
+- [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -712,6 +714,12 @@
 
 `agctx explain`의 로드 규칙, `agctx verify`의 세션 기록 판독과 probe, 에이전트용 스킬 배포([ADR 0019](adr/0019-explain-verify-and-agent-skills.md))가 기대는 외부 사실이다. Antigravity 규칙 파일의 `trigger` 실측은 [에이전트 규칙 파일 로드 근거](#에이전트-규칙-파일-로드-근거)에 있다.
 
+- **공식 문서(Claude Code 메모리, 2026-09-19 갱신 확인):** Claude Code는 `AGENTS.md`를 프로젝트 지침으로 직접 읽을 수 있고, 이때 `CLAUDE.md`나 가져오기가 필요 없다. 직접 읽기는 v2.1.277 이상이 필요하다. `@AGENTS.md`를 가져오는 `CLAUDE.md`는 그대로 둬도 두 번 읽지 않는다. 이 문서의 아래 기록 가운데 "`CLAUDE.md`가 가져오지 않는 `AGENTS.md`는 읽지 않는다"는 이전 버전 기준이다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-19)
+
+  > "Claude Code can read AGENTS.md as your project instructions, so a repository already set up for other coding agents works without adding a CLAUDE.md, an import, or a setting."
+  >
+  > 번역: Claude Code는 AGENTS.md를 프로젝트 지침으로 읽을 수 있으므로, 다른 코딩 에이전트용으로 이미 설정된 저장소는 CLAUDE.md나 가져오기, 설정을 더하지 않아도 동작합니다.
+
 - **공식 문서(Codex 지침 파일):** Codex는 Codex 홈(기본 `~/.codex`)에서 `AGENTS.override.md`가 있으면 그것을, 없으면 `AGENTS.md`를 읽는다. 프로젝트에서는 Git 저장소 루트부터 현재 작업 폴더까지 내려가며 폴더마다 `AGENTS.override.md`, `AGENTS.md`, `project_doc_fallback_filenames`에 적은 이름 순서로 찾고, 한 폴더에서 파일을 최대 하나만 넣는다. 파일은 루트부터 차례로 이어 붙이며 합산 크기가 `project_doc_max_bytes`(기본 32 KiB)에 닿으면 더 넣지 않는다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 지침 파일):** 작업 폴더와 그 위 모든 폴더의 `CLAUDE.md`·`CLAUDE.local.md`를 시작할 때 읽고, 작업 폴더 아래 폴더의 파일은 Claude가 그 폴더의 파일을 읽을 때 넣는다. 프로젝트 지침은 `./CLAUDE.md` 또는 `./.claude/CLAUDE.md`, 사용자 지침은 `~/.claude/CLAUDE.md`, 관리 정책 파일은 macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`, Linux·WSL `/etc/claude-code/CLAUDE.md`, Windows `C:\Program Files\ClaudeCode\CLAUDE.md`에 둔다. `.claude/rules/`에서 `paths` frontmatter가 없는 규칙은 시작할 때, 있는 규칙은 맞는 파일을 읽을 때 들어간다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 가져오기):** `@path` 가져오기는 가져오는 파일 기준 상대 경로로 풀리고 최대 네 단계까지 이어진다. 코드 블록과 코드 스팬 안의 `@`는 가져오지 않는다. 프로젝트 수준 파일이 작업 폴더 밖을 가져오면 처음 한 번 승인 창을 띄우며, 사용자 수준 파일(`~/.claude/CLAUDE.md`, `~/.claude/rules/`)의 가져오기는 묻지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
@@ -1051,6 +1059,36 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 - **공식 문서:** `git worktree add <path> [<commit-ish>]`는 현재 저장소에 연결된 작업 트리를 만들며, `HEAD`·`index` 같은 작업 트리별 파일을 뺀 나머지를 공유한다. `--detach`는 새 작업 트리의 `HEAD`를 분리한다. `git worktree remove`는 깨끗한 작업 트리만 지우고 `--force`를 주면 수정이 남은 작업 트리도 지운다. `git worktree prune`은 작업 트리가 사라진 기록을 정리한다. [git-worktree](https://git-scm.com/docs/git-worktree) (확인일: 2026-09-15)
 - **공식 문서:** Node.js `child_process` 문서는 Windows에서 `.bat`와 `.cmd` 파일이 터미널 없이는 그 자체로 실행되지 않으므로 `child_process.execFile()`로 시작할 수 없다고 적는다. 이런 파일은 `shell` 옵션을 켠 `spawn()`, `exec()`, 또는 `cmd.exe`를 직접 실행하면서 인자로 넘기는 방법으로만 호출할 수 있다. 원문: "On Windows, however, `.bat` and `.cmd` files are not executable on their own without a terminal, and therefore cannot be launched using [`child_process.execFile()`]." 번역: 다만 Windows에서는 `.bat`와 `.cmd` 파일이 터미널 없이는 그 자체로 실행되지 않으므로 `child_process.execFile()`로는 시작할 수 없다. [Node.js child_process](https://nodejs.org/api/child_process.html) (확인일: 2026-09-18)
 - **확인하지 못한 것:** agctx는 폭 없는 문자(U+200B–U+200D, U+2060, 파일 맨 앞이 아닌 U+FEFF)와 변형 선택자 보충(U+E0100–U+E01EF)도 검사한다. 보이지 않는 문자가 사람의 검토를 우회한다는 위 자료와 같은 이유로 넣은 판단이며, 이 두 범위를 직접 다룬 공식 자료는 찾지 못했다.
+
+## 세션 사이 작업 상태 근거
+
+[논의 문서 상태의 정본](discussion/repository/topics/discussion-status-source.md)과 진행 파일(`PROGRESS.md`)이 기대는 외부 사실이다.
+
+- **공식 자료(Anthropic 엔지니어링 글):** 오래 일하는 에이전트는 세션마다 이전 기억 없이 시작한다. 그래서 첫 세션이 `init.sh`, 에이전트가 한 일을 기록하는 `claude-progress.txt`, 첫 git 커밋을 만들고, 이후 세션은 git 기록과 진행 파일을 읽고 시작해 커밋과 진행 기록 갱신으로 끝낸다. 남은 기능 목록은 JSON으로 두는데, 모델이 Markdown 파일보다 JSON 파일을 덜 함부로 고치기 때문이다. 진행 파일을 `.txt`로 둔 이유는 글에 없다. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) (확인일: 2026-09-19)
+
+  > "After some experimentation, we landed on using JSON for this, as the model is less likely to inappropriately change or overwrite JSON files compared to Markdown files."
+  >
+  > 번역: 몇 번 실험한 끝에 이 파일은 JSON으로 두기로 했습니다. 모델이 Markdown 파일보다 JSON 파일을 부적절하게 바꾸거나 덮어쓸 가능성이 낮기 때문입니다.
+
+  > "End the session by writing a git commit and progress update."
+  >
+  > 번역: git 커밋과 진행 기록 갱신으로 세션을 끝내세요.
+
+- **공식 자료(Anthropic 연구 글, 2026-03-23):** 진행 파일을 에이전트의 이동 가능한 장기 기억으로 쓰고, 현재 상태·끝낸 작업·실패한 접근과 그 이유·알려진 한계를 담으라고 한다. 실패한 접근이 없으면 다음 세션이 같은 막다른 길을 다시 시도한다. [Long-running Claude for scientific computing](https://www.anthropic.com/research/long-running-Claude) (확인일: 2026-09-19)
+
+  > "The failed approaches are important—without them, successive sessions will re-attempt the same dead ends."
+  >
+  > 번역: 실패한 접근이 중요합니다. 이것이 없으면 다음 세션들이 같은 막다른 길을 다시 시도합니다.
+
+- **공식 문서(Claude Code):** auto memory는 Claude가 스스로 적는 메모이며 저장 위치는 저장소 밖이다. "Each project gets its own memory directory at `~/.claude/projects/<project>/memory/`. The `<project>` path is derived from the git repository, so all worktrees and subdirectories within the same repo share one auto memory directory."(번역: 프로젝트마다 `~/.claude/projects/<project>/memory/`에 자기 메모리 디렉터리를 갖는다. `<project>` 경로는 git 저장소에서 파생되므로 같은 저장소의 모든 worktree와 하위 디렉터리가 하나의 auto memory 디렉터리를 공유한다.) 용도는 "Your preferences, corrections you give Claude, project context Claude can't derive from the code"이고(번역: 사용자의 선호, 사용자가 준 교정, 코드에서 유도할 수 없는 프로젝트 맥락), 서브에이전트도 자기 auto memory를 가질 수 있다("Subagents can also maintain their own auto memory."). 저장소에 커밋되지 않고 Claude Code에서만 쓰므로, 여러 에이전트와 기여자가 함께 보는 진행 상태는 저장소 파일로 둔다. [How Claude remembers your project](https://code.claude.com/docs/en/memory) (확인일: 2026-09-20)
+- **비공식 자료(문서 배치 규약):** 루트 문서를 `docs/`로 옮길 시점의 기준이다. "Move a document to `docs/` when either trigger fires: 1. the root is getting cluttered with top-level files and folders … or 2. the document has outgrown a single file: it needs siblings, status, or structure"(번역: 둘 중 하나가 발생하면 문서를 `docs/`로 옮긴다. 1) 루트가 최상위 파일과 폴더로 어수선해지거나, 2) 문서가 한 파일을 넘어서서 형제 문서, 상태, 구조가 필요해질 때다.) 표준이 아니라 한 저장소가 제안하는 규약이며, `.planning/`이나 `plans/` 폴더를 쓰는 다른 방식도 있다. [Conventional Docs](https://github.com/phatblat/conventional-docs), [Plans](https://github.com/yrangana/Plans) (확인일: 2026-09-20)
+
+## 문서와 코드의 드리프트 검출 근거
+
+[문서 소스 해시 게이트](contributing/doc-gate.md#문서-소스-해시-게이트)와 [문서의 코드 인용 방식](discussion/repository/topics/code-citation-style.md)이 기대는 외부 사실이다.
+
+- **문서를 코드에 묶어 CI에서 검사하는 도구가 이미 있다.** fiberplane/drift는 Markdown 문서가 코드의 파일이나 AST 심볼에 앵커를 선언하게 한다. README는 "Bind docs to code and check for drift. Any markdown file in your repo can declare anchors to code — specific files or AST symbols."라고 적는다(번역: 문서를 코드에 묶고 드리프트를 검사한다. 저장소의 어떤 Markdown 파일이든 코드에 대한 앵커, 즉 특정 파일이나 AST 심볼을 선언할 수 있다). CI 사용은 "`drift check` exits 1 when any doc is stale, so it works as a CI gate."다(번역: 문서가 오래되면 `drift check`가 1로 끝나므로 CI 게이트로 쓸 수 있다). 지문에는 위치 정보를 넣지 않는다. 소개 글은 "Drift parses the code with tree-sitter and hashes a normalized AST fingerprint (node kinds + token text, no whitespace or position data)."라고 적는다(번역: tree-sitter로 코드를 파싱해 정규화한 AST 지문, 즉 노드 종류와 토큰 텍스트만 담고 공백이나 위치 정보는 없는 지문을 해시한다). 다시 확인했다는 표시는 `drift link`다. MIT 라이선스이고 저장소 생성은 2026-03-01, 소개 글은 2026-03-25다. [저장소](https://github.com/fiberplane/drift), [소개 글](https://fiberplane.com/blog/drift-documentation-linter/) (확인일: 2026-09-19)
+- **문서는 작고 최신인 편이 낫고, 코드와 같은 변경에서 고친다.** Google의 문서 작성 모범 사례는 "A small set of fresh and accurate docs is better than a large assembly of "documentation" in various states of disrepair."(번역: 작지만 최신이고 정확한 문서 몇 개가, 여러 상태로 망가져 가는 거대한 "문서" 더미보다 낫다)와 "Change your documentation in the same CL as the code change."(번역: 문서는 코드 변경과 같은 CL에서 함께 바꾼다)를 적는다. 코드가 왜 그렇게 되어 있는지에 대한 설명은 코드 옆 주석의 몫으로 둔다. "The primary purpose of inline comments is to provide information that the code itself cannot contain, such as why the code is there."(번역: 인라인 주석의 주된 목적은 코드 자체가 담을 수 없는 정보, 예를 들어 그 코드가 왜 거기 있는지를 제공하는 것이다). [Documentation Best Practices](https://google.github.io/styleguide/docguide/best_practices.html) (확인일: 2026-09-19)
 
 ## 비교 대상
 

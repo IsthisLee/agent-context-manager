@@ -1,7 +1,5 @@
 # 종료 코드
 
-<!-- agctx-doc-sources: src/shared/errors.ts, src/commands/registry.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: a5a70b3b5e129332834b77dbfb8b4120d26c4e2543ba98f2fa6d1d7abb697068 -->
 
 모든 명령은 결과를 종료 코드로 알린다. 스크립트·CI·에이전트는 출력 문구 대신 종료 코드와 `--json` 결과 문서의 `exitCode`를 읽는다.
 
@@ -19,6 +17,9 @@
 결과가 여러 개 겹치면 3 > 2 > 1 순서로 가장 심각한 코드를 돌려준다. 명령마다 돌려줄 수 있는 코드는 `--help`의 마지막 줄에 있다. 결정 근거는 [ADR 0016](../adr/0016-command-contract.md)이다.
 
 ## 명령별 종료 코드
+
+<!-- agctx-doc-sources: src/shared/errors.ts, src/commands/registry.ts, src/explain.ts -->
+<!-- agctx-doc-sources-sha256: a5a70b3b5e129332834b77dbfb8b4120d26c4e2543ba98f2fa6d1d7abb697068 -->
 
 아래 표는 명령 등록부에서 만든다. 명령 하나의 코드는 `agctx <명령> --help`의 마지막 줄에도 나온다.
 

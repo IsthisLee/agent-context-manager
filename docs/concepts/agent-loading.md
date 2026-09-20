@@ -1,7 +1,5 @@
 # 에이전트가 읽는 지침 파일
 
-<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 3ce6a564b25e3ea0b8ff46c5c3789a03b739b50ef4da82b08449f335be04de0c -->
 
 파일을 만들었다고 해서 에이전트가 그 파일을 읽는 것은 아니다. 에이전트마다 지침 파일을 찾는 규칙이 다르고, 같은 에이전트도 시작한 폴더에 따라 읽는 파일이 달라진다. 하위 폴더마다 `AGENTS.md`를 두는 모노레포에서 특히 차이가 크다. 결정과 근거는 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)에 있다.
 
@@ -24,12 +22,15 @@ flowchart LR
 
 판정 아래에는 고칠 점이 붙는다.
 
-- `missing`: 받아야 할 지침 파일을 그 에이전트가 받지 못한다. 확인한 에이전트(기본은 세 에이전트 모두, `--agent`로 고른다) 가운데 하나라도 `missing`이 있으면 종료 코드 4로 끝난다(`src/explain.ts:367-368`).
+- `missing`: 받아야 할 지침 파일을 그 에이전트가 받지 못한다. 확인한 에이전트(기본은 세 에이전트 모두, `--agent`로 고른다) 가운데 하나라도 `missing`이 있으면 종료 코드 4로 끝난다(`src/explain.ts`의 `explainPath`<!--s:869edbdafbce-->).
 - `warning`: 받기는 하지만 승인이 필요하거나 같은 규칙이 두 번 들어가는 등 알아 둘 점이다.
 
 `verify`는 규칙이 아니라 실제 증거를 본다. 에이전트가 남긴 세션 기록에서 그 파일이 들어갔는지 확인하고, 기록이 없어 판정할 수 없으면 `no-evidence`로 알린다. 그때는 `--probe`로 에이전트를 한 번 실행해 확인할 수 있다([전달 확인과 검증의 범위](verification.md)).
 
 ## 읽는 파일 보기
+
+<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: fe1f09f851a4add870358fe620652227f6a02abdf88b1d911bd2acf52830b51d -->
 
 Antigravity 규칙 파일은 맨 앞 frontmatter(`---` 두 줄 사이의 설정)의 `trigger` 값으로 언제 적용할지 정한다. 실측에서 `trigger: always_on` 규칙은 세션 시작에 받았고 `trigger: glob` 규칙은 받지 않았다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)). 아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`와 `trigger: glob` 규칙을 더하고, 결제 서비스 폴더에서 에이전트를 시작한다고 보고 실행한 결과다. 긴 줄은 줄였고 전체 출력은 [CLI Reference](../reference/cli.md#explain)에 있다.
 

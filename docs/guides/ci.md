@@ -1,7 +1,5 @@
 # CI와 자동화에서 쓰기
 
-<!-- agctx-doc-sources: src/check.ts, src/explain.ts, src/commands/options.ts, src/commands/output.ts -->
-<!-- agctx-doc-sources-sha256: 7acd32cf6a0608f869ce771fbaf9183ae92e89896c7026a0d2c03eb223a14582 -->
 
 저장소 CI에서 저장소가 기록한 프로필 버전과 맞는지(`check`), 에이전트가 지침 파일을 받는지(`explain`) 검사하는 방법을 다룬다. 스크립트나 에이전트가 확인 질문 없이 agctx를 실행하는 방법(`--yes`·`--dry-run`·`--json`)도 함께 다룬다.
 
@@ -20,6 +18,9 @@
 - **러너 환경:** Node.js 22 이상이 필요하고, `--refresh`를 쓰려면 `git`도 필요하다. agctx는 설치하지 않고 `npx`로 실행해도 된다.
 
 ## CI에서 확인하기
+
+<!-- agctx-doc-sources: src/check.ts, src/commands/output.ts -->
+<!-- agctx-doc-sources-sha256: 056b94768826c1765880e534dab3fbf93bc4eac734a9c5c8d7f23bbd9fad583a -->
 
 `agctx check`는 프로필 보관함(프로필을 받아 두는 `~/.agctx/profiles` 폴더)이 없는 CI에서도 저장소 파일이 `agctx.project.json`에 기록한 프로필 버전과 맞는지 확인한다. 결과는 종료 코드로 알린다.
 
@@ -66,7 +67,7 @@ $ agctx check /path/to/orders-api
 /path/to/orders-api: 기록한 프로필 버전과 일치합니다.
 
 $ agctx check /path/to/orders-api   # 관리 영역을 agctx 밖에서 고친 뒤
-conflict          AGENTS.md  agctx 밖에서 관리 영역을 고쳤습니다
+conflict          AGENTS.md  프로필이 관리하는 영역을 직접 고쳤습니다
 ```
 
 자격 증명이 필요한 것은 `--refresh` 하나다. `--refresh`는 `git ls-remote -- <프로필 저장소> refs/heads/<브랜치>`로 원격의 최신 커밋을 읽어 뒤처짐(1)을 판정하므로, git이 그 저장소를 읽지 못하면 69로 끝난다. 터미널이 아닌 환경에서는 agctx가 `GIT_TERMINAL_PROMPT=0`을 주므로 비밀번호를 물으며 멈추지 않고 바로 실패한다.
@@ -106,9 +107,15 @@ $ agctx check --refresh /path/to/orders-api
 
 ## 에이전트 전달을 CI에서 확인하기
 
+<!-- agctx-doc-sources: src/explain.ts -->
+<!-- agctx-doc-sources-sha256: 5ea9b39568fdd267dac5dbdff1d576ae4b2c3a5ce8253ac427b6b6e22d814e95 -->
+
 `agctx explain <폴더>`는 그 폴더에서 시작한 에이전트마다 어떤 지침 파일을 왜 읽는지 보여 주는 명령이다. 에이전트를 실행하지 않으므로 CI 단계로 둘 수 있다. 확인한 에이전트(기본은 세 에이전트 모두, `--agent`로 고를 수 있다) 가운데 하나라도 받지 못하는 지침 파일이 있으면 그 줄에 `missing`을 표시하고 4로 끝난다. `verify`는 지침 파일이 실제로 에이전트에 들어갔는지 확인하는 명령인데, 개발자 컴퓨터의 세션 기록을 읽거나 에이전트를 실행하므로 CI 단계에는 맞지 않는다. 판정 방법은 [에이전트가 읽는 지침 파일](../concepts/agent-loading.md)에 있다.
 
 ## 자동화와 스크립트에서 쓰기
+
+<!-- agctx-doc-sources: src/commands/options.ts -->
+<!-- agctx-doc-sources-sha256: 66f3ecaed98d8751b7ae392a2cd2d158443dbf1b8cb992f3f79a97653dee518e -->
 
 TUI(터미널에서 메뉴로 고르는 화면)를 쓸 수 없는 환경에서는 옵션을 플래그로 직접 넘긴다. 파일을 바꾸는 명령은 터미널이 아니면 확인을 물을 수 없어 멈추므로, 확인 없이 실행하는 `--yes`를 붙인다([확인과 `--yes`](../reference/cli.md#확인과---yes)).
 

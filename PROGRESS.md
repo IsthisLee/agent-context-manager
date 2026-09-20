@@ -11,19 +11,35 @@
 
 ## 진행 중인 작업
 
-| 순서 | 작업 | 정본 | 상태 | 다음에 할 일 |
-| --- | --- | --- | --- | --- |
-| 1 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 구현 중 | 절 단위 핀으로 모든 문서를 옮겼다. 남은 것은 실행 대조 확대(문서마다 시나리오 고정물이 필요)와 지문만 다시 찍은 커밋 검출이다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
-| 2 | Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
-| 3 | `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 28줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
+### 구현 중인 논의 주제
+
+`docs/discussion/topics.json`에서 상태가 `Implementing`인 주제다. 이 표는 `node tools/generate-progress.ts`가 만들고, "다음에 할 일"은 각 주제의 `권장 다음 작업` 칸에서 가져온다. 여기서 고치지 말고 그 문서를 고친다.
+
+<!-- agctx:generated:in-progress:start -->
+| 주제 | 다음에 할 일 |
+| --- | --- |
+| [자연어 요청을 통한 agctx 사용](docs/discussion/architecture/topics/agent-mediated-usage.md) | 노출과 트리거 계약은 [ADR 0029](docs/adr/0029-agent-surface-contract.md)로 확정해 구현했다. 남은 것은 명령별 `data` 필드의 스키마를 문서로 정하는 일과, 배포한 npm 패키지를 임시 프로젝트에 설치해 에이전트가 스킬대로 agctx를 호출하는 시나리오 평가다. |
+| [agctx 관리 산출물의 안전한 동기화](docs/discussion/architecture/topics/managed-artifact-safety.md) | 파일별 소유권을 `agctx.project.json`에 기록하고, 마커가 없는 파일은 자동 덮어쓰지 않는 정책부터 확정한다. |
+| [기본 지침의 근거 기준과 분량 예산](docs/discussion/architecture/topics/guidance-evidence-and-budget.md) | 근거 기준·문구·분량 예산은 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](docs/adr/0026-guidance-items-and-evidence-tiers.md)으로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
+| [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | [결정](docs/discussion/repository/topics/doc-gate-pin-scope.md#결정) 절의 구현 순서대로 진행하고, 끝나면 [측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정) 절과 같은 방법으로 두 지표를 다시 잰다. |
+<!-- agctx:generated:in-progress:end -->
+
+### 그 밖의 일
+
+논의 주제가 아닌 일이다. 이 표는 손으로 쓴다.
+
+| 작업 | 정본 | 상태 | 다음에 할 일 |
+| --- | --- | --- | --- |
+| Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
+| `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
 
 ## 알려진 한계
 
 지금 알고 있는 약점이다. 수치와 근거는 링크한 정본에 있다.
 
-- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 진행 중인 작업 1번이 다룬다.
+- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 「문서 소스 해시 게이트의 핀 범위와 승인 단위」가 다룬다.
 - 이름으로 가리킬 수 없는 동작(함수 안의 특정 분기 등)을 문서에서 어떻게 가리킬지는 정하지 않았다([제약](docs/discussion/repository/topics/code-citation-style.md#구현-기록-인용을-이름으로-바꾸고-두-문서를-다시-씀)).
-- README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 진행 중인 작업 2번이 다룬다.
+- README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 「Claude Code의 `AGENTS.md` 직접 읽기 반영」이 다룬다.
 
 ## 버린 접근
 
@@ -38,6 +54,7 @@
 최근 커밋 10개다. 이 목록은 `node tools/generate-progress.ts`가 `git log`에서 만든다. 손으로 고치지 않는다. 더 오래된 이력과 각 변경의 이유는 git 기록에서 본다.
 
 <!-- agctx:generated:recent:start -->
+- 2026-09-20: docs: 진행 파일의 최근 기록을 git log에서 생성한다
 - 2026-09-20: docs: 진행 파일의 위치·형식 규칙과 메모리와의 경계를 적는다
 - 2026-09-20: docs: AGENTS.md에서 줄마다 주인이 누구인지 보여 준다
 - 2026-09-20: fix: 확장 섹션 제목을 느슨하게 찾고 관리 영역 충돌 문구를 고친다
@@ -47,7 +64,6 @@
 - 2026-09-20: docs: 문서 게이트에 한눈에 보기와 인용 흐름·실패 화면을 넣는다
 - 2026-09-20: docs: 인용은 최상위 선언만 가리키게 하고 지문을 줄바꿈과 무관하게 만든다
 - 2026-09-20: docs: drift 방식과 우리 지문의 헛걸림·정밀도를 비교해 기록한다
-- 2026-09-20: docs: 인용한 코드의 지문을 기록해 내용 변경을 항목 단위로 잡는다
 <!-- agctx:generated:recent:end -->
 
 ## 갱신 규칙

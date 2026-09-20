@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: c30f1f243b5feb3760c3c2494ea1dcdfc68d7eba5a32667fa783dfa93f8159d0 -->
+<!-- agctx-doc-sources-sha256: c03180f24157d814d747a96022ec579119594fef8fdb9d75e0b9a97ff6457074 -->
 
 ```mermaid
 flowchart LR
@@ -98,7 +98,7 @@ agent-context-manager/
 │   ├── doc-citations.ts         # 문서가 코드를 가리키는 형식 검사(줄 번호 금지·이름 존재·지문 표지)
 │   ├── doc-sources.ts           # 절 단위 핀 읽기, 핀 범위 규칙, 해시에서 뺄 해시 줄·생성 블록
 │   ├── generate-discussion-status.ts # topics.json에서 논의 상태 줄·색인 표·README 목록 생성(--check로 검사)
-│   ├── generate-progress.ts     # git log에서 PROGRESS.md의 최근 기록 생성
+│   ├── generate-progress.ts     # PROGRESS.md의 최근 기록(git log)과 구현 중인 주제 표(topics.json) 생성
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
 │   ├── generate-skills.ts       # 명령 등록부에서 스킬의 명령 목록 생성(--check로 검사)
 │   ├── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행

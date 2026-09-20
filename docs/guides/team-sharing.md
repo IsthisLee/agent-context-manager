@@ -101,7 +101,7 @@ $ agctx profile setup team-backend --tdd on --security on
 Configured profile: team-backend
 ```
 
-작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts:15-26`, `:48`). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts`의 `guidanceDefaults`·`setupProfile`). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
 
 ### 3. 첫 커밋 만들기
 

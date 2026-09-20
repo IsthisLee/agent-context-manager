@@ -13,7 +13,7 @@
 
 | 순서 | 작업 | 정본 | 상태 | 다음에 할 일 |
 | --- | --- | --- | --- | --- |
-| 1 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 결정됨, 구현 전 | 그 문서의 "결정" 절 순서대로 구현하고 두 지표를 다시 잰다. README의 논의 폴더 핀은 논의 상태 작업에서 이미 뺐다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
+| 1 | 문서 소스 해시 게이트 개편 | [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 범위 재검토 필요 | 인용을 이름으로 바꾼 뒤([ADR 0032](docs/adr/0032-cite-code-by-name.md)) 게이트가 울릴 이유가 줄었으므로 범위를 다시 정한 뒤 구현한다. README의 논의 폴더 핀은 이미 뺐다. 같은 변경에서 `doc-gate.md`, `AGENTS.md`의 해시 게이트 요약, `repo-docs` 스킬 5단계를 고친다 |
 | 2 | Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
 | 3 | `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 28줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
 
@@ -21,7 +21,8 @@
 
 지금 알고 있는 약점이다. 수치와 근거는 링크한 정본에 있다.
 
-- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 진행 중인 작업 1번이 이 한계를 다룬다.
+- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 진행 중인 작업 1번이 다룬다.
+- 이름으로 가리킬 수 없는 동작(함수 안의 특정 분기 등)을 문서에서 어떻게 가리킬지는 정하지 않았다([제약](docs/discussion/repository/topics/code-citation-style.md#구현-기록-인용을-이름으로-바꾸고-두-문서를-다시-씀)).
 - README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 진행 중인 작업 2번이 다룬다.
 
 ## 버린 접근
@@ -36,6 +37,7 @@
 
 최근 10줄까지만 둔다. 더 오래된 이력은 git 기록으로 본다.
 
+- 2026-09-20: 문서가 코드를 복사하지 않고 파일과 이름으로 가리키게 바꾸고, 그 형식을 검사로 강제했다([ADR 0032](docs/adr/0032-cite-code-by-name.md)).
 - 2026-09-19: 논의 상태의 정본을 `docs/discussion/topics.json` 한 파일로 모으고, 상태 줄·색인·README 목록을 생성하게 했다. 중요도 대조 검사를 더하고 7단계의 옛 이름을 고쳤다.
 - 2026-09-19: 0.4.0을 릴리스했다 (#66).
 - 2026-09-19: 진행 파일에 알려진 한계 절을 더했다.

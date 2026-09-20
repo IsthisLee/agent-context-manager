@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
 import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
 import { readTopics, STATUSES, summaryImportance, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
+import { citationExempt, lineNumberCitations, namedCitations } from './doc-citations.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
 import { SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
@@ -35,6 +36,30 @@ function markdownHeadingSlug(heading: string) {
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s-]/gu, '')
     .replace(/\s+/g, '-');
+}
+
+// A document points at code by file and name, never by line number, so that a
+// change above the cited code cannot make the document wrong on its own. The
+// decision is in docs/discussion/repository/topics/code-citation-style.md.
+function checkCitations(markdownFile: string) {
+  const relative = docSourceHashPath(root, markdownFile, path);
+  if (citationExempt(relative)) return;
+  const content = contentWithoutCodeBlocks(fs.readFileSync(markdownFile, 'utf8'));
+
+  for (const citation of lineNumberCitations(content)) {
+    errors.push(`${relative}: cite code by name, not by line (${citation})`);
+  }
+
+  for (const { file, name } of namedCitations(content)) {
+    const target = path.join(root, file);
+    if (!fs.existsSync(target)) {
+      errors.push(`${relative}: cited file is missing (${file})`);
+      continue;
+    }
+    if (!new RegExp(`\\b${name.replaceAll('$', '\\$')}\\b`).test(fs.readFileSync(target, 'utf8'))) {
+      errors.push(`${relative}: ${file} no longer has ${name}; re-read the document and fix the citation`);
+    }
+  }
 }
 
 function checkInternalAnchors(markdownFile: string) {
@@ -412,6 +437,7 @@ if (process.argv.includes('--stamp')) {
 for (const markdownFile of walkMarkdown(root)) {
   checkInternalLinks(markdownFile);
   checkInternalAnchors(markdownFile);
+  checkCitations(markdownFile);
 }
 checkAdrs();
 checkReferenceDates();

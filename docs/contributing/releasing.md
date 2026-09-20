@@ -3,7 +3,7 @@
 이 문서는 agctx 저장소를 공개 npm 패키지 프로젝트로 관리하는 현재 운영 계약이다. 제품 기능의 정본은 [`product-direction.md`](product-direction.md), 현재 코드 구조의 정본은 [`architecture.md`](architecture.md), 외부 근거는 [`references.md`](../references.md)에 둔다. 문서 변경 절차는 [구현 계약 및 문서 규칙](../discussion/architecture/topics/implementation-contracts.md)을 따른다.
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, .github/workflows, .github/dependabot.yml, tools/build.ts, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 76d266e7d21d854d58cc07803abb1bcb4a6e8647fde022425c7b9d3a46d0a89d -->
+<!-- agctx-doc-sources-sha256: dc8d16ebe1abf26f5c9743614a94dae5e644f7c2450355a73f6ff8d07d513d44 -->
 
 `agent-context-manager`는 공개 GitHub 저장소와 npm registry로 배포하는 패키지다. 이 문서는 이후 릴리스도 같은 품질·보안 계약으로 운영하기 위한 기준이다.
 
@@ -54,7 +54,7 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 2. 패키지 소유자가 `npm login`으로 로그인한 컴퓨터에서 병합된 main을 체크아웃하고 `npm publish`를 실행한다. `prepublishOnly`가 `check`와 `pack:check`를 먼저 실행한다. 이 버전에는 provenance가 없다. 계정이 쓰기 작업에 2단계 인증을 요구하면 레지스트리에 올리기 직전에 브라우저 인증이나 일회용 비밀번호를 묻으므로 대화형 터미널에서 실행한다. 대화형이 아닌 셸에서는 인증 주소만 출력하고 `EOTP`로 멈춘다(npm 11.19.0에서 2026-09-16 실측, 아무것도 게시되지 않음).
 3. npmjs.com 패키지 설정의 Trusted Publisher에 `IsthisLee/agent-context-manager` 저장소와 `publish.yml`을 연결한다. 명령줄로는 `npm trust github --repo IsthisLee/agent-context-manager --file publish.yml --allow-publish`이며 계정 2단계 인증이 필요하다. 화면에서 연결할 때는 허용 동작(allowed actions)에 `npm publish`도 선택한다. 2026-09-03 이후 만든 설정은 기본으로 `npm stage publish`만 허용해서, workflow의 `npm publish`가 provenance 서명까지 마친 뒤 `403 Forbidden … OIDC permission denied for this action`으로 거부된다(v0.3.1에서 실측). 설정을 고친 뒤에는 Release를 다시 만들지 않고 실패한 workflow를 다시 실행한다.
 4. 같은 패키지 설정의 Publishing access에서 "Require two-factor authentication and disallow tokens"를 골라 토큰 게시를 막는다.
-5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml:35-47`).
+5. 같은 버전의 Git tag와 GitHub Release를 만든다. workflow는 검증을 다시 실행하고, 이미 게시된 버전이므로 게시 단계를 건너뛴다(`.github/workflows/publish.yml`의 `Check whether the release is already published` 단계).
 6. 앞 절차의 5번처럼 임시 디렉터리에서 설치와 `agctx help`를 확인한다.
 
 그다음 버전부터는 앞 절차의 1~5번대로 GitHub Release만 게시한다.

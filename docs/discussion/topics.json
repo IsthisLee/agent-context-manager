@@ -212,7 +212,7 @@
       "title": "문서가 코드를 인용하는 방식",
       "importance": "High",
       "outcome": "코드를 복사하지 않고 파일과 이름으로 가리키게 하고, 그 이름이 있는지 검사",
-      "status": "Proposed"
+      "status": "Implemented"
     }
   ]
 }

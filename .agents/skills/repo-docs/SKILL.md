@@ -23,7 +23,8 @@ metadata:
 
 - 그림·예시 형식은 `docs/contributing/doc-style.md`를 따른다. 현재 동작 예시는 실제로 실행한 출력에서 옮긴다.
 - 외부 사실은 `docs/references.md`에 출처 링크와 `(확인일: YYYY-MM-DD)`를 붙여 쓰고, 다른 문서는 그 절로 링크한다.
-- 코드 동작을 서술하면 `파일:줄`로 인용하고, 그 소스를 문서 상단 마커에 핀한다.
+- 코드를 가리킬 때는 `` `src/check.ts`의 `checkProject` ``처럼 파일과 그 안의 이름으로 쓴다. 줄 번호와 코드 발췌는 쓰지 않는다. 이름이 그 파일에 있는지는 `check:docs`가 검사한다. 이유는 `docs/discussion/repository/topics/code-citation-style.md`에 있다.
+- 코드 동작을 서술한 문서는 그 소스를 문서 상단 마커에 핀한다.
 
 ## 3. ADR이 필요한지 판단한다
 
@@ -56,7 +57,7 @@ node tools/check-docs.ts --stamp  # 문서를 다시 읽고 고친 뒤에만 실
 pnpm run check                    # 형식 검사·문서 계약·평가 전체
 ```
 
-`doc sources changed` 실패는 핀한 소스가 바뀌었다는 뜻이다. **stamp만 다시 실행해도 통과하므로**, 먼저 문서를 열어 인용한 줄 번호와 서술이 지금 코드와 맞는지 확인한 뒤에 stamp한다. 게이트 계약과 대상 문서 목록은 `docs/contributing/doc-gate.md`가 정본이다.
+`doc sources changed` 실패는 핀한 소스가 바뀌었다는 뜻이다. **stamp만 다시 실행해도 통과하므로**, 먼저 문서를 열어 가리킨 위치와 서술이 지금 코드와 맞는지 확인한 뒤에 stamp한다. 게이트 계약과 대상 문서 목록은 `docs/contributing/doc-gate.md`가 정본이다.
 
 ## 6. 함께 갱신할 문서를 확인한다
 

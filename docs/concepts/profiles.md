@@ -18,7 +18,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 
 ## 지침 항목 켜고 끄기
 
-`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts:15-26`).
+`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts`의 `guidanceDefaults`).
 
 | 값 | 뜻 |
 | --- | --- |

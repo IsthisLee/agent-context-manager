@@ -1,13 +1,13 @@
 # 문서 게이트
 
-<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts -->
-<!-- agctx-doc-sources-sha256: 1e0b0bd08a70e5bb5c734dc654fd6179cb39851e07e03240e6b4384366141215 -->
+<!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts -->
+<!-- agctx-doc-sources-sha256: 55d0c11b13d71a40bbbce5375d1d043710d237fbc07b30a38eab367d3d67e9a2 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 두 게이트와 링크·색인 검사를 실행한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
 ## 문서 소스 해시 게이트
 
-현재 코드 동작을 서술하는 문서는 인용·서술하는 소스 파일 목록과 그 sha256을 문서 상단 HTML 주석 마커로 고정한다. `pnpm run check`의 `check:docs`가 마커의 소스를 다시 해싱해 기록된 값과 다르면 실패한다. 현재 대상은 코드 동작이나 실제 출력을 싣는 `getting-started/`·`guides/`·`concepts/`·`reference/`의 문서(`concepts/why-agctx.md` 제외), `contributing/`의 `architecture.md`·`implementation-mechanics.md`·`implementation-principles.md`·`testing.md`·`releasing.md`·`doc-gate.md`·`adapters.md`, 그리고 루트 `README.md`·`README.en.md`이다. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다.
+현재 코드 동작을 서술하는 문서는 인용·서술하는 소스 파일 목록과 그 sha256을 문서 상단 HTML 주석 마커로 고정한다. `pnpm run check`의 `check:docs`가 마커의 소스를 다시 해싱해 기록된 값과 다르면 실패한다. 현재 대상은 코드 동작이나 실제 출력을 싣는 `getting-started/`·`guides/`·`concepts/`·`reference/`의 문서(`concepts/why-agctx.md` 제외), `contributing/`의 `architecture.md`·`implementation-principles.md`·`testing.md`·`releasing.md`·`doc-gate.md`·`adapters.md`, 그리고 루트 `README.md`·`README.en.md`이다. 제품 방향·논의·ADR·변경 이력·기여 정책처럼 코드에 매이지 않는 문서와 배포·생성되는 산출물(`templates/`, `.agents/`, `.github/` 등)은 대상이 아니다.
 
 ```mermaid
 flowchart TD
@@ -43,6 +43,20 @@ flowchart TD
 - **지침 카탈로그:** [지침 카탈로그](../reference/guidance-catalog.md)의 항목 표에는 지침 항목마다 행이 하나씩 있어야 하고, 각 행에는 `references.md`의 근거 절로 가는 링크가 있어야 한다. 행 수와 옵션 이름은 `GUIDANCE_KEYS`에서 읽으므로, 항목을 더하면 카탈로그에 행을 더하지 않은 채로는 검사를 통과할 수 없다. 근거 기준은 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md)에 있다.
 
 게이트는 형식만 확인한다. 링크한 문서에 그 주장이 실제로 있는지는 확인일을 붙이는 사람이 직접 열어 확인해야 하며, 외부 링크가 살아 있는지도 검사하지 않는다.
+
+## 코드를 가리키는 형식
+
+문서는 코드를 복사하지 않고 가리킨다. 줄 번호는 위쪽에 줄이 하나만 생겨도 어긋나므로 쓰지 않고, 파일과 그 안의 이름으로 적는다.
+
+```markdown
+판정은 `src/check.ts`의 `checkProject`가 한다.
+```
+
+- `check:docs`는 문서마다 두 가지를 검사한다. 파일 뒤에 줄 번호를 붙여 인용하면 실패하고, `` `파일`의 `이름` ``으로 가리킨 이름이 그 파일에 없으면 실패한다. 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`에 있다.
+- 검사 대상은 이 저장소가 소유한 경로(`src/`·`tools/`·`evals/`·`templates/`·`skills/`·`.agents/`·`.github/`·`docs/`와 루트 설정 파일)뿐이다. 다른 도구가 만드는 `apm.yml`이나 사용자 프로젝트에 생기는 `agctx.project.json`처럼 저장소에 없는 파일은 검사하지 않는다.
+- 이력을 남기는 `docs/discussion/`·`docs/adr/`·`CHANGELOG.md`는 대상이 아니다. 그 문서들은 쓰던 당시의 인용을 그대로 둔다.
+- 코드 블록 안의 내용은 검사하지 않으므로, 옛 형식을 예시로 보여 줄 수 있다.
+- 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스
 

@@ -115,7 +115,7 @@ flowchart LR
 
 한 파일 안에서 agctx가 소유한 영역과 사용자가 쓴 영역을 나눠, 관리 영역만 다시 쓰고 사용자 영역은 보존한다. 관리 영역의 hash를 `agctx.project.json`에 기록해 사람이 고쳤는지 판정한다.
 
-- 영역 분리: `src/project/analyzer.ts`의 `EXTENSION_HEADER`<!--s:3b2e4de464c8-->와 영역 판정 함수
+- 영역 분리: `src/project/analyzer.ts`의 `EXTENSION_HEADER`<!--s:5c98e6075f22-->와 영역 판정 함수
 - 병합·hash 기록: `src/project/plan.ts`의 `managedRegion`<!--s:31135cae2bb1-->·`regionHash`<!--s:0ba5bd911327-->
 - 줄 끝 정규화: `src/shared/fs-utils.ts`의 `toLf`<!--s:ef4ef3119fe3-->
 - 이유: 규칙 파일 머리말은 [ADR 0009](../adr/0009-agent-rule-frontmatter.md), 편집 병합이 관리 영역을 다시 만드는 계약은 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)

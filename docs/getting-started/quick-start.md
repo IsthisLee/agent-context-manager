@@ -70,7 +70,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: a9c4c8e24b9b5f2858e8e1eb73cc1624c6c2955017bf5d0110b16b94ad566a72 -->
+<!-- agctx-doc-sources-sha256: 9a3fe8c891fc49f367b3e65b1aaf352610580acabeabca2844560214c599c101 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -89,7 +89,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: cccb3bba95c341cf45ee558ea57bd969ad169ed0ac7fb3531c64ed199fc8ef31 -->
+<!-- agctx-doc-sources-sha256: 0d366dd101bf567dbb9b16bc06b3d38df9fe2526ccabc7d0f5a1efc3a14798ac -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 

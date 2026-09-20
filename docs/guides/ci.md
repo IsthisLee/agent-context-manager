@@ -67,7 +67,7 @@ $ agctx check /path/to/orders-api
 /path/to/orders-api: 기록한 프로필 버전과 일치합니다.
 
 $ agctx check /path/to/orders-api   # 관리 영역을 agctx 밖에서 고친 뒤
-conflict          AGENTS.md  agctx 밖에서 관리 영역을 고쳤습니다
+conflict          AGENTS.md  프로필이 관리하는 영역을 직접 고쳤습니다
 ```
 
 자격 증명이 필요한 것은 `--refresh` 하나다. `--refresh`는 `git ls-remote -- <프로필 저장소> refs/heads/<브랜치>`로 원격의 최신 커밋을 읽어 뒤처짐(1)을 판정하므로, git이 그 저장소를 읽지 못하면 69로 끝난다. 터미널이 아닌 환경에서는 agctx가 `GIT_TERMINAL_PROMPT=0`을 주므로 비밀번호를 물으며 멈추지 않고 바로 실패한다.

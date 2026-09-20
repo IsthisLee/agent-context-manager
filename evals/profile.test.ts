@@ -472,7 +472,7 @@ test('sync stops when an agctx-managed block was manually changed', () => {
     fs.writeFileSync(claudePath, original.replace('Follow the selected', 'Manually changed'));
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 2);
-    assert.match(result.stderr, /Managed file changed outside agctx/);
+    assert.match(result.stderr, /edits inside the profile-owned area/);
     assert.match(fs.readFileSync(claudePath, 'utf8'), /Manually changed/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
@@ -493,7 +493,7 @@ test('sync stops when the profile-owned portion of AGENTS.md was manually change
     fs.writeFileSync(agentsPath, original.replace('This profile manages the shared agentic development guidance', 'Manually changed profile guidance'));
     const result = spawnSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env, encoding: 'utf8' });
     assert.equal(result.status, 2);
-    assert.match(result.stderr, /Managed file changed outside agctx: AGENTS\.md/);
+    assert.match(result.stderr, /edits inside the profile-owned area: AGENTS\.md/);
     assert.match(fs.readFileSync(agentsPath, 'utf8'), /Manually changed profile guidance/);
   } finally {
     fs.rmSync(home, { recursive: true, force: true });

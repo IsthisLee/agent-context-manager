@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: bffdda572494071ca8956ac56c26efea07dd18e3b3cfee38529b3766b4db7841 -->
+<!-- agctx-doc-sources-sha256: 8c1550a679c0be8de7860acb61168bd7035cb90bfdef4adf2c3e3fd863d5b9f0 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 9d31ca6857002b23128dc02d182d610308cb9223cc8aff3ae417c29d328e6c6f -->
+<!-- agctx-doc-sources-sha256: 64578a04cc11d20ad4513bedcb5754ee4acbe21f86a90e08d3997c61c02e46b8 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -386,7 +386,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 - 적용할 프로필 내용에 숨은 문자가 있으면 파일을 쓰지 않고 종료 코드 3으로 멈춘다.
 - 확장 섹션 제목은 `## 4. 프로젝트 규칙 확장 (SSOT)`(ko) 또는 `## 4. Project rule extensions (SSOT)`(en)이며 두 로케일을 모두 인식한다.
 - 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 `## Existing project guidance` 아래로 옮겨 보존한다.
-- 기록된 관리 영역을 밖에서 고친 프로젝트에서는 `apply`도 `sync`와 같이 파일을 쓰지 않고 `Managed file changed outside agctx: <파일 목록>`과 종료 코드 2로 멈춘다. 다음 단계로 차이를 볼 명령(`profile sync --dry-run`)과 푸는 명령(`profile resolve`)을 알려 준다. 푸는 절차는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
+- 기록된 관리 영역을 밖에서 고친 프로젝트에서는 `apply`도 `sync`와 같이 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다: <파일 목록>`과 종료 코드 2로 멈춘다. 다음 단계로 차이를 볼 명령(`profile sync --dry-run`)과 푸는 명령(`profile resolve`)을 알려 준다. 푸는 절차는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ### `profile sync`
 

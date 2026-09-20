@@ -420,7 +420,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ```mermaid
 flowchart TD
   P["apply·sync: 변경 계획 생성<br/>create·update·unchanged"] --> H{"기록된 관리 hash가 현재와 같은가"}
-  H -->|"다름"| STOP["중단: Managed file changed outside agctx<br/>src/project/plan.ts:76-79 · profile resolve로 복구"]
+  H -->|"다름"| STOP["중단: 프로필이 관리하는 영역을 직접 고침<br/>src/project/plan.ts의 planProject · profile resolve로 복구"]
   H -->|"같음·최초"| SAFE{"대상이 안전한가<br/>심볼릭 링크·비정규 파일·경계 밖 부모"}
   SAFE -->|"위험"| REFUSE["교체 거부<br/>src/shared/fs-utils.ts:13-40"]
   SAFE -->|"안전"| ATOM["임시 파일 쓰기 후 rename 교체<br/>권한 모드 보존·src/shared/fs-utils.ts:43-62"]

@@ -30,6 +30,7 @@
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
 - [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
+- [포매터가 관리 영역을 바꾸는 범위](#포매터가-관리-영역을-바꾸는-범위)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -1089,6 +1090,15 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 
 - **문서를 코드에 묶어 CI에서 검사하는 도구가 이미 있다.** fiberplane/drift는 Markdown 문서가 코드의 파일이나 AST 심볼에 앵커를 선언하게 한다. README는 "Bind docs to code and check for drift. Any markdown file in your repo can declare anchors to code — specific files or AST symbols."라고 적는다(번역: 문서를 코드에 묶고 드리프트를 검사한다. 저장소의 어떤 Markdown 파일이든 코드에 대한 앵커, 즉 특정 파일이나 AST 심볼을 선언할 수 있다). CI 사용은 "`drift check` exits 1 when any doc is stale, so it works as a CI gate."다(번역: 문서가 오래되면 `drift check`가 1로 끝나므로 CI 게이트로 쓸 수 있다). 지문에는 위치 정보를 넣지 않는다. 소개 글은 "Drift parses the code with tree-sitter and hashes a normalized AST fingerprint (node kinds + token text, no whitespace or position data)."라고 적는다(번역: tree-sitter로 코드를 파싱해 정규화한 AST 지문, 즉 노드 종류와 토큰 텍스트만 담고 공백이나 위치 정보는 없는 지문을 해시한다). 다시 확인했다는 표시는 `drift link`다. MIT 라이선스이고 저장소 생성은 2026-03-01, 소개 글은 2026-03-25다. [저장소](https://github.com/fiberplane/drift), [소개 글](https://fiberplane.com/blog/drift-documentation-linter/) (확인일: 2026-09-19)
 - **문서는 작고 최신인 편이 낫고, 코드와 같은 변경에서 고친다.** Google의 문서 작성 모범 사례는 "A small set of fresh and accurate docs is better than a large assembly of "documentation" in various states of disrepair."(번역: 작지만 최신이고 정확한 문서 몇 개가, 여러 상태로 망가져 가는 거대한 "문서" 더미보다 낫다)와 "Change your documentation in the same CL as the code change."(번역: 문서는 코드 변경과 같은 CL에서 함께 바꾼다)를 적는다. 코드가 왜 그렇게 되어 있는지에 대한 설명은 코드 옆 주석의 몫으로 둔다. "The primary purpose of inline comments is to provide information that the code itself cannot contain, such as why the code is there."(번역: 인라인 주석의 주된 목적은 코드 자체가 담을 수 없는 정보, 예를 들어 그 코드가 왜 거기 있는지를 제공하는 것이다). [Documentation Best Practices](https://google.github.io/styleguide/docguide/best_practices.html) (확인일: 2026-09-19)
+
+## 포매터가 관리 영역을 바꾸는 범위
+
+[관리 영역과 확장 영역](concepts/managed-and-extension-areas.md)이 기대는 외부 사실이다. agctx는 관리 영역을 바이트로 비교하므로, 편집기가 저장할 때 Markdown을 다시 포맷하면 사람이 고치지 않은 충돌이 생긴다.
+
+- **Prettier는 기본 설정에서 문단의 줄바꿈을 바꾸지 않는다.** 옵션 문서의 Prose Wrap 항목은 기본값을 "By default, Prettier will not change wrapping in markdown text since some services use a linebreak-sensitive renderer, e.g. GitHub comments and BitBucket."이라고 적는다(번역: 기본적으로 Prettier는 Markdown 텍스트의 줄바꿈을 바꾸지 않는다. GitHub 댓글이나 BitBucket처럼 줄바꿈에 민감한 렌더러를 쓰는 서비스가 있기 때문이다). `"always"`는 "Wrap prose to the `printWidth`."로 적혀 있다(번역: 문단을 `printWidth`에 맞춰 접는다). **이 문서는 목록 기호에 대해서는 아무것도 적지 않는다.** [Options](https://prettier.io/docs/options) (확인일: 2026-09-20)
+- **직접 실험(2026-09-20): 기본 설정의 Prettier는 목록 기호를 `-`로 바꾼다.** agctx를 적용한 프로젝트의 `AGENTS.md`(68줄, 관리 영역 3,783자)에 설정 파일 없이 `npx prettier@3 --write AGENTS.md`를 실행하자 한 줄만 바뀌었다. agctx가 쓴 `* **Project:** dev-agent-orch`가 `- **Project:** dev-agent-orch`가 됐다. 그 줄은 관리 영역 안이므로 관리 영역 해시가 달라졌고, `agctx check`는 `conflict AGENTS.md 프로필이 관리하는 영역을 직접 고쳤습니다`로 판정했다. 관리 영역 안에 `*` 목록은 그 한 줄뿐이었고 그 한 줄이 전부 바뀌었다. 같은 파일에 `--prose-wrap always --print-width 80`을 주면 18줄이 사라지고 100줄이 새로 쓰였다.
+- **직접 실험(2026-09-20): 목록 기호와 제목 뒤 빈 줄을 맞추면 기본 설정의 Prettier가 아무것도 바꾸지 않는다.** `templates/`의 Markdown 다섯 개와 `renderProfileAgents`의 출력을 같은 명령에 통과시켜 바뀌는 줄이 없음을 확인했다. 이 형태를 지키는지는 `evals/formatter-stability.test.ts`가 검사한다.
+- **직접 실험(2026-09-21): 문단을 다시 접어도 낱말과 그 차례는 바뀌지 않는다.** 위 `--prose-wrap always` 실험의 결과를 원문과 대조하자 달라진 것은 줄바꿈 위치와 주석 앞뒤의 빈 줄뿐이었고 낱말은 하나도 바뀌지 않았다. 문단 안의 단일 줄바꿈은 Markdown에서 공백이므로 두 파일은 같은 문서다. 적용한 프로젝트를 그 설정으로 포맷한 뒤 `agctx check`는 `behind`(1)로 끝났고 `profile sync` 한 번에 풀렸다. 같은 파일에서 낱말 하나를 `먼저 계획을 세운다`에서 `먼저 계획을 세우지 않는다`로 바꾸자 `conflict`(2)로 멈췄다.
 
 ## 비교 대상
 

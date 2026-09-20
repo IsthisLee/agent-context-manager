@@ -69,6 +69,16 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   const findings: CheckFinding[] = [];
   const warnings: string[] = [];
 
+  const profile = config.profile ?? null;
+  const profileDir = profile ? path.join(profileHome(), profile) : null;
+  const inStore = Boolean(profileDir && fs.existsSync(profileDir));
+  // What a sync would write, when this computer holds the profile. A managed
+  // area that already holds it is not a conflict, so `check` and `sync` give
+  // the same answer. Without the profile only the recorded hash is available,
+  // and a differing hash stays a conflict.
+  const plan = profile && inStore ? planFor(profile, targetDir, 'keep').plan : null;
+  const settled = new Set((plan?.files ?? []).filter(file => file.conflict === null).map(file => file.rel));
+
   for (const [rel, recorded] of Object.entries(config.managedHashes ?? {})) {
     const file = path.join(targetDir, rel);
     const kind: ManagedKind = rel === 'AGENTS.md' ? 'agents' : 'pointer';
@@ -80,21 +90,17 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
     for (const line of describeHiddenCharacters(rel, findHiddenCharacters(content))) {
       findings.push({ kind: 'hidden-characters', file: rel, detail: line });
     }
-    if (regionHash(managedRegion(kind, content)) !== recorded) {
+    if (regionHash(managedRegion(kind, content)) !== recorded && !settled.has(rel)) {
       findings.push({ kind: 'conflict', file: rel, detail: _('check.edited') });
     }
   }
 
-  const profile = config.profile ?? null;
   const source = config.source ?? null;
   if (config.uncommitted) findings.push({ kind: 'behind', file: null, detail: _('check.uncommitted') });
 
   const hasConflict = findings.some(finding => finding.kind === 'conflict');
-  const profileDir = profile ? path.join(profileHome(), profile) : null;
-  const inStore = Boolean(profileDir && fs.existsSync(profileDir));
   let latestCommit: string | null = null;
-  if (profile && profileDir && inStore && !hasConflict) {
-    const { plan } = planFor(profile, targetDir, 'keep');
+  if (plan && profileDir && !hasConflict) {
     for (const file of plan.files) {
       if (file.existing !== file.regenerated) findings.push({ kind: 'behind', file: file.rel, detail: _('check.profile-changed') });
     }

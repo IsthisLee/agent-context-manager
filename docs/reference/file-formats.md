@@ -13,7 +13,7 @@
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: 3f43bee6bb5cfffa53003083dc11a544d5f474b9acca2d6f6dc0e1bcfb481b93 -->
+<!-- agctx-doc-sources-sha256: 5fdb483b7a6956531eeb87df332bffa08f6ac7d66364d0d9af0ff1b17283ba97 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -73,5 +73,6 @@
 | 표지 | 위치 | 뜻 |
 | --- | --- | --- |
 | `<!-- agctx:managed:start -->` ~ `<!-- agctx:managed:end -->` | `CLAUDE.md`, `.agents/rules/agctx.md`, 하위 폴더 연결 파일 | agctx가 다시 만드는 블록 |
-| `## N. Project rule extensions` 또는 `## N. 프로젝트 규칙 확장` | 프로젝트 `AGENTS.md` | 이 제목 위는 프로필 영역, 아래는 프로젝트 영역 |
-| `<!-- agctx:guidance:start -->` ~ `<!-- agctx:guidance:end -->` | 프로필 `AGENTS.md` | `profile setup`이 다시 쓰는 지침 블록 |
+| `<!-- agctx:managed:end -->` | 프로젝트 `AGENTS.md` | 파일 처음부터 이 줄까지가 프로필 영역, 아래는 프로젝트 영역([ADR 0034](../adr/0034-managed-end-marker-in-agents-md.md)) |
+| `## N. Project rule extensions` 또는 `## N. 프로젝트 규칙 확장` | 프로젝트 `AGENTS.md` | 마커가 아직 없는 파일에서만 경계 노릇을 한다. `profile sync`가 마커를 넣으면 평범한 제목이 된다 |
+| `<!-- agctx:guidance:start -->` ~ `<!-- agctx:guidance:end -->` | 프로필 `AGENTS.md` | `profile setup`이 다시 쓰는 지침 블록. 프로젝트에 적용할 때는 표지만 빠지고 본문은 그대로 간다 |

@@ -7,5 +7,6 @@ All behavioral, development, and verification rules in this repository are maint
 ---
 
 ## Claude Code Execution Guidelines
-* Follow the selected development and verification rules in `AGENTS.md`.
-* Manage project-specific domain rules there.
+
+- Follow the selected development and verification rules in `AGENTS.md`.
+- Manage project-specific domain rules there.

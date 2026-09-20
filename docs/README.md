@@ -127,6 +127,7 @@
   - [ADR 0031: 공개 운영 파일을 줄이고 라이선스를 MIT로 바꿈](adr/0031-drop-open-source-process-files.md)
   - [ADR 0032: 문서는 코드를 파일과 이름으로 가리킴](adr/0032-cite-code-by-name.md)
   - [ADR 0033: 인용한 코드의 지문으로 변경을 검출](adr/0033-fingerprint-cited-code.md)
+  - [ADR 0034: AGENTS.md의 관리 영역 경계를 마커로 표시](adr/0034-managed-end-marker-in-agents-md.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

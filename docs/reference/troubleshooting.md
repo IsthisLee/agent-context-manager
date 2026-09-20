@@ -6,14 +6,16 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
+<!-- agctx-doc-sources-sha256: faca3f649c0e6c3009381ade54c7b201393fc5eea90b131d68ae4004cdd9e589 -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
+
+관리 영역을 고친 기억이 없는데도 이 오류가 난다면 편집기가 저장할 때 Markdown을 다시 포맷했을 수 있다. `git diff`에 목록 기호나 빈 줄만 바뀐 줄이 보이면 그 경우다. 어디까지가 관리 영역이고 포매터를 어떻게 다루는지는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
 
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 4b024f797a08ac95cdd374f0ea32b745d100114ca317f71622b55e8c13262879 -->
+<!-- agctx-doc-sources-sha256: 21148ca5989fdd1d685fd764dbfe9dc3e99fd17536dae87460cdfe95207f8e47 -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.

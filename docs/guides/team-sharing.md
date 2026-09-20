@@ -143,7 +143,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 956bf5fb3ac03b5380b9d7f7100ac0d8bc4dbcba4e7d601fbc763d6ebfd67ce0 -->
+<!-- agctx-doc-sources-sha256: faca3f649c0e6c3009381ade54c7b201393fc5eea90b131d68ae4004cdd9e589 -->
 
 ### 1. 프로필 받기
 
@@ -250,7 +250,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 43bc5c76f07d49780d37bca01231974354feec0c76861475e15ba8665175d766 -->
+<!-- agctx-doc-sources-sha256: 3f8a91cee6f1fd80b2a0be0638c892e610ebc19ff634937b100fe514407e0747 -->
 
 ```mermaid
 sequenceDiagram
@@ -326,7 +326,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: fe1f09f851a4add870358fe620652227f6a02abdf88b1d911bd2acf52830b51d -->
+<!-- agctx-doc-sources-sha256: 75d0bf0b407a85e0dac813b95e20a9e5d37511741da99918fb229ca533905777 -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

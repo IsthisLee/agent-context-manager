@@ -20,7 +20,7 @@ pnpm run audit
 ## 평가 작성
 
 <!-- agctx-doc-sources: evals/support, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, tools/generate-progress.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: 3ef4274340b9a1bfe98d671c86ae6c575810a00cbf29ed9dba62fe40cea07a1c -->
+<!-- agctx-doc-sources-sha256: 6cce8dc0c312a4b7e4152e913b5c93b4e2adf7c91e1b7cff26b645190e94239d -->
 
 - 평가는 `evals/*.test.ts`이며 Node.js 내장 `node:test`로 실행한다. 코드를 바꾸기 전에 실패하는 평가를 먼저 쓰고(Red), 통과시킨 뒤(Green) 정리한다.
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.
@@ -30,7 +30,7 @@ pnpm run audit
 - 에이전트 관련 평가는 `HOME`·`USERPROFILE`·`CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 임시 폴더로 바꿔 이 컴퓨터의 사용자 파일과 세션 기록이 섞이지 않게 한다.
 - 명령 등록부를 바꾸면 `node tools/generate-skills.ts`와 `node tools/generate-reference.ts`로 스킬의 명령 목록과 레퍼런스의 생성 블록을 다시 만든다. 다르면 `evals/skills.test.ts`와 `evals/reference-docs.test.ts`가 실패한다.
 - `docs/discussion/topics.json`을 바꾸면 `node tools/generate-discussion-status.ts`로 논의 상태 줄·색인·README 목록을 다시 만든다. 다르면 `evals/discussion-status.test.ts`가 실패한다.
-- `PROGRESS.md`의 두 블록은 `node tools/generate-progress.ts`가 만든다. 최근 기록은 `git log`에서, 구현 중인 주제 표는 `topics.json`과 각 주제의 `권장 다음 작업`에서 온다. `evals/progress.test.ts`는 최근 기록의 줄이 실제 커밋과 맞는지, 주제 표가 최신인지 검사한다. 최근 기록은 커밋할 때마다 다시 만들지 않아도 된다.
+- `PROGRESS.md`의 두 블록은 `node tools/generate-progress.ts`가 만든다. 최근 기록은 `git log main`에서(PR이 squash로 병합되므로 병합된 이력만 적는다), 구현 중인 주제 표는 `topics.json`과 각 주제의 `권장 다음 작업`에서 온다. `evals/progress.test.ts`는 최근 기록의 줄이 실제 커밋과 맞는지, 주제 표가 최신인지 검사한다. 최근 기록은 커밋할 때마다 다시 만들지 않아도 된다.
 
 ## CI 환경
 

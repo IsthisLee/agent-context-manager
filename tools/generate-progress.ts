@@ -34,8 +34,25 @@ export interface RecentEntry {
   subject: string;
 }
 
+/**
+ * The history the recent log follows. Pull requests are squash merged, so a
+ * branch's own commits disappear on merge: the log lists what is already on
+ * the default branch, which stays true afterwards.
+ */
+function historyRef(root: string): string {
+  for (const ref of ['main', 'origin/main']) {
+    try {
+      execSync(`git rev-parse --verify --quiet ${ref}`, { cwd: root, stdio: 'ignore' });
+      return ref;
+    } catch {
+      continue;
+    }
+  }
+  return 'HEAD';
+}
+
 export function recentEntries(root: string, count = RECENT_COUNT): RecentEntry[] {
-  const log = execSync(`git log --first-parent --format=%ad%x09%s --date=short -n ${count}`, { cwd: root, encoding: 'utf8' });
+  const log = execSync(`git log ${historyRef(root)} --first-parent --format=%ad%x09%s --date=short -n ${count}`, { cwd: root, encoding: 'utf8' });
   return log.trim().split('\n').filter(Boolean).map(line => {
     const [date, ...rest] = line.split('\t');
     return { date, subject: rest.join('\t') };

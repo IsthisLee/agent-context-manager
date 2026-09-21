@@ -153,7 +153,11 @@ const refusedValues: [string, (work: string) => Record<string, unknown>, { skip:
 
 for (const [label, fields, options] of refusedValues) {
   test(`clone refuses instructions set to ${label}, and registers nothing`, options ?? {}, t => {
-    const { member, source } = setup(t, { ...repoFiles, 'templates/AGENTS.txt': '# Not Markdown\n', 'templates\\AGENTS.md': process.platform === 'win32' ? null : '# Backslash name\n' });
+    // On Windows a backslash separates folders, so a file named `templates\AGENTS.md` is the rules file
+    // itself. Leave the key out there instead of passing null, which would delete the rules file and let
+    // every case below pass on a missing file rather than on the check it names.
+    const { member, source } = setup(t, { ...repoFiles, 'templates/AGENTS.txt': '# Not Markdown\n', ...(process.platform === 'win32' ? {} : { 'templates\\AGENTS.md': '# Backslash name\n' }) });
+    assert.ok(fs.existsSync(path.join(source.work, 'templates', 'AGENTS.md')), 'the fixture keeps the rules file, so each refusal comes from the check it names');
     source.commit({ 'profile.json': metadata(fields(source.work)) }, 'Point instructions');
     // Only a path that escapes the repository can reach this file.
     fs.mkdirSync(path.join(member.home, 'profiles'), { recursive: true });

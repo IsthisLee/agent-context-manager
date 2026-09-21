@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 133c737fac1addc49bcd24a9f391d75c98372ba34c9d9d383df122998d394374 -->
+<!-- agctx-doc-sources-sha256: c06364e099d361b91a4afb17b1977580d65d8cf3afc53bb4e2ec34235abf1f5f -->
 
 ```mermaid
 flowchart LR
@@ -88,7 +88,7 @@ agent-context-manager/
 ├── evals/                       # CLI·문서·패키지 산출물 평가
 ├── tools/
 │   ├── build.ts                 # src/를 dist/로 컴파일(prepack에서 실행)
-│   ├── check-docs.ts            # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트
+│   ├── check-docs.ts            # 링크·ADR·discussion·README 계약과 문서 소스 해시·근거 게이트, 문서 단위 stamp와 지문만 찍은 문서 검출(--restamped)
 │   ├── check-release.ts         # 릴리스 태그·버전·CHANGELOG 일치 검사
 │   ├── discussion-record.ts     # 논의 문서의 상태와 구현 기록 제목이 맞는지 판정
 │   ├── discussion-roots.ts      # docs/discussion 아래에서 topics/를 가진 논의 영역 목록
@@ -96,7 +96,7 @@ agent-context-manager/
 │   ├── doc-evidence.ts          # references.md 확인일과 ADR 근거 필드 규칙
 │   ├── doc-source-path.ts       # 문서 소스 해시에 넣을 경로를 OS와 무관하게 / 형식으로 계산
 │   ├── doc-citations.ts         # 문서가 코드를 가리키는 형식 검사(줄 번호 금지·이름 존재·지문 표지)
-│   ├── doc-sources.ts           # 절 단위 핀 읽기, 핀 범위 규칙, 해시에서 뺄 해시 줄·생성 블록
+│   ├── doc-sources.ts           # 절 단위 핀 읽기, 핀 범위 규칙, 해시에서 뺄 해시 줄·생성 블록, stamp 대상 해석, 지문만 바뀐 문서 판정
 │   ├── generate-discussion-status.ts # topics.json에서 논의 상태 줄·색인 표·README 목록 생성(--check로 검사)
 │   ├── generate-progress.ts     # PROGRESS.md의 최근 기록(git log)과 구현 중인 주제 표(topics.json) 생성
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)

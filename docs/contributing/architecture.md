@@ -118,9 +118,9 @@ agent-context-manager/
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본
 ├── README.md                    # npm 패키지 소개(영어는 README.en.md)
 ├── CHANGELOG.md                 # 사용자 영향 변경 이력
-├── CONTRIBUTING.md              # 기여 절차와 품질 게이트
+├── PROGRESS.md                  # 진행 중인 작업과 다음 세션이 이어받을 순서
+├── CLAUDE.md                    # AGENTS.md를 가져오는 Claude Code 연결 파일
 ├── SECURITY.md                  # 보안 신고·안전한 사용 정책
-├── CODE_OF_CONDUCT.md           # 커뮤니티 행동 규범
 ├── LICENSE                      # MIT 라이선스
 ├── package.json                 # npm 패키지·CLI·스크립트 정의
 ├── pnpm-lock.yaml               # 저장소 개발 의존성 잠금

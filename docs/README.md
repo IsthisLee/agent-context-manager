@@ -131,6 +131,7 @@
   - [ADR 0034: AGENTS.md의 관리 영역 경계를 마커로 표시](adr/0034-managed-end-marker-in-agents-md.md)
   - [ADR 0035: Claude Code가 AGENTS.md를 직접 읽는 조건을 explain 판정에 반영](adr/0035-claude-code-reads-agents-md.md)
   - [ADR 0036: profile.json이 프로필의 규칙 파일을 가리킨다](adr/0036-profile-json-names-rules-file.md)
+  - [ADR 0037: 이미 있는 규칙 저장소 폴더를 포인터로 보관함에 잇는다](adr/0037-link-existing-folder-as-profile.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

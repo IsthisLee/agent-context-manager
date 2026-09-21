@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: acbea8ffea1b4e542d38c36c3c46ea011c38d5cf380ae434c80e1d95494d2d56 -->
+<!-- agctx-doc-sources-sha256: a4496e9a66a5e780d71b8ce428835f6263be4f47f73c78b912227e3e0e635147 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 2b6858350343d28b9c35a46927cc055096745112934e7db406c56352828ed1e6 -->
+<!-- agctx-doc-sources-sha256: 8a073777e3a454e02d4e84a1635a93eddcfbb08a630e8a889f012ad24dc61bcc -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -42,7 +42,7 @@ Exit codes: 0 success, 64 usage error, 70 other error, 2 conflict, 3 hidden char
 
 ### 확인과 `--yes`
 
-프로젝트 파일을 바꾸거나 원격으로 보내는 명령(`profile apply`·`sync`·`resolve`·`remove`·`push`, `repos sync`·`pr`)은 계획을 출력한 뒤 확인을 받는다. 에이전트 CLI를 실행해 요금제·API 사용량을 쓰는 `verify --probe`도 같은 규칙으로 확인을 받는다. `verify`에는 `--dry-run`이 없으므로 터미널이 아니면 `--yes`를 붙인다.
+프로젝트 파일을 바꾸거나 원격으로 보내는 명령(`profile apply`·`sync`·`resolve`·`remove`·`push`·`link`, `repos sync`·`pr`)은 계획을 출력한 뒤 확인을 받는다. 에이전트 CLI를 실행해 요금제·API 사용량을 쓰는 `verify --probe`도 같은 규칙으로 확인을 받는다. `verify`에는 `--dry-run`이 없으므로 터미널이 아니면 `--yes`를 붙인다.
 
 - 터미널에서는 질문에 답한다.
 - 터미널이 아니거나(CI·스크립트·에이전트) `--json`을 주면 묻지 않는다. `--yes`가 없으면 아무것도 쓰지 않고 종료 코드 64로 멈추며 `--yes`를 붙인 명령을 알려 준다.
@@ -117,7 +117,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: bf1c70077d74945ff7c7f0fa497e922fa9ac9f55393b666b6be7893256396fa4 -->
+<!-- agctx-doc-sources-sha256: 2f4d87d7a793870943dc112f05afaf2c7112442f4c2c96ef6f4829f173eed6ca -->
 
 ```bash
 agctx
@@ -125,11 +125,11 @@ agctx
 
 인자 없이 터미널에서 실행하면 메인 TUI(명령 대신 메뉴에서 골라 진행하는 터미널 화면)가 열린다.
 
-- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
+- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 폴더를 프로필로 연결, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
 - **프로젝트 점검:** 경로를 고른 뒤 `check`·`explain`·`verify`를 실행한다. 원격 확인(`--refresh`), 에이전트(`--agent`), probe(`--probe`)는 질문으로 고른다.
 - **여러 저장소:** `repos list`·`status`·`sync`·`pr`을 실행한다. 목록에 프로필이 둘 이상이면 프로필(`--profile`)을 먼저 고르고, PR은 대상 파일·base 브랜치·초안·메시지를 묻는다.
 - **도움말:** 전체 사용법이나 명령 하나의 사용법·종료 코드를 보여 준다.
-- **프로필 관리 메뉴:** 프로필을 고른 뒤 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제를 실행한다. Git 프로필이면 Git 상태 보기·받기(pull)·올리기(push)·원격 연결도 여기서 한다.
+- **프로필 관리 메뉴:** 프로필을 고른 뒤 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제를 실행한다. Git 프로필이면 Git 상태 보기·받기(pull)·올리기(push)·원격 연결도 여기서 한다. `profile link`로 연결한 프로필은 받기·올리기·원격 연결 대신 그 폴더에서 git을 쓰라고 안내한다. 목록에는 연결한 프로필의 경로와 끊긴 링크도 보인다.
 
 ```bash
 agctx --tui
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: acbfa58cfd086d0cc11989a2b0a4cb69e88e5af8845115b5411a1075ef49b6ee -->
+<!-- agctx-doc-sources-sha256: de0c87cfd1dc45020b9a102359a713955b6e95b80238de773572b6699b3c30c9 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -158,6 +158,7 @@ agctx --tui
 | [`profile resolve`](#profile-resolve) | 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile remove`](#profile-remove) | 프로필을 지웁니다. 프로젝트에 적용한 파일은 남습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile clone`](#profile-clone) | 파일과 숨은 문자를 검사한 뒤 Git 저장소에서 프로필을 가져옵니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
+| [`profile link`](#profile-link) | 이 컴퓨터에 있는 규칙 저장소 폴더를 프로필로 연결합니다. profile.json이 없으면 만들고, 커밋은 하지 않습니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile status`](#profile-status) | 프로필의 원격·브랜치·커밋·로컬 수정과 원격 대비 위치를 보여 줍니다. --refresh를 붙이면 먼저 fetch합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
 | [`profile pull`](#profile-pull) | 프로필을 원격까지 fast-forward합니다. 저장소 파일은 바뀌지 않습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile push`](#profile-push) | 이미 만든 커밋을 프로필의 원격으로 보냅니다. | Git 원격 | CLI · TUI · 프로필 메뉴 |
@@ -475,6 +476,45 @@ agctx profile clone [--branch <branch>] <git-url>
 $ agctx profile clone /work/team-backend.git
 Cloned profile team-backend at commit 39ca6e1.
 Next: agctx profile apply team-backend <project>
+```
+
+### `profile link`
+
+이 컴퓨터에 있는 규칙 저장소 폴더를 프로필로 연결한다. 폴더에 `profile.json`이 없으면 만들고, 보관함에는 그 폴더를 가리키는 포인터(`link.json`)만 둔다. 커밋과 push는 하지 않는다.
+
+<!-- agctx:generated:usage:profile.link:start -->
+```bash
+agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--dry-run] [--yes] [<path>]
+```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:profile.link:end -->
+
+| 옵션·인자 | 설명 |
+| --- | --- |
+| `[<path>]` | 연결할 폴더. 생략하면 지금 폴더 |
+| `--name <name>` | 프로필 이름. 생략하면 폴더 이름 |
+| `--scope <scope>` | 용도. 생략하면 `personal` |
+| `--instructions <file>` | 규칙 파일. 생략하면 루트의 `AGENTS.md`, 없으면 폴더 안에 하나뿐인 `AGENTS.md` |
+| `--dry-run` | 계획만 보여 주고 아무것도 쓰지 않는다 |
+| `--yes` | 확인하지 않고 쓴다. 터미널이 아니면 있어야 진행한다 |
+
+- 규칙 파일 후보는 `.git`과 `node_modules`를 빼고 찾는다. 루트에 `AGENTS.md`가 없고 후보가 여럿이면 후보 목록을 보여 주고 64로 멈춘다.
+- 폴더에 `profile.json`이 이미 있으면 새로 쓰지 않고 그 이름·용도·규칙 파일을 쓴다. 옵션으로 준 값이 다르면 64로 멈춘다.
+- 같은 이름의 프로필이 보관함에 이미 있고 링크가 아니면 64로 멈춘다. 같은 이름의 링크가 다른 폴더를 가리키면, 새 폴더로 다시 잇는 계획을 보여 주고 확인을 받는다.
+- 연결한 프로필은 `view`·`apply`·`sync`·`setup`·`check`가 그 폴더를 직접 읽고 쓰므로, 커밋하지 않은 수정도 바로 적용된다. 그 상태로 적용하면 `uncommitted`로 기록하고 `--pin`은 거부한다.
+- 연결한 프로필에서 `pull`·`push`·`connect`는 64로 멈추고 그 폴더에서 git을 쓰라고 안내한다. `remove`는 포인터만 지운다.
+- 연결한 폴더를 옮기거나 지우면 `profile list`가 끊긴 링크로 보여 주고, 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈춘다.
+- TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더에 `profile.json`이 없으면 이름과 용도를 묻고, 규칙 파일 후보가 여럿이면 고르게 한다.
+
+```bash
+$ cd /work/team-rules
+$ agctx profile link --yes
+Plan:
+  create    /work/team-rules/profile.json  (name team-rules, scope personal, rules templates/AGENTS.md)
+  link      ~/.agctx/profiles/team-rules -> /work/team-rules
+Linked profile team-rules to /work/team-rules.
+Next: agctx profile apply team-rules <project> to try it. To share it, commit profile.json in that folder and push; teammates run agctx profile clone <git-url>.
 ```
 
 ### `profile status`

@@ -7,7 +7,7 @@ import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { committedFile, git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
 import type { ProfileMetadata } from '../shared/types.ts';
-import { assertInstructionsPath, instructionsFile, isInstructionsPath, isValidProfileMetadata, readProfile, regularFileInside } from './store.ts';
+import { assertInstructionsPath, assertNotLinked, instructionsFile, isInstructionsPath, isValidProfileMetadata, readProfile, regularFileInside } from './store.ts';
 
 /**
  * Share profiles through ordinary Git repositories. These commands change only
@@ -29,6 +29,8 @@ export interface ProfileGitState {
   ahead: number | null;
   behind: number | null;
   refreshed: boolean;
+  /** The folder a linked profile points at; its Git history belongs to that folder, not to agctx. */
+  link: string | null;
 }
 
 function lines(text: string): string[] {
@@ -44,8 +46,8 @@ export function assertNoHiddenCharacters(files: readonly { file: string; content
 }
 
 export function profileGitState(name: string, options: { refresh?: boolean } = {}): ProfileGitState {
-  const { profileDir: dir } = readProfile(name);
-  const state: ProfileGitState = { name, dir, connected: false, remote: null, branch: null, remoteBranch: null, commit: null, upstream: null, dirty: [], ahead: null, behind: null, refreshed: false };
+  const { profileDir: dir, link } = readProfile(name);
+  const state: ProfileGitState = { name, dir, connected: false, remote: null, branch: null, remoteBranch: null, commit: null, upstream: null, dirty: [], ahead: null, behind: null, refreshed: false, link };
   if (!isGitRoot(dir)) return state;
   state.connected = true;
   state.branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
@@ -152,6 +154,7 @@ export interface PullPlan {
 }
 
 export function pullProfile(name: string, options: { dryRun?: boolean } = {}): PullPlan {
+  assertNotLinked(name);
   const state = profileGitState(name, { refresh: true });
   requireConnected(state);
   if (!state.upstream) throw usageError('pull.no-upstream', _('error.pull.no-upstream', { name }), _('hint.profile.connect', { name }));
@@ -178,6 +181,7 @@ export interface PushPlan {
 
 /** Send commits that already exist. Never stages or commits; the caller confirms before `pushed` can become true. */
 export function planPush(name: string): PushPlan {
+  assertNotLinked(name);
   const state = profileGitState(name, { refresh: true });
   requireConnected(state);
   if (!state.branch) throw usageError('push.detached', _('error.push.detached', { name }), null);
@@ -198,6 +202,7 @@ export function pushProfile(plan: PushPlan): PushPlan {
 }
 
 export function connectProfile(name: string, location: string, options: { branch?: string | null } = {}): ProfileGitState {
+  assertNotLinked(name);
   const url = resolveRemoteLocation(location);
   const { profileDir: dir } = readProfile(name);
   if (!isGitRoot(dir)) {

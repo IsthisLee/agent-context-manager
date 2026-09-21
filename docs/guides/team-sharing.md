@@ -85,7 +85,7 @@ flowchart TB
 ## 관리자: 팀 프로필 올리기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 69aa568912fde05adee4545d845ce7fa88411190d45cfbada0c464d3a9adb6bb -->
+<!-- agctx-doc-sources-sha256: 13c1a37f768a2d076117b7dc2493ba89c92d3081eabf8f0e49e2174a7296e38c -->
 
 ### 1. 프로필 만들기
 
@@ -143,20 +143,36 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 
 ## 기존 저장소를 프로필로 쓰기
 
-<!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ed0e8f557b16e02533575741480663fed0b81579bf3347ffd8b5f2ed55b5a11b -->
+<!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
+<!-- agctx-doc-sources-sha256: 4aa32ed0febbdcdc0a3f3cbb9c1bbae141881f6b7882d419f5f19b4684e81743 -->
 
-규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 그 저장소에 `profile.json`만 더하면 적용 담당이 [1. 프로필 받기](#1-프로필-받기)처럼 바로 받는다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
+규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
-`profile.json`이 없는 저장소를 받으면 무엇을 더할지 알려 주고 멈춘다.
+1. **그 폴더에서 연결한다.** `profile link`가 규칙 파일을 찾아 `profile.json`을 만들고, 보관함에는 그 폴더를 가리키는 포인터만 둔다. 커밋은 하지 않는다.
 
-```bash
-$ agctx profile clone git@github.com:acme/team-rules.git
-Error: git@github.com:acme/team-rules.git is not a profile repository: profile.json is missing at its root.
-Next: Add profile.json at the repository root, for example {"schemaVersion": 1, "name": "team-backend", "scope": "team"}. The rules file is AGENTS.md at the root; if it is elsewhere, use "schemaVersion": 2 and add "instructions": "<path to the .md file>". To start from nothing, run agctx profile create and push it with Git.
-```
+   ```bash
+   $ cd /work/team-rules
+   $ agctx profile link --yes
+   Plan:
+     create    /work/team-rules/profile.json  (name team-rules, scope personal, rules templates/AGENTS.md)
+     link      ~/.agctx/profiles/team-rules -> /work/team-rules
+   Linked profile team-rules to /work/team-rules.
+   Next: agctx profile apply team-rules <project> to try it. To share it, commit profile.json in that folder and push; teammates run agctx profile clone <git-url>.
+   ```
 
-규칙 파일이 루트의 `AGENTS.md`면 `schemaVersion` 1로 `name`과 `scope`만 적는다. 규칙 파일이 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다.
+   규칙 파일은 루트의 `AGENTS.md`를 먼저 쓰고, 없으면 폴더 안에 하나뿐인 `AGENTS.md`를 쓴다. 여럿이면 후보를 보여 주며 멈추므로 `--instructions <경로>`로 고른다. 이름과 용도는 `--name`·`--scope`로 준다. `--yes` 없이 터미널에서 실행하면 계획을 보여 준 뒤 확인을 묻는다.
+
+2. **적용해 본다.** `agctx profile apply team-rules <project>`는 그 폴더의 규칙 파일을 바로 읽으므로 커밋하지 않은 수정도 들어간다. 그 상태로 적용하면 `agctx.project.json`에 `uncommitted: true`가 남고 `--pin`은 거부된다.
+
+3. **팀과 나눈다.** 그 폴더에서 `profile.json`을 커밋해 저장소의 평소 방식대로 올린다. 적용 담당은 [1. 프로필 받기](#1-프로필-받기)처럼 받는다.
+
+   ```bash
+   $ agctx profile clone git@github.com:acme/team-rules.git
+   Cloned profile team-rules at commit 1df750b.
+   Next: agctx profile apply team-rules <project>
+   ```
+
+`profile link` 없이 `profile.json`을 직접 써도 된다. 규칙 파일이 루트의 `AGENTS.md`면 `schemaVersion` 1로 `name`과 `scope`만 적고, 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다.
 
 ```text
 team-rules/
@@ -174,18 +190,19 @@ team-rules/
 }
 ```
 
-커밋해서 저장소의 평소 방식대로 올리면 받을 수 있다.
+`profile.json`이 없는 저장소를 받으면 무엇을 더할지 알려 주고 멈춘다.
 
 ```bash
 $ agctx profile clone git@github.com:acme/team-rules.git
-Cloned profile team-rules at commit 1df750b.
-Next: agctx profile apply team-rules <project>
+Error: git@github.com:acme/team-rules.git is not a profile repository: profile.json is missing at its root.
+Next: Add profile.json at the repository root, for example {"schemaVersion": 1, "name": "team-backend", "scope": "team"}. The rules file is AGENTS.md at the root; if it is elsewhere, use "schemaVersion": 2 and add "instructions": "<path to the .md file>". To start from nothing, run agctx profile create and push it with Git.
 ```
 
-- 프로필에 들어가는 규칙은 `instructions`가 가리킨 파일 하나다. 저장소의 다른 파일도 보관함에 함께 받지만 프로젝트로 옮기지는 않는다.
-- `profile setup`은 가리킨 파일에 지침 구역을 쓰고 루트에 `AGENTS.md`를 만들지 않는다.
-- 규칙을 고칠 때는 그 저장소를 평소처럼 고쳐 올리고, 적용 담당은 `profile pull`로 받는다. 보관함의 프로필 폴더에서 고치고 커밋한 뒤 `profile push`로 올릴 수도 있다.
-- `instructions`로 쓸 수 있는 경로와 옛 버전의 동작은 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
+- 프로필에 들어가는 규칙은 `instructions`가 가리킨 파일 하나다. 저장소의 다른 파일은 프로젝트로 옮기지 않는다.
+- `profile setup`은 가리킨 파일에 지침 구역을 쓰고 루트에 `AGENTS.md`를 만들지 않는다. 연결한 프로필이면 그 폴더의 파일이 바로 바뀌므로 `git status`에 드러난다.
+- 연결한 프로필에서는 `profile pull`·`push`·`connect`가 멈추고, 그 폴더에서 git으로 받고 올리라고 안내한다. `clone`으로 받은 프로필은 지금처럼 `profile pull`로 받고, 보관함의 프로필 폴더에서 고치고 커밋한 뒤 `profile push`로 올릴 수도 있다.
+- 연결한 폴더를 옮기거나 지우면 `profile list`에 끊긴 링크로 나온다. 옮긴 곳에서 `profile link`를 다시 실행하면 이어지고, `profile remove`는 포인터만 지운다.
+- `instructions`로 쓸 수 있는 경로와 옛 버전의 동작은 [파일 형식](../reference/file-formats.md#profilejson)에, 명령의 옵션은 [CLI Reference](../reference/cli.md#profile-link)에 있다.
 
 ## 적용 담당: 저장소에 적용하기
 
@@ -297,7 +314,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 3f8a91cee6f1fd80b2a0be0638c892e610ebc19ff634937b100fe514407e0747 -->
+<!-- agctx-doc-sources-sha256: 205973fe8a37cdb456d17ccdda8d3690ac4454cbbc7010f5fdaf8a7decbfea32 -->
 
 ```mermaid
 sequenceDiagram
@@ -373,7 +390,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5cda8f63a45973855f258e8a49d8115496e160455925e305f2721f90c59106f3 -->
+<!-- agctx-doc-sources-sha256: cdd00a6c949f452cdb1e90d25e2f94d7f337f85df4546322965ac55dee42f222 -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

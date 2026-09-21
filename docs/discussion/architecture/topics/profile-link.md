@@ -1,7 +1,7 @@
 # 기존 저장소 폴더를 프로필로 연결하기
 
 <!-- agctx:generated:status:start -->
-**상태:** Proposed
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -29,8 +29,8 @@
 | 선행 제안 | [프로필 모델과 저장소](profile-model.md), [Git 기반 프로필 관리](git-profile-management.md), [기존 Git 저장소를 프로필 원천으로 쓰기](existing-repository-source.md) |
 | 후속 제안 | 없음 |
 | 연관 제안 | [기존 저장소에서 프로필 만들기](profile-import.md)는 저장소 파일에서 고른 절을 복사해 새 프로필을 만든다. 이 주제는 복사하지 않고 폴더 자체를 프로필로 쓴다. |
-| 후속 작업 | ADR 0037, CLI 레퍼런스·파일 형식·프로필 개념·팀 공유 가이드·문제 해결 문서 |
-| 권장 다음 작업 | [구현 순서](#구현-순서)대로 실패하는 평가부터 작성해 구현한다. |
+| 후속 작업 | 없음. 결정은 [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md)에, 사용 절차는 [기존 저장소를 프로필로 쓰기](../../../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)에, 명령과 파일 형식은 [CLI Reference](../../../reference/cli.md#profile-link)와 [파일 형식](../../../reference/file-formats.md#linkjson)에 옮겼다. |
+| 권장 다음 작업 | 없음. 이 주제의 계약은 [구현 기록](#구현-기록)대로 모두 구현했다. |
 
 ## 목차
 
@@ -41,6 +41,7 @@
 - [비범위](#비범위)
 - [평가 계획](#평가-계획)
 - [구현 순서](#구현-순서)
+- [구현 기록](#구현-기록)
 
 ## 현재 동작
 
@@ -177,3 +178,17 @@ Git 저장소가 아닌 폴더도 연결한다. 그 프로필은 지금의 로�
 4. 명령 등록부·처리기·TUI(첫 화면과 프로필 목록 메뉴), 한국어·영어 메시지, 작성자용 스킬의 상황 설명.
 5. `pull`·`push`·`connect`가 링크 프로필에서 멈추게 하고, `status`와 목록이 링크를 표시하게 한다.
 6. ADR 0037과 사용자 문서를 고치고, 이 문서에 구현 기록을 남긴다.
+
+## 구현 기록
+
+#### 구현 기록: profile link와 포인터 프로필
+
+* **결정:** [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md). [결정](#결정)의 네 항목대로 구현했다.
+* **구현:** `src/profile/link.ts`의 `planLink`·`writeLink`·`instructionCandidates`가 연결을 계획하고 쓴다. `src/profile/store.ts`의 `profileLink`가 포인터를 읽고, `readProfile`이 연결한 폴더로 따라가며, `getProfiles`·`getBrokenLinks`가 목록을 만들고, `removeProfile`이 보관함 폴더만 지우고, `assertNotLinked`가 `src/profile/git-profile.ts`의 `pullProfile`·`planPush`·`connectProfile`을 막는다. `src/check.ts`의 `checkProject`는 연결한 폴더를 보고 끊긴 링크를 경고한다. 명령 등록부, 처리기, TUI(`src/tui/profile.ts`의 `linkProfileTui`, 첫 화면과 프로필 목록 메뉴), 한국어·영어 메시지, 작성자용 스킬의 상황 설명을 더했다.
+* **평가:** `evals/profile-link.test.ts` 11개가 통과한다. 10번(같은 이름의 사본 프로필 거부)은 명령이 없던 구현 전에도 64로 통과했으므로, 검사를 하나씩 빼는 변이 10개로 확인했다. 삭제 범위, `pull`·`push`·`connect` 막기, 사본 프로필 거부, 후보가 여럿일 때 멈추기, `profile.json`과 옵션 불일치, 끊긴 링크 목록·경로 안내·`check` 경고, `--dry-run`, 루트 `AGENTS.md` 우선은 빼면 해당 평가가 실패했다. `evals/interface-parity.test.ts`의 명령 전체 목록에 `profile.link`를 더했고, `evals/tui-commands.test.ts`에 TUI 답이 `--name`·`--scope`·`--instructions`와 같아지는 평가를 더했다.
+* **계획과 달라진 점:**
+  - `check`는 끊긴 링크에서 멈추지 않는다. 제안은 "다른 명령은 경로를 알리며 멈춘다"였지만, `check`는 CI에서도 쓰는 읽기 전용 명령이라 보관함에 프로필이 없는 것으로 보고 기록한 해시로 판정하며, 끊긴 경로를 경고로 알린다.
+  - `profile list --json`은 끊긴 링크를 `profiles`에 섞지 않고 `brokenLinks`로 따로 낸다. 끊긴 링크에는 용도를 읽을 `profile.json`이 없기 때문이다.
+  - 형식이 틀린 `link.json`도 `profile remove`로 지울 수 있게 했다. 포인터를 읽기 전에 파일이 있는지만 보고 지운다.
+* **제약:** 폴더를 옮기면 사용자가 다시 `link`해야 한다. 연결한 폴더에서 다른 브랜치를 체크아웃하면 그 브랜치의 규칙이 적용된다.
+* **다음 단계:** 없음.

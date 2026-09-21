@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: cb79ad69f7393f89b132a00b7bcc873b518ddd7d107c9fffeeac6440c78d894e -->
+<!-- agctx-doc-sources-sha256: f3b35752d96fe280f255d0fc4b5c249e8c0e83177ef992341b4317f776c44e46 -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -25,6 +25,9 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`is not a Git repository yet`**: 로컬 프로필을 원격에 연결하려 했다. `Next:` 줄의 `git init`·`add`·`commit`을 실행한 뒤 다시 `profile connect`한다.
 - **`is not a profile repository: profile.json is missing at its root`**(종료 코드 64): 규칙은 있지만 프로필 메타데이터가 없는 저장소를 `profile clone`했다. 그 저장소 루트에 `profile.json`을 더해 올린다. 규칙 파일이 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **`"instructions" in profile.json (…) must be a relative path to a .md file`·`the rules file profile.json names (…) is missing`**(종료 코드 64): `instructions` 값이 규칙에 맞지 않거나, 가리킨 파일이 없거나 심볼릭 링크다. 허용하는 경로는 [파일 형식](file-formats.md#profilejson)에 있다.
+- **`is linked to a folder that is missing`**(종료 코드 64): `profile link`로 연결한 폴더를 옮기거나 지웠다. 옮겼다면 옮긴 곳에서 `agctx profile link <새 경로>`를 실행해 다시 잇고, 필요 없으면 `agctx profile remove <name> --yes`로 링크를 지운다. `profile list`의 끊긴 링크 목록에서 원래 경로를 볼 수 있다.
+- **`is linked to …, so agctx does not pull, push, or change Git settings there`**(종료 코드 64): 연결한 프로필에서 `profile pull`·`push`·`connect`를 실행했다. 그 폴더에서 `git pull`·`git push`로 한다.
+- **`has several AGENTS.md files, so none was chosen`**(종료 코드 64): `profile link`가 규칙 파일 후보를 여럿 찾았다. 출력된 후보 가운데 하나를 `--instructions <경로>`로 고른다.
 - **`has uncommitted changes, so a project cannot be pinned to a commit`**(종료 코드 64): 프로필의 규칙 파일(`AGENTS.md`나 `instructions`가 가리킨 파일)이나 `profile.json`에 커밋하지 않은 수정이 있어 고정할 커밋을 정할 수 없다. `Next:` 줄에 적힌 프로필 폴더에서 수정을 커밋하거나 되돌린 뒤 다시 적용한다. TUI에서 고정 질문에 **Yes**를 골랐을 때도 같은 오류가 나고 파일은 바뀌지 않는다.
 - **`is not a Git repository, so a project cannot be pinned to it`**(종료 코드 64): Git 저장소가 아닌 로컬 프로필은 고정할 수 없다. 프로필 폴더에서 `git init`과 첫 커밋을 만든 뒤 다시 `--pin`으로 적용한다. 팀과 나눠 쓸 프로필이면 `Next:` 줄의 `profile connect`로 원격에도 연결한다([팀과 Git으로 공유하기](../guides/team-sharing.md)).
 - **`does not have the pinned commit`**(종료 코드 69): 저장소가 고정한 커밋이 이 컴퓨터의 프로필 보관함에 없다. 다른 사람이 더 새 커밋으로 고정해 올린 저장소를 받았는데 아직 `profile pull`을 하지 않았을 때 생긴다. `agctx profile pull <name>`으로 받은 뒤 다시 실행한다.

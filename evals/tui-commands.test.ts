@@ -51,6 +51,14 @@ test('TUI answers for a Git branch become the same arguments as --branch', () =>
   assert.deepEqual(parsedFrom('profile.connect', ['team-backend', 'git@example.com:acme/rules.git'], { branch: 'main' }), { positional: ['team-backend', 'git@example.com:acme/rules.git'], options: { branch: 'main' } });
 });
 
+test('TUI answers for linking a folder become the same arguments as the CLI options', () => {
+  assert.deepEqual(
+    parsedFrom('profile.link', ['/work/team-rules'], { name: 'team-rules', scope: 'team', instructions: 'templates/AGENTS.md' }),
+    { positional: ['/work/team-rules'], options: { name: 'team-rules', scope: 'team', instructions: 'templates/AGENTS.md' } }
+  );
+  assert.deepEqual(parsedFrom('profile.link', ['/work/team-rules'], { name: null, scope: null, instructions: null }), { positional: ['/work/team-rules'], options: {} });
+});
+
 test('the TUI Git status answer becomes the same arguments as --refresh', () => {
   assert.deepEqual(parsedFrom('profile.status', ['team-backend'], { refresh: true }), { positional: ['team-backend'], options: { refresh: true } });
   assert.deepEqual(parsedFrom('profile.status', ['team-backend'], { refresh: false }), { positional: ['team-backend'], options: {} });

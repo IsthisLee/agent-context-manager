@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 52f7a4e93b92678ad3dc0e5491dbb88c446073521e90ca06f0215de14d08f28a -->
+<!-- agctx-doc-sources-sha256: 85294d198e630b19de816fb88fe2e529df3686bca33ff2deba7cce03e2f7f623 -->
 
 ```mermaid
 flowchart LR
@@ -41,9 +41,9 @@ flowchart LR
 
 프로필 저장소의 규칙 파일(기본 `AGENTS.md`, 또는 `profile.json`의 `instructions`가 가리킨 파일)이 공통 지침의 정본이고 CLI는 이를 대상 프로젝트의 `AGENTS.md`와 포인터 파일로 적용한다. 팀은 프로필 폴더를 Git 원격으로 주고받고, CI는 프로필 보관함 없이 `agctx check`로 저장소가 기록한 버전과 맞는지 확인한다. 에이전트는 프로젝트 파일만 읽는다. agctx는 에이전트 세션 기록을 읽기만 하고, 사용자가 `verify --probe`로 요청할 때만 임시 사본에서 에이전트 CLI를 한 번 실행한다.
 
-- **프로필 관리:** CLI는 옵션 기반 또는 TUI 방식으로 프로필을 생성·목록화·조회·설정·삭제한다. 프로필에는 `personal`, `company`, `team`, `workspace` scope가 있으며 `profile list --scope <scope>`로 필터링할 수 있다.
+- **프로필 관리:** CLI는 옵션 기반 또는 TUI 방식으로 프로필을 생성·목록화·조회·설정·삭제한다. `profile link`는 이미 있는 규칙 저장소 폴더를 보관함에 포인터(`link.json`)로 잇고, 그 프로필은 연결한 폴더를 직접 읽는다. 연결한 프로필에서 `pull`·`push`·`connect`는 막고, 삭제는 포인터만 지운다([ADR 0037](../adr/0037-link-existing-folder-as-profile.md)). 프로필에는 `personal`, `company`, `team`, `workspace` scope가 있으며 `profile list --scope <scope>`로 필터링할 수 있다.
 - **명령 계약:** 모든 명령은 `src/commands/registry.ts`의 등록부에 있고, 도움말·옵션 검사·프로필 관리 메뉴가 이 목록을 읽는다. 결과는 종료 코드(뒤처짐 1, 충돌 2, 숨은 문자 3, 사용법 오류 64, 외부 도구 69, 그 밖 70)와 `--json` 결과 문서로 알린다. 파일을 바꾸거나 원격으로 보내는 명령은 터미널이 아니면 `--yes`가 있어야 진행한다. 결정은 [ADR 0016](../adr/0016-command-contract.md)이다.
-- **TUI 경로:** TUI의 `profile list`는 scope를 먼저 선택한 뒤 프로필을 고르고 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제와 Git 상태·받기·올리기·연결 메뉴를 제공한다. 프로젝트 적용은 Git 프로필이면 커밋에 고정할지 묻고, 이미 고정한 프로젝트는 고정 유지를 기본으로 둔다. 같은 목록에서 새 프로필을 만들거나 Git에서 프로필을 가져올 수 있다. `profile setup`만 실행하면 `scope · 이름` 형식의 목록에서 프로필을 고른다. 모든 명령은 CLI와 TUI를 모두 제공하고, 특정 프로필을 다루는 기능은 프로필 관리 메뉴도 제공한다([ADR 0025](../adr/0025-every-command-in-cli-and-tui.md)). 저장소를 다루는 `check`·`explain`·`verify`·`repos`는 첫 화면의 프로젝트 점검과 여러 저장소 메뉴에서 실행한다. 옵션을 질문으로 받는 TUI 흐름은 답을 CLI 토큰으로 바꿔 CLI와 같은 옵션 검사와 처리기로 실행한다(`src/tui/commands.ts`).
+- **TUI 경로:** TUI의 `profile list`는 scope를 먼저 선택한 뒤 프로필을 고르고 설정·프로젝트 적용·동기화·충돌 해결·상세 보기·삭제와 Git 상태·받기·올리기·연결 메뉴를 제공한다. 프로젝트 적용은 Git 프로필이면 커밋에 고정할지 묻고, 이미 고정한 프로젝트는 고정 유지를 기본으로 둔다. 같은 목록에서 새 프로필을 만들거나, Git에서 프로필을 가져오거나, 이미 있는 폴더를 프로필로 연결할 수 있다. `profile setup`만 실행하면 `scope · 이름` 형식의 목록에서 프로필을 고른다. 모든 명령은 CLI와 TUI를 모두 제공하고, 특정 프로필을 다루는 기능은 프로필 관리 메뉴도 제공한다([ADR 0025](../adr/0025-every-command-in-cli-and-tui.md)). 저장소를 다루는 `check`·`explain`·`verify`·`repos`는 첫 화면의 프로젝트 점검과 여러 저장소 메뉴에서 실행한다. 옵션을 질문으로 받는 TUI 흐름은 답을 CLI 토큰으로 바꿔 CLI와 같은 옵션 검사와 처리기로 실행한다(`src/tui/commands.ts`).
 - **적용과 보존:** 적용 시 프로젝트 `AGENTS.md`의 확장 섹션과 에이전트별 산출물의 사용자 영역을 보존하고 `AGENTS.md`의 프로필 소유 영역과 에이전트별 산출물의 agctx 관리 블록만 `apply/sync` 때 갱신한다. `AGENTS.md`의 경계는 `<!-- agctx:managed:end -->`이고, 마커가 없는 기존 파일은 확장 섹션 제목으로 찾으며 두 로케일을 모두 인식한다([ADR 0034](../adr/0034-managed-end-marker-in-agents-md.md)). 확장 섹션이 없는 기존 `AGENTS.md`는 `## Existing project guidance` 아래로 옮겨 보존하고 관리 마커가 없는 기존 에이전트별 파일은 기존 내용을 보존한 채 관리 블록을 추가한다. 템플릿이 frontmatter로 시작하는 Antigravity 규칙 파일은 frontmatter를 관리 블록 밖 파일 맨 앞에 두고, 파일 맨 앞에 이미 있는 frontmatter는 보존한다([ADR 0009](../adr/0009-agent-rule-frontmatter.md)). 모노레포에서는 하위 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만들고, 사람이 둔 `CLAUDE.md`는 쓰지 않는다. Microsoft APM 기본 모드가 만든 `AGENTS.md`·`CLAUDE.md`에는 쓰지 않고 멈추며, 확장 영역에 둔 APM `managed_section` 블록은 사용자 내용으로 보존한다([ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)).
 - **수동 변경 감지와 충돌 해결:** 두 관리 영역의 hash를 `agctx.project.json`에, 관리 영역 원문을 `.agctx/base/`에 기록한다. 기록된 영역이 바뀌면 `apply`와 `sync`는 파일을 쓰기 전에 종료 코드 2로 중단하고, `--dry-run`은 충돌 파일과 diff를 보여 준 뒤 같은 코드로 끝난다. `profile resolve`는 마지막 적용본을 기준으로 관리 영역 안의 편집을 밖으로 옮기고 관리 영역을 새로 만든다. 마지막 적용본을 알 수 없으면 멈추고, `--discard`를 주면 `.agctx/backups/`에 백업한 뒤 새로 만든다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이다.
 - **삭제와 재동기화:** 프로필 삭제는 해당 프로필 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. `profile sync`는 `agctx.project.json`에 기록된 프로필을 사용한다.

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 9557febf3e750fd669a87e5afe3884666f04532a90dd68da2310f5f0d90d1626 -->
+<!-- agctx-doc-sources-sha256: ac5c693bc21025c4fe7a7ef8ffc48ea290a9e6a1f002c5c60ea0189bf4ea3687 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -126,11 +126,11 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 8a0dc7540cc2c280aecbae0d925ddda81c32c02b25a2f18f255819ffbeb5efea -->
+<!-- agctx-doc-sources-sha256: 297aab15fb4b2e5b67c81b26b0d0343a777fb0a36f0e9ed76a96ec613b33062d -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
-- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다. 이미 쓰던 규칙 저장소도 루트에 `profile.json` 하나만 더하면 받을 수 있습니다([기존 저장소를 프로필로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
+- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다. 이미 쓰던 규칙 저장소는 그 폴더에서 `profile link`로 커밋 없이 바로 연결하고, 팀과는 그때 생긴 `profile.json`을 커밋해 나눕니다([기존 저장소를 프로필로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
 - **여러 저장소** — `repos list`·`status`·`sync`·`pr`로 프로필을 적용한 저장소를 한 번에 다루고, 고정한 저장소는 PR로 갱신합니다. 예약 봇은 `repos pr --targets <file> --yes`로 실행합니다.
 - **전달 확인** — `explain`은 그 폴더에서 시작한 에이전트가 읽는 지침 파일과 그 이유를 보여 줍니다. 확인한 에이전트 가운데 하나라도 받지 못하는 파일이 있으면 종료 코드 4로 끝납니다. `verify`는 세션 기록으로 실제로 들어갔는지 확인하고, `--probe`는 승인 뒤 임시 사본에서 에이전트를 한 번씩 실행합니다.
@@ -181,9 +181,9 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태는 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에 있습니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
 <!-- agctx:generated:discussion-status:start -->
-- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기존 Git 저장소를 프로필 원천으로 쓰기
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기존 Git 저장소를 프로필 원천으로 쓰기, 기존 저장소 폴더를 프로필로 연결하기
 - **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 기본 지침의 근거 기준과 분량 예산
-- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기, 기존 저장소 폴더를 프로필로 연결하기. 아직 현재 동작이 아니므로 보장하지 않습니다.
+- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
 <!-- agctx:generated:discussion-status:end -->
 
 ## 문서

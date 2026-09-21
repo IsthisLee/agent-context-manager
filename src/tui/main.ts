@@ -4,7 +4,7 @@ import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
 import { helpTui } from './commands.ts';
-import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
+import { cloneProfileTui, createProfileTui, linkProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
 
 /**
@@ -17,6 +17,7 @@ export const MAIN_MENU_ENTRIES: readonly { value: string; label: string; hint?: 
   { value: 'repos', label: 'main.repos.label', hint: 'main.repos.hint' },
   { value: 'create', label: 'main.create.label', hint: 'main.create.hint' },
   { value: 'clone', label: 'main.clone.label', hint: 'main.clone.hint' },
+  { value: 'link', label: 'main.link.label', hint: 'main.link.hint' },
   { value: 'setup', label: 'main.setup.label', hint: 'main.setup.hint' },
   { value: 'lang', label: 'main.lang.label', hint: 'main.lang.hint' },
   { value: 'help', label: 'main.help.label', hint: 'main.help.hint' },
@@ -30,6 +31,7 @@ export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
   repos: () => runTuiStep(() => reposTui()),
   create: () => runTuiStep(() => createProfileTui()),
   clone: () => runTuiStep(() => cloneProfileTui()),
+  link: () => runTuiStep(() => linkProfileTui()),
   setup: () => runTuiStep(() => setupProfileTui()),
   lang: () => changeLocaleTui(),
   help: () => helpTui()

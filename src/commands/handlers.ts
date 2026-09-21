@@ -6,16 +6,17 @@ import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
 import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, pushProfile } from '../profile/git-profile.ts';
+import { planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getProfiles, removeProfile, viewProfile } from '../profile/store.ts';
+import { createProfile, getBrokenLinks, getProfiles, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
 import { reposStatus } from '../repos/status.ts';
 import { applyReposSync, planReposSync, type SyncItem } from '../repos/sync.ts';
 import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
-import { saveLocale } from '../shared/home.ts';
+import { PROFILE_METADATA_FILE, profileHome, saveLocale } from '../shared/home.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
 import { canPrompt, confirmChange, type ParsedArguments } from './options.ts';
 import { isJsonMode, say, warn, type CommandOutcome } from './output.ts';
@@ -107,7 +108,7 @@ export const HANDLERS: Record<string, Handler> = {
   'profile.list': async parsed => {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
     await listProfiles(scope);
-    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope) });
+    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope), brokenLinks: getBrokenLinks() });
   },
   'profile.view': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile view <name>');
@@ -158,11 +159,30 @@ export const HANDLERS: Record<string, Handler> = {
     say(_('clone.next', { name: state.name }));
     return ok(state);
   },
+  'profile.link': async parsed => {
+    const plan = planLink(projectDir(parsed.positional[0]), { name: text(parsed, 'name'), scope: text(parsed, 'scope'), instructions: text(parsed, 'instructions') });
+    printLinkPlan(plan);
+    const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, relinkedFrom: plan.relinkFrom, written: false };
+    if (!plan.changes) {
+      say(_('link.unchanged', { name: plan.name, path: plan.dir }));
+      return ok(data);
+    }
+    if (flag(parsed, 'dry-run')) return ok(data);
+    if (!(await confirmChange(parsed, _('confirm.link', { name: plan.name, path: plan.dir }), retryWithYes('profile link', parsed)))) {
+      say(_('confirm.declined'));
+      return ok(data);
+    }
+    writeLink(plan);
+    say(_('link.done', { name: plan.name, path: plan.dir }));
+    say(_('link.next', { name: plan.name }));
+    return ok({ ...data, written: true });
+  },
   'profile.status': async parsed => {
     const names = parsed.positional[0] ? [parsed.positional[0]] : getProfiles().map(profile => profile.name);
     const profiles = names.map(name => profileGitState(name, { refresh: flag(parsed, 'refresh') }));
     for (const state of profiles) {
       say(describeState(state));
+      if (state.link) say(_('status.link', { path: state.link }));
       if (state.behind) say(_('status.next.pull', { name: state.name }));
       if (state.ahead) say(_('status.next.push', { name: state.name }));
     }
@@ -347,6 +367,16 @@ export const HANDLERS: Record<string, Handler> = {
   },
   help: async () => ok()
 };
+
+function printLinkPlan(plan: LinkPlan): void {
+  say(_('link.plan.title'));
+  say(plan.metadata
+    ? `  create    ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`
+    : `  keep      ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
+  const pointer = path.join(profileHome(), plan.name);
+  if (plan.link === 'relink') say(`  relink    ${pointer} -> ${plan.dir}  ${_('link.plan.from', { path: plan.relinkFrom ?? '' })}`);
+  else say(`  ${plan.link === 'create' ? 'link     ' : 'unchanged'} ${pointer} -> ${plan.dir}`);
+}
 
 function describeState(state: ReturnType<typeof profileGitState>): string {
   if (!state.connected) return _('status.local', { name: state.name });

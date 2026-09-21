@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 29568880cfc4cc62c53e7b2047d90d6c41179b77e049456a67b7453eeb0368fb -->
+<!-- agctx-doc-sources-sha256: 5e0beba01ca9e58077217e0b9fb9d6771a8bbbb0762da88269589e80edd60cbd -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -128,7 +128,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
-- **Share through Git** — `profile clone`, `status`, `pull`, `push`, `connect`. They use a standard Git remote, never touch project files, and stop when incoming Profile content carries hidden characters.
+- **Share through Git** — `profile clone`, `status`, `pull`, `push`, `connect`. They use a standard Git remote, never touch project files, and stop when incoming Profile content carries hidden characters. An existing rules repository works too once you add a `profile.json` at its root ([use an existing repository as a Profile](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **Check a repository** — `check` changes no files and reports through exit codes whether anything was edited inside the profile-owned area, whether hidden characters exist, and whether the project is behind its recorded Profile version. `--refresh` also compares with the latest commit on the remote.
 - **Many repositories** — `repos list`, `status`, `sync`, `pr` handle every repository that uses a Profile at once, and pinned repositories are updated through one pull request each. A scheduled bot runs `repos pr --targets <file> --yes`.
 - **Confirm delivery** — `explain` shows which instruction files an agent reads when started in a folder, and why, and exits with 4 when any checked agent misses one. `verify` confirms from session logs that they actually arrived, and `--probe` runs each agent once in a scratch copy after approval.

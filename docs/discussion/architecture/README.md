@@ -25,6 +25,7 @@
 | 12 | [기본 지침의 근거 기준과 분량 예산](topics/guidance-evidence-and-budget.md) | High | 2·7 | 근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴 | Implementing |
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
+| 15 | [기존 Git 저장소를 프로필 원천으로 쓰기](topics/existing-repository-source.md) | High | 1·11 | 규칙 파일을 옮기지 않고 `profile.json` 하나만 더해 기존 규칙 저장소를 `profile clone`으로 받고 `pull`로 따라감 | Proposed |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 <!-- agctx:generated:topics:end -->
 
@@ -62,13 +63,15 @@ flowchart LR
   S1 --> S14["14 기존 저장소에서 프로필"]
   S3 --> S14
   S5 --> S14
+  S1 --> S15["15 기존 Git 저장소를 원천으로"]
+  S11 --> S15
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
   %% agctx:generated:stage-classes:start
   class S1,S2,S3,S4,S7,S8,S11 done
   class S5,S6,S12 doing
-  class S9,S10,S13,S14 todo
+  class S9,S10,S13,S14,S15 todo
   %% agctx:generated:stage-classes:end
 ```
 

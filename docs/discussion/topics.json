@@ -179,6 +179,19 @@
       "status": "Proposed"
     },
     {
+      "stage": 15,
+      "file": "existing-repository-source.md",
+      "title": "기존 Git 저장소를 프로필 원천으로 쓰기",
+      "titleEn": "using an existing Git repository as a Profile source",
+      "importance": "High",
+      "prerequisites": [
+        1,
+        11
+      ],
+      "outcome": "규칙 파일을 옮기지 않고 `profile.json` 하나만 더해 기존 규칙 저장소를 `profile clone`으로 받고 `pull`로 따라감",
+      "status": "Proposed"
+    },
+    {
       "file": "implementation-contracts.md",
       "title": "구현 계약 및 문서 규칙",
       "outcome": "단계별 구현·검증·문서 정합성 규칙",

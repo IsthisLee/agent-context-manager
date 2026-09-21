@@ -70,7 +70,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.equal(statusOf(claude, 'CLAUDE.md'), 'read');
   assert.equal(statusOf(claude, 'AGENTS.md'), 'conditional', 'the root CLAUDE.md imports AGENTS.md from outside the start folder, which Claude Code loads only after approval');
   assert.ok(claude.findings.some(finding => finding.kind === 'warning' && finding.file === 'AGENTS.md' && /approv/.test(finding.message)));
-  assert.equal(statusOf(claude, 'services/payments/AGENTS.md'), 'not-read', 'Claude Code does not read AGENTS.md without a CLAUDE.md that imports it');
+  assert.equal(statusOf(claude, 'services/payments/AGENTS.md'), 'shadowed', 'a CLAUDE.md above the start folder makes Claude Code read CLAUDE.md files instead of AGENTS.md');
   assert.ok(claude.findings.some(finding => finding.kind === 'missing' && finding.file === 'services/payments/AGENTS.md'));
 
   const antigravity = agentOf(document, 'antigravity');
@@ -87,7 +87,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.match(human.stdout, /Codex · started in services\/payments/);
   assert.match(human.stdout, /Claude Code/);
   assert.match(human.stdout, /Antigravity/);
-  assert.match(human.stdout, /not-read\s+services\/payments\/AGENTS\.md/);
+  assert.match(human.stdout, /shadowed\s+services\/payments\/AGENTS\.md/);
   assert.match(human.stdout, /\.cursorrules/);
 });
 
@@ -162,3 +162,79 @@ test('explain warns when the same rules reach an agent through two files', t => 
   }
 });
 
+
+/**
+ * A repository that keeps its rules in AGENTS.md alone, the layout Claude Code reads
+ * directly. User-level folders point into the workspace so the machine's own files never leak in.
+ */
+function agentsOnlyRepo(t: TestContext) {
+  const { person, folder } = makeWorkspace(t, 'agctx-explain-agents-');
+  const me = person('me');
+  const userHome = folder('user-home');
+  const configDir = path.join(userHome, '.claude');
+  fs.mkdirSync(configDir, { recursive: true });
+  const env = { HOME: userHome, USERPROFILE: userHome, CODEX_HOME: path.join(userHome, '.codex'), CLAUDE_CONFIG_DIR: configDir };
+  const repo = folder('solo');
+  gitIn(repo, 'init', '--quiet', '--initial-branch=main');
+  fs.writeFileSync(path.join(repo, 'AGENTS.md'), '# Rules\n\n- Every API handler validates its input before touching the database.\n');
+  const claude = (args: string[]) => agentOf(parse(me.run(['explain', ...args, '--agent', 'claude', '--json'], env).stdout), 'claude');
+  const run = (args: string[]) => me.run(['explain', ...args, '--agent', 'claude', '--json'], env);
+  const setInstructionFiles = (value: string) =>
+    fs.writeFileSync(path.join(configDir, 'settings.json'), JSON.stringify({ pluginConfigs: { 'agents-md@builtin': { options: { instructionFiles: value } } } }));
+  return { repo, run, claude, setInstructionFiles };
+}
+
+test('explain reads AGENTS.md directly when no CLAUDE.md in the start folder or above it hides it', t => {
+  const { repo, run } = agentsOnlyRepo(t);
+  fs.mkdirSync(path.join(repo, '.claude'), { recursive: true });
+  fs.writeFileSync(path.join(repo, '.claude', 'AGENTS.md'), '- Claude reads this one at launch too.\n');
+
+  const result = run([repo]);
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const claude = agentOf(parse(result.stdout), 'claude');
+  assert.equal(statusOf(claude, 'AGENTS.md'), 'read', 'Claude Code v2.1.277 and later read AGENTS.md when no CLAUDE.md hides it');
+  assert.equal(statusOf(claude, '.claude/AGENTS.md'), 'read', 'a .claude/AGENTS.md above the start folder is read at session start as well');
+  assert.deepEqual(claude.findings.filter(finding => finding.kind === 'missing'), []);
+  assert.ok(
+    claude.findings.some(finding => finding.kind === 'warning' && finding.file === null && /2\.1\.277/.test(finding.message)),
+    `direct reading is not available in every session, and explain cannot tell: ${JSON.stringify(claude.findings)}`
+  );
+});
+
+test('explain reports AGENTS.md as shadowed when a CLAUDE.local.md sits in the start folder or above it', t => {
+  const { repo, run } = agentsOnlyRepo(t);
+  fs.writeFileSync(path.join(repo, 'CLAUDE.local.md'), '- My own uncommitted note about this repository.\n');
+
+  const result = run([repo]);
+  assert.equal(result.status, 0, 'a personal CLAUDE.local.md is a warning, not a repository defect');
+  const claude = agentOf(parse(result.stdout), 'claude');
+  assert.equal(statusOf(claude, 'AGENTS.md'), 'shadowed');
+  assert.ok(
+    claude.findings.some(finding => finding.kind === 'warning' && finding.file === 'AGENTS.md' && /CLAUDE\.local\.md/.test(finding.message)),
+    JSON.stringify(claude.findings)
+  );
+  assert.ok(!claude.findings.some(finding => finding.file === null && /2\.1\.277/.test(finding.message)), 'nothing relies on direct reading here');
+});
+
+test('explain follows the user setting that decides which instruction files Claude Code loads', t => {
+  const { repo, run, claude, setInstructionFiles } = agentsOnlyRepo(t);
+  fs.writeFileSync(path.join(repo, 'CLAUDE.md'), '- A rule only Claude Code needs, and it is long enough to count.\n');
+
+  const shadowed = claude([repo]);
+  assert.equal(statusOf(shadowed, 'AGENTS.md'), 'shadowed', 'by default a CLAUDE.md next to AGENTS.md is read instead');
+
+  setInstructionFiles('claude-md-and-agents-md');
+  const both = run([repo]);
+  assert.equal(both.status, 0, both.stdout + both.stderr);
+  const together = agentOf(parse(both.stdout), 'claude');
+  assert.equal(statusOf(together, 'CLAUDE.md'), 'read');
+  assert.equal(statusOf(together, 'AGENTS.md'), 'read');
+  assert.deepEqual(together.findings.filter(finding => finding.kind === 'missing'), []);
+
+  setInstructionFiles('claude-md');
+  const only = run([repo]);
+  assert.equal(only.status, 4, 'with claude-md the AGENTS.md never reaches Claude Code');
+  const claudeMd = agentOf(parse(only.stdout), 'claude');
+  assert.equal(statusOf(claudeMd, 'AGENTS.md'), 'not-read');
+  assert.ok(claudeMd.findings.some(finding => finding.kind === 'missing' && finding.file === 'AGENTS.md'), JSON.stringify(claudeMd.findings));
+});

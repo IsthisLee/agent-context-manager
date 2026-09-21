@@ -14,7 +14,7 @@ agctx가 확인하는 것은 세 층이다. 층마다 증거가 다르므로 필
 ## 실제로 들어갔는지 확인하기
 
 <!-- agctx-doc-sources: src/verify, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: a6ba3e54dc0855f49f02656009e058dfaf2a34298317113404f85d86bd0c2134 -->
+<!-- agctx-doc-sources-sha256: 0d1068ff76a35c53b3ed4410ad9bc3179b319b9bce94b8bf9b89c8faf4e58f6f -->
 
 그 폴더에서 Codex나 Claude Code를 한 번 쓴 뒤 `verify`를 실행하면, 에이전트가 이 컴퓨터에 남긴 세션 기록에서 기대한 파일이 들어갔는지 본다. 아래 출력은 실제 결과에서 경로만 바꿨다.
 

@@ -83,7 +83,7 @@ Dry-run: no files were changed.
 ## 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 75d0bf0b407a85e0dac813b95e20a9e5d37511741da99918fb229ca533905777 -->
+<!-- agctx-doc-sources-sha256: 4e9afc66308de5821c616bb97e2efd00fb3eed4ddc402cc2e3f5cc60930b2570 -->
 
 에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 
@@ -95,7 +95,7 @@ Claude Code · started in packages/web
   read         CLAUDE.md  start folder or a folder above it, read at launch
   read         packages/web/CLAUDE.md  start folder or a folder above it, read at launch
   conditional  AGENTS.md  imported by CLAUDE.md from outside the start folder; read only after external imports are approved
-  not-read     packages/web/AGENTS.md  Claude Code reads CLAUDE.md, not AGENTS.md, and no CLAUDE.md imports this file
+  shadowed     packages/web/AGENTS.md  packages/web/CLAUDE.md is read instead, so this file is not
   warning      CLAUDE.md imports AGENTS.md from outside the start folder. Claude Code reads it only after someone approves external imports for this project once in an interactive session; starting at the project root needs no approval.
   missing      Claude Code never reads packages/web/AGENTS.md because packages/web/CLAUDE.md does not import it. Add @AGENTS.md to packages/web/CLAUDE.md.
 $ echo $?

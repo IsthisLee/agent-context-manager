@@ -326,7 +326,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 75d0bf0b407a85e0dac813b95e20a9e5d37511741da99918fb229ca533905777 -->
+<!-- agctx-doc-sources-sha256: 4e9afc66308de5821c616bb97e2efd00fb3eed4ddc402cc2e3f5cc60930b2570 -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

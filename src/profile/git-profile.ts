@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { _ } from '../i18n/index.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
+import { isSymbolicLink } from '../shared/fs-utils.ts';
 import { committedFile, git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
 import type { ProfileMetadata } from '../shared/types.ts';
@@ -57,7 +58,8 @@ export function profileGitState(name: string, options: { refresh?: boolean } = {
   const remote = remoteName || 'origin';
   const url = git(['remote', 'get-url', remote], { cwd: dir, allowFailure: true }).stdout.trim();
   state.remote = url ? sanitizeRemoteUrl(url) : null;
-  if (options.refresh && url) {
+  // A linked folder is the person's own checkout; fetching there is theirs to do, so status stays read-only.
+  if (options.refresh && url && !link) {
     git(['fetch', '--quiet', remote], { cwd: dir });
     state.refreshed = true;
   }
@@ -136,9 +138,6 @@ export function committedProfile(dir: string, rev: string, name: string): Commit
   return { metadataText, metadata, file, content: isInstructionsPath(file) ? committedFile(dir, rev, file) : null };
 }
 
-function isSymbolicLink(target: string): boolean {
-  try { return fs.lstatSync(target).isSymbolicLink(); } catch { return false; }
-}
 
 function requireConnected(state: ProfileGitState): void {
   if (!state.connected || !state.remote) {

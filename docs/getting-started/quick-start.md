@@ -54,7 +54,7 @@ agctx help
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 73fee05c7e52fab454e59ae54b57b17aaa29dd137c60611ca97ee03254708526 -->
+<!-- agctx-doc-sources-sha256: 31fdb21fed4b812884c241a47f7bb72110d45b6739fb455129bf593a4fda5a62 -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -70,7 +70,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 727c2d3ff52c45823de861addc185534be124c18c7545d41ad1536d7183fc1cc -->
+<!-- agctx-doc-sources-sha256: 822041ffeb63a1d39751335979f924d6dd78e3ef27fc9d4e64a28272aa9a5647 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 

@@ -6,13 +6,13 @@ import { runFromTui } from './commands.ts';
 import { canPrompt } from '../commands/options.ts';
 import { COMMANDS } from '../commands/registry.ts';
 import { _, getLocale, guidanceDescriptions, guidanceLabels, levelOptions, scopeOptions } from '../i18n/index.ts';
-import { isJsonMode, say } from '../commands/output.ts';
+import { isJsonMode, say, type CommandOutcome } from '../commands/output.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { GUIDANCE_KEYS, guidanceDefaults, setupProfile } from '../profile/setup.ts';
-import { createProfile, DEFAULT_INSTRUCTIONS, getBrokenLinks, getProfiles, isScope, profileLink, readProfile, regularFileInside, removeProfile, SCOPES, selectProfile } from '../profile/store.ts';
-import { instructionCandidates } from '../profile/link.ts';
+import { createProfile, getBrokenLinks, getProfiles, isInstructionsPath, isProfileName, isScope, profileLink, readProfile, regularFileInside, removeProfile, SCOPES, selectProfile, type BrokenLink } from '../profile/store.ts';
+import { ruleFileChoices } from '../profile/link.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
-import { CliError, usageError } from '../shared/errors.ts';
+import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
 import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
 
@@ -45,7 +45,7 @@ export async function createProfileTui(): Promise<void> {
     placeholder: 'company-main',
     validate(value) {
       const trimmed = (value ?? '').trim();
-      if (!trimmed || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(trimmed)) return _('create.name.invalid');
+      if (!trimmed || !isProfileName(trimmed)) return _('create.name.invalid');
     }
   });
   if (cancelled(name)) return cancel(_('create.cancel'));
@@ -73,10 +73,35 @@ export async function cloneProfileTui(): Promise<void> {
   outro(_('clone.outro'));
 }
 
+/** The select value that asks for a rules file path instead of a listed AGENTS.md. */
+export const OTHER_RULES_FILE = '__other__';
+
+/**
+ * The rules files the TUI offers for `dir`: every AGENTS.md that `profile link` finds, the one it would take by
+ * itself first and preselected, and then a path of the person's own, so any rules file can be chosen as with
+ * `--instructions`.
+ */
+export function linkRuleOptions(dir: string): { options: { value: string; label: string }[]; initial?: string } {
+  const { detected, candidates } = ruleFileChoices(dir);
+  const ordered = detected ? [detected, ...candidates.filter(file => file !== detected)] : candidates;
+  return {
+    options: [...ordered.map(file => ({ value: file, label: file })), { value: OTHER_RULES_FILE, label: _('link.rules.other') }],
+    ...(detected ? { initial: detected } : {})
+  };
+}
+
+/** How a TUI link ended, read from what the command returned: linked, nothing to change, declined, or failed. */
+export function linkOutro(outcome: CommandOutcome): 'done' | 'unchanged' | 'declined' | 'failed' {
+  if (outcome.exitCode !== EXIT.ok) return 'failed';
+  const data = (outcome.data ?? {}) as { written?: boolean; link?: string; metadata?: string };
+  if (data.written) return 'done';
+  return data.link === 'unchanged' && data.metadata === 'keep' ? 'unchanged' : 'declined';
+}
+
 /**
  * Ask for a rules repository folder and link it as a profile. The folder's own profile.json decides the name,
- * scope, and rules file when it has one; otherwise the person picks them, and the rules file only when several
- * AGENTS.md files make it ambiguous. The command itself shows the plan and asks before writing.
+ * scope, and rules file when it has one; otherwise the person picks them. The command shows the plan and asks
+ * before writing, and the TUI ends with what actually happened.
  */
 export async function linkProfileTui(): Promise<void> {
   if (!process.stdin.isTTY) throw usageError('tui.required', _('error.tui.required', { command: 'profile link' }), _('hint.tui.link'));
@@ -85,27 +110,79 @@ export async function linkProfileTui(): Promise<void> {
   if (!dir) return cancel(_('link.cancel'));
   const answers: Record<string, string | null> = { name: null, scope: null, instructions: null };
   if (!fs.existsSync(path.join(dir, PROFILE_METADATA_FILE))) {
-    const candidates = regularFileInside(dir, DEFAULT_INSTRUCTIONS) ? [] : instructionCandidates(dir);
-    if (candidates.length > 1) {
-      const chosen = await select<string>({ message: _('link.instructions.message'), options: candidates.map(file => ({ value: file, label: file })) });
-      if (cancelled(chosen)) return cancel(_('link.cancel'));
-      answers.instructions = chosen;
+    const rules = linkRuleOptions(dir);
+    let instructions: string | symbol = OTHER_RULES_FILE;
+    if (rules.options.length > 1) {
+      instructions = await select<string>({ message: _('link.rules.message'), options: rules.options, ...(rules.initial ? { initialValue: rules.initial } : {}) });
+      if (cancelled(instructions)) return cancel(_('link.cancel'));
+    }
+    if (instructions === OTHER_RULES_FILE) {
+      const typed = await text({
+        message: _('link.rules.path.message'),
+        placeholder: 'rules/AGENTS.md',
+        validate(value) {
+          const file = (value ?? '').trim();
+          if (!isInstructionsPath(file) || !regularFileInside(dir, file)) return _('link.rules.path.invalid');
+        }
+      });
+      if (cancelled(typed)) return cancel(_('link.cancel'));
+      instructions = typed.trim();
     }
     const name = await text({
       message: _('link.name.message'),
       initialValue: path.basename(dir),
       validate(value) {
-        if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test((value ?? '').trim())) return _('create.name.invalid');
+        if (!isProfileName((value ?? '').trim())) return _('create.name.invalid');
       }
     });
     if (cancelled(name)) return cancel(_('link.cancel'));
     const scope = await select({ message: _('create.scope.message'), options: scopeOptions(getLocale()) });
     if (cancelled(scope)) return cancel(_('link.cancel'));
+    answers.instructions = instructions as string;
     answers.name = name.trim();
     answers.scope = scope;
   }
-  await runFromTui('profile.link', [dir], answers);
-  outro(_('link.outro'));
+  const result = linkOutro(await runFromTui('profile.link', [dir], answers));
+  if (result === 'done') outro(_('link.outro'));
+  else if (result === 'unchanged') outro(_('link.outro.unchanged'));
+  else if (result === 'declined') cancel(_('link.cancel'));
+}
+
+function brokenLabel(link: BrokenLink): string {
+  return _('list.broken', { name: link.name, path: link.path, reason: _(`list.broken.${link.reason}`) });
+}
+
+/** Which menu a profile picked in the TUI list opens: its actions, or the two things a broken link allows. */
+export function menuFor(name: string): 'profile' | 'broken-link' {
+  return getBrokenLinks().some(link => link.name === name) ? 'broken-link' : 'profile';
+}
+
+/** A broken link can be linked again where its folder is now, or removed. Nothing else works on it. */
+async function brokenLinkTui(name: string): Promise<void> {
+  const link = getBrokenLinks().find(entry => entry.name === name);
+  const action = await select<string>({
+    message: _('broken.menu.message', { name, path: link?.path ?? '' }),
+    options: [
+      { value: 'link', label: _('broken.menu.link'), hint: _('broken.menu.link.hint') },
+      { value: 'remove', label: _('broken.menu.remove'), hint: _('broken.menu.remove.hint') }
+    ]
+  });
+  if (cancelled(action)) return cancel(_('list.cancel'));
+  if (action === 'link') return linkProfileTui();
+  return removeProfileTui(name);
+}
+
+/** Every profile the TUI can remove, broken links included, so a link that stopped working can still be cleared. */
+export function removeChoices(): { value: string; label: string; hint: string }[] {
+  return [
+    ...getProfiles().map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') })),
+    ...getBrokenLinks().map(link => ({ value: link.name, label: brokenLabel(link), hint: _('remove.select.hint') }))
+  ];
+}
+
+/** Whether the TUI asks to fetch before showing a profile's Git status. A linked folder is the person's own and is not fetched. */
+export function statusRefreshPrompt(name: string): { ask: boolean } {
+  return { ask: !profileLink(name) };
 }
 
 export async function listProfiles(scopeFilter: string | null = null): Promise<void> {
@@ -114,10 +191,6 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
   if (scopeFilter) profiles = profiles.filter(profile => profile.scope === scopeFilter);
   const broken = scopeFilter ? [] : getBrokenLinks();
   const interactive = Boolean(process.stdout.isTTY && process.stdin.isTTY) && !isJsonMode();
-  const label = (name: string) => {
-    const link = profiles.find(profile => profile.name === name)?.link;
-    return link ? _('list.linked', { name, path: link }) : name;
-  };
   if (!profiles.length && !broken.length && !interactive) {
     say(scopeFilter ? _('list.empty.scope', { scope: scopeFilter }) : _('list.empty'));
     return;
@@ -125,7 +198,7 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
   const grouped = new Map<string, string[]>();
   for (const metadata of profiles) {
     const names = grouped.get(metadata.scope) ?? [];
-    names.push(label(metadata.name));
+    names.push(metadata.link ? _('list.linked', { name: metadata.name, path: metadata.link }) : metadata.name);
     grouped.set(metadata.scope, names);
   }
   if (interactive) {
@@ -145,7 +218,7 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
       if (selectedScope !== '__all__') return listProfiles(selectedScope);
     }
     for (const [scope, names] of grouped) note(names.join('\n'), scope);
-    if (broken.length) note(broken.map(link => _('list.broken', { name: link.name, path: link.path })).join('\n'), _('list.broken.title'));
+    if (broken.length) note(broken.map(brokenLabel).join('\n'), _('list.broken.title'));
     const selected = await select<string>({
       message: _('list.manage.message'),
       options: [
@@ -157,13 +230,14 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
           label: `${profile.scope} · ${profile.name}`,
           hint: profile.link ? _('list.linked.hint', { path: profile.link }) : _('list.manage.hint')
         })),
-        ...broken.map(link => ({ value: link.name, label: _('list.broken', { name: link.name, path: link.path }), hint: _('list.broken.hint') }))
+        ...broken.map(link => ({ value: link.name, label: brokenLabel(link), hint: _('list.broken.hint') }))
       ]
     });
     if (cancelled(selected)) return cancel(_('list.cancel'));
     if (selected === '__create__') return createProfileTui();
     if (selected === '__clone__') return cloneProfileTui();
     if (selected === '__link__') return linkProfileTui();
+    if (menuFor(selected) === 'broken-link') return brokenLinkTui(selected);
     await profileActions(selected);
     return;
   }
@@ -173,7 +247,7 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
   }
   if (broken.length) {
     say(`[${_('list.broken.title')}]`);
-    for (const link of broken) say(`  ${_('list.broken', { name: link.name, path: link.path })}`);
+    for (const link of broken) say(`  ${brokenLabel(link)}`);
   }
 }
 
@@ -230,8 +304,12 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.resolve': () => resolveProjectTui(),
   'profile.remove': name => removeProfileTui(name),
   'profile.status': async name => {
-    const refresh = await confirm({ message: _('actions.status.refresh'), initialValue: true });
-    if (cancelled(refresh)) return cancel(_('actions.project.cancel'));
+    let refresh = false;
+    if (statusRefreshPrompt(name).ask) {
+      const answer = await confirm({ message: _('actions.status.refresh'), initialValue: true });
+      if (cancelled(answer)) return cancel(_('actions.project.cancel'));
+      refresh = answer;
+    }
     await runFromTui('profile.status', [name], { refresh });
   },
   'profile.pull': async name => {
@@ -304,23 +382,19 @@ export async function resolveProjectTui(target: string | null = null): Promise<v
 export async function removeProfileTui(name: string | null = null): Promise<void> {
   if (!canPrompt()) throw usageError('confirm.required', _('error.confirm.required'), _('hint.confirm.yes', { command: `agctx profile remove ${name ?? '<name>'} --yes` }));
   intro(_('remove.intro'));
-  const profiles = getProfiles();
-  const broken = getBrokenLinks();
-  if (!profiles.length && !broken.length) throw usageError('profile.none', _('error.profile.none'), _('hint.profile.create'));
+  const choices = removeChoices();
+  if (!choices.length) throw usageError('profile.none', _('error.profile.none'), _('hint.profile.create'));
   if (!name) {
-    const selected = await select<string>({
-      message: _('remove.select'),
-      options: [
-        ...profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') })),
-        ...broken.map(link => ({ value: link.name, label: _('list.broken', { name: link.name, path: link.path }), hint: _('remove.select.hint') }))
-      ]
-    });
+    const selected = await select<string>({ message: _('remove.select'), options: choices });
     if (cancelled(selected)) return cancel(_('remove.cancel'));
     name = selected;
   }
-  // A linked profile is only a pointer here; say so, since removing it leaves the folder it points at.
-  const link = profileLink(name);
-  if (link) note(_('remove.note.link', { name, path: link.path }), _('remove.note.title'));
+  // A linked profile is only a pointer here; say so, since removing it leaves the folder it points at. A pointer
+  // that cannot be read is still named by the path getBrokenLinks reports for it.
+  const broken = getBrokenLinks().find(entry => entry.name === name);
+  let linkedTo = broken?.path ?? null;
+  if (!linkedTo) linkedTo = profileLink(name)?.path ?? null;
+  if (linkedTo) note(_('remove.note.link', { name, path: linkedTo }), _('remove.note.title'));
   else note(_('remove.note.body', { scope: readProfile(name).metadata.scope, name }), _('remove.note.title'));
   const approved = await confirm({ message: _('remove.confirm'), initialValue: false });
   if (cancelled(approved) || !approved) return cancel(_('remove.cancel'));

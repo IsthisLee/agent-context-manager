@@ -84,8 +84,8 @@ flowchart LR
 프로필은 사용자 홈의 보관함에 있고 프로젝트 파일과 섞이지 않는다. 테스트와 스모크는 `AGCTX_HOME`으로 보관함을 옮겨 실제 홈을 건드리지 않는다.
 
 - 보관함 경로: `src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->
-- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:08b96026660b-->·`readProfile`<!--s:fcc9fd346cde-->·`validateProfileName`<!--s:a47dd8437ed4-->·`isValidProfileMetadata`<!--s:d0109c71d11e-->
-- 연결한 프로필: 보관함 폴더의 `link.json`을 따라간다. `src/profile/store.ts`의 `profileLink`<!--s:91c784178575-->·`getBrokenLinks`<!--s:802f5783dcc4-->·`assertNotLinked`<!--s:9647bb42c564-->, 연결하기는 `src/profile/link.ts`의 `planLink`<!--s:458905df6cc7-->·`writeLink`<!--s:b2ee6f19780a-->·`instructionCandidates`<!--s:7393af980c2b-->. 이유는 [ADR 0037](../adr/0037-link-existing-folder-as-profile.md), 평가는 `evals/profile-link.test.ts`
+- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:2f5cda5ecd92-->·`readProfile`<!--s:7cd0f81c4b88-->·`validateProfileName`<!--s:f4258accd408-->·`isValidProfileMetadata`<!--s:d0109c71d11e-->
+- 연결한 프로필: 보관함 폴더의 `link.json`을 따라간다. `src/profile/store.ts`의 `profileLink`<!--s:f18e12457064-->·`getBrokenLinks`<!--s:e5de6669117a-->·`assertNotLinked`<!--s:9647bb42c564-->, 연결하기는 `src/profile/link.ts`의 `planLink`<!--s:fa8920eec3eb-->·`writeLink`<!--s:b2ee6f19780a-->·`instructionCandidates`<!--s:7393af980c2b-->. 이유는 [ADR 0037](../adr/0037-link-existing-folder-as-profile.md), 평가는 `evals/profile-link.test.ts`
 - 규칙 파일 경로: `profile.json`의 `instructions`, 없으면 `AGENTS.md`. `src/profile/store.ts`의 `instructionsFile`<!--s:c0ded7cce71a-->·`isInstructionsPath`<!--s:77864c748c5b-->·`assertInstructionsPath`<!--s:2450f091bbc7-->, 원격에서 받은 파일의 링크 검사는 `regularFileInside`
 - 이유: [ADR 0007](../adr/0007-profile-home-layout.md), 이름 변경은 [ADR 0013](../adr/0013-rename-agent-context-manager.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/profile-instructions.test.ts`
@@ -95,7 +95,7 @@ flowchart LR
 빈 프로필을 만들고 지침 템플릿을 넣는다. CLI와 TUI가 같은 함수를 쓴다.
 
 - 생성: `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->
-- TUI 흐름: `src/tui/profile.ts`의 `createProfileTui`<!--s:151f4e01035f-->
+- TUI 흐름: `src/tui/profile.ts`의 `createProfileTui`<!--s:519a5984faa0-->
 - 지키는 평가: `evals/profile.test.ts`
 
 ## 5. profile setup: 지침 블록 기록
@@ -158,8 +158,8 @@ flowchart LR
 TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다. 취소는 모든 화면에서 같은 함수로 처리한다.
 
 - 메인 화면: `src/tui/main.ts`의 `mainTui`<!--s:696e75813252-->·`MAIN_MENU_ENTRIES`<!--s:cab1a2d0cefd-->·`MAIN_ACTIONS`<!--s:69274f891e74-->
-- 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:e8641a2f8a1a-->
-- 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:8e00a9f03a32-->·`MENU_ACTIONS`<!--s:5113f6accc94-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:c73f4a905108-->
+- 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:30202a0a88d7-->
+- 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:8e00a9f03a32-->·`MENU_ACTIONS`<!--s:4ce0b2031e4c-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:c73f4a905108-->
 - 저장소 화면: `src/tui/repository.ts`의 `REPOS_MENU_COMMANDS`<!--s:f58f2199bf19-->
 - 명령 실행: `src/tui/commands.ts`의 `commandTokens`<!--s:b9863ab66014-->·`runFromTui`<!--s:f460439c5187-->
 - 취소 처리: `src/tui/cancel.ts`의 `cancelled`<!--s:d632c458039e-->
@@ -212,7 +212,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 프로필 폴더 자체가 Git 작업 트리인 프로필을 다룬다. 원격 URL과 추적 브랜치는 `.git/config`가 정본이고 `profile.json`에 적지 않는다.
 
 - git 실행: `src/shared/git.ts`의 `git`<!--s:76da3647da6c-->·`isGitRoot`<!--s:4793c559c904-->·`isRemoteFailure`<!--s:59e32fcf9095-->·`resolveRemoteLocation`<!--s:7de80492b458-->·`sanitizeRemoteUrl`<!--s:6198db3b36d0-->·`committedFile`<!--s:57e01f0132f4-->
-- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:087094c6c2cb-->·`cloneProfile`<!--s:249d9d36c889-->·`pullProfile`<!--s:63330a1eaa05-->·`planPush`<!--s:b5245a7b89a0-->·`pushProfile`<!--s:d8baf776795b-->·`connectProfile`<!--s:2013d8106ffd-->
+- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:63c0ac5e015f-->·`cloneProfile`<!--s:249d9d36c889-->·`pullProfile`<!--s:63330a1eaa05-->·`planPush`<!--s:b5245a7b89a0-->·`pushProfile`<!--s:d8baf776795b-->·`connectProfile`<!--s:2013d8106ffd-->
 - 커밋 안의 프로필 읽기: `src/profile/git-profile.ts`의 `committedProfile`<!--s:11ddd4e196f4-->. 그 커밋의 `profile.json`에서 규칙 파일 경로를 읽으므로, `pull`이 들어올 커밋을 검사할 때와 고정한 프로젝트를 다시 만들 때 모두 그 커밋의 경로를 쓴다.
 - 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
@@ -221,7 +221,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 저장소가 프로필의 어느 버전을 쓰고 있는지 기록한다. 고정한 저장소는 기록한 버전에 머물고 PR로만 올라간다.
 
-- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:f229c68d627f-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
+- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:2e0e54a28be9-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
 - 기록 위치: 프로젝트의 `agctx.project.json`
 - 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), [ADR 0018](../adr/0018-multi-repository-sync.md), [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`

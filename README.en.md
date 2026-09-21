@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 5b139e8459b7d7e0a75dc75a8d53d13223c4af048a3dc8c089d104bb41948961 -->
+<!-- agctx-doc-sources-sha256: 2f36b2e349e9051ece69ff1b4c232c5c2e272b8817d9716717187aa6eadc130e -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -124,7 +124,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 297aab15fb4b2e5b67c81b26b0d0343a777fb0a36f0e9ed76a96ec613b33062d -->
+<!-- agctx-doc-sources-sha256: bccdde6ba02ca9edc39d81a4ca3389feb5bec8b1f4bbcee73a213440ccfc2e89 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.

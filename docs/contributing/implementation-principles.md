@@ -188,7 +188,7 @@ flowchart TD
 
 ### 사용자가 알아야 할 주의점
 
-- 같은 명령이라도 TTY 여부에 따라 동작이 달라진다. 터미널에서는 TUI가, 파이프·CI에서는 비대화형 경로가 쓰인다(예: `src/tui/profile.ts`의 `createProfileTui`<!--s:151f4e01035f-->의 stdin 입력 처리). 파일을 바꾸는 명령은 터미널에서는 확인을 묻고, 파이프·CI에서는 `--yes`가 있어야 진행한다(`src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
+- 같은 명령이라도 TTY 여부에 따라 동작이 달라진다. 터미널에서는 TUI가, 파이프·CI에서는 비대화형 경로가 쓰인다(예: `src/tui/profile.ts`의 `createProfileTui`<!--s:519a5984faa0-->의 stdin 입력 처리). 파일을 바꾸는 명령은 터미널에서는 확인을 묻고, 파이프·CI에서는 `--yes`가 있어야 진행한다(`src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
 - 인자를 잘못 주면 도움말이나 오류로 빠진다. 자동화 시에는 CLI Reference의 옵션 규칙을 따른다([CLI Reference](../reference/cli.md)).
 
 ---
@@ -208,13 +208,13 @@ flowchart TD
 ### 이 패키지에서의 적용 예시
 
 - 프로필 데이터의 기준 위치는 (`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
-- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:fcc9fd346cde-->, `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->).
+- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:7cd0f81c4b88-->, `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->).
 - 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - `AGCTX_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.ts`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않고, `profile link`로 연결한 프로필은 보관함의 포인터만 지운다(`src/profile/store.ts`의 `removeProfile`<!--s:a4a86ba3fae3-->, [프로필 삭제](../concepts/profiles.md#프로필-삭제)).
+- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않고, `profile link`로 연결한 프로필은 보관함의 포인터만 지운다(`src/profile/store.ts`의 `removeProfile`<!--s:869096c8511e-->, [프로필 삭제](../concepts/profiles.md#프로필-삭제)).
 
 ---
 
@@ -264,7 +264,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`src/tui/profile.ts`의 `createProfileTui`<!--s:151f4e01035f-->, `277`).
+- 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`src/tui/profile.ts`의 `createProfileTui`<!--s:519a5984faa0-->, `277`).
 - 출력은 화면 DOM이 아니라 표준 출력/오류다: 결과 문장은 `say()`가 stdout에(`--json`이면 stderr에) 쓰고, 오류는 `run()`이 stderr에 쓴다(`src/commands/output.ts`의 `say`<!--s:b99734f31558-->, `src/commands/cli.ts`의 `run`<!--s:2fd759cbfca9-->). `--json`이면 stdout에는 결과 문서 하나만 남는다.
 - “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`src/tui/profile.ts`, `40-60`).
 

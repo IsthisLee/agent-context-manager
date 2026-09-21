@@ -192,3 +192,12 @@ Git 저장소가 아닌 폴더도 연결한다. 그 프로필은 지금의 로�
   - 형식이 틀린 `link.json`도 `profile remove`로 지울 수 있게 했다. 포인터를 읽기 전에 파일이 있는지만 보고 지운다.
 * **제약:** 폴더를 옮기면 사용자가 다시 `link`해야 한다. 연결한 폴더에서 다른 브랜치를 체크아웃하면 그 브랜치의 규칙이 적용된다.
 * **다음 단계:** 없음.
+
+#### 구현 기록: 검수에서 나온 결함을 고침
+
+* **결정:** [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md)의 결정 4~6을 다듬었다. 포인터는 `link.json`이 있고 `profile.json`이 없는 폴더로만 본다. 끊긴 링크에는 이유를 붙인다. 링크 프로필의 `status`는 `fetch`하지 않는다. 다시 연결할 때는 지금 가리키는 폴더를 밝혀 묻는다.
+* **구현:** `src/profile/store.ts`의 `isPointerFolder`·`getBrokenLinks`(이유: `missing-folder`·`missing-metadata`·`invalid-metadata`·`invalid-link`)·`readProfile`, `src/profile/git-profile.ts`의 `profileGitState`, `src/profile/link.ts`의 `ruleFileChoices`·`linkQuestion`, `src/profile/apply.ts`의 `profileVersion`(연결한 프로필의 고정 오류 안내), 처리기의 `status`·`repos status` 안내를 고쳤다. TUI는 `src/tui/profile.ts`의 `linkRuleOptions`·`linkOutro`·`menuFor`·`removeChoices`·`statusRefreshPrompt`로 판단을 떼어 냈다. 규칙 파일을 직접 입력할 수 있고, 연결 결과에 맞는 끝 문구를 띄우며, 끊긴 링크는 다시 연결과 삭제만 있는 메뉴로 보낸다.
+* **평가:** `evals/profile-link.test.ts`에 5개(상태가 `fetch`하지 않고 `pull`·`push`를 권하지 않음, `repos status` 안내, 자기 `link.json`을 가진 저장소, `profile.json`을 잃은 링크, 막힌 명령을 가리키지 않는 안내)를 더했고, `evals/tui-link.test.ts` 5개를 새로 썼다. 고친 동작마다 그 검사를 빼는 변이 13개가 모두 해당 평가에서 실패했다. 처음에 잡지 못한 변이 하나(링크 상태에서 `pull` 안내)는 사용자가 직접 `git fetch`한 상태를 평가에 더해 잡았다. TUI는 가상 터미널로 띄워, 확인을 거절하면 "Linking was cancelled."가 나오고 아무것도 쓰이지 않는 것과, 끊긴 링크를 고르면 전용 메뉴가 열리는 것을 확인했다.
+* **계획과 달라진 점:** 끊긴 링크의 `brokenLinks` 항목에 `reason`이 붙었다. 같은 이름으로 다른 폴더를 연결하는 일은 끊긴 링크에만 한정하지 않고, 확인 질문에서 지금 가리키는 폴더를 밝히는 것으로 정했다.
+* **제약:** 코드 주석은 저장소의 기존 관례대로 영어로 두었다. 전역 규칙("주석은 한글로")과 맞출지는 정하지 않았다.
+* **다음 단계:** 없음.

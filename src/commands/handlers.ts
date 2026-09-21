@@ -6,10 +6,10 @@ import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
 import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, pushProfile } from '../profile/git-profile.ts';
-import { planLink, writeLink, type LinkPlan } from '../profile/link.ts';
+import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getBrokenLinks, getProfiles, removeProfile, viewProfile } from '../profile/store.ts';
+import { createProfile, getBrokenLinks, getProfiles, profileLink, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -168,7 +168,7 @@ export const HANDLERS: Record<string, Handler> = {
       return ok(data);
     }
     if (flag(parsed, 'dry-run')) return ok(data);
-    if (!(await confirmChange(parsed, _('confirm.link', { name: plan.name, path: plan.dir }), retryWithYes('profile link', parsed)))) {
+    if (!(await confirmChange(parsed, linkQuestion(plan), retryWithYes('profile link', parsed)))) {
       say(_('confirm.declined'));
       return ok(data);
     }
@@ -182,7 +182,12 @@ export const HANDLERS: Record<string, Handler> = {
     const profiles = names.map(name => profileGitState(name, { refresh: flag(parsed, 'refresh') }));
     for (const state of profiles) {
       say(describeState(state));
-      if (state.link) say(_('status.link', { path: state.link }));
+      // A linked folder is pulled and pushed with git there, so the next steps name git, not profile pull or push.
+      if (state.link) {
+        say(_('status.link', { path: state.link }));
+        if (flag(parsed, 'refresh')) say(_('status.link.no-refresh', { path: state.link }));
+        continue;
+      }
       if (state.behind) say(_('status.next.pull', { name: state.name }));
       if (state.ahead) say(_('status.next.push', { name: state.name }));
     }
@@ -304,7 +309,7 @@ export const HANDLERS: Record<string, Handler> = {
         : '-';
       say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
       if (status.error) say(`  ${status.error.message}`);
-      if (status.state === 'behind') hints.add(status.pinned ? _('repos.next.pr', { profile: status.profile }) : _('repos.next.sync', { profile: status.profile }));
+      if (status.state === 'behind') hints.add(status.pinned ? _(linkedProfile(status.profile) ? 'repos.next.pr.linked' : 'repos.next.pr', { profile: status.profile }) : _('repos.next.sync', { profile: status.profile }));
       if (status.state === 'conflict') hints.add(_('repos.next.resolve', { project: status.path }));
       if (status.state === 'missing') hints.add(_('repos.hint.prune'));
       if (status.error?.hint) hints.add(`${_('output.next')}: ${status.error.hint}`);
@@ -370,12 +375,15 @@ export const HANDLERS: Record<string, Handler> = {
 
 function printLinkPlan(plan: LinkPlan): void {
   say(_('link.plan.title'));
-  say(plan.metadata
-    ? `  create    ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`
-    : `  keep      ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
-  const pointer = path.join(profileHome(), plan.name);
-  if (plan.link === 'relink') say(`  relink    ${pointer} -> ${plan.dir}  ${_('link.plan.from', { path: plan.relinkFrom ?? '' })}`);
-  else say(`  ${plan.link === 'create' ? 'link     ' : 'unchanged'} ${pointer} -> ${plan.dir}`);
+  say(`  ${(plan.metadata ? 'create' : 'keep').padEnd(9)} ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
+  const action = plan.link === 'create' ? 'link' : plan.link;
+  const from = plan.relinkFrom ? `  ${_('link.plan.from', { path: plan.relinkFrom })}` : '';
+  say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}${from}`);
+}
+
+/** Whether `name` is a linked profile, for next steps that must not name commands a link refuses. */
+function linkedProfile(name: string): boolean {
+  try { return Boolean(profileLink(name)); } catch { return false; }
 }
 
 function describeState(state: ReturnType<typeof profileGitState>): string {

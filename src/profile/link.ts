@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { _ } from '../i18n/index.ts';
 import { usageError } from '../shared/errors.ts';
-import { writeTextAtomic } from '../shared/fs-utils.ts';
+import { isSymbolicLink, writeTextAtomic } from '../shared/fs-utils.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import type { ProfileMetadata, Scope } from '../shared/types.ts';
 import { assertInstructionsPath, DEFAULT_INSTRUCTIONS, instructionsFile, isScope, isValidProfileMetadata, LINK_FILE, profileLink, regularFileInside, SCOPES, validateProfileName } from './store.ts';
@@ -64,11 +64,20 @@ function readExistingMetadata(dir: string): ProfileMetadata | null {
   return metadata;
 }
 
+/**
+ * The rules files `profile link` can take from `dir`: every AGENTS.md in it, and the one it takes without being
+ * told, which is the root AGENTS.md, or else the only AGENTS.md. With several and none at the root it takes none.
+ */
+export function ruleFileChoices(dir: string): { detected: string | null; candidates: string[] } {
+  const candidates = instructionCandidates(dir);
+  const detected = regularFileInside(dir, DEFAULT_INSTRUCTIONS) ? DEFAULT_INSTRUCTIONS : candidates.length === 1 ? candidates[0] : null;
+  return { detected, candidates };
+}
+
 function chooseInstructions(dir: string, requested: string | null | undefined): string {
   if (requested) return requested;
-  if (regularFileInside(dir, DEFAULT_INSTRUCTIONS)) return DEFAULT_INSTRUCTIONS;
-  const candidates = instructionCandidates(dir);
-  if (candidates.length === 1) return candidates[0];
+  const { detected, candidates } = ruleFileChoices(dir);
+  if (detected) return detected;
   if (!candidates.length) throw usageError('link.no-rules', _('error.link.no-rules', { dir }), _('hint.link.instructions'));
   throw usageError('link.many-rules', _('error.link.many-rules', { dir, files: candidates.join('\n  ') }), _('hint.link.instructions'));
 }
@@ -115,7 +124,8 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   let linked = false;
   if (fs.existsSync(storeDir) || isSymbolicLink(storeDir)) {
     const link = profileLink(name);
-    if (!link) throw usageError('link.exists', _('error.link.exists', { name }), _('hint.link.exists', { name }));
+    // The name comes from profile.json when the folder has one, so --name cannot get around the clash.
+    if (!link) throw usageError('link.exists', _('error.link.exists', { name }), existing ? _('hint.link.exists-metadata', { name, file: path.join(dir, PROFILE_METADATA_FILE) }) : _('hint.link.exists', { name }));
     if (link.path === dir) linked = true;
     else relinkFrom = link.path;
   }
@@ -127,6 +137,13 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   return { dir, name, scope, instructions, metadata, link, relinkFrom, changes: Boolean(metadata) || !linked };
 }
 
+/** The confirmation question for a plan. Moving a link names the folder it stops pointing at. */
+export function linkQuestion(plan: LinkPlan): string {
+  return plan.relinkFrom
+    ? _('confirm.relink', { name: plan.name, from: plan.relinkFrom, path: plan.dir })
+    : _('confirm.link', { name: plan.name, path: plan.dir });
+}
+
 /** Write profile.json when the plan has one, then the pointer. */
 export function writeLink(plan: LinkPlan): void {
   if (plan.metadata) writeTextAtomic(path.join(plan.dir, PROFILE_METADATA_FILE), JSON.stringify(plan.metadata, null, 2) + '\n');
@@ -135,6 +152,3 @@ export function writeLink(plan: LinkPlan): void {
   writeTextAtomic(path.join(storeDir, LINK_FILE), JSON.stringify({ schemaVersion: 1, path: plan.dir }, null, 2) + '\n');
 }
 
-function isSymbolicLink(target: string): boolean {
-  try { return fs.lstatSync(target).isSymbolicLink(); } catch { return false; }
-}

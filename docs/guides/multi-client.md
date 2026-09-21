@@ -32,7 +32,7 @@ flowchart LR
 ## 1. 고객사 프로필 받기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 86070b610b0a311163fa5f0109234e0c2569125a16774fb591997fac2289ac2e -->
+<!-- agctx-doc-sources-sha256: b4275167f188203eef86df8979f32eee973f226b1bdabef215290a8eb5ea3da1 -->
 
 ```bash
 agctx profile clone https://git.client-a.example/rules.git

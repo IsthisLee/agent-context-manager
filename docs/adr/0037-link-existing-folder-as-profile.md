@@ -29,16 +29,16 @@
 1. **명령:** `agctx profile link [<path>] [--name <name>] [--scope <scope>] [--instructions <file>] [--dry-run] [--yes]`를 둔다. 폴더에 `profile.json`이 없으면 만들고, 보관함에 포인터를 둔다. 커밋과 push는 하지 않는다. 사용자의 저장소에 파일을 쓰므로 계획을 보여 주고 확인을 받으며, 등록부에서 `changes: 'repository'`라 에이전트 정책은 `ask`다. CLI, TUI 첫 화면, 프로필 목록 메뉴에서 실행한다.
 2. **규칙 파일:** `--instructions`가 없으면 루트의 `AGENTS.md`, 없으면 `.git`과 `node_modules`를 뺀 폴더 안에 하나뿐인 `AGENTS.md`를 쓴다. 여럿이면 추측하지 않고 후보를 보여 주며 멈춘다. 규칙 파일이 루트의 `AGENTS.md`면 `schemaVersion` 1, 아니면 2와 `instructions`로 `profile.json`을 만든다.
 3. **이미 있는 `profile.json`:** 새로 쓰지 않고 그 이름·용도·규칙 파일을 쓴다. 옵션으로 준 값이 다르면 멈춘다.
-4. **포인터:** `profiles/<이름>/link.json`에 `{ "schemaVersion": 1, "path": "<절대 경로>" }`만 둔다. `readProfile`은 포인터가 있으면 그 폴더에서 `profile.json`과 규칙 파일을 읽는다. 폴더가 없으면 가리키던 경로를 알리며 멈춘다.
-5. **연결한 프로필의 명령:** `view`·`apply`·`sync`·`setup`·`check`는 그 폴더를 직접 읽고 쓴다. 커밋하지 않은 수정이 섞이면 지금처럼 `uncommitted`로 기록하고 `--pin`을 거부한다. `status`는 읽기만 하고 연결한 경로를 보여 준다. `pull`·`push`·`connect`는 아무것도 바꾸지 않고 멈춘다. `remove`는 보관함 폴더만 지운다.
-6. **끊긴 링크:** 자동으로 따라가지 않는다. `profile list`가 따로 보여 주고(`--json`이면 `brokenLinks`), `check`는 보관함에 없는 프로필로 보고 경고를 붙이며, `remove`로 지울 수 있다. 같은 이름으로 다른 폴더를 `link`하면 확인을 받아 포인터를 옮긴다. 이름이 같은 사본 프로필이 있으면 멈춘다.
+4. **포인터:** `profiles/<이름>/link.json`에 `{ "schemaVersion": 1, "path": "<절대 경로>" }`만 둔다. `link.json`이 있고 `profile.json`이 없는 보관함 폴더만 포인터로 본다. 받아 온 저장소가 자기 `link.json`을 가지고 있어도 사본 프로필로 남는다. `readProfile`은 포인터가 있으면 그 폴더에서 `profile.json`과 규칙 파일을 읽는다. 폴더나 그 폴더의 `profile.json`이 없으면 가리키던 경로를 알리며 멈춘다.
+5. **연결한 프로필의 명령:** `view`·`apply`·`sync`·`setup`·`check`는 그 폴더를 직접 읽고 쓴다. 커밋하지 않은 수정이 섞이면 지금처럼 `uncommitted`로 기록하고 `--pin`을 거부한다. `status`는 읽기만 하고 연결한 경로를 보여 준다. `--refresh`를 줘도 그 폴더에서 `fetch`하지 않는다. `pull`·`push`·`connect`는 아무것도 바꾸지 않고 멈춘다. `remove`는 보관함 폴더만 지운다. 연결한 프로필에서 나는 오류와 다음 단계 안내는 막힌 명령 대신 그 폴더에서 쓸 git 명령을 알린다.
+6. **끊긴 링크:** 폴더가 없어졌거나, 그 폴더의 `profile.json`이 없어졌거나 다른 프로필의 것이거나, 포인터를 읽을 수 없는 링크다. 자동으로 따라가지 않는다. `profile list`가 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `reason`), `check`는 보관함에 없는 프로필로 보고 경고를 붙이며, `remove`로 지울 수 있다. TUI 목록에서 고르면 다시 연결과 삭제만 있는 메뉴가 열린다. 같은 이름으로 다른 폴더를 `link`하면 지금 가리키는 폴더를 밝혀 확인을 받은 뒤 포인터를 옮긴다. 이름이 같은 사본 프로필이 있으면 멈춘다.
 7. **용도 기본값:** `profile create`처럼 `personal`이다.
 
 ## 결과 및 영향 (Consequences)
 
 - 관리자는 규칙 저장소 폴더에서 `profile link` 한 번으로 바로 적용해 볼 수 있다. 팀과 나누는 경로는 그대로 커밋·push·`clone`이다.
 - 보관함의 프로필 폴더에는 사본(`profile.json`과 규칙 파일)과 포인터(`link.json`) 두 종류가 생긴다. `profile list --json`의 `profiles` 항목에는 연결한 프로필에만 `link`가 붙고, 끊긴 링크는 `brokenLinks`로 따로 나온다.
-- 평가: `evals/profile-link.test.ts`(11개). 운영체제 링크를 쓰지 않으므로 Windows에서도 건너뛰지 않는다.
+- 평가: `evals/profile-link.test.ts`(16개), TUI의 판단은 `evals/tui-link.test.ts`(5개). 운영체제 링크를 쓰지 않으므로 Windows에서도 건너뛰지 않는다.
 - 한계:
   - 폴더를 옮기면 사용자가 다시 `link`해야 한다.
   - 연결한 프로필은 그 폴더의 작업 트리를 그대로 읽으므로, 다른 브랜치를 체크아웃하면 그 브랜치의 규칙이 적용된다. 제품 저장소에는 그때의 브랜치와 커밋이 기록된다.

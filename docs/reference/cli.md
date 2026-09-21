@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: a4496e9a66a5e780d71b8ce428835f6263be4f47f73c78b912227e3e0e635147 -->
+<!-- agctx-doc-sources-sha256: a692e27d3f1ab025bc2eb9747db6ef0c50cf396adac92ff87da5f5a2ee2d54f7 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 8a073777e3a454e02d4e84a1635a93eddcfbb08a630e8a889f012ad24dc61bcc -->
+<!-- agctx-doc-sources-sha256: fb902f5f8eb0a33a0d0ff67f40619a3b5f67aaca78559f88b34aeabb55f8a0b2 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -117,7 +117,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 2f4d87d7a793870943dc112f05afaf2c7112442f4c2c96ef6f4829f173eed6ca -->
+<!-- agctx-doc-sources-sha256: c929fadf4a8857b86db1c02a909a58d04d418b4c0764619cc979ff9c5804a37c -->
 
 ```bash
 agctx
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: de0c87cfd1dc45020b9a102359a713955b6e95b80238de773572b6699b3c30c9 -->
+<!-- agctx-doc-sources-sha256: 4961f10317caaa16019fb77853e6754ba3d77c53b0fce5650563df61cccca142 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -501,11 +501,11 @@ agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--
 
 - 규칙 파일 후보는 `.git`과 `node_modules`를 빼고 찾는다. 루트에 `AGENTS.md`가 없고 후보가 여럿이면 후보 목록을 보여 주고 64로 멈춘다.
 - 폴더에 `profile.json`이 이미 있으면 새로 쓰지 않고 그 이름·용도·규칙 파일을 쓴다. 옵션으로 준 값이 다르면 64로 멈춘다.
-- 같은 이름의 프로필이 보관함에 이미 있고 링크가 아니면 64로 멈춘다. 같은 이름의 링크가 다른 폴더를 가리키면, 새 폴더로 다시 잇는 계획을 보여 주고 확인을 받는다.
+- 같은 이름의 프로필이 보관함에 이미 있고 링크가 아니면 64로 멈춘다. 같은 이름의 링크가 다른 폴더를 가리키면, 지금 가리키는 폴더를 밝혀 바꿀지 묻는다(`relink`).
 - 연결한 프로필은 `view`·`apply`·`sync`·`setup`·`check`가 그 폴더를 직접 읽고 쓰므로, 커밋하지 않은 수정도 바로 적용된다. 그 상태로 적용하면 `uncommitted`로 기록하고 `--pin`은 거부한다.
-- 연결한 프로필에서 `pull`·`push`·`connect`는 64로 멈추고 그 폴더에서 git을 쓰라고 안내한다. `remove`는 포인터만 지운다.
-- 연결한 폴더를 옮기거나 지우면 `profile list`가 끊긴 링크로 보여 주고, 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈춘다.
-- TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더에 `profile.json`이 없으면 이름과 용도를 묻고, 규칙 파일 후보가 여럿이면 고르게 한다.
+- 연결한 프로필에서 `pull`·`push`·`connect`는 64로 멈추고 그 폴더에서 git을 쓰라고 안내한다. `status`는 `--refresh`를 줘도 그 폴더에서 `fetch`하지 않는다. `remove`는 포인터만 지운다.
+- 연결한 폴더를 옮기거나 지우거나 그 폴더의 `profile.json`이 없어지면 `profile list`가 끊긴 링크로 이유와 함께 보여 주고, 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈춘다.
+- TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더에 `profile.json`이 없으면 규칙 파일(찾은 `AGENTS.md`들과 직접 입력), 이름, 용도를 묻는다. 목록에서 끊긴 링크를 고르면 다시 연결과 삭제만 있는 메뉴가 열린다.
 
 ```bash
 $ cd /work/team-rules
@@ -534,7 +534,7 @@ agctx profile status [--refresh] [<name>]
 | `<name>` | 확인할 프로필; 생략하면 모든 프로필 |
 | `--refresh` | 원격에서 fetch한 뒤 비교; 생략하면 네트워크에 접속하지 않고 마지막으로 받은 원격 정보로 비교 |
 
-한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 원격에서 먼저 받을지 묻고, Yes(기본)면 `--refresh`로 실행한다.
+한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 원격에서 먼저 받을지 묻고, Yes(기본)면 `--refresh`로 실행한다. `profile link`로 연결한 프로필은 그 폴더를 가리키는 경로를 함께 보여 주고, `--refresh`를 줘도 그 폴더에서 fetch하지 않으며, 다음 명령 대신 그 폴더에서 git을 쓰라고 안내한다. TUI도 이 경우 원격에서 받을지 묻지 않는다.
 
 ```bash
 $ agctx profile status --refresh team-backend

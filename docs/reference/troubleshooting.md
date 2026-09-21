@@ -6,7 +6,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 6f01ffe18c818b21f65f303dc5a781f1d2f52a13ddd9623624d1d331b081c53b -->
+<!-- agctx-doc-sources-sha256: 7a4504b28f17c54b2fa34a0764f205a7daa3f45fb82b6c9412cdf4ddc042ddef -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
 
@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f3b35752d96fe280f255d0fc4b5c249e8c0e83177ef992341b4317f776c44e46 -->
+<!-- agctx-doc-sources-sha256: cc1023ca65993c2c5965d22e2bb24b44efb6e26b6c10ad398803ee925aed33e7 -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -26,6 +26,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`is not a profile repository: profile.json is missing at its root`**(종료 코드 64): 규칙은 있지만 프로필 메타데이터가 없는 저장소를 `profile clone`했다. 그 저장소 루트에 `profile.json`을 더해 올린다. 규칙 파일이 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **`"instructions" in profile.json (…) must be a relative path to a .md file`·`the rules file profile.json names (…) is missing`**(종료 코드 64): `instructions` 값이 규칙에 맞지 않거나, 가리킨 파일이 없거나 심볼릭 링크다. 허용하는 경로는 [파일 형식](file-formats.md#profilejson)에 있다.
 - **`is linked to a folder that is missing`**(종료 코드 64): `profile link`로 연결한 폴더를 옮기거나 지웠다. 옮겼다면 옮긴 곳에서 `agctx profile link <새 경로>`를 실행해 다시 잇고, 필요 없으면 `agctx profile remove <name> --yes`로 링크를 지운다. `profile list`의 끊긴 링크 목록에서 원래 경로를 볼 수 있다.
+- **`is linked to …, which has no profile.json`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 없어졌다. `link`가 만든 `profile.json`은 커밋하기 전이라 `git clean`이나 브랜치 전환으로 지워지기 쉽다. 그 폴더에서 되살리거나 `agctx profile link <경로>`로 다시 만든다.
 - **`is linked to …, so agctx does not pull, push, or change Git settings there`**(종료 코드 64): 연결한 프로필에서 `profile pull`·`push`·`connect`를 실행했다. 그 폴더에서 `git pull`·`git push`로 한다.
 - **`has several AGENTS.md files, so none was chosen`**(종료 코드 64): `profile link`가 규칙 파일 후보를 여럿 찾았다. 출력된 후보 가운데 하나를 `--instructions <경로>`로 고른다.
 - **`has uncommitted changes, so a project cannot be pinned to a commit`**(종료 코드 64): 프로필의 규칙 파일(`AGENTS.md`나 `instructions`가 가리킨 파일)이나 `profile.json`에 커밋하지 않은 수정이 있어 고정할 커밋을 정할 수 없다. `Next:` 줄에 적힌 프로필 폴더에서 수정을 커밋하거나 되돌린 뒤 다시 적용한다. TUI에서 고정 질문에 **Yes**를 골랐을 때도 같은 오류가 나고 파일은 바뀌지 않는다.

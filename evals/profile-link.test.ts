@@ -176,7 +176,7 @@ test('a link whose folder moved is listed as broken, names the old path when use
   fs.mkdirSync(path.dirname(moved), { recursive: true });
   fs.renameSync(dir, moved);
 
-  assert.deepEqual(listed(admin).brokenLinks, [{ name: 'team-rules', path: dir }]);
+  assert.deepEqual(listed(admin).brokenLinks, [{ name: 'team-rules', path: dir, reason: 'missing-folder' }]);
   const apply = admin.run(['profile', 'sync', project, '--yes']);
   assert.equal(apply.status, 64);
   assert.ok(apply.stderr.includes(dir), 'the error names the folder the link points at');
@@ -215,4 +215,116 @@ test('a folder that is not a Git repository can be linked and applied, but not p
 
   assert.match(read(path.join(project, 'AGENTS.md')), /^# Plain rules/);
   assert.equal(admin.run(['profile', 'apply', 'plain-rules', project, '--pin', '--yes']).status, 64);
+});
+
+/** A linked Git folder one commit behind its remote, with profile.json committed. */
+function linkedBehindRemote(t: TestContext) {
+  const { root, admin, folder } = setup(t);
+  const remote = path.join(root, 'remotes', 'team-rules.git');
+  fs.mkdirSync(path.dirname(remote), { recursive: true });
+  gitIn(root, 'init', '--bare', '--quiet', '--initial-branch=main', remote);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  gitIn(dir, 'remote', 'set-url', 'origin', remote);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  gitIn(dir, 'add', 'profile.json');
+  gitIn(dir, 'commit', '--quiet', '-m', 'Add profile.json');
+  gitIn(dir, 'push', '--quiet', '--set-upstream', 'origin', 'main');
+  const other = path.join(root, 'other');
+  gitIn(root, 'clone', '--quiet', remote, other);
+  fs.appendFileSync(path.join(other, 'templates', 'AGENTS.md'), '- A rule pushed from elsewhere.\n');
+  gitIn(other, 'commit', '--quiet', '-am', 'New rule');
+  gitIn(other, 'push', '--quiet', 'origin', 'HEAD:main');
+  return { root, admin, folder, dir };
+}
+
+test('status on a linked profile neither fetches in that folder nor points at pull or push', t => {
+  const { admin, dir } = linkedBehindRemote(t);
+  const before = gitIn(dir, 'rev-parse', 'refs/remotes/origin/main');
+
+  const result = admin.ok(['profile', 'status', 'team-rules', '--refresh']);
+
+  assert.equal(gitIn(dir, 'rev-parse', 'refs/remotes/origin/main'), before, 'the linked folder is not fetched');
+  assert.doesNotMatch(result.stdout, /agctx profile (pull|push)/);
+
+  // Once the person fetches there, status sees the folder behind and still names git, not profile pull.
+  gitIn(dir, 'fetch', '--quiet');
+  const behind = JSON.parse(admin.ok(['profile', 'status', 'team-rules', '--json']).stdout).data.profiles[0];
+  assert.equal(behind.behind, 1);
+  assert.doesNotMatch(admin.ok(['profile', 'status', 'team-rules']).stdout, /agctx profile (pull|push)/);
+});
+
+test('repos status never tells a pinned project on a linked profile to run profile pull', t => {
+  const { admin, folder, dir } = linkedBehindRemote(t);
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'team-rules', project, '--pin', '--yes']);
+  gitIn(dir, 'pull', '--quiet');
+
+  const result = admin.run(['repos', 'status']);
+
+  assert.match(result.stdout + result.stderr, /behind/);
+  assert.doesNotMatch(result.stdout + result.stderr, /agctx profile pull/);
+});
+
+test('a cloned profile whose repository has its own link.json stays a normal profile', t => {
+  const { root, admin, folder } = setup(t);
+  const metadata = JSON.stringify({ schemaVersion: 1, name: 'shared', scope: 'team' }) + '\n';
+  const dir = rulesFolder(root, 'shared', { 'profile.json': metadata, 'AGENTS.md': '# Shared rules\n', 'link.json': '{"version":"1.0.0"}\n' });
+
+  admin.ok(['profile', 'clone', dir]);
+
+  const profiles = listed(admin).profiles;
+  assert.deepEqual(profiles.map((profile: { name: string; link?: string }) => [profile.name, profile.link]), [['shared', undefined]]);
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'shared', project, '--yes']);
+  assert.match(read(path.join(project, 'AGENTS.md')), /^# Shared rules/);
+});
+
+test('a link whose folder lost its profile.json is listed as broken, names the folder, and can be removed', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  fs.rmSync(path.join(dir, 'profile.json'));
+
+  const data = listed(admin);
+  assert.deepEqual(data.profiles, []);
+  assert.deepEqual(data.brokenLinks, [{ name: 'team-rules', path: dir, reason: 'missing-metadata' }]);
+  const view = admin.run(['profile', 'view', 'team-rules']);
+  assert.equal(view.status, 64);
+  assert.ok(view.stderr.includes(dir), 'the error names the linked folder');
+
+  admin.ok(['profile', 'remove', 'team-rules', '--yes']);
+  assert.equal(fs.existsSync(path.join(admin.home, 'profiles', 'team-rules')), false);
+  assert.ok(fs.existsSync(path.join(dir, 'templates', 'AGENTS.md')));
+});
+
+test('the hints on a linked profile never point at a command that a link refuses', t => {
+  const { root, admin, folder } = setup(t);
+  const metadata = JSON.stringify({ schemaVersion: 1, name: 'shared', scope: 'team' }) + '\n';
+  const shared = rulesFolder(root, 'shared', { 'profile.json': metadata, 'AGENTS.md': '# Shared rules\n' });
+  admin.ok(['profile', 'clone', shared]);
+  const taken = admin.run(['profile', 'link', shared, '--yes']);
+  assert.equal(taken.status, 64);
+  assert.doesNotMatch(taken.stderr, /--name/, 'a folder with profile.json cannot take --name');
+
+  const plain = rulesFolder(root, 'plain-rules', { 'AGENTS.md': '# Plain rules\n' }, { git: false });
+  admin.ok(['profile', 'link', plain, '--yes']);
+  const project = folder('orders-api');
+  const pinPlain = admin.run(['profile', 'apply', 'plain-rules', project, '--pin', '--yes']);
+  assert.equal(pinPlain.status, 64);
+  assert.doesNotMatch(pinPlain.stderr, /profile connect/);
+
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  gitIn(dir, 'add', 'profile.json');
+  gitIn(dir, 'commit', '--quiet', '-m', 'Add profile.json');
+  fs.appendFileSync(path.join(dir, 'templates', 'AGENTS.md'), '- Pinned rule.\n');
+  gitIn(dir, 'commit', '--quiet', '-am', 'Pinned rule');
+  const pinned = folder('pinned-api');
+  admin.ok(['profile', 'apply', 'team-rules', pinned, '--pin', '--yes']);
+  gitIn(dir, 'reset', '--quiet', '--hard', 'HEAD~1');
+  gitIn(dir, 'reflog', 'expire', '--expire=now', '--all');
+  gitIn(dir, 'gc', '--quiet', '--prune=now');
+  const missing = admin.run(['profile', 'sync', pinned, '--yes']);
+  assert.equal(missing.status, 69);
+  assert.doesNotMatch(missing.stderr, /profile pull/);
 });

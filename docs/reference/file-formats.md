@@ -49,7 +49,7 @@
 ## profile.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: b09b1ec1e88bb7a2bf21ef4ae2a0dcc0a603b04b675a0ac8e9ed7e764a36a328 -->
+<!-- agctx-doc-sources-sha256: d8d7418359997d4eeceded755df6ec2f554ae1d9f903d82b8cec75d5a3b58f2c -->
 
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다. `setup`은 이미 있는 다른 필드를 그대로 둔다.
 
@@ -76,7 +76,7 @@
 ## link.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/link.ts -->
-<!-- agctx-doc-sources-sha256: 089ea0ceca1be6c445427dd35bfcc948371e70e8f7ae1602ade8177c9eedb69b -->
+<!-- agctx-doc-sources-sha256: d0d61dc222c06ac90906a299c98c3b4105dcd8c0afd53cd142d7fa47cd358017 -->
 
 `profile link`로 연결한 프로필이 보관함의 `profiles/<이름>/`에 두는 포인터다. `profile.json`과 규칙 파일은 가리키는 폴더에 있다.
 
@@ -88,8 +88,8 @@
 ```
 
 - `link.json`이 있고 `profile.json`이 없는 보관함 폴더만 포인터로 본다. 받아 온 저장소가 루트에 자기 `link.json`을 가지고 있어도 사본 프로필이다. 판정은 `src/profile/store.ts`의 `isPointerFolder`<!--s:3cf97987e045-->가 한다.
-- `path`는 절대 경로다. 그 폴더가 없거나(`missing-folder`), 그 폴더의 `profile.json`이 없거나(`missing-metadata`) 이 프로필의 것이 아니거나(`invalid-metadata`), `link.json`을 읽을 수 없으면(`invalid-link`) 끊긴 링크다. `profile list`는 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `{ name, path, reason }`), 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 멈춘다. 판정은 `src/profile/store.ts`의 `getBrokenLinks`<!--s:e5de6669117a-->가 한다.
-- 형식이 틀리면 읽을 수 없다고 멈춘다. 그래도 `profile remove`로는 지울 수 있다.
+- `path`는 절대 경로다. 그 폴더가 없거나(`missing-folder`), 그 폴더의 `profile.json`이 없거나(`missing-metadata`) 이 프로필의 것이 아니거나(`invalid-metadata`), `profile.json`이 가리키는 규칙 파일이 없거나(`missing-rules`), `link.json`을 읽을 수 없으면(`invalid-link`) 끊긴 링크다. `invalid-link`의 `path`는 `link.json` 파일의 경로다. `profile list`는 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `{ name, path, reason }`), 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 멈춘다. 판정은 `src/profile/store.ts`의 `profileLocation`<!--s:bee026f1ec9b-->이 하고, 목록은 `src/profile/store.ts`의 `getBrokenLinks`<!--s:b4b6d8101494-->가 모은다.
+- 형식이 틀리면 읽을 수 없다고 멈춘다. 같은 이름으로 `profile link`하면 포인터를 새로 쓰고, `profile remove`로 지울 수도 있다.
 - `profile remove`는 이 파일이 든 보관함 폴더만 지우고, 가리키는 폴더는 건드리지 않는다.
 - `profile list --json`의 `profiles` 항목에는 연결한 프로필에만 `link`(가리키는 경로)가 붙는다.
 

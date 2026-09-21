@@ -13,7 +13,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: 5534be44067bf978a7a5c097f3a3094f3ae0e1ef762790faa8b5280302e5aebc -->
+<!-- agctx-doc-sources-sha256: 504214efc9cc75cd976277851dbd7213a7a3ef7e04378658bccbcaedf9051abf -->
 
 프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
 

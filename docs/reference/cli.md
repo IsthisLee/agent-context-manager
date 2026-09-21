@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: fb902f5f8eb0a33a0d0ff67f40619a3b5f67aaca78559f88b34aeabb55f8a0b2 -->
+<!-- agctx-doc-sources-sha256: 74a215b7ff594738f77b21dc547b7c8b98a760a5ab5a5f9d3e1fa135de3784d4 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -117,7 +117,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: c929fadf4a8857b86db1c02a909a58d04d418b4c0764619cc979ff9c5804a37c -->
+<!-- agctx-doc-sources-sha256: 2c1732944fb66823c4637ab6f9f0ba981aebb0b7c69eaf5fe5ab36a6494ad85f -->
 
 ```bash
 agctx
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 4961f10317caaa16019fb77853e6754ba3d77c53b0fce5650563df61cccca142 -->
+<!-- agctx-doc-sources-sha256: 9f3a8ae91a08f3203424fa855b0c576bd41136e57e439fa3062d961a40bfe56c -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -204,7 +204,7 @@ agctx profile list [--scope <scope>]
 종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
 <!-- agctx:generated:usage:profile.list:end -->
 
-터미널에서는 먼저 전체 또는 `personal`, `company`, `team`, `workspace` scope를 선택한다. 선택한 범위의 프로필 목록과 전체 개수를 표시한 뒤 프로필을 고르거나 새 프로필을 만들거나 Git에서 프로필을 가져온다. `--scope`를 전달하면 범위 선택을 건너뛴다. 프로필을 고르면 다음 작업을 선택한다.
+터미널에서는 먼저 전체 또는 `personal`, `company`, `team`, `workspace` scope를 선택한다. 선택한 범위의 프로필 목록과 전체 개수를 표시한 뒤 프로필을 고르거나, 새 프로필을 만들거나, Git에서 프로필을 가져오거나, 폴더를 프로필로 연결한다. `--scope`를 전달하면 범위 선택을 건너뛴다. 프로필을 고르면 다음 작업을 선택한다.
 
 - 상세 보기
 - 지침 설정
@@ -217,7 +217,31 @@ agctx profile list [--scope <scope>]
 - Git으로 올리기
 - Git에 연결
 
-파이프·스크립트 환경에서는 읽기 쉬운 scope별 텍스트 목록만 출력한다. `--json`이면 `data.profiles`에 프로필 메타데이터 목록을 담는다.
+파이프·스크립트 환경에서는 읽기 쉬운 scope별 텍스트 목록만 출력한다. [`profile link`](#profile-link)로 연결한 프로필은 `이름  -> 폴더`로 표시하고, 끊긴 링크는 `[broken links]` 아래에 이유와 함께 따로 표시한다. 목록에서 끊긴 링크를 고르면 다시 연결과 삭제만 있는 메뉴가 열린다.
+
+`--json`이면 `data.profiles`에 프로필 메타데이터 목록을, `data.brokenLinks`에 끊긴 링크 목록(`{ name, path, reason }`)을 담는다. 연결한 프로필의 메타데이터에는 `link`(가리키는 폴더)가 붙는다. `reason` 값은 [파일 형식](file-formats.md#linkjson)에 있다. `--scope`를 주면 끊긴 링크는 텍스트와 JSON 모두에서 빠진다. 끊긴 링크에는 용도를 읽을 `profile.json`이 없기 때문이다.
+
+```bash
+$ agctx profile list --json 2>/dev/null
+{
+  "schemaVersion": 1,
+  "command": "profile list",
+  "exitCode": 0,
+  "ok": true,
+  "data": {
+    "profiles": [],
+    "brokenLinks": [
+      {
+        "name": "team-rules",
+        "path": "/work/team-rules",
+        "reason": "missing-rules"
+      }
+    ]
+  },
+  "warnings": [],
+  "errors": []
+}
+```
 
 ```bash
 agctx profile list --scope company
@@ -243,7 +267,7 @@ agctx profile view <name>
 
 ### `profile remove`
 
-프로필 보관함에서 선택한 프로필 폴더(`profile.json`·규칙 파일, Git 프로필이면 `.git`까지)를 통째로 삭제한다. 원격 Git 저장소와, 이미 프로젝트에 적용해 둔 파일은 바꾸지 않는다.
+프로필 보관함에서 선택한 프로필 폴더(`profile.json`·규칙 파일, Git 프로필이면 `.git`까지)를 통째로 삭제한다. [`profile link`](#profile-link)로 연결한 프로필이면 보관함의 포인터만 지우고 연결한 폴더는 그대로 둔다. 원격 Git 저장소와, 이미 프로젝트에 적용해 둔 파일은 바꾸지 않는다. `--yes`로 이름을 주면 끊긴 링크나 `profile.json`이 없는 폴더처럼 프로필로 읽을 수 없는 보관함 폴더도 지운다.
 
 <!-- agctx:generated:usage:profile.remove:start -->
 ```bash
@@ -493,19 +517,22 @@ agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--
 | 옵션·인자 | 설명 |
 | --- | --- |
 | `[<path>]` | 연결할 폴더. 생략하면 지금 폴더 |
-| `--name <name>` | 프로필 이름. 생략하면 폴더 이름 |
+| `--name <name>` | 프로필 이름. 생략하면 폴더 이름. 이미 있는 링크를 다시 연결할 때는 그 링크의 이름 |
 | `--scope <scope>` | 용도. 생략하면 `personal` |
 | `--instructions <file>` | 규칙 파일. 생략하면 루트의 `AGENTS.md`, 없으면 폴더 안에 하나뿐인 `AGENTS.md` |
 | `--dry-run` | 계획만 보여 주고 아무것도 쓰지 않는다 |
 | `--yes` | 확인하지 않고 쓴다. 터미널이 아니면 있어야 진행한다 |
 
-- 규칙 파일 후보는 `.git`과 `node_modules`를 빼고 찾는다. 루트에 `AGENTS.md`가 없고 후보가 여럿이면 후보 목록을 보여 주고 64로 멈춘다.
-- 폴더에 `profile.json`이 이미 있으면 새로 쓰지 않고 그 이름·용도·규칙 파일을 쓴다. 옵션으로 준 값이 다르면 64로 멈춘다.
-- 같은 이름의 프로필이 보관함에 이미 있고 링크가 아니면 64로 멈춘다. 같은 이름의 링크가 다른 폴더를 가리키면, 지금 가리키는 폴더를 밝혀 바꿀지 묻는다(`relink`).
+- 루트에 `AGENTS.md`가 있으면 더 찾지 않고 그것을 쓴다. 없으면 폴더 안의 `AGENTS.md`를 네 단계 아래 폴더까지 찾는다. 숨은 폴더(`.`으로 시작)와 `node_modules`·`vendor`·`dist`·`build`는 보지 않는다. 후보가 여럿이면 후보 목록을 보여 주고 64로 멈춘다.
+- 규칙 파일은 폴더 안의 일반 파일이어야 한다. 심볼릭 링크면 64로 멈추고, 링크가 폴더 안의 파일을 가리키면 그 파일을 `--instructions`로 주라고 안내한다. 고정과 `profile clone`은 규칙 파일을 Git에서 읽는데, Git에는 링크가 가리키는 파일이 아니라 링크 자체가 기록되기 때문이다.
+- Git 저장소 루트가 아닌 하위 폴더는 64로 멈추고, 저장소 루트를 연결하면서 규칙 파일을 `--instructions <하위 폴더>/AGENTS.md`로 주라고 안내한다. 고정·`profile status`·`profile clone`이 저장소 루트를 기준으로 동작하기 때문이다.
+- `--name`을 생략했는데 폴더 이름이 프로필 이름 규칙에 맞지 않으면 64로 멈추고, 규칙에 맞게 바꾼 이름을 `--name` 예시로 보여 준다(`TeamRules`면 `--name teamrules`).
+- 폴더에 `profile.json`이 이미 있으면 새로 쓰지 않고 그 이름·용도·규칙 파일을 쓴다. 옵션으로 준 값이 다르면 64로 멈춘다. 그 `profile.json`이 가리키는 규칙 파일이 없으면 `--instructions`가 아니라 `profile.json`을 고치라고 안내한다.
+- 같은 이름의 프로필이 보관함에 이미 있고 링크가 아니면 64로 멈춘다. 같은 이름의 링크가 다른 폴더를 가리키면 지금 가리키는 폴더를 밝혀 바꿀지 묻고, 포인터를 읽을 수 없으면 그렇다고 밝혀 다시 연결할지 묻는다(`relink`).
 - 연결한 프로필은 `view`·`apply`·`sync`·`setup`·`check`가 그 폴더를 직접 읽고 쓰므로, 커밋하지 않은 수정도 바로 적용된다. 그 상태로 적용하면 `uncommitted`로 기록하고 `--pin`은 거부한다.
 - 연결한 프로필에서 `pull`·`push`·`connect`는 64로 멈추고 그 폴더에서 git을 쓰라고 안내한다. `status`는 `--refresh`를 줘도 그 폴더에서 `fetch`하지 않는다. `remove`는 포인터만 지운다.
-- 연결한 폴더를 옮기거나 지우거나 그 폴더의 `profile.json`이 없어지면 `profile list`가 끊긴 링크로 이유와 함께 보여 주고, 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈춘다.
-- TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더에 `profile.json`이 없으면 규칙 파일(찾은 `AGENTS.md`들과 직접 입력), 이름, 용도를 묻는다. 목록에서 끊긴 링크를 고르면 다시 연결과 삭제만 있는 메뉴가 열린다.
+- 연결한 폴더를 옮기거나 지우거나, 그 폴더의 `profile.json`이나 규칙 파일이 없어지면 `profile list`가 끊긴 링크로 이유와 함께 보여 준다. 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈추고, 같은 프로필로 되살리는 `agctx profile link <경로> --name <name>`을 안내한다. `check`는 멈추지 않고 경고한다.
+- TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더에 `profile.json`이 없으면 규칙 파일(찾은 `AGENTS.md`들과 직접 입력), 이름, 용도를 묻는다. 목록에서 끊긴 링크를 고르면 다시 연결과 삭제만 있는 메뉴가 열리고, 다시 연결하면 이름을 묻지 않고 그 링크의 이름을 쓴다.
 
 ```bash
 $ cd /work/team-rules
@@ -515,6 +542,10 @@ Plan:
   link      ~/.agctx/profiles/team-rules -> /work/team-rules
 Linked profile team-rules to /work/team-rules.
 Next: agctx profile apply team-rules <project> to try it. To share it, commit profile.json in that folder and push; teammates run agctx profile clone <git-url>.
+
+$ agctx profile link /work/company-configs/agent-rules --yes
+Error: /work/company-configs/agent-rules is inside the Git repository /work/company-configs.
+Next: Pinning and profile clone work on the repository root, so link the root and name the rules file in it: agctx profile link "/work/company-configs" --instructions agent-rules/AGENTS.md
 ```
 
 ### `profile status`
@@ -534,7 +565,7 @@ agctx profile status [--refresh] [<name>]
 | `<name>` | 확인할 프로필; 생략하면 모든 프로필 |
 | `--refresh` | 원격에서 fetch한 뒤 비교; 생략하면 네트워크에 접속하지 않고 마지막으로 받은 원격 정보로 비교 |
 
-한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 원격에서 먼저 받을지 묻고, Yes(기본)면 `--refresh`로 실행한다. `profile link`로 연결한 프로필은 그 폴더를 가리키는 경로를 함께 보여 주고, `--refresh`를 줘도 그 폴더에서 fetch하지 않으며, 다음 명령 대신 그 폴더에서 git을 쓰라고 안내한다. TUI도 이 경우 원격에서 받을지 묻지 않는다.
+한 줄은 `이름`, `원격 브랜치@커밋`(원격 브랜치는 현재 브랜치가 추적하는 브랜치), `clean` 또는 커밋하지 않은 변경 수, `ahead N, behind N`을 탭으로 구분한다. Git 저장소가 아닌 프로필은 `not connected to Git`, 추적 브랜치가 없으면 `no remote branch`로 표시한다. 뒤처졌으면 `profile pull`, 앞섰으면 `profile push`를 다음 명령으로 알려 준다. TUI의 `Git 상태`는 원격에서 먼저 받을지 묻고, Yes(기본)면 `--refresh`로 실행한다. `profile link`로 연결한 프로필은 그 폴더를 가리키는 경로를 함께 보여 주고, `--refresh`를 줘도 그 폴더에서 fetch하지 않으며, 다음 명령 대신 그 폴더에서 git을 쓰라고 안내한다. 연결한 폴더가 Git 저장소가 아니면 경로만 보여 주고 git 안내는 하지 않는다. TUI도 연결한 프로필이면 원격에서 받을지 묻지 않는다.
 
 ```bash
 $ agctx profile status --refresh team-backend
@@ -668,6 +699,7 @@ agctx check [--refresh] [<project>]
 
 - 이 컴퓨터에 프로필이 있으면 기록한 버전(고정했으면 기록한 커밋)으로 다시 만든 결과와 비교한다.
 - CI처럼 프로필이 없으면 그 비교를 건너뛰고 경고한다. Git 프로필로 적용한 저장소라면 `--refresh`로 원격과 비교한다. 원격 접근이 실패하면 69다.
+- [`profile link`](#profile-link)로 연결한 프로필이 끊긴 링크면 이 컴퓨터에 프로필이 없는 것으로 보고, 끊긴 이유와 경로를 경고에 붙인다. 종료 코드는 나머지 결과대로 정해진다.
 - 아직 적용하지 않은 프로젝트는 64로 끝나고 `profile apply`를 안내한다.
 - CI 설정 예시는 [CI와 자동화에서 쓰기](../guides/ci.md#ci에서-확인하기)에 있다.
 

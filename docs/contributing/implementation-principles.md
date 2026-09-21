@@ -208,13 +208,13 @@ flowchart TD
 ### 이 패키지에서의 적용 예시
 
 - 프로필 데이터의 기준 위치는 (`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
-- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:7cd0f81c4b88-->, `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->).
+- 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:9cd8a4fac338-->, `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->).
 - 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 도구별 포인터 파일, `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
 - `AGCTX_HOME` 환경변수로 프로필 저장 위치를 바꿀 수 있다(테스트·스모크가 이를 사용한다: `tools/package-smoke.ts`). 이 값이 실제로 적용됐는지는 저장 경로를 직접 확인해야 한다.
-- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않고, `profile link`로 연결한 프로필은 보관함의 포인터만 지운다(`src/profile/store.ts`의 `removeProfile`<!--s:869096c8511e-->, [프로필 삭제](../concepts/profiles.md#프로필-삭제)).
+- 프로필 데이터는 기본적으로 `~/.agctx/profiles`(`AGCTX_HOME`이 설정되면 그 폴더의 `profiles/`)에 있고 전역 설치 위치와 다르다(`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->). 프로필을 삭제해도 이미 프로젝트에 적용된 파일은 지우지 않고, `profile link`로 연결한 프로필은 보관함의 포인터만 지운다(`src/profile/store.ts`의 `removeProfile`<!--s:a1ce476ed206-->, [프로필 삭제](../concepts/profiles.md#프로필-삭제)).
 
 ---
 

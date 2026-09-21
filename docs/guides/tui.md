@@ -21,7 +21,7 @@
 ## 시작하기
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: c929fadf4a8857b86db1c02a909a58d04d418b4c0764619cc979ff9c5804a37c -->
+<!-- agctx-doc-sources-sha256: 2c1732944fb66823c4637ab6f9f0ba981aebb0b7c69eaf5fe5ab36a6494ad85f -->
 
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
@@ -114,7 +114,7 @@ Created profile: team-backend (team)
 ## 지침 고르기
 
 <!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: d84b443ae3fe6dcf0e63ba1a2c1f09b378a848d11bbe7937a192ba75522be2f7 -->
+<!-- agctx-doc-sources-sha256: 6885a048334cc39c7aadd39d89f52e3c39812f53f2a57d4ab2a1ffad8b221caf -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -324,6 +324,8 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | **Manage profiles** > 프로필 > **Pull from Git** | **프로필 관리** > 프로필 > **Git에서 받기** | `agctx profile pull <name>` |
 | **Manage profiles** > 프로필 > **Push to Git** | **프로필 관리** > 프로필 > **Git으로 올리기** | `agctx profile push <name>` |
 | **Manage profiles** > 프로필 > **Connect to Git** | **프로필 관리** > 프로필 > **Git에 연결** | `agctx profile connect <name> <git-url>`, 추적할 원격 브랜치를 입력하면 `--branch` |
+| **Manage profiles** > 끊긴 링크 > **Link a folder again** | **프로필 관리** > 끊긴 링크 > **폴더를 다시 연결** | `agctx profile link <path> --name <name>`(이름은 묻지 않고 그 링크의 이름을 쓴다) |
+| **Manage profiles** > 끊긴 링크 > **Remove the link** | **프로필 관리** > 끊긴 링크 > **링크 지우기** | `agctx profile remove <name>` |
 | **Check a project** > **Profile version** | **프로젝트 점검** > **프로필 버전** | `agctx check <project>`, 원격 확인에 Yes면 `--refresh` |
 | **Check a project** > **Instruction files each agent reads** | **프로젝트 점검** > **에이전트가 읽는 지침 파일** | `agctx explain <path>`, 에이전트 하나를 고르면 `--agent` |
 | **Check a project** > **Delivery to agents** | **프로젝트 점검** > **에이전트 전달 확인** | `agctx verify <path>`, probe를 고르면 `--probe` |

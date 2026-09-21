@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { linkQuestion, planLink } from '../src/profile/link.ts';
-import { linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, statusRefreshPrompt } from '../src/tui/profile.ts';
+import { linkNameStep, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, statusRefreshPrompt } from '../src/tui/profile.ts';
 
 /**
  * What the TUI decides around `profile link`, checked the way `evals/tui-pin.test.ts` checks the pin
@@ -102,4 +102,42 @@ test('moving a link that still works asks about replacing it, naming the folder 
   assert.equal(plan.link, 'relink');
   assert.ok(linkQuestion(plan).includes(first), 'the question names the folder being replaced');
   assert.ok(!linkQuestion(planLink(folder('c/fresh', { 'AGENTS.md': '# Fresh\n' }))).includes(first));
+});
+
+test('the TUI rules file list leaves out hidden, dependency, and build folders and very deep files', t => {
+  const { folder } = workspace(t);
+  const dir = folder('busy-rules', {
+    'templates/AGENTS.md': '# Rules\n',
+    'node_modules/pkg/AGENTS.md': '# Dependency\n',
+    '.cache/AGENTS.md': '# Hidden\n',
+    'dist/AGENTS.md': '# Build\n',
+    'a/b/c/d/e/AGENTS.md': '# Deep\n'
+  });
+
+  assert.deepEqual(linkRuleOptions(dir).options.map(option => option.value), ['templates/AGENTS.md', OTHER_RULES_FILE]);
+});
+
+test('a link whose pointer cannot be read can be pointed at a folder again under the same name', t => {
+  const { agctx, folder, root } = workspace(t);
+  const dir = folder('company-rules', { 'AGENTS.md': '# Company\n' });
+  agctx('profile', 'link', dir, '--name', 'company', '--yes');
+  fs.writeFileSync(path.join(root, 'home', 'profiles', 'company', 'link.json'), 'not json\n');
+
+  const plan = planLink(dir, { name: 'company' });
+
+  assert.equal(plan.link, 'relink');
+  assert.equal(plan.relinkFrom, null, 'an unreadable pointer names no folder it pointed at');
+  assert.ok(!linkQuestion(plan).includes('link.json'), 'the question does not call the pointer file a linked folder');
+});
+
+test('linking a broken link again from its menu keeps its name instead of asking for one', () => {
+  assert.deepEqual(linkNameStep('company', '/work/team-rules'), { ask: false, name: 'company' });
+  assert.deepEqual(linkNameStep(null, '/work/team-rules'), { ask: true, name: 'team-rules' });
+});
+
+test('the TUI list decides which menu to open from the broken links it already read', t => {
+  workspace(t);
+
+  assert.equal(menuFor('ghost', [{ name: 'ghost', path: '/nowhere', reason: 'missing-folder' }]), 'broken-link');
+  assert.equal(menuFor('ghost', []), 'profile');
 });

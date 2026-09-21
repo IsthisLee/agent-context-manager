@@ -144,11 +144,11 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 9210c61325678544ec166472e36dc88613bd6439986a75af2a3c856b9210dca6 -->
+<!-- agctx-doc-sources-sha256: 2a66b22268e993eba2b2b899abf36abc72ba800e562ebd0dbe72f031d1da8804 -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
-1. **그 폴더에서 연결한다.** `profile link`가 규칙 파일을 찾아 `profile.json`을 만들고, 보관함에는 그 폴더를 가리키는 포인터만 둔다. 커밋은 하지 않는다.
+1. **저장소 루트에서 연결한다.** `profile link`가 규칙 파일을 찾아 `profile.json`을 만들고, 보관함에는 그 폴더를 가리키는 포인터만 둔다. 커밋은 하지 않는다.
 
    ```bash
    $ cd /work/team-rules
@@ -161,6 +161,8 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
    ```
 
    규칙 파일은 루트의 `AGENTS.md`를 먼저 쓰고, 없으면 폴더 안에 하나뿐인 `AGENTS.md`를 쓴다. 여럿이면 후보를 보여 주며 멈추므로 `--instructions <경로>`로 고른다. 이름과 용도는 `--name`·`--scope`로 준다. `--yes` 없이 터미널에서 실행하면 계획을 보여 준 뒤 확인을 묻는다.
+
+   규칙이 저장소 안의 하위 폴더에 있어도 하위 폴더가 아니라 저장소 루트를 연결하고, 규칙 파일을 `--instructions <하위 폴더>/AGENTS.md`로 준다. 하위 폴더를 주면 루트를 쓰라는 명령을 알려 주며 멈춘다. 고정과 `clone`이 저장소 루트를 기준으로 동작하기 때문이다. 규칙 파일이 심볼릭 링크(예: `AGENTS.md -> CLAUDE.md`)면 링크가 가리키는 파일을 `--instructions`로 준다.
 
 2. **적용해 본다.** `agctx profile apply team-rules <project>`는 그 폴더의 규칙 파일을 바로 읽으므로 커밋하지 않은 수정도 들어간다. 그 상태로 적용하면 `agctx.project.json`에 `uncommitted: true`가 남고 `--pin`은 거부된다.
 
@@ -201,7 +203,7 @@ Next: Add profile.json at the repository root, for example {"schemaVersion": 1, 
 - 프로필에 들어가는 규칙은 `instructions`가 가리킨 파일 하나다. 저장소의 다른 파일은 프로젝트로 옮기지 않는다.
 - `profile setup`은 가리킨 파일에 지침 구역을 쓰고 루트에 `AGENTS.md`를 만들지 않는다. 연결한 프로필이면 그 폴더의 파일이 바로 바뀌므로 `git status`에 드러난다.
 - 연결한 프로필에서는 `profile pull`·`push`·`connect`가 멈추고, 그 폴더에서 git으로 받고 올리라고 안내한다. `profile status --refresh`도 그 폴더에서 받아 오지 않는다. `clone`으로 받은 프로필은 지금처럼 `profile pull`로 받고, 보관함의 프로필 폴더에서 고치고 커밋한 뒤 `profile push`로 올릴 수도 있다.
-- 연결한 폴더를 옮기거나 지우거나, 그 폴더에서 커밋하지 않은 `profile.json`이 지워지면 `profile list`에 끊긴 링크로 나온다. 옮긴 곳에서 `profile link`를 다시 실행하면 이어지고, `profile remove`는 포인터만 지운다.
+- 연결한 폴더를 옮기거나 지우거나, 그 폴더에서 커밋하지 않은 `profile.json`이나 규칙 파일이 없어지면 `profile list`에 끊긴 링크로 나온다. `agctx profile link <경로> --name <이름>`을 다시 실행하면 같은 프로필로 이어지고, `profile remove`는 포인터만 지운다.
 - `instructions`로 쓸 수 있는 경로와 옛 버전의 동작은 [파일 형식](../reference/file-formats.md#profilejson)에, 명령의 옵션은 [CLI Reference](../reference/cli.md#profile-link)에 있다.
 
 ## 적용 담당: 저장소에 적용하기
@@ -314,7 +316,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 205973fe8a37cdb456d17ccdda8d3690ac4454cbbc7010f5fdaf8a7decbfea32 -->
+<!-- agctx-doc-sources-sha256: 1f46e1e1659d65d48c56b572b0faf6722c14a08a8b96a333f100fa5449d6d80d -->
 
 ```mermaid
 sequenceDiagram
@@ -390,7 +392,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f73a8ac9be06e3cd48840e84a5f6b3fbf8a258de52436e5d1ee380fec981229f -->
+<!-- agctx-doc-sources-sha256: 628cfab240447330e372fab8396ab4ae808cff66be9e51314821c2eb71a9bfe1 -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

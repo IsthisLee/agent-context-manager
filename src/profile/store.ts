@@ -3,7 +3,7 @@ import path from 'node:path';
 import { say } from '../commands/output.ts';
 import { _, getLocale } from '../i18n/index.ts';
 import { usageError } from '../shared/errors.ts';
-import { writeTextAtomic } from '../shared/fs-utils.ts';
+import { isSymbolicLink, writeTextAtomic } from '../shared/fs-utils.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import type { ListedProfile, Profile, ProfileMetadata, Scope } from '../shared/types.ts';
@@ -25,8 +25,11 @@ export interface ProfileLink {
   broken: boolean;
 }
 
-/** Why a linked profile cannot be used: the folder is gone, lost its profile.json, or holds another profile's; or the pointer is unreadable. */
-export type BrokenLinkReason = 'missing-folder' | 'missing-metadata' | 'invalid-metadata' | 'invalid-link';
+/**
+ * Why a linked profile cannot be used: the folder is gone, lost its profile.json, holds another profile's, or lost
+ * the rules file its profile.json names; or the pointer itself cannot be read.
+ */
+export type BrokenLinkReason = 'missing-folder' | 'missing-metadata' | 'invalid-metadata' | 'missing-rules' | 'invalid-link';
 
 export interface BrokenLink {
   name: string;
@@ -67,16 +70,42 @@ export function profileLink(name: string): ProfileLink | null {
   return { path: target, broken };
 }
 
-/** What keeps a link from being read as the profile `name`, or null when nothing does. */
-function linkProblem(name: string, link: ProfileLink): BrokenLinkReason | null {
-  if (link.broken) return 'missing-folder';
-  const metadataPath = path.join(link.path, PROFILE_METADATA_FILE);
-  if (!fs.existsSync(metadataPath)) return 'missing-metadata';
+export interface ProfileLocation {
+  /** The folder that holds profile.json and the rules file: the store folder, or the folder a link points at. */
+  dir: string;
+  /** The folder a linked profile points at, or its unreadable pointer file; null for a profile in the store. */
+  link: string | null;
+  /** Why a linked profile cannot be used, or null. */
+  problem: BrokenLinkReason | null;
+  /** The linked profile's metadata when it can be used; not read for a profile in the store. */
+  metadata: ProfileMetadata | null;
+}
+
+/**
+ * Where the profile `name` keeps its files and, for a link, whether it can be used. Every caller that needs a
+ * profile's folder goes through here, so a broken link is judged the same way everywhere. Null when the store has
+ * no entry by that name.
+ */
+export function profileLocation(name: string): ProfileLocation | null {
+  const storeDir = path.join(profileHome(), name);
+  if (!fs.existsSync(storeDir) && !isSymbolicLink(storeDir)) return null;
+  if (!isPointerFolder(storeDir)) return { dir: storeDir, link: null, problem: null, metadata: null };
+  let link: ProfileLink;
   try {
-    return isValidProfileMetadata(JSON.parse(fs.readFileSync(metadataPath, 'utf8')), name) ? null : 'invalid-metadata';
+    link = profileLink(name) as ProfileLink;
   } catch {
-    return 'invalid-metadata';
+    return { dir: storeDir, link: path.join(storeDir, LINK_FILE), problem: 'invalid-link', metadata: null };
   }
+  const located = (problem: BrokenLinkReason | null, metadata: ProfileMetadata | null = null): ProfileLocation => ({ dir: link.path, link: link.path, problem, metadata });
+  if (link.broken) return located('missing-folder');
+  const metadataPath = path.join(link.path, PROFILE_METADATA_FILE);
+  if (!fs.existsSync(metadataPath)) return located('missing-metadata');
+  let metadata: unknown = null;
+  try { metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8')); } catch {}
+  if (!isValidProfileMetadata(metadata, name)) return located('invalid-metadata');
+  const rules = instructionsFile(metadata);
+  if (!isInstructionsPath(rules) || !fs.existsSync(path.join(link.path, ...rules.split('/')))) return located('missing-rules', metadata);
+  return located(null, metadata);
 }
 
 /** Linked profiles that cannot be used, with the reason. They stay listed so they can be found, linked again, or removed. */
@@ -85,17 +114,8 @@ export function getBrokenLinks(): BrokenLink[] {
   if (!fs.existsSync(home)) return [];
   const broken: BrokenLink[] = [];
   for (const name of fs.readdirSync(home).sort()) {
-    const dir = path.join(home, name);
-    if (!isPointerFolder(dir)) continue;
-    let link: ProfileLink | null;
-    try {
-      link = profileLink(name);
-    } catch {
-      broken.push({ name, path: path.join(dir, LINK_FILE), reason: 'invalid-link' });
-      continue;
-    }
-    const reason = link ? linkProblem(name, link) : null;
-    if (link && reason) broken.push({ name, path: link.path, reason });
+    const location = profileLocation(name);
+    if (location?.problem) broken.push({ name, path: location.link ?? location.dir, reason: location.problem });
   }
   return broken;
 }
@@ -176,16 +196,19 @@ export function regularFileInside(dir: string, file: string): string | null {
 
 export function readProfile(name: string): Profile {
   validateProfileName(name);
-  const link = profileLink(name);
-  if (link?.broken) {
-    throw usageError('profile.link-broken', _('error.profile.link-broken', { name, path: link.path }), _('hint.profile.link-broken', { name, path: link.path }));
+  const location = profileLocation(name);
+  if (!location) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+  // A pointer that cannot be read says so itself, with how to remove it.
+  if (location.problem === 'invalid-link') profileLink(name);
+  const { dir: profileDir, link } = location;
+  if (location.problem === 'missing-folder') {
+    throw usageError('profile.link-broken', _('error.profile.link-broken', { name, path: profileDir }), _('hint.profile.link-broken', { name, path: profileDir }));
   }
-  const profileDir = link ? link.path : path.join(profileHome(), name);
+  if (location.problem === 'missing-metadata') {
+    throw usageError('profile.link-metadata-missing', _('error.profile.link-metadata-missing', { name, path: profileDir }), _('hint.profile.link-metadata-missing', { name, path: profileDir }));
+  }
   const metadataPath = path.join(profileDir, PROFILE_METADATA_FILE);
-  if (!fs.existsSync(metadataPath)) {
-    if (link) throw usageError('profile.link-metadata-missing', _('error.profile.link-metadata-missing', { name, path: link.path }), _('hint.profile.link-metadata-missing', { name, path: link.path }));
-    throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
-  }
+  if (!fs.existsSync(metadataPath)) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
   let metadata: unknown;
   try {
     metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
@@ -201,10 +224,11 @@ export function readProfile(name: string): Profile {
   // remote content is checked for links by clone and pull before it gets here.
   const instructionsPath = path.join(profileDir, ...instructions.split('/'));
   if (!fs.existsSync(instructionsPath)) {
+    if (link) throw usageError('profile.link-rules-missing', _('error.profile.link-rules-missing', { name, path: profileDir, file: instructions }), _('hint.profile.link-rules-missing', { file: metadataPath }));
     if (metadata.instructions === undefined) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
     throw usageError('profile.instructions-missing', _('error.profile.instructions-missing', { source: metadataPath, file: instructions }), _('hint.profile.instructions'));
   }
-  return { profileDir, metadataPath, instructions, instructionsPath, metadata, link: link ? link.path : null };
+  return { profileDir, metadataPath, instructions, instructionsPath, metadata, link };
 }
 
 export function createProfile(name: string, scope: string = 'personal'): ProfileMetadata {
@@ -227,12 +251,16 @@ export function getProfiles(): ListedProfile[] {
   const profiles: ListedProfile[] = [];
   for (const name of fs.readdirSync(home).sort()) {
     try {
-      const link = profileLink(name);
-      if (link && linkProblem(name, link)) continue;
-      const metadataPath = path.join(link ? link.path : path.join(home, name), PROFILE_METADATA_FILE);
+      const location = profileLocation(name);
+      if (!location || location.problem) continue;
+      if (location.link && location.metadata) {
+        profiles.push({ ...location.metadata, link: location.link });
+        continue;
+      }
+      const metadataPath = path.join(location.dir, PROFILE_METADATA_FILE);
       if (!fs.existsSync(metadataPath)) continue;
       const metadata: unknown = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-      if (isValidProfileMetadata(metadata, name)) profiles.push(link ? { ...metadata, link: link.path } : metadata);
+      if (isValidProfileMetadata(metadata, name)) profiles.push(metadata);
     } catch {}
   }
   return profiles.sort((a, b) => `${a.scope}:${a.name}`.localeCompare(`${b.scope}:${b.name}`));
@@ -240,11 +268,11 @@ export function getProfiles(): ListedProfile[] {
 
 export function removeProfile(name: string): void {
   validateProfileName(name);
-  // A linked profile's store folder holds only the pointer, so this never reaches the folder it points at,
-  // and a link whose folder is gone can still be removed.
+  // Only the store folder goes: for a link that is the pointer, never the folder it points at. A store folder
+  // that is not a valid profile is removable too, since link and clone tell people to clear the name this way.
   const storeDir = path.join(profileHome(), name);
-  if (isPointerFolder(storeDir)) fs.rmSync(storeDir, { recursive: true, force: true });
-  else fs.rmSync(readProfile(name).profileDir, { recursive: true, force: true });
+  if (!fs.existsSync(storeDir) && !isSymbolicLink(storeDir)) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+  fs.rmSync(storeDir, { recursive: true, force: true });
   say(_('remove.done', { name }));
 }
 

@@ -2,7 +2,7 @@ import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { gitIn, makeWorkspace, type Person } from './support/git-workspace.ts';
+import { commitAndPush, fakeGh, gitIn, makeWorkspace, serviceRepo, type Person } from './support/git-workspace.ts';
 
 /**
  * `profile link` turns a rules repository folder that already exists on this
@@ -327,4 +327,160 @@ test('the hints on a linked profile never point at a command that a link refuses
   const missing = admin.run(['profile', 'sync', pinned, '--yes']);
   assert.equal(missing.status, 69);
   assert.doesNotMatch(missing.stderr, /profile pull/);
+});
+
+const noLinks = process.platform === 'win32' ? 'symbolic links need extra privileges on Windows' : false;
+
+test('the hint for a linked folder that lost profile.json brings back the same profile', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--name', 'company', '--yes']);
+  fs.rmSync(path.join(dir, 'profile.json'));
+
+  const view = admin.run(['profile', 'view', 'company']);
+  assert.equal(view.status, 64);
+  assert.match(view.stderr, /--name company/);
+
+  admin.ok(['profile', 'link', dir, '--name', 'company', '--yes']);
+  assert.deepEqual(listed(admin).profiles.map((profile: { name: string }) => profile.name), ['company']);
+});
+
+test('check warns instead of stopping on every kind of broken link', t => {
+  const { root, admin, folder } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  gitIn(dir, 'add', 'profile.json');
+  gitIn(dir, 'commit', '--quiet', '-m', 'Add profile.json');
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'team-rules', project, '--yes']);
+
+  fs.rmSync(path.join(dir, 'profile.json'));
+  const lostMetadata = admin.run(['check', project]);
+  assert.equal(lostMetadata.status, 0, lostMetadata.stderr);
+  assert.ok((lostMetadata.stdout + lostMetadata.stderr).includes(dir));
+
+  fs.writeFileSync(path.join(admin.home, 'profiles', 'team-rules', 'link.json'), 'not json\n');
+  const unreadable = admin.run(['check', project]);
+  assert.equal(unreadable.status, 0, unreadable.stderr);
+});
+
+test('a linked folder whose rules file is gone is listed as broken and named when used', t => {
+  const { root, admin, folder } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  fs.renameSync(path.join(dir, 'templates', 'AGENTS.md'), path.join(dir, 'templates', 'OLD.md'));
+
+  assert.deepEqual(listed(admin).brokenLinks, [{ name: 'team-rules', path: dir, reason: 'missing-rules' }]);
+  const apply = admin.run(['profile', 'apply', 'team-rules', folder('orders-api'), '--yes']);
+  assert.equal(apply.status, 64);
+  assert.ok(apply.stderr.includes('templates/AGENTS.md') && apply.stderr.includes(dir), apply.stderr);
+});
+
+test('a folder whose profile.json names a missing rules file is pointed at profile.json, not at --instructions', t => {
+  const { root, admin } = setup(t);
+  const metadata = JSON.stringify({ schemaVersion: 1, name: 'team-rules', scope: 'team' }) + '\n';
+  const dir = rulesFolder(root, 'team-rules', { 'profile.json': metadata, 'templates/AGENTS.md': '# Team rules\n' });
+
+  const result = admin.run(['profile', 'link', dir, '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /profile\.json/);
+  assert.doesNotMatch(result.stderr, /--instructions/);
+});
+
+test('repos pr lists the commits of a linked profile in the pull request body', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--yes']);
+  gitIn(dir, 'add', 'profile.json');
+  gitIn(dir, 'commit', '--quiet', '-m', 'Add profile.json');
+  const service = serviceRepo(root, 'orders-api');
+  admin.ok(['profile', 'apply', 'team-rules', service.work, '--pin', '--yes']);
+  commitAndPush(service.work, 'Apply team-rules profile');
+  fs.appendFileSync(path.join(dir, 'templates', 'AGENTS.md'), '- Require migration tests.\n');
+  gitIn(dir, 'commit', '--quiet', '-am', 'Require migration tests');
+  const gh = fakeGh(t);
+
+  admin.ok(['repos', 'pr', '--profile', 'team-rules', '--yes'], gh.env);
+
+  const [create] = gh.calls().filter(call => call.args[0] === 'pr' && call.args[1] === 'create');
+  assert.match(create?.body ?? '', /Require migration tests/);
+});
+
+test('a symbolic link named AGENTS.md is reported as a link and its target is suggested', { skip: noLinks }, t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', { 'CLAUDE.md': '# Rules\n' }, { git: false });
+  fs.symlinkSync('CLAUDE.md', path.join(dir, 'AGENTS.md'));
+
+  const refused = admin.run(['profile', 'link', dir, '--yes']);
+  assert.equal(refused.status, 64);
+  assert.match(refused.stderr, /symbolic link/i);
+  assert.match(refused.stderr, /--instructions CLAUDE\.md/);
+
+  admin.ok(['profile', 'link', dir, '--instructions', 'CLAUDE.md', '--yes']);
+});
+
+test('a folder inside a Git repository is linked through the repository root', t => {
+  const { root, admin } = setup(t);
+  const repo = rulesFolder(root, 'company-configs', { 'agent-rules/AGENTS.md': '# Rules\n', 'README.md': '# Configs\n' });
+
+  const result = admin.run(['profile', 'link', path.join(repo, 'agent-rules'), '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.ok(result.stderr.includes(repo), 'the hint names the repository root');
+  assert.match(result.stderr, /--instructions agent-rules\/AGENTS\.md/);
+});
+
+test('status on a linked folder that is not a Git repository gives no Git advice', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'plain-rules', { 'AGENTS.md': '# Plain\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--yes']);
+
+  const status = admin.ok(['profile', 'status', 'plain-rules']);
+
+  assert.ok(status.stdout.includes(dir));
+  assert.doesNotMatch(status.stdout, /pull and push with git|git -C/, 'a folder outside Git gets no git commands to run');
+});
+
+test('a store folder that is not a profile can be removed, as the link hint says', t => {
+  const { root, admin } = setup(t);
+  fs.mkdirSync(path.join(admin.home, 'profiles', 'ghost'), { recursive: true });
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+
+  const taken = admin.run(['profile', 'link', dir, '--name', 'ghost', '--yes']);
+  assert.equal(taken.status, 64);
+  assert.match(taken.stderr, /profile remove ghost/);
+  admin.ok(['profile', 'remove', 'ghost', '--yes']);
+  admin.ok(['profile', 'link', dir, '--name', 'ghost', '--yes']);
+});
+
+test('a folder name that cannot name a profile points at --name with a name that can', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'TeamRules', { 'AGENTS.md': '# Rules\n' }, { git: false });
+
+  const result = admin.run(['profile', 'link', dir, '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /--name teamrules/);
+});
+
+test('the retry command for a path with spaces keeps the path in one piece', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team rules', { 'AGENTS.md': '# Rules\n' }, { git: false });
+
+  const result = admin.run(['profile', 'link', dir, '--name', 'team-rules']);
+
+  assert.equal(result.status, 64);
+  assert.ok(result.stderr.includes(`"${dir}"`), result.stderr);
+});
+
+test('profile list --scope leaves broken links out of JSON as it does out of text', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', subfolderRules);
+  admin.ok(['profile', 'link', dir, '--scope', 'team', '--yes']);
+  fs.rmSync(dir, { recursive: true, force: true });
+
+  const scoped = JSON.parse(admin.ok(['profile', 'list', '--scope', 'team', '--json']).stdout).data;
+  assert.deepEqual(scoped.brokenLinks, []);
+  assert.equal(listed(admin).brokenLinks.length, 1);
 });

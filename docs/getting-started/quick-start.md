@@ -54,7 +54,7 @@ agctx help
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 31fdb21fed4b812884c241a47f7bb72110d45b6739fb455129bf593a4fda5a62 -->
+<!-- agctx-doc-sources-sha256: 220068beda93208426aabc5b7b9d237d53a63bd9dd60ee7bf26f41024ee79654 -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -70,7 +70,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 822041ffeb63a1d39751335979f924d6dd78e3ef27fc9d4e64a28272aa9a5647 -->
+<!-- agctx-doc-sources-sha256: 7795813a002ddf977d05b186696b56a069c327c57326ab9830bbf4465b4206f2 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -132,7 +132,7 @@ Applied profile team-backend to /work/shop
 ## 4. 저장소 확인하기
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 205973fe8a37cdb456d17ccdda8d3690ac4454cbbc7010f5fdaf8a7decbfea32 -->
+<!-- agctx-doc-sources-sha256: 1f46e1e1659d65d48c56b572b0faf6722c14a08a8b96a333f100fa5449d6d80d -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

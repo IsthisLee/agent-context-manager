@@ -54,7 +54,7 @@ flowchart LR
 ## 두 방식의 차이 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: dbb6c03c024cfd2cc7f4d0f81896659231c24e9b9b72803153a110dff8ca709e -->
+<!-- agctx-doc-sources-sha256: 8cde86a4a545a88e2a17645597c49280954a155a435086ea625251448f8bf560 -->
 
 두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 
@@ -108,7 +108,7 @@ Plan: 0 file(s) to change.
 ## 고정한 저장소를 PR로 갱신
 
 <!-- agctx-doc-sources: src/repos/pr.ts -->
-<!-- agctx-doc-sources-sha256: 24efaa3a9ca0a15b10033f95ea4a19c34be4967fee2aa86241b21d6d6dcd827b -->
+<!-- agctx-doc-sources-sha256: 67a857b3828b8544947573190ae9e6fa681e3428bc54bb243a79e1d2180e72dd -->
 
 ```bash
 agctx profile pull team-backend

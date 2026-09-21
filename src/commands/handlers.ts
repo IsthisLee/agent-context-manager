@@ -9,7 +9,7 @@ import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, p
 import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getBrokenLinks, getProfiles, profileLink, removeProfile, viewProfile } from '../profile/store.ts';
+import { createProfile, getBrokenLinks, getProfiles, profileLocation, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -27,7 +27,9 @@ const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode:
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
 const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
-const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw, '--yes'].join(' ');
+/** An argument as it would be typed into a shell: quoted when it holds a space or a character the shell reads. */
+const shellWord = (word: string) => (/^[\w@%+=:,./-]+$/.test(word) ? word : `"${word.replace(/["\\$`]/g, '\\$&')}"`);
+const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(shellWord), '--yes'].join(' ');
 
 /** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
 function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {
@@ -108,7 +110,8 @@ export const HANDLERS: Record<string, Handler> = {
   'profile.list': async parsed => {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
     await listProfiles(scope);
-    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope), brokenLinks: getBrokenLinks() });
+    // A broken link has no scope that can be read, so a scoped list leaves it out, as the text output does.
+    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope), brokenLinks: scope ? [] : getBrokenLinks() });
   },
   'profile.view': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile view <name>');
@@ -184,6 +187,10 @@ export const HANDLERS: Record<string, Handler> = {
       say(describeState(state));
       // A linked folder is pulled and pushed with git there, so the next steps name git, not profile pull or push.
       if (state.link) {
+        if (!state.connected) {
+          say(_('status.link.local', { path: state.link }));
+          continue;
+        }
         say(_('status.link', { path: state.link }));
         if (flag(parsed, 'refresh')) say(_('status.link.no-refresh', { path: state.link }));
         continue;
@@ -383,7 +390,7 @@ function printLinkPlan(plan: LinkPlan): void {
 
 /** Whether `name` is a linked profile, for next steps that must not name commands a link refuses. */
 function linkedProfile(name: string): boolean {
-  try { return Boolean(profileLink(name)); } catch { return false; }
+  try { return Boolean(profileLocation(name)?.link); } catch { return false; }
 }
 
 function describeState(state: ReturnType<typeof profileGitState>): string {

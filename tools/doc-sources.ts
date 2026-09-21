@@ -85,3 +85,75 @@ export function docSourceSections(content: string): DocSourceSection[] {
     };
   });
 }
+
+/** The digests a stamp writes: a section's recorded hash and the marker beside a cited name. */
+const DIGEST_IN_LINE = /(agctx-doc-sources-sha256:\s*)(?:[0-9a-f]{64}|PENDING)|<!--\s*s:[0-9a-f]{12}\s*-->/g;
+
+/** The same line with every digest blanked, so two lines that differ only in a digest compare equal. */
+function withoutDigests(line: string): string {
+  return line.replace(DIGEST_IN_LINE, (_whole, prefix: string | undefined) => (prefix ? `${prefix}<digest>` : '<digest>'));
+}
+
+/**
+ * Markdown documents in a diff whose only change is a digest a stamp writes.
+ *
+ * Re-reading the document is the point of the gate, and `--stamp` passes without it, so a commit
+ * that carries nothing but new digests is the shape of a document nobody re-read. Judged from the
+ * diff alone: both sides are compared with their digests blanked, so a document that also gained,
+ * lost, or reworded a line is left out. PR #54 is the case this catches, where a README kept the
+ * sentence "6개 항목" while its hash moved on.
+ */
+export function restampOnlyDocuments(diff: string): string[] {
+  const found: string[] = [];
+  let file: string | null = null;
+  let removed: string[] = [];
+  let added: string[] = [];
+  const settle = () => {
+    const bare = file !== null && removed.length > 0 && removed.length === added.length
+      && removed.every((line, index) => withoutDigests(line) === withoutDigests(added[index]))
+      && removed.some((line, index) => line !== added[index]);
+    if (bare && file !== null) found.push(file);
+    file = null;
+    removed = [];
+    added = [];
+  };
+  for (const line of diff.split('\n')) {
+    const header = line.match(/^diff --git a\/(\S+) b\/(\S+)$/);
+    if (header) {
+      settle();
+      file = header[2].endsWith('.md') ? header[2] : null;
+      continue;
+    }
+    if (file === null) continue;
+    if (line.startsWith('---') || line.startsWith('+++') || line.startsWith('@@')) continue;
+    if (line.startsWith('-')) removed.push(line.slice(1));
+    else if (line.startsWith('+')) added.push(line.slice(1));
+  }
+  settle();
+  return found;
+}
+
+/**
+ * The pinned sources among the files a checkout changed, so a failure names what to re-read
+ * instead of repeating the whole pin list. A pinned folder covers every file beneath it.
+ */
+export function sourcesToReread(pinned: readonly string[], changed: readonly string[]): string[] {
+  const pins = pinned.map(trimSlash);
+  return changed.filter(file => pins.some(pin => file === pin || file.startsWith(`${pin}/`)));
+}
+
+/** What `--stamp` was asked to rewrite: every document, named ones, or nothing until one is named. */
+export type StampTargets = { kind: 'all' } | { kind: 'ask' } | { kind: 'paths'; paths: string[] };
+
+/**
+ * Read `--stamp` and what follows it. Naming a document is the approval unit: one `--stamp` used to
+ * rewrite every drifted document at once, so reading one and running it passed the rest as well.
+ */
+export function stampTargets(argv: readonly string[]): StampTargets {
+  const at = argv.indexOf('--stamp');
+  if (at === -1) return { kind: 'ask' };
+  const rest = argv.slice(at + 1).filter(value => value !== '--');
+  if (rest.includes('--all')) return { kind: 'all' };
+  const paths = rest.filter(value => !value.startsWith('-')).map(value => value.replace(/^\.\//, ''));
+  return paths.length ? { kind: 'paths', paths } : { kind: 'ask' };
+}

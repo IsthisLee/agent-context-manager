@@ -8,7 +8,7 @@
 ## 품질 게이트
 
 <!-- agctx-doc-sources: tsconfig.json, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 4829c29fe430905b38ae011ca70a04bb63ec44d058d7f366ce231c3ef3d39a18 -->
+<!-- agctx-doc-sources-sha256: e61ea2d0e9625eba6cfb34b33ff9fa1374cf09acf4adca3ac90597dc48c40a32 -->
 
 변경을 올리기 전의 검사 순서와 평가 작성 방법은 [테스트와 품질 게이트](testing.md)에, 문서 소스 해시 게이트와 근거 게이트는 [문서 게이트](doc-gate.md)에 있다.
 

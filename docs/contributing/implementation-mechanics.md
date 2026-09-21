@@ -82,20 +82,22 @@ flowchart LR
 프로필은 사용자 홈의 보관함에 있고 프로젝트 파일과 섞이지 않는다. 테스트와 스모크는 `AGCTX_HOME`으로 보관함을 옮겨 실제 홈을 건드리지 않는다.
 
 - 보관함 경로: `src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->
-- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:fb51185a75a0-->·`readProfile`<!--s:b0e88d759f98-->·`validateProfileName`<!--s:a47dd8437ed4-->·`isValidProfileMetadata`<!--s:f115d5169b00-->
-- 이유: [ADR 0007](../adr/0007-profile-home-layout.md), 이름 변경은 [ADR 0013](../adr/0013-rename-agent-context-manager.md)
+- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:fb51185a75a0-->·`readProfile`<!--s:2ee888620ce0-->·`validateProfileName`<!--s:a47dd8437ed4-->·`isValidProfileMetadata`<!--s:d0109c71d11e-->
+- 규칙 파일 경로: `profile.json`의 `instructions`, 없으면 `AGENTS.md`. `src/profile/store.ts`의 `instructionsFile`<!--s:c0ded7cce71a-->·`isInstructionsPath`<!--s:77864c748c5b-->·`assertInstructionsPath`<!--s:2450f091bbc7-->, 원격에서 받은 파일의 링크 검사는 `regularFileInside`
+- 이유: [ADR 0007](../adr/0007-profile-home-layout.md), 이름 변경은 [ADR 0013](../adr/0013-rename-agent-context-manager.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
+- 지키는 평가: `evals/profile-instructions.test.ts`
 
 ## 4. profile create
 
 빈 프로필을 만들고 지침 템플릿을 넣는다. CLI와 TUI가 같은 함수를 쓴다.
 
-- 생성: `src/profile/store.ts`의 `createProfile`<!--s:122be23580b0-->
+- 생성: `src/profile/store.ts`의 `createProfile`<!--s:80df4788baf9-->
 - TUI 흐름: `src/tui/profile.ts`의 `createProfileTui`<!--s:151f4e01035f-->
 - 지키는 평가: `evals/profile.test.ts`
 
 ## 5. profile setup: 지침 블록 기록
 
-지침 항목을 켜고 끈 결과를 프로필의 `AGENTS.md` 안 표지 사이에만 기록한다. 사람이 쓴 부분은 건드리지 않는다.
+지침 항목을 켜고 끈 결과를 프로필의 규칙 파일(`AGENTS.md`, 또는 `instructions`가 가리킨 파일) 안 표지 사이에만 기록한다. 사람이 쓴 부분은 건드리지 않는다.
 
 - 항목 정의와 기록: `src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->·`setupProfile`<!--s:605737432754-->·`GUIDANCE_KEYS`<!--s:0dc6917d6bee-->
 - 이유: 항목과 근거 등급은 [ADR 0026](../adr/0026-guidance-items-and-evidence-tiers.md), 값을 켜고 끄는 둘로 줄인 것은 [ADR 0028](../adr/0028-guidance-on-off.md)
@@ -106,7 +108,7 @@ flowchart LR
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
 - 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->
-- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:e2c25e47f058-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->
+- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:9ce05669893a-->, `src/project/plan.ts`의 `planProject`<!--s:fb9e00ff96ef-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
 - 지키는 평가: `evals/profile.test.ts`, `evals/sync-merge.test.ts`
@@ -205,19 +207,20 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 프로필 폴더 자체가 Git 작업 트리인 프로필을 다룬다. 원격 URL과 추적 브랜치는 `.git/config`가 정본이고 `profile.json`에 적지 않는다.
 
-- git 실행: `src/shared/git.ts`의 `git`<!--s:76da3647da6c-->·`isGitRoot`<!--s:4793c559c904-->·`isRemoteFailure`<!--s:59e32fcf9095-->·`resolveRemoteLocation`<!--s:7de80492b458-->·`sanitizeRemoteUrl`<!--s:6198db3b36d0-->
-- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:4563a8072ab4-->·`cloneProfile`<!--s:a06bddab7f34-->·`pullProfile`<!--s:18cbb0fcea6a-->·`planPush`<!--s:c2c8482d1908-->·`pushProfile`<!--s:d8baf776795b-->·`connectProfile`<!--s:cf0d84764ea1-->
-- 이유: [ADR 0017](../adr/0017-git-profile-sharing.md)
-- 지키는 평가: `evals/git-profile.test.ts`
+- git 실행: `src/shared/git.ts`의 `git`<!--s:76da3647da6c-->·`isGitRoot`<!--s:4793c559c904-->·`isRemoteFailure`<!--s:59e32fcf9095-->·`resolveRemoteLocation`<!--s:7de80492b458-->·`sanitizeRemoteUrl`<!--s:6198db3b36d0-->·`committedFile`<!--s:57e01f0132f4-->
+- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:4563a8072ab4-->·`cloneProfile`<!--s:249d9d36c889-->·`pullProfile`<!--s:452edacb3616-->·`planPush`<!--s:c2c8482d1908-->·`pushProfile`<!--s:d8baf776795b-->·`connectProfile`<!--s:cf0d84764ea1-->
+- 커밋 안의 프로필 읽기: `src/profile/git-profile.ts`의 `committedProfile`<!--s:11ddd4e196f4-->. 그 커밋의 `profile.json`에서 규칙 파일 경로를 읽으므로, `pull`이 들어올 커밋을 검사할 때와 고정한 프로젝트를 다시 만들 때 모두 그 커밋의 경로를 쓴다.
+- 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
+- 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
 
 ## 16. 적용 버전 기록과 고정
 
 저장소가 프로필의 어느 버전을 쓰고 있는지 기록한다. 고정한 저장소는 기록한 버전에 머물고 PR로만 올라간다.
 
-- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:faf7d0c1c28e-->
+- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:f229c68d627f-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
 - 기록 위치: 프로젝트의 `agctx.project.json`
-- 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), [ADR 0018](../adr/0018-multi-repository-sync.md)
-- 지키는 평가: `evals/git-profile.test.ts`
+- 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), [ADR 0018](../adr/0018-multi-repository-sync.md), [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
+- 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
 
 ## 17. check
 
@@ -232,7 +235,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 보이지 않는 문자가 지침에 섞여 에이전트에게 다른 내용이 전달되는 것을 막는다. 파일 맨 앞의 BOM은 허용한다.
 
 - 검출과 설명: `src/shared/hidden-chars.ts`의 `findHiddenCharacters`<!--s:5f84af97e1dd-->·`describeHiddenCharacters`<!--s:1c6d888af488-->
-- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:f16188b33a09-->, `src/profile/apply.ts`의 `planFor`<!--s:e2c25e47f058-->, `src/check.ts`의 `checkProject`<!--s:2b4f5b23ad73-->
+- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:f16188b33a09-->, `src/profile/apply.ts`의 `planFor`<!--s:9ce05669893a-->, `src/check.ts`의 `checkProject`<!--s:2b4f5b23ad73-->
 - 지키는 평가: `evals/hidden-chars.test.ts`, `evals/git-profile.test.ts`
 
 ## 19. 여러 저장소 목록과 repos 명령

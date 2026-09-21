@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: c541b8fd38b89c570f0c460d0295eacd89a03d584b4c0fdfde86e1a29e561064 -->
+<!-- agctx-doc-sources-sha256: acbea8ffea1b4e542d38c36c3c46ea011c38d5cf380ae434c80e1d95494d2d56 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: a060a1205f4282275850018ccf7a46027bd3eac3efae934696e14c7413f49191 -->
+<!-- agctx-doc-sources-sha256: 2b6858350343d28b9c35a46927cc055096745112934e7db406c56352828ed1e6 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 6c85a5e276eaf10ba798d5183075143a42ac3ca70ded184102c39633b8f3bfb2 -->
+<!-- agctx-doc-sources-sha256: acbfa58cfd086d0cc11989a2b0a4cb69e88e5af8845115b5411a1075ef49b6ee -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -151,7 +151,7 @@ agctx --tui
 | --- | --- | --- | --- |
 | [`profile create`](#profile-create) | 초기 AGENTS.md가 있는 프로필을 만듭니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile list`](#profile-list) | scope별 프로필을 보고 하나를 관리합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
-| [`profile view`](#profile-view) | 프로필의 scope와 AGENTS.md를 출력합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
+| [`profile view`](#profile-view) | 프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
 | [`profile setup`](#profile-setup) | 프로필에 담을 지침 항목을 켜고 끕니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
 | [`profile apply`](#profile-apply) | 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile sync`](#profile-sync) | 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
@@ -228,7 +228,7 @@ scope가 없는 프로필을 임의로 선택하지 않으며, 해당 scope에 �
 
 ### `profile view`
 
-프로필의 scope와 현재 `AGENTS.md` 내용을 출력한다.
+프로필의 scope와 현재 규칙 파일 내용을 출력한다. 규칙 파일은 `AGENTS.md`이고, `profile.json`의 `instructions`가 있으면 그 파일이다([파일 형식](file-formats.md#profilejson)).
 
 <!-- agctx:generated:usage:profile.view:start -->
 ```bash
@@ -242,7 +242,7 @@ agctx profile view <name>
 
 ### `profile remove`
 
-프로필 보관함에서 선택한 프로필 폴더(`profile.json`·`AGENTS.md`, Git 프로필이면 `.git`까지)를 통째로 삭제한다. 원격 Git 저장소와, 이미 프로젝트에 적용해 둔 파일은 바꾸지 않는다.
+프로필 보관함에서 선택한 프로필 폴더(`profile.json`·규칙 파일, Git 프로필이면 `.git`까지)를 통째로 삭제한다. 원격 Git 저장소와, 이미 프로젝트에 적용해 둔 파일은 바꾸지 않는다.
 
 <!-- agctx:generated:usage:profile.remove:start -->
 ```bash
@@ -261,7 +261,7 @@ agctx profile remove [--yes] [<name>]
 
 ### `profile setup`
 
-프로필에 담을 공통 개발 지침 10개 항목을 켜고 꺼서 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
+프로필에 담을 공통 개발 지침 10개 항목을 켜고 꺼서 프로필 규칙 파일(기본 `AGENTS.md`)의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 프로젝트 파일은 변경하지 않는다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
 <!-- agctx:generated:usage:profile.setup:start -->
 ```bash
@@ -291,7 +291,7 @@ agctx profile setup [--workflow <on|off>] [--context <on|off>] [--tdd <on|off>] 
 
 표준 입력이 터미널이 아닌 환경에서 지침 옵션 없이 실행하면 표준 입력을 줄 단위로 읽는다. 이름을 생략했다면 첫 줄을 프로필 번호 또는 이름으로 읽는다. 이어지는 줄은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 순서의 수준이다. 빈 줄은 기존 설정을 유지한다. `--json`을 주면 표준 입력을 읽지 않고 종료 코드 64로 멈춘다.
 
-Git 프로필이면 `setup`이 바꾼 `AGENTS.md`와 `profile.json`은 커밋하지 않은 변경으로 남는다. 팀과 공유하려면 프로필 폴더에서 커밋한 뒤 `profile push`한다.
+`setup`은 지침 구역을 프로필의 규칙 파일에 쓴다. Git 프로필이면 `setup`이 바꾼 규칙 파일과 `profile.json`은 커밋하지 않은 변경으로 남는다. 팀과 공유하려면 프로필 폴더에서 커밋한 뒤 `profile push`한다.
 
 ```bash
 agctx profile setup
@@ -365,7 +365,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 적용한 프로필 버전은 `agctx.project.json`에 기록한다.
 
 - **Git 프로필:** 프로필 폴더가 Git 저장소이면 `source`에 원격 URL·브랜치·커밋을 적는다. URL에 들어 있는 사용자 정보와 토큰은 지운다. 로컬 프로필은 `source`를 기록하지 않는다.
-- **추가 표시:** 프로필의 `AGENTS.md`·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`를, `--pin`을 주면 `pin: true`를 더한다.
+- **추가 표시:** 프로필의 규칙 파일·`profile.json`에 커밋하지 않은 수정이 섞였으면 `uncommitted: true`를, `--pin`을 주면 `pin: true`를 더한다.
 - **프로젝트 이름:** `AGENTS.md`에 쓴 프로젝트 이름(`projectName`)도 기록한다. 그래서 다른 이름의 폴더로 clone한 저장소나 임시 worktree에서도 같은 파일이 나온다. 이름은 `package.json`에 `name`이 있으면 그 값을 먼저 쓴다.
 - **저장소 목록:** 적용한 저장소는 이 컴퓨터의 저장소 목록에도 기록된다([`repos list`](#repos-list)).
 
@@ -465,7 +465,7 @@ agctx profile clone [--branch <branch>] <git-url>
 | `<git-url>` | 프로필 저장소 주소. HTTPS·SSH·로컬 경로 등 `git clone`이 받는 형식 |
 | `--branch <branch>` | 받을 브랜치; 생략하면 원격의 기본 브랜치 |
 
-- 프로필 폴더 안의 임시 경로에 `git clone --no-recurse-submodules`로 받는다. 저장소 루트에 일반 파일 `profile.json`과 `AGENTS.md`가 있고 메타데이터가 올바를 때만 등록한다(아니면 64).
+- 프로필 폴더 안의 임시 경로에 `git clone --no-recurse-submodules`로 받는다. 저장소 루트에 일반 파일 `profile.json`이 있고, 그것이 가리키는 규칙 파일(`instructions`, 없으면 루트의 `AGENTS.md`)이 일반 파일이며, 메타데이터가 올바를 때만 등록한다(아니면 64). 규칙 파일이나 거쳐 가는 폴더가 심볼릭 링크여도 64다. `instructions`의 규칙은 [파일 형식](file-formats.md#profilejson)에 있다.
 - 두 파일에 숨은 문자가 있으면 등록하지 않고 종료 코드 3으로 멈춘다.
 - 프로필 이름은 `profile.json`의 `name`을 쓴다. 같은 이름의 프로필이 이미 있으면 종료 코드 64로 멈춘다. 저장소 하나에 프로필 하나를 둔다.
 - 인증은 사용자의 Git 설정(SSH 키·credential helper)을 그대로 쓴다. 터미널이 아니면 인증 질문을 띄우지 않으므로 인증이 없으면 종료 코드 69로 끝난다.
@@ -520,7 +520,7 @@ agctx profile pull [--dry-run] <name>
 | `--dry-run` | 들어올 커밋만 보여 주고 프로필은 바꾸지 않음 |
 
 - fetch한 뒤 fast-forward만 한다. merge·rebase·reset은 하지 않는다.
-- 다음 경우에는 받지 않고 멈춘다: Git에 연결되지 않았거나 추적 브랜치가 없음(64), 커밋하지 않은 변경이 있음(2), 로컬과 원격이 갈라짐(2), 받을 `profile.json`·`AGENTS.md`가 프로필 형식이 아님(64), 받을 내용에 숨은 문자가 있음(3).
+- 다음 경우에는 받지 않고 멈춘다: Git에 연결되지 않았거나 추적 브랜치가 없음(64), 커밋하지 않은 변경이 있음(2), 로컬과 원격이 갈라짐(2), 받을 `profile.json`이나 그것이 가리키는 규칙 파일이 프로필 형식이 아님(64), 받을 내용에 숨은 문자가 있음(3).
 - 프로젝트 파일은 바꾸지 않는다. 받은 뒤 고정하지 않은 프로젝트는 `profile sync`, 고정한 프로젝트는 `profile apply <name> <project> --pin`으로 반영한다.
 - TUI의 `Git에서 받기`는 들어올 커밋을 보여 준 뒤 받을지 묻는다.
 

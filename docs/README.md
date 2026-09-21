@@ -24,6 +24,7 @@
 | 성격이 다른 저장소 여럿, 컴퓨터 여러 대 | [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](guides/multi-repo-individual.md) |
 | 고객사가 여럿                           | [고객사 여러 곳의 규칙 따로 쓰기](guides/multi-client.md)                     |
 | 팀 프로필 공유                          | [팀과 Git으로 공유하기](guides/team-sharing.md)                               |
+| 이미 있는 규칙 저장소를 프로필로 받기   | [기존 저장소를 프로필로 쓰기](guides/team-sharing.md#기존-저장소를-프로필로-쓰기) |
 | 모노레포                                | [모노레포에서 쓰기](guides/monorepo.md)                                       |
 | 고정 여부와 예약 봇                     | [갱신 방식 고르기: 고정과 예약 봇](guides/update-policies.md)                 |
 | CI와 스크립트                           | [CI와 자동화에서 쓰기](guides/ci.md)                                          |
@@ -129,6 +130,7 @@
   - [ADR 0033: 인용한 코드의 지문으로 변경을 검출](adr/0033-fingerprint-cited-code.md)
   - [ADR 0034: AGENTS.md의 관리 영역 경계를 마커로 표시](adr/0034-managed-end-marker-in-agents-md.md)
   - [ADR 0035: Claude Code가 AGENTS.md를 직접 읽는 조건을 explain 판정에 반영](adr/0035-claude-code-reads-agents-md.md)
+  - [ADR 0036: profile.json이 프로필의 규칙 파일을 가리킨다](adr/0036-profile-json-names-rules-file.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

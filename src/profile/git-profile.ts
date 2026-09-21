@@ -4,9 +4,10 @@ import { randomUUID } from 'node:crypto';
 import { _ } from '../i18n/index.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
-import { git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
+import { committedFile, git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
-import { isValidProfileMetadata, readProfile } from './store.ts';
+import type { ProfileMetadata } from '../shared/types.ts';
+import { assertInstructionsPath, instructionsFile, isInstructionsPath, isValidProfileMetadata, readProfile, regularFileInside } from './store.ts';
 
 /**
  * Share profiles through ordinary Git repositories. These commands change only
@@ -81,21 +82,23 @@ export function cloneProfile(location: string, options: { branch?: string | null
   const temporary = path.join(home, `.clone-${randomUUID()}`);
   try {
     git(['clone', '--quiet', '--no-recurse-submodules', ...(options.branch ? ['--branch', options.branch] : []), '--', url, temporary]);
-    const metadataPath = path.join(temporary, PROFILE_METADATA_FILE);
-    const instructionsPath = path.join(temporary, 'AGENTS.md');
-    for (const file of [metadataPath, instructionsPath]) {
-      if (!fs.existsSync(file) || fs.lstatSync(file).isSymbolicLink() || !fs.lstatSync(file).isFile()) {
-        throw usageError('clone.not-profile', _('error.clone.not-profile', { url: sanitizeRemoteUrl(url), file: path.basename(file) }), _('hint.clone.not-profile'));
-      }
-    }
+    const source = sanitizeRemoteUrl(url);
+    const metadataPath = regularFileInside(temporary, PROFILE_METADATA_FILE);
+    if (!metadataPath) throw usageError('clone.not-profile', _('error.clone.not-profile', { url: source, file: PROFILE_METADATA_FILE }), _('hint.clone.not-profile'));
     const metadataText = fs.readFileSync(metadataPath, 'utf8');
-    const instructions = fs.readFileSync(instructionsPath, 'utf8');
     let metadata: unknown;
     try { metadata = JSON.parse(metadataText); } catch { metadata = null; }
     if (!isValidProfileMetadata(metadata)) {
-      throw usageError('clone.invalid-metadata', _('error.clone.invalid-metadata', { url: sanitizeRemoteUrl(url) }), _('hint.clone.not-profile'));
+      throw usageError('clone.invalid-metadata', _('error.clone.invalid-metadata', { url: source }), _('hint.clone.not-profile'));
     }
-    assertNoHiddenCharacters([{ file: PROFILE_METADATA_FILE, content: metadataText }, { file: 'AGENTS.md', content: instructions }]);
+    const file = instructionsFile(metadata);
+    assertInstructionsPath(file, source);
+    const instructionsPath = regularFileInside(temporary, file);
+    if (!instructionsPath) {
+      if (metadata.instructions === undefined) throw usageError('clone.not-profile', _('error.clone.not-profile', { url: source, file }), _('hint.clone.not-profile'));
+      throw usageError('profile.instructions-missing', _('error.profile.instructions-missing', { source, file }), _('hint.profile.instructions'));
+    }
+    assertNoHiddenCharacters([{ file: PROFILE_METADATA_FILE, content: metadataText }, { file, content: fs.readFileSync(instructionsPath, 'utf8') }]);
     const target = path.join(home, metadata.name);
     if (fs.existsSync(target) || isSymbolicLink(target)) {
       throw usageError('clone.exists', _('error.clone.exists', { name: metadata.name }), _('hint.clone.exists', { name: metadata.name }));
@@ -105,6 +108,30 @@ export function cloneProfile(location: string, options: { branch?: string | null
   } finally {
     if (fs.existsSync(temporary)) fs.rmSync(temporary, { recursive: true, force: true });
   }
+}
+
+export interface CommittedProfile {
+  metadataText: string;
+  metadata: ProfileMetadata;
+  /** The rules file profile.json names at that commit. */
+  file: string;
+  /** Its content, or null when the commit has no regular file there. */
+  content: string | null;
+}
+
+/**
+ * profile.json and the rules file it names, as commit `rev` holds them. Null when that commit has no
+ * valid profile.json for `name`. The rules file path is read from the same commit, so a profile that
+ * later moved its rules file still finds the file an older commit used.
+ */
+export function committedProfile(dir: string, rev: string, name: string): CommittedProfile | null {
+  const metadataText = committedFile(dir, rev, PROFILE_METADATA_FILE);
+  if (metadataText === null) return null;
+  let metadata: unknown = null;
+  try { metadata = JSON.parse(metadataText); } catch {}
+  if (!isValidProfileMetadata(metadata, name)) return null;
+  const file = instructionsFile(metadata);
+  return { metadataText, metadata, file, content: isInstructionsPath(file) ? committedFile(dir, rev, file) : null };
 }
 
 function isSymbolicLink(target: string): boolean {
@@ -133,15 +160,11 @@ export function pullProfile(name: string, options: { dryRun?: boolean } = {}): P
   const commits = lines(git(['log', '--oneline', `HEAD..${state.upstream}`], { cwd: state.dir }).stdout);
   const changedFiles = lines(git(['diff', '--name-only', `HEAD..${state.upstream}`], { cwd: state.dir }).stdout);
   if (!commits.length) return { state, commits, changedFiles, applied: false };
-  const incoming = (file: string) => git(['show', `${state.upstream}:${file}`], { cwd: state.dir, allowFailure: true });
-  const metadataText = incoming(PROFILE_METADATA_FILE);
-  const instructions = incoming('AGENTS.md');
-  let metadata: unknown = null;
-  try { metadata = JSON.parse(metadataText.stdout); } catch {}
-  if (metadataText.status !== 0 || instructions.status !== 0 || !isValidProfileMetadata(metadata, name)) {
-    throw usageError('pull.invalid', _('error.pull.invalid', { name }), null);
-  }
-  assertNoHiddenCharacters([{ file: PROFILE_METADATA_FILE, content: metadataText.stdout }, { file: 'AGENTS.md', content: instructions.stdout }]);
+  const incoming = committedProfile(state.dir, state.upstream, name);
+  if (!incoming) throw usageError('pull.invalid', _('error.pull.invalid', { name }), null);
+  assertInstructionsPath(incoming.file, state.remote ?? name);
+  if (incoming.content === null) throw usageError('pull.invalid', _('error.pull.invalid', { name }), null);
+  assertNoHiddenCharacters([{ file: PROFILE_METADATA_FILE, content: incoming.metadataText }, { file: incoming.file, content: incoming.content }]);
   if (options.dryRun) return { state, commits, changedFiles, applied: false };
   git(['merge', '--ff-only', '--quiet', state.upstream], { cwd: state.dir });
   return { state: profileGitState(name), commits, changedFiles, applied: true };

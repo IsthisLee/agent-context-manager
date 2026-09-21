@@ -57,6 +57,19 @@ export function isGitRoot(dir: string): boolean {
 }
 
 /**
+ * The content of the regular file at `file` in commit `rev`, or null when the commit has no such
+ * file. A symbolic link is a blob of its own mode and a path through a linked folder is no tree
+ * entry at all, so both read as missing, as does a folder.
+ */
+export function committedFile(dir: string, rev: string, file: string): string | null {
+  const entry = git(['--literal-pathspecs', 'ls-tree', '-z', rev, '--', file], { cwd: dir, allowFailure: true });
+  const match = entry.status === 0 ? /^(?:100644|100755) blob ([0-9a-f]+)\t([^\0]*)\0$/.exec(entry.stdout) : null;
+  if (!match || match[2] !== file) return null;
+  const blob = git(['cat-file', 'blob', match[1]], { cwd: dir, allowFailure: true });
+  return blob.status === 0 ? blob.stdout : null;
+}
+
+/**
  * A remote given on the command line: an existing local path becomes absolute, so
  * git does not read it relative to the profile folder it runs in; URLs stay as typed.
  */

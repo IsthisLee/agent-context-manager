@@ -4,8 +4,13 @@
 
 ## [Unreleased]
 
+### Added
+
+- 이미 Git으로 관리하던 규칙 저장소를 규칙 파일을 옮기지 않고 프로필로 받을 수 있다. 저장소 루트에 `profile.json`을 더하고 `instructions`에 규칙 파일 경로(예: `templates/AGENTS.md`)를 적으면 `profile clone`·`pull`·`apply`·`sync`·`setup`·`view`와 `check`가 그 파일을 쓴다. 지금까지는 규칙 파일이 루트의 `AGENTS.md`여야 해서, 규칙을 하위 폴더에 둔 저장소는 파일을 옮기고 README를 고쳐야 받을 수 있었다. `instructions`를 쓰는 `profile.json`은 `schemaVersion`이 2여야 한다. 0.4.0 이하 agctx는 이 프로필을 거부하므로 팀원 모두 이 기능이 든 버전이 필요하고, 옛 버전이 다른 파일을 조용히 적용하는 일은 없다. 경로는 저장소 안의 `.md` 파일만 가리킬 수 있고, 원격에서 받는 규칙 파일이나 거쳐 가는 폴더가 심볼릭 링크면 거부한다. 고정한 프로젝트는 기록한 커밋의 경로로 다시 만들므로 원천이 규칙 파일을 옮겨도 그대로다. 근거는 [ADR 0036](docs/adr/0036-profile-json-names-rules-file.md)
+
 ### Changed
 
+- `profile.json`이 없는 저장소를 `profile clone`하면 `profile.json` 최소 예시와 `instructions`를 보여 준다. 지금까지는 `agctx profile create`로 새로 만들어 올리라고만 안내했는데, 커밋이 있는 저장소에서는 그 경로가 첫 `push`에서 막혔다
 - 프로젝트 `AGENTS.md`의 관리 영역 경계를 `<!-- agctx:managed:end -->` 마커로 표시한다. 파일 처음부터 그 줄까지가 agctx 것이고 아래는 전부 사용자 것이다. 지금까지는 확장 섹션 제목(`## 4. 프로젝트 규칙 확장 (SSOT)`)의 생김새로 경계를 알아맞혔기 때문에, 파일을 열어도 어디까지가 agctx 영역인지 보이지 않았고 제목을 바꾸면 파일 전체가 관리 영역이 되어 충돌했다. 이제 제목과 그 아래 안내 한 줄은 사용자 것이므로 자기 말로 바꾸거나 지워도 된다. 처음 적용할 때 쓸 자리를 알려 주려고 한 번 써 줄 뿐이다. 기존 저장소는 `agctx profile sync` 한 번이면 마커가 들어가고, 마커가 없는 동안에는 지금까지처럼 제목으로 경계를 찾는다. 근거는 [ADR 0034](docs/adr/0034-managed-end-marker-in-agents-md.md)
 - 프로젝트 `AGENTS.md`에서 프로필용 표지 `<!-- agctx:guidance:start -->`와 `<!-- agctx:guidance:end -->`를 뺀다. 그 사이의 지침 본문은 그대로 둔다. 이 표지는 `profile setup`이 프로필에서 다시 쓰는 범위를 뜻할 뿐 프로젝트에서는 의미가 없는데, 관리 영역 안에서 경계처럼 보였다
 - 관리 영역이 `.agctx/base/`의 원문과 표현만 다르면 사람이 고친 것으로 보지 않는다. 목록 기호, 줄 끝 공백, 블록 사이의 빈 줄, 줄 끝 문자, 문단 안의 줄바꿈이 대상이고 낱말은 그대로 비교한다. 편집기가 저장할 때 Markdown을 다시 포맷해도 충돌하지 않게 하려는 것이며, 문단을 정해진 너비로 다시 접는 설정(Prettier의 `proseWrap: always`)까지 포함한다. 문단 안의 단일 줄바꿈이 Markdown에서 공백과 같기 때문이고, 줄바꿈에 뜻이 있는 코드 블록은 그대로 비교한다. 적용된 파일을 포맷 대상에서 뺄 필요가 없다. 낱말이나 그 차례가 바뀌면 지금까지처럼 충돌하고, 원문을 알 수 없으면 해시만 비교한다

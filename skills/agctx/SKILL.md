@@ -33,7 +33,7 @@ agctx는 저장소마다 하나의 프로필로 에이전트 지침을 맞추고
 
 <!-- agctx:commands:start -->
 - `agctx profile list [--scope <scope>]`: scope별 프로필을 보고 하나를 관리합니다.
-- `agctx profile view <name>`: 프로필의 scope와 AGENTS.md를 출력합니다.
+- `agctx profile view <name>`: 프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다.
 - `agctx profile status [--refresh] [<name>]`: 프로필의 원격·브랜치·커밋·로컬 수정과 원격 대비 위치를 보여 줍니다. --refresh를 붙이면 먼저 fetch합니다.
 - `agctx check [--refresh] [<project>]`: 프로젝트가 기록한 프로필 버전과 맞는지 검사합니다. 0 일치, 1 뒤처짐, 2 관리 영역 수정, 3 숨은 문자입니다. --refresh를 붙이면 원천 저장소와도 비교합니다.
 - `agctx explain [--agent <codex|claude|antigravity|all>] [<path>]`: 폴더에서 시작한 Codex·Claude Code·Antigravity가 읽는 지침 파일을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 종료 코드 4로 끝냅니다.

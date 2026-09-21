@@ -36,7 +36,7 @@
 ## 설치하기
 
 <!-- agctx-doc-sources: skills -->
-<!-- agctx-doc-sources-sha256: 33ce9e59363046f460417725ab2f263112d3eade5ec869e2e5d88d91580511cb -->
+<!-- agctx-doc-sources-sha256: f286873be5bb45a18ac2ac29bf3f498625ee74d0ba5b6459aab001f250c0068c -->
 
 1. 아래 명령을 실행한다. 이 컴퓨터의 모든 프로젝트에서 쓰도록 설치하므로 실행 위치는 상관없다.
 

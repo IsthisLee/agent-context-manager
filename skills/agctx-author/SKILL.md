@@ -41,7 +41,7 @@ disable-model-invocation: true
 <!-- agctx:commands:start -->
 - `agctx profile create [--scope <scope>] [<name>]`: 초기 AGENTS.md가 있는 프로필을 만듭니다.
 - `agctx profile list [--scope <scope>]`: scope별 프로필을 보고 하나를 관리합니다.
-- `agctx profile view <name>`: 프로필의 scope와 AGENTS.md를 출력합니다.
+- `agctx profile view <name>`: 프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다.
 - `agctx profile setup [--workflow <on|off>] [--context <on|off>] [--tdd <on|off>] [--review <on|off>] [--verification <on|off>] [--instructions <on|off>] [--docs <on|off>] [--security <on|off>] [--untrusted <on|off>] [--language <on|off>] [<name>]`: 프로필에 담을 지침 항목을 켜고 끕니다.
 - `agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]`: 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.
 - `agctx profile sync [--dry-run] [--yes] [<project>]`: 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.

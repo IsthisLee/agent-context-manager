@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: 528bcf3181cb40d781497cb7cc10ec347d8e87997165009c9a347d955c21986c -->
+<!-- agctx-doc-sources-sha256: b5e034bb294b0e9779bcaf8b29887c170af0b8993756687944218d408ec0a911 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -36,18 +36,19 @@ flowchart TD
   CMP -->|"같음"| PASS["통과"]
   CMP -->|"다름"| FAIL["실패: doc sources changed"]
   FAIL --> READ["문서를 다시 읽고<br/>인용한 줄 번호·서술을 고침"]
-  READ --> STAMP["node tools/check-docs.ts --stamp"]
+  READ --> STAMP["node tools/check-docs.ts --stamp &lt;문서&gt;"]
   STAMP --> CHECK
 ```
 
-게이트는 소스가 바뀌었다는 사실만 알린다. 문서를 고치는 단계를 건너뛰고 `--stamp`만 실행해도 다시 통과하므로, 문서가 정확한지는 사람이 확인해야 한다.
+게이트는 소스가 바뀌었다는 사실만 알린다. 문서를 고치는 단계를 건너뛰고 `--stamp`만 실행해도 다시 통과하므로, 문서가 정확한지는 사람이 확인해야 한다. 다만 그렇게 넘어간 문서는 `--restamped`가 뒤늦게라도 찾아낸다.
 
 - **마커는 절마다 둘 수 있다.** 한 마커는 그 위치부터 다음 마커 전까지를 맡고, 실패 메시지에 그 마커 위의 제목이 함께 나온다. 문서 하나를 통째로 핀하면 관련 없는 변경에도 문서 전체를 다시 읽어야 하므로, 절이 기대는 소스만 그 절에 단다. 예를 들어 [테스트와 품질 게이트](testing.md)는 `.github/workflows/ci.yml`을 "CI 환경" 절에만 달아, 그 파일이 바뀌면 그 절만 걸린다.
 - 마커는 `<!-- agctx-doc-sources: <쉼표로 구분한 경로> -->`와 `<!-- agctx-doc-sources-sha256: <64자리 hex> -->` 두 줄이다. 경로에는 파일뿐 아니라 디렉터리도 넣을 수 있다. 디렉터리를 넣으면 그 아래 모든 파일을 해싱하므로 안에서 파일이 추가·삭제·수정되면 목록을 고치지 않아도 게이트가 걸린다.
-- 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.ts --stamp`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다.
+- 해시가 어긋나면 문서를 다시 읽어 드리프트를 고친 뒤 `node tools/check-docs.ts --stamp <문서 경로>`로 해시를 다시 기록한다. 이 갱신이 재검증했다는 표시다. **경로를 적는 것이 승인 단위다.** 경로 없이 실행하면 어긋난 문서의 목록과 각각의 명령을 보여 주고 아무것도 쓰지 않은 채 1로 끝난다. 마커 형식이 바뀐 경우처럼 전부를 한 번에 다시 기록해야 하면 `--stamp --all`을 쓴다.
 - 문서도 소스로 핀할 수 있다. 핀한 문서의 `agctx-doc-sources-sha256` 줄과 생성 블록의 내용은 해싱에서 빼므로(`withoutRecordedHash`·`withoutGeneratedBlocks`, `tools/doc-sources.ts`), 그 문서를 다시 stamp하거나 생성 블록을 다시 생성해도 핀한 쪽은 실패하지 않고 사람이 쓴 본문이 바뀔 때만 실패한다. 생성 블록은 평가가 원본 데이터와 대조하므로 해시로 다시 지키지 않는다. `README.md`와 `README.en.md`는 이 방식으로 서로를 핀한다. 한 언어의 README를 고치면 다른 언어 README가 실패하므로, 두 파일을 같은 내용으로 맞춘 뒤 stamp한다.
+- **실패 메시지는 바뀐 소스를 지목한다.** 지문은 핀한 소스 전체를 합쳐 만들기 때문에 검사기 혼자서는 어느 파일이 움직였는지 모른다. 그래서 그 지문을 기록한 커밋을 git에서 찾고 그 뒤에 바뀐 파일만 추려 보여 준다(`tools/check-docs.ts`의 `changedPinnedSources`<!--s:96c386caee18-->). git으로 답할 수 없으면 지금까지처럼 핀 목록을 그대로 적는다.
 - 인용하는 소스가 늘거나 줄면 마커의 목록도 같은 변경에서 갱신한다. 다만 디렉터리로 고정한 범위 안에서 파일이 늘거나 줄면 목록 갱신 없이 자동 반영된다.
-- stamp만 다시 기록한 변경을 자동으로 잡아내는 리뷰는 아직 구현되지 않았다. 계획은 [문서 정확성 자동 리뷰 논의](../discussion/repository/topics/doc-accuracy-review.md)에 있다.
+- **지문만 다시 찍은 문서는 `--restamped`가 찾아낸다.** `node tools/check-docs.ts --restamped [기준]`은 기준(기본값 `main`)부터 `HEAD`까지의 커밋을 훑어, 바뀐 줄이 기록 해시와 인용 지문뿐인 Markdown 문서의 이름을 출력한다. 판정은 diff만 보고 하며 `tools/doc-sources.ts`의 `restampOnlyDocuments`<!--s:32ad3ed3d35d-->가 한다. 다시 읽는 것이 옳은 경우도 있으므로 **경고로만 알리고 0으로 끝낸다.** 소스에 주석 한 줄이 늘어 지문만 움직인 경우가 그렇다. 사람이 읽을 목록을 남기는 것이 목적이다. 문서 내용까지 대조하는 리뷰 계획은 [문서 정확성 자동 리뷰 논의](../discussion/repository/topics/doc-accuracy-review.md)에 있다.
 
 ### 핀 범위와 예시 검사
 
@@ -96,7 +97,7 @@ Documentation check failed:
 - 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->).
 - 줄바꿈을 LF로 맞춘 뒤 계산하므로 CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다. 공백과 주석은 빼지 않는다. 이 저장소는 코드 옆 주석을 이유의 정본으로 삼으므로, 주석이 바뀌면 문서를 다시 읽는 편이 맞다.
 - 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
-- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:29704713ed9a-->에 있다.
+- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:5d3c250ef9b9-->에 있다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스

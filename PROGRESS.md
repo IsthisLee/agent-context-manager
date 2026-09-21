@@ -21,7 +21,7 @@
 | [자연어 요청을 통한 agctx 사용](docs/discussion/architecture/topics/agent-mediated-usage.md) | 노출과 트리거 계약은 [ADR 0029](docs/adr/0029-agent-surface-contract.md)로 확정해 구현했다. 남은 것은 명령별 `data` 필드의 스키마를 문서로 정하는 일과, 배포한 npm 패키지를 임시 프로젝트에 설치해 에이전트가 스킬대로 agctx를 호출하는 시나리오 평가다. |
 | [agctx 관리 산출물의 안전한 동기화](docs/discussion/architecture/topics/managed-artifact-safety.md) | 관리 영역의 경계 표시와 포매터 차이 판정은 [ADR 0034](docs/adr/0034-managed-end-marker-in-agents-md.md)로 확정해 구현했다. 남은 것은 마커가 없는 기존 파일을 자동으로 덮어쓰지 않는 기본 정책과, 파일별 소유권을 `agctx.project.json`에 기록하는 일이다. |
 | [기본 지침의 근거 기준과 분량 예산](docs/discussion/architecture/topics/guidance-evidence-and-budget.md) | 근거 기준·문구·분량 예산은 [ADR 0024](docs/adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](docs/adr/0026-guidance-items-and-evidence-tiers.md)으로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
-| [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | [결정](docs/discussion/repository/topics/doc-gate-pin-scope.md#결정) 절의 구현 순서대로 진행하고, 끝나면 [측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정) 절과 같은 방법으로 두 지표를 다시 잰다. |
+| [문서 소스 해시 게이트의 핀 범위와 승인 단위](docs/discussion/repository/topics/doc-gate-pin-scope.md) | 절 단위 핀, 문서 단위 승인, 실패 원인 표시, 지문만 찍은 문서 검출까지 구현했다. 남은 것은 [결정](docs/discussion/repository/topics/doc-gate-pin-scope.md#결정)의 (1) 실행 대조 확대와 (4) 두 지표 재측정이다. 명령 출력을 싣는 문서에 시나리오 고정물을 붙여 핀을 없애고, 그 뒤에 [측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정) 절과 같은 방법으로 다시 잰다. |
 <!-- agctx:generated:in-progress:end -->
 
 ### 그 밖의 일
@@ -36,7 +36,7 @@
 
 지금 알고 있는 약점이다. 수치와 근거는 링크한 정본에 있다.
 
-- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 「문서 소스 해시 게이트의 핀 범위와 승인 단위」가 다룬다.
+- 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 개편 전 측정에서 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 승인을 문서 단위로 바꾸고 `--restamped`로 뒤늦게 찾아내게 했지만, 검출은 경고일 뿐 막지는 않는다. 개편 뒤의 비율은 커밋이 쌓여야 다시 잴 수 있다. 「문서 소스 해시 게이트의 핀 범위와 승인 단위」가 다룬다.
 - 이름으로 가리킬 수 없는 동작(함수 안의 특정 분기 등)을 문서에서 어떻게 가리킬지는 정하지 않았다([제약](docs/discussion/repository/topics/code-citation-style.md#구현-기록-인용을-이름으로-바꾸고-두-문서를-다시-씀)).
 - `explain`의 Claude Code 판정은 `explain`을 실행하는 사람의 `~/.claude/settings.json`을 읽는다. 관리 설정이나 `--settings` 파일로 `instructionFiles` 값을 준 환경, 그리고 직접 읽기가 꺼지는 세션(제삼자 제공자·telemetry 해제·설치 직후 첫 세션)은 판정할 수 없다([ADR 0035](docs/adr/0035-claude-code-reads-agents-md.md)).
 

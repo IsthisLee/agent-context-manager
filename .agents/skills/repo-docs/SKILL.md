@@ -57,10 +57,12 @@ metadata:
 ## 5. 해시를 다시 기록하고 검증한다
 
 ```bash
-node tools/check-docs.ts          # 무엇이 어긋났는지 본다
-node tools/check-docs.ts --stamp  # 문서를 다시 읽고 고친 뒤에만 실행한다
-pnpm run check                    # 형식 검사·문서 계약·평가 전체
+node tools/check-docs.ts                  # 무엇이 어긋났는지, 어느 소스가 바뀌었는지 본다
+node tools/check-docs.ts --stamp <문서>   # 그 문서를 다시 읽고 고친 뒤에만 실행한다
+pnpm run check                            # 형식 검사·문서 계약·평가 전체
 ```
+
+`--stamp`는 문서 경로를 받는다. 경로를 적는 것이 그 문서를 다시 읽었다는 표시이므로, 경로 없이 실행하면 어긋난 문서의 목록만 보여 주고 1로 끝난다. 마커 형식이 바뀐 경우처럼 전부를 한 번에 다시 기록해야 하면 `--stamp --all`을 쓴다.
 
 `가리킨 코드가 바뀌었다` 실패는 인용한 심볼의 내용이 바뀌었다는 뜻이다. 그 항목만 다시 읽고 고친 뒤 stamp한다. `doc sources changed` 실패는 핀한 소스가 바뀌었다는 뜻이다. **stamp만 다시 실행해도 통과하므로**, 먼저 문서를 열어 가리킨 위치와 서술이 지금 코드와 맞는지 확인한 뒤에 stamp한다. 게이트 계약과 대상 문서 목록은 `docs/contributing/doc-gate.md`가 정본이다.
 

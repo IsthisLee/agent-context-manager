@@ -11,7 +11,8 @@ import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumbe
 import { citedText, symbolDigest } from './symbol-source.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
-import { docSourceSections, SOURCE_ROOTS, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
+import { execFileSync } from 'node:child_process';
+import { docSourceSections, restampOnlyDocuments, SOURCE_ROOTS, sourcesToReread, stampTargets, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
 import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -78,7 +79,7 @@ function checkCitations(markdownFile: string) {
   }
 
   for (const problem of citationMarkerProblems(content, citationDigest)) {
-    errors.push(`${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp\``);
+    errors.push(`${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp ${relative}\``);
   }
 }
 
@@ -368,6 +369,51 @@ function computeDocSourcesHash(sources: string[]) {
   return { digest: hash.digest('hex') };
 }
 
+/** `git` output, or null when this is not a checkout or the command fails. */
+function git(...args: string[]): string | null {
+  try {
+    return execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The pinned sources that changed since this section's digest was recorded, so a failure names the
+ * file to look at. The digest is one hash over every pinned source, so the checker cannot tell them
+ * apart on its own; git can, by finding the commit that wrote this digest and listing what moved
+ * after it. Returns an empty list when git cannot answer, and the message then falls back to the
+ * pin list.
+ */
+function changedPinnedSources(relative: string, digest: string, sources: string[]): string[] {
+  const commit = git('log', '-1', '--format=%H', '-S', `agctx-doc-sources-sha256: ${digest}`, '--', relative)?.trim();
+  if (!commit) return [];
+  const since = git('log', '--name-only', '--format=', `${commit}..HEAD`, '--', ...sources) ?? '';
+  const uncommitted = git('status', '--porcelain', '--', ...sources) ?? '';
+  const changed = new Set<string>();
+  for (const line of since.split('\n')) if (line.trim()) changed.add(line.trim());
+  for (const line of uncommitted.split('\n')) if (line.trim()) changed.add(line.slice(3).trim());
+  return sourcesToReread(sources, [...changed]).sort();
+}
+
+/** Documents in a commit range whose only change is a digest `--stamp` writes. */
+function reportRestamped(base: string): number {
+  const diff = git('diff', '--unified=0', `${base}...HEAD`);
+  if (diff === null) {
+    console.error(`cannot diff against ${base}: not a git checkout, or that revision is unknown`);
+    return 1;
+  }
+  const documents = restampOnlyDocuments(diff);
+  if (!documents.length) {
+    console.log(`No document changed only its recorded hash between ${base} and HEAD.`);
+    return 0;
+  }
+  console.log(`Documents that changed only their recorded hash between ${base} and HEAD:`);
+  for (const document of documents) console.log(`- ${document}`);
+  console.log('Re-read each one against the sources it pins. A hash moves when the code moves, and the gate passes either way.');
+  return 0;
+}
+
 function checkDocSources() {
   const pins: string[] = [];
   const cited = new Set<string>();
@@ -398,11 +444,13 @@ function checkDocSources() {
         continue;
       }
       if (section.digest === 'PENDING') {
-        errors.push(`${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp\`.`);
+        errors.push(`${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp ${relative}\`.`);
         continue;
       }
       if (section.digest !== computed.digest) {
-        errors.push(`${place}: doc sources changed since last verified. Re-read this part against ${section.sources.join(', ')}, fix any drift, then run \`node tools/check-docs.ts --stamp\`.`);
+        const changed = changedPinnedSources(relative, section.digest, section.sources);
+        const what = changed.length ? changed.join(', ') : section.sources.join(', ');
+        errors.push(`${place}: doc sources changed since last verified. Re-read this part against ${what}, fix any drift, then run \`node tools/check-docs.ts --stamp ${relative}\`.`);
       }
     }
   }
@@ -416,11 +464,12 @@ function checkDocSources() {
   }
 }
 
-function stampCitations(): string[] {
+function stampCitations(wanted: Set<string> | null): string[] {
   const updated: string[] = [];
   for (const markdownFile of walkMarkdown(root)) {
     const relative = docSourceHashPath(root, markdownFile, path);
     if (citationExempt(relative)) continue;
+    if (wanted && !wanted.has(relative)) continue;
     const content = fs.readFileSync(markdownFile, 'utf8');
     const stamped = applyCitationMarkers(content, citationDigest);
     if (stamped === content) continue;
@@ -430,10 +479,11 @@ function stampCitations(): string[] {
   return updated;
 }
 
-function stampDocSources() {
+function stampDocSources(wanted: Set<string> | null) {
   let failed = false;
-  const updated = stampCitations();
+  const updated = stampCitations(wanted);
   for (const markdownFile of walkMarkdown(root)) {
+    if (wanted && !wanted.has(docSourceHashPath(root, markdownFile, path))) continue;
     const content = fs.readFileSync(markdownFile, 'utf8');
     const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
     if (!sections.length) continue;
@@ -466,8 +516,45 @@ function stampDocSources() {
   return !failed;
 }
 
+/** Documents whose recorded hash no longer matches, for the list `--stamp` prints when asked for a path. */
+function driftedDocuments(): string[] {
+  const drifted: string[] = [];
+  for (const markdownFile of walkMarkdown(root)) {
+    const content = fs.readFileSync(markdownFile, 'utf8');
+    const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
+    const off = sections.some(section => {
+      if (section.digest === null) return false;
+      if (section.digest === 'PENDING') return true;
+      const computed = computeDocSourcesHash(section.sources);
+      return !computed.error && section.digest !== computed.digest;
+    });
+    if (off) drifted.push(docSourceHashPath(root, markdownFile, path));
+  }
+  return drifted;
+}
+
+const restampedAt = process.argv.indexOf('--restamped');
+if (restampedAt !== -1) {
+  const given = process.argv[restampedAt + 1];
+  process.exit(reportRestamped(given && !given.startsWith('-') ? given : 'main'));
+}
+
 if (process.argv.includes('--stamp')) {
-  process.exit(stampDocSources() ? 0 : 1);
+  const targets = stampTargets(process.argv);
+  if (targets.kind === 'ask') {
+    const drifted = driftedDocuments();
+    if (!drifted.length) {
+      console.log('Doc-source hashes already current.');
+      process.exit(0);
+    }
+    // Naming the document is how someone says they re-read it. Rewriting all of them at once is
+    // what let one reading pass for every drifted document, so that needs `--all` now.
+    console.error('Name the documents to stamp, after re-reading each one:');
+    for (const document of drifted) console.error(`- node tools/check-docs.ts --stamp ${document}`);
+    console.error('Use --all to stamp every document above, for example after a marker format change.');
+    process.exit(1);
+  }
+  process.exit(stampDocSources(targets.kind === 'paths' ? new Set(targets.paths) : null) ? 0 : 1);
 }
 
 for (const markdownFile of walkMarkdown(root)) {

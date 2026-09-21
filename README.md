@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: ffa5d7dd0d9d436fbc265d09f545bbc6acfc74a392ed0fdfc5f05a1ec613ba92 -->
+<!-- agctx-doc-sources-sha256: 9557febf3e750fd669a87e5afe3884666f04532a90dd68da2310f5f0d90d1626 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -130,7 +130,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
-- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다.
+- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다. 이미 쓰던 규칙 저장소도 루트에 `profile.json` 하나만 더하면 받을 수 있습니다([기존 저장소를 프로필로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
 - **여러 저장소** — `repos list`·`status`·`sync`·`pr`로 프로필을 적용한 저장소를 한 번에 다루고, 고정한 저장소는 PR로 갱신합니다. 예약 봇은 `repos pr --targets <file> --yes`로 실행합니다.
 - **전달 확인** — `explain`은 그 폴더에서 시작한 에이전트가 읽는 지침 파일과 그 이유를 보여 줍니다. 확인한 에이전트 가운데 하나라도 받지 못하는 파일이 있으면 종료 코드 4로 끝납니다. `verify`는 세션 기록으로 실제로 들어갔는지 확인하고, `--probe`는 승인 뒤 임시 사본에서 에이전트를 한 번씩 실행합니다.

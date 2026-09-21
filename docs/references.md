@@ -721,6 +721,56 @@
   >
   > 번역: Claude Code는 AGENTS.md를 프로젝트 지침으로 읽을 수 있으므로, 다른 코딩 에이전트용으로 이미 설정된 저장소는 CLAUDE.md나 가져오기, 설정을 더하지 않아도 동작합니다.
 
+- **공식 문서(Claude Code가 `AGENTS.md`를 직접 읽는 조건):** 기본 설정에서 Claude는 작업 폴더나 그 위 폴더에 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`가 하나도 없을 때만 `AGENTS.md`를 읽는다. `~/.claude/CLAUDE.md`, 조직의 관리 `CLAUDE.md`, `.claude/rules/` 파일은 이 판정에 들어가지 않으며 `AGENTS.md`와 함께 계속 로드된다. 가려지지 않았으면 세션을 시작할 때 작업 폴더와 그 위 폴더에 있는 모든 `AGENTS.md`와 `.claude/AGENTS.md`를 읽고, 대화형 세션에는 `no CLAUDE.md found; AGENTS.md loaded: …` 줄이 나온다. 하위 폴더의 `AGENTS.md`는 그 폴더에 세 가지 `CLAUDE.md` 파일이 하나도 없을 때, Claude가 Read 도구로 그 폴더의 파일을 열면 들어간다. `AGENTS.local.md`, `AGENTS.override.md`, `.agents/` 아래의 파일은 읽지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-21)
+
+  > "By default, Claude reads `AGENTS.md` only when you have no `CLAUDE.md` in your working directory or above it."
+  >
+  > 번역: 기본 설정에서 Claude는 작업 폴더나 그 위 폴더에 CLAUDE.md가 하나도 없을 때만 AGENTS.md를 읽습니다.
+  >
+  > "**Count, so Claude reads them instead of `AGENTS.md`**: a `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` in your working directory or any directory above it"
+  >
+  > 번역: **셈에 들어가서 Claude가 AGENTS.md 대신 읽는 것**: 작업 폴더나 그 위의 어느 폴더에든 있는 CLAUDE.md, .claude/CLAUDE.md, CLAUDE.local.md
+  >
+  > "**Don't count, and keep loading alongside `AGENTS.md`**: your `~/.claude/CLAUDE.md`, your organization's managed `CLAUDE.md`, and `.claude/rules/` files"
+  >
+  > 번역: **셈에 들어가지 않고 AGENTS.md와 함께 계속 로드되는 것**: 사용자의 ~/.claude/CLAUDE.md, 조직의 관리 CLAUDE.md, .claude/rules/ 파일
+  >
+  > "**Not read**: `AGENTS.local.md`, `AGENTS.override.md`, or anything under a `.agents/` directory"
+  >
+  > 번역: **읽지 않는 것**: AGENTS.local.md, AGENTS.override.md, 또는 .agents/ 디렉터리 아래의 모든 것
+
+- **공식 문서(어떤 지침 파일을 읽을지 고르는 설정):** `/config`의 **Project instructions** 값은 `claude-md-or-agents-md`(기본값), `claude-md-and-agents-md`, `claude-md`, `managed-only` 네 가지다. 설정 파일로 정하려면 `pluginConfigs`의 `agents-md@builtin` 아래 `options.instructionFiles`에 쓰며, 사용자 수준 `~/.claude/settings.json`·`--settings` 파일·관리 설정에서만 읽고 프로젝트와 로컬 설정 파일의 값은 무시한다. `claude-md-and-agents-md`는 두 파일을 함께 읽되 이미 불러온 `AGENTS.md`는 건너뛰므로, `CLAUDE.md`가 가져오거나 심볼릭 링크로 가리키는 파일을 두 번 읽지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-21)
+
+  > "Your `CLAUDE.md` and `AGENTS.md` files together, each directory's `CLAUDE.md` files first and its `AGENTS.md` after them. Claude Code skips an `AGENTS.md` it has already loaded, so one that your `CLAUDE.md` imports or symlinks to isn't read twice"
+  >
+  > 번역: 사용자의 CLAUDE.md와 AGENTS.md 파일을 함께 읽되, 폴더마다 그 폴더의 CLAUDE.md 파일을 먼저 읽고 AGENTS.md를 그 뒤에 읽습니다. Claude Code는 이미 불러온 AGENTS.md를 건너뛰므로, 사용자의 CLAUDE.md가 가져오거나 심볼릭 링크로 가리키는 파일은 두 번 읽히지 않습니다.
+  >
+  > "Claude Code ignores it in project and local settings files."
+  >
+  > 번역: Claude Code는 프로젝트와 로컬 설정 파일에 있는 이 값을 무시합니다.
+
+- **공식 문서(직접 읽기가 동작하지 않는 세션):** 다음 세션에서는 Claude가 `CLAUDE.md`만 읽고 `/config` 설정 화면에 **Project instructions**가 나타나지 않는다. v2.1.277 미만인 세션, Amazon Bedrock 같은 제삼자 제공자를 쓰거나 telemetry를 꺼서 Anthropic에서 기능 플래그를 받지 못하는 세션, 지원 버전을 설치하거나 올린 직후의 첫 세션(그다음 세션부터 읽는다), `disableAllHooks`나 `allowManagedHooksOnly`를 켰거나 `/plugin`에서 내장 `agents-md` 플러그인을 끈 세션이다. 이런 세션에는 `CLAUDE.md`의 가져오기로 `AGENTS.md`를 넣으라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-21)
+
+  > "Reading `AGENTS.md` directly requires Claude Code v2.1.277 or later."
+  >
+  > 번역: AGENTS.md를 직접 읽으려면 Claude Code v2.1.277 이상이 필요합니다.
+  >
+  > "In these sessions Claude reads `CLAUDE.md` files only, and **Project instructions** doesn't appear in the `/config` settings panel:"
+  >
+  > 번역: 이런 세션에서 Claude는 CLAUDE.md 파일만 읽으며, /config 설정 화면에 **Project instructions**가 나타나지 않습니다:
+
+- **공식 문서(가져오기를 남겨 둬도 되는지):** `@AGENTS.md`를 가져오는 `CLAUDE.md`는 그대로 둬도 된다. **Project instructions** 값이 무엇이든, 가져오기를 남겨 둔다고 해서 `AGENTS.md`를 두 번 읽는 일은 없다. `CLAUDE.md`에 다른 내용이 없으면 지워도 되고, 직접 읽기가 안 되는 세션이 있으면 남겨 두라고 안내한다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-21)
+
+  > "**A `CLAUDE.md` containing `@AGENTS.md`**: you can leave it. Keeping the import never makes Claude read `AGENTS.md` twice, whichever **Project instructions** value you use."
+  >
+  > 번역: **@AGENTS.md를 담은 CLAUDE.md**: 그대로 두어도 됩니다. 가져오기를 남겨 두어도 Project instructions 값이 무엇이든 Claude가 AGENTS.md를 두 번 읽는 일은 결코 없습니다.
+
+- **직접 실험(`AGENTS.md` 직접 읽기 판정, 2026-09-21):** 설치된 Claude Code 2.1.278로 쟀다. 스크래치패드에 폴더 셋을 만들고 각 폴더의 `AGENTS.md`에 서로 다른 확인 토큰 한 줄을 넣은 뒤, 각 폴더에서 `claude -p "받은 지침 안에 확인 토큰이 있으면 그 토큰만 한 줄로 출력해. 없으면 NONE 이라고만 출력해." --disallowed-tools Read Bash Glob Grep Edit Write WebFetch`를 실행했다. 실행한 폴더 위쪽에는 `CLAUDE.md`가 없었고 사용자 수준 `~/.claude/CLAUDE.md`만 있었다.
+  - `AGENTS.md`만 둔 폴더: 확인 토큰을 출력했다. 가려지지 않으면 `AGENTS.md`가 지침으로 들어간다.
+  - `AGENTS.md`와 확인 토큰이 없는 `CLAUDE.md`를 함께 둔 폴더: `NONE`을 출력했다. `CLAUDE.md`가 있으면 `AGENTS.md`가 가려진다.
+  - `AGENTS.md`와 확인 토큰이 없는 `CLAUDE.local.md`를 함께 둔 폴더: `NONE`을 출력했다. `CLAUDE.local.md`도 가리는 파일로 센다.
+- **측정 방법의 함정(2026-09-21):** 파일 접근 도구를 막지 않고 같은 프롬프트를 실행하면 결과가 흔들린다. 도구를 막기 전에 한 첫 측정에서는 `CLAUDE.local.md`를 둔 폴더가 확인 토큰을 출력했다. 지침으로 받은 것이 아니라 Claude가 `AGENTS.md`를 직접 열어 답한 결과였다. 같은 폴더에서 도구를 막지 않고 세 번 더 실행했을 때는 세 번 모두 `NONE`이 나왔다. 파일을 열어 볼지 말지를 모델이 실행할 때마다 정하므로, 도구를 막지 않은 실행은 지침 로드 여부의 근거로 쓸 수 없다. 판정하려면 `--disallowed-tools`로 파일 접근 도구를 막고 재야 한다.
+
 - **공식 문서(Codex 지침 파일):** Codex는 Codex 홈(기본 `~/.codex`)에서 `AGENTS.override.md`가 있으면 그것을, 없으면 `AGENTS.md`를 읽는다. 프로젝트에서는 Git 저장소 루트부터 현재 작업 폴더까지 내려가며 폴더마다 `AGENTS.override.md`, `AGENTS.md`, `project_doc_fallback_filenames`에 적은 이름 순서로 찾고, 한 폴더에서 파일을 최대 하나만 넣는다. 파일은 루트부터 차례로 이어 붙이며 합산 크기가 `project_doc_max_bytes`(기본 32 KiB)에 닿으면 더 넣지 않는다. [OpenAI AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 지침 파일):** 작업 폴더와 그 위 모든 폴더의 `CLAUDE.md`·`CLAUDE.local.md`를 시작할 때 읽고, 작업 폴더 아래 폴더의 파일은 Claude가 그 폴더의 파일을 읽을 때 넣는다. 프로젝트 지침은 `./CLAUDE.md` 또는 `./.claude/CLAUDE.md`, 사용자 지침은 `~/.claude/CLAUDE.md`, 관리 정책 파일은 macOS `/Library/Application Support/ClaudeCode/CLAUDE.md`, Linux·WSL `/etc/claude-code/CLAUDE.md`, Windows `C:\Program Files\ClaudeCode\CLAUDE.md`에 둔다. `.claude/rules/`에서 `paths` frontmatter가 없는 규칙은 시작할 때, 있는 규칙은 맞는 파일을 읽을 때 들어간다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)
 - **공식 문서(Claude Code 가져오기):** `@path` 가져오기는 가져오는 파일 기준 상대 경로로 풀리고 최대 네 단계까지 이어진다. 코드 블록과 코드 스팬 안의 `@`는 가져오지 않는다. 프로젝트 수준 파일이 작업 폴더 밖을 가져오면 처음 한 번 승인 창을 띄우며, 사용자 수준 파일(`~/.claude/CLAUDE.md`, `~/.claude/rules/`)의 가져오기는 묻지 않는다. [Claude Code memory](https://code.claude.com/docs/en/memory) (확인일: 2026-09-15)

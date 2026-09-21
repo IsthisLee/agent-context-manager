@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: f080f03c6ee1743cdc671857a9ddbed87bea3dd2536ed04961cd441989f2d792 -->
+<!-- agctx-doc-sources-sha256: 6352ce6e2ea83474be8b23e774c63610b019286ea7f9c40896035cdf57024103 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -126,7 +126,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 8b51b0df5de3ef848818f8e8841fd9bb32ecc49963c5b653a741e697eecd8ec4 -->
+<!-- agctx-doc-sources-sha256: 4a42f3f4e3b0d2455b7453d195d1fd16401a510f797b866e16c96fe0368292a5 -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -158,7 +158,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 적용할 때 agctx가 마지막으로 쓴 관리 영역 원문을 `.agctx/base/`에도 남깁니다. 이 원문은 관리 영역에서 충돌이 났을 때 기준이 되므로 git에 커밋하세요.
 
-에이전트가 파일을 실제로 읽는지는 시작한 폴더에 따라 달라집니다. Codex는 하위 폴더의 `AGENTS.md`를 그 폴더에서 시작할 때만 읽고, Claude Code는 `CLAUDE.md`가 가져오지 않는 `AGENTS.md`를 읽지 않습니다. 모노레포에서는 하위 폴더 `AGENTS.md`마다 `@AGENTS.md`를 가져오는 `CLAUDE.md` 연결 파일을 만들고, 사람이 둔 `CLAUDE.md`는 건드리지 않습니다. 폴더마다 `agctx explain <폴더>`로 확인하세요.
+에이전트가 파일을 실제로 읽는지는 시작한 폴더에 따라 달라집니다. Codex는 하위 폴더의 `AGENTS.md`를 그 폴더에서 시작할 때만 읽습니다. Claude Code는 시작 폴더나 그 위에 `CLAUDE.md` 계열 파일이 하나도 없을 때만 `AGENTS.md`를 직접 읽고, 하나라도 있으면 그 파일이 가져오는 `AGENTS.md`만 읽습니다. 모노레포에서는 하위 폴더 `AGENTS.md`마다 `@AGENTS.md`를 가져오는 `CLAUDE.md` 연결 파일을 만들고, 사람이 둔 `CLAUDE.md`는 건드리지 않습니다. 폴더마다 `agctx explain <폴더>`로 확인하세요.
 
 ## 지원하지 않는 기능
 

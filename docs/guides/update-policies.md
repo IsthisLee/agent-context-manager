@@ -54,7 +54,7 @@ flowchart LR
 ## 두 방식의 차이 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 531b94e6dbf39320b19626c6665968a4909d3a7edc3a2358629bcd999691c4ae -->
+<!-- agctx-doc-sources-sha256: 9ad9928cf18bf3827c77e6454292cbd661a1f643304b011f92c5b8fb37c02f29 -->
 
 두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 

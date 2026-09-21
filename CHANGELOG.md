@@ -12,6 +12,7 @@
 
 ### Fixed
 
+- `agctx explain`이 Claude Code에 대해 틀린 판정을 내리던 문제를 고쳤다. 지금까지는 모든 `AGENTS.md`를 "읽지 않음"으로 보고 `missing`을 붙였으나, Claude Code v2.1.277 이상은 시작 폴더나 그 위에 `CLAUDE.md`·`.claude/CLAUDE.md`·`CLAUDE.local.md`가 하나도 없으면 `AGENTS.md`와 `.claude/AGENTS.md`를 직접 읽는다. **호환성:** `CLAUDE.md` 없이 `AGENTS.md`만 둔 저장소에서 종료 코드가 4에서 0으로 바뀌므로, `explain`의 4를 기대하던 CI 설정이 있으면 더 이상 걸리지 않는다. 가려진 `AGENTS.md`는 `not-read` 대신 `shadowed`로 표시하고, 커밋되지 않는 `CLAUDE.local.md`만 가리는 경우는 `missing`이 아니라 경고로 알린다. `~/.claude/settings.json`의 `instructionFiles` 설정 네 값도 판정에 반영한다. `profile apply`·`profile sync`가 만드는 `CLAUDE.md`는 그대로 둔다. 가져오기를 남겨도 같은 내용을 두 번 읽지 않고, 직접 읽기가 동작하지 않는 세션까지 덮기 때문이다. 근거는 [ADR 0035](docs/adr/0035-claude-code-reads-agents-md.md)
 - 편집기가 저장할 때 Markdown을 다시 포맷하면 관리 영역이 바뀌어 충돌로 판정되던 문제를 고쳤다. agctx가 `AGENTS.md`에 쓰는 `* **Project:** <이름>` 한 줄만 목록 기호가 `*`였는데, Prettier를 비롯한 포매터는 한 문서의 목록 기호를 `-`로 통일한다. 그래서 확장 영역에만 규칙을 쓰고 저장해도 그 한 글자가 바뀌어 `check`가 충돌로 멈췄다. 이 줄과 `templates/CLAUDE.md`, `.agents/rules/agctx.md`의 목록 기호·제목 뒤 빈 줄을 포매터가 만들어 내는 형태로 맞췄고, 새 템플릿이 어긋난 채 배포되지 않도록 평가를 더했다. 이미 적용한 프로젝트는 `agctx profile sync`로 새 형태를 받는다
 - 관리 영역이 이미 agctx가 쓰려는 내용과 똑같은데도 충돌로 멈추던 문제를 고쳤다. 덮어써도 잃을 것이 없는 상황이라 이제 그대로 진행한다. 옛 버전이 쓴 관리 영역을 포매터가 고쳐 놓았고 새 버전이 그 형태로 쓰는 경우가 여기에 해당하며, `resolve`로 풀면 오히려 쓸모없는 줄이 확장 영역에 남았다. 관리 영역에 다른 내용이 들어 있으면 지금까지처럼 멈춘다
 - `check`와 `profile sync`가 같은 관리 영역을 두고 다른 판정을 내리던 문제를 고쳤다. `check`는 기록된 해시만 비교해 충돌(2)이라고 했고 `sync`는 통과했다. 프로필이 이 컴퓨터의 보관함에 있으면 `check`도 `sync`와 같은 기준으로 판정한다. 프로필이 없으면 비교할 기준이 해시뿐이므로 지금까지처럼 충돌로 본다

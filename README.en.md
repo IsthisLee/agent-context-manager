@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: d74687320c8275b8057627d5a561a84610ba609619e5933255740cbe198fd267 -->
+<!-- agctx-doc-sources-sha256: 88045d69c5c0376259ce660c5e6a2e866d710fa459d64f056a52d19600b53051 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -124,7 +124,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 8b51b0df5de3ef848818f8e8841fd9bb32ecc49963c5b653a741e697eecd8ec4 -->
+<!-- agctx-doc-sources-sha256: 4a42f3f4e3b0d2455b7453d195d1fd16401a510f797b866e16c96fe0368292a5 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
@@ -156,7 +156,7 @@ Applying a Profile to a project generates and syncs the per-agent guidance files
 
 Applying also records the managed areas as last written under `.agctx/base/`. Commit it, because it is the reference for resolving managed-area conflicts.
 
-Whether an agent actually reads a file depends on the folder it starts in. Codex reads a subfolder `AGENTS.md` only when started in that folder, and Claude Code does not read an `AGENTS.md` that no `CLAUDE.md` imports. In a monorepo, agctx creates a `CLAUDE.md` link that imports `@AGENTS.md` next to every nested `AGENTS.md` and leaves any `CLAUDE.md` a person wrote alone. Check each folder with `agctx explain <folder>`.
+Whether an agent actually reads a file depends on the folder it starts in. Codex reads a subfolder `AGENTS.md` only when started in that folder. Claude Code reads `AGENTS.md` directly only when no `CLAUDE.md` file sits in the start folder or above it; when one does, it reads only the `AGENTS.md` that file imports. In a monorepo, agctx creates a `CLAUDE.md` link that imports `@AGENTS.md` next to every nested `AGENTS.md` and leaves any `CLAUDE.md` a person wrote alone. Check each folder with `agctx explain <folder>`.
 
 ## Not supported
 

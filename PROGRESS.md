@@ -30,7 +30,6 @@
 
 | 작업 | 정본 | 상태 | 다음에 할 일 |
 | --- | --- | --- | --- |
-| Claude Code의 `AGENTS.md` 직접 읽기 반영 | [에이전트 지침 로드와 전달 확인 근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거) | 확인 전 | 설치된 Claude Code로 `CLAUDE.md` 없이 `AGENTS.md`를 읽는지 실측한다. 읽으면 README의 로드 설명, `explain` 판정, 관련 개념 문서를 고친다 |
 | `AGENTS.md` 강조 줄이기 | [Claude Code 모범 사례](https://code.claude.com/docs/en/best-practices) | 결정됨 | 굵은 글씨가 있는 줄 가운데 꼭 필요한 몇 줄만 남긴다. 구조를 나타내는 항목 이름은 강조로 보지 않는다 |
 
 ## 알려진 한계
@@ -39,7 +38,7 @@
 
 - 문서 소스 해시 게이트는 다시 읽지 않고 stamp만 해도 통과한다. 재stamp의 44%가 본문 변경 없이 통과했다([측정](docs/discussion/repository/topics/doc-gate-pin-scope.md#측정)). 줄 번호와 코드 발췌를 없애 울릴 이유는 줄였지만([ADR 0032](docs/adr/0032-cite-code-by-name.md)), 남은 서술 문장에는 이 한계가 그대로다. 「문서 소스 해시 게이트의 핀 범위와 승인 단위」가 다룬다.
 - 이름으로 가리킬 수 없는 동작(함수 안의 특정 분기 등)을 문서에서 어떻게 가리킬지는 정하지 않았다([제약](docs/discussion/repository/topics/code-citation-style.md#구현-기록-인용을-이름으로-바꾸고-두-문서를-다시-씀)).
-- README와 `explain`은 Claude Code가 `CLAUDE.md`로 가져오지 않은 `AGENTS.md`를 읽지 않는다고 전제한다. v2.1.277 이상에서는 틀릴 수 있다([근거](docs/references.md#에이전트-지침-로드와-전달-확인-근거)). 「Claude Code의 `AGENTS.md` 직접 읽기 반영」이 다룬다.
+- `explain`의 Claude Code 판정은 `explain`을 실행하는 사람의 `~/.claude/settings.json`을 읽는다. 관리 설정이나 `--settings` 파일로 `instructionFiles` 값을 준 환경, 그리고 직접 읽기가 꺼지는 세션(제삼자 제공자·telemetry 해제·설치 직후 첫 세션)은 판정할 수 없다([ADR 0035](docs/adr/0035-claude-code-reads-agents-md.md)).
 
 ## 버린 접근
 

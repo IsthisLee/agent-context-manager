@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 1a466602c33ab62d6741e3c1a494404e5c26b3b25c56dc5fe6ef12e1471d628e -->
+<!-- agctx-doc-sources-sha256: a060a1205f4282275850018ccf7a46027bd3eac3efae934696e14c7413f49191 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: e4b538380ec061351bb5e70496d173d36347419ca738c7326b3e1f9fb9a436ff -->
+<!-- agctx-doc-sources-sha256: 6c85a5e276eaf10ba798d5183075143a42ac3ca70ded184102c39633b8f3bfb2 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -662,18 +662,18 @@ agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
 | 상태 | 뜻 |
 | --- | --- |
 | `read` | 세션을 시작할 때 읽는다 |
-| `on-demand` | 그 폴더의 파일을 읽을 때 읽는다(Claude Code의 시작 폴더 아래 `CLAUDE.md`) |
+| `on-demand` | 그 폴더의 파일을 읽을 때 읽는다(Claude Code의 시작 폴더 아래 `CLAUDE.md`, 그리고 `CLAUDE.md`가 없는 하위 폴더의 `AGENTS.md`) |
 | `conditional` | 조건이 맞을 때만 읽는다. Claude Code의 `paths` 규칙과 승인이 필요한 가져오기, Antigravity의 `always_on`·`glob`이 아닌 규칙과 하위 폴더 `AGENTS.md` |
-| `shadowed` | 같은 폴더의 `AGENTS.override.md`를 대신 읽는다 |
+| `shadowed` | 다른 파일을 대신 읽어서 이 파일이 빠진다. Codex는 같은 폴더의 `AGENTS.override.md`를, Claude Code는 시작 폴더나 그 위의 `CLAUDE.md` 계열 파일을 대신 읽는다 |
 | `not-read` | 이 폴더에서 시작하면 읽지 않는다 |
 
 파일 목록 아래에는 판정이 붙는다.
 
-- `missing`: 프로젝트 지침 파일이 이 에이전트에 닿지 않는다. 하나라도 있으면 종료 코드 4다. 가져오는 `CLAUDE.md`가 없는 `AGENTS.md`(Claude Code), `trigger: glob`이거나 `trigger` frontmatter가 없는 규칙(Antigravity)이 여기에 해당한다.
+- `missing`: 프로젝트 지침 파일이 이 에이전트에 닿지 않는다. 하나라도 있으면 종료 코드 4다. 커밋되는 `CLAUDE.md`가 가리는데 그 파일이 가져오지도 않는 `AGENTS.md`(Claude Code), `trigger: glob`이거나 `trigger` frontmatter가 없는 규칙(Antigravity)이 여기에 해당한다. `CLAUDE.local.md`만 가리는 경우는 개인 파일이라 `warning`으로 둔다.
 - `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`, 규칙으로 보이는 줄을 3줄 이상 함께 담은 두 파일(하나는 세션 시작에 읽는 파일)이 같은 에이전트에 들어가는 중복이 여기에 해당한다.
 - Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 파일(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`)은 마지막에 목록으로 보여 준다.
 - 사용자 수준 파일(`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md` 등)도 함께 보여 주지만 `missing`으로 판정하지 않는다. `CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 설정했으면 그 폴더를 본다.
-- 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](../references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다.
+- 판정 규칙의 근거는 [에이전트 지침 로드와 전달 확인 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)와 [에이전트 규칙 파일 로드 근거](../references.md#에이전트-규칙-파일-로드-근거)에 있다. Codex의 `project_doc_fallback_filenames`·`project_doc_max_bytes` 설정과 Claude Code의 `claudeMdExcludes` 설정은 반영하지 않는다. Claude Code가 `AGENTS.md`를 읽을지 정하는 `instructionFiles` 설정은 `explain`을 실행하는 사람의 `~/.claude/settings.json`에서 읽는다([ADR 0035](../adr/0035-claude-code-reads-agents-md.md)).
 
 아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`, `trigger: glob` 규칙 `.agents/rules/payments.md`, `.cursorrules`를 더한 뒤 실행한 결과다.
 
@@ -686,7 +686,7 @@ Codex · started in services/payments
 Claude Code · started in services/payments
   read         CLAUDE.md  start folder or a folder above it, read at launch
   conditional  AGENTS.md  imported by CLAUDE.md from outside the start folder; read only after external imports are approved
-  not-read     services/payments/AGENTS.md  Claude Code reads CLAUDE.md, not AGENTS.md, and no CLAUDE.md imports this file
+  shadowed     services/payments/AGENTS.md  CLAUDE.md is read instead, so this file is not
   warning      CLAUDE.md imports AGENTS.md from outside the start folder. Claude Code reads it only after someone approves external imports for this project once in an interactive session; starting at the project root needs no approval.
   missing      Claude Code never reads services/payments/AGENTS.md. Run agctx profile sync to add a CLAUDE.md that imports it, or add one with @AGENTS.md yourself.
 

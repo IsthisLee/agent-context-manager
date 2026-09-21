@@ -13,16 +13,16 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: ee78258ac7d855aa2bc8a0f23bfd4231bbcf485daca9790d3ba2732438a60456 -->
+<!-- agctx-doc-sources-sha256: 9d599dc52888b4256578ed530bb5beab7fa1a82310e1ce45e29ffeb619facacb -->
 
-프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 지침 `AGENTS.md`가 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 필드는 [파일 형식](../reference/file-formats.md)에 있다.
+프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
 
 ## 지침 항목 켜고 끄기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/i18n/index.ts -->
 <!-- agctx-doc-sources-sha256: f3ae2f31fdd318ef41029b2c6ae94d2db4cc1c178c4d14fcdf8ab484a9d5a8c3 -->
 
-`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 `AGENTS.md`의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->).
+`profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 규칙 파일(기본 `AGENTS.md`)의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->).
 
 | 값 | 뜻 |
 | --- | --- |
@@ -36,12 +36,12 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 3f3d5ffce1fed24101337036ed1396cbc62d6388007fc13a0327dac59eb0d9fd -->
+<!-- agctx-doc-sources-sha256: 03913879226add91cc6f4004833f204bed1b9e1bd5298ec6059c8d45548ce458 -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.
 - 두 명령 모두 `agctx.project.json`에 적용한 프로필과 버전(Git 프로필이면 원격·브랜치·커밋)을 기록한다.
-- `apply`에 `--pin`을 붙이면 그 커밋에 고정된다. 고정한 프로젝트는 프로필에 새 커밋이 생겨도 `sync`가 기록한 커밋의 내용을 그대로 다시 쓰고, `apply --pin`을 다시 실행해야 새 커밋으로 옮겨 간다. 실제 차이는 [갱신 방식 고르기](../guides/update-policies.md#두-방식의-차이-확인하기)에 있다.
+- `apply`에 `--pin`을 붙이면 그 커밋에 고정된다. 고정한 프로젝트는 프로필에 새 커밋이 생겨도 `sync`가 기록한 커밋의 내용을 그대로 다시 쓰고, `apply --pin`을 다시 실행해야 새 커밋으로 옮겨 간다. 기록한 커밋의 내용은 그 커밋의 `profile.json`이 가리키는 규칙 파일에서 읽으므로, 그 뒤에 규칙 파일이 옮겨져도 같은 내용이 나온다. 실제 차이는 [갱신 방식 고르기](../guides/update-policies.md#두-방식의-차이-확인하기)에 있다.
 
 ## 프로필 삭제
 

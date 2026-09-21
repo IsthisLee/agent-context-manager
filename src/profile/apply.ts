@@ -10,7 +10,7 @@ import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan, ProjectSource } from '../shared/types.ts';
 import { formatDiff, MANAGED_END } from '../project/conflicts.ts';
 import { planProject } from '../project/plan.ts';
-import { assertNoHiddenCharacters } from './git-profile.ts';
+import { assertNoHiddenCharacters, committedProfile } from './git-profile.ts';
 import { readProfile } from './store.ts';
 
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
@@ -102,15 +102,16 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
 
   if (pin === 'keep' && projectConfig.pin === true) {
     const commit = projectConfig.source?.commit;
-    const shown = commit && /^[0-9a-f]{7,64}$/i.test(commit) ? git(['show', `${commit}:AGENTS.md`], { cwd: dir, allowFailure: true }) : null;
-    if (!commit || !shown || shown.status !== 0) {
+    // The recorded commit's own profile.json names its rules file, which may have moved since.
+    const shown = commit && /^[0-9a-f]{7,64}$/i.test(commit) ? committedProfile(dir, commit, name)?.content ?? null : null;
+    if (!commit || shown === null) {
       throw new CliError('pin.commit-missing', _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }), { exitCode: EXIT.unavailable, hint: _('hint.profile.pull', { name }) });
     }
-    return { content: shown.stdout, source: { ...projectConfig.source, git: remote ?? projectConfig.source?.git ?? null, branch: projectConfig.source?.branch ?? branch, commit }, uncommitted: false, pin: true };
+    return { content: shown, source: { ...projectConfig.source, git: remote ?? projectConfig.source?.git ?? null, branch: projectConfig.source?.branch ?? branch, commit }, uncommitted: false, pin: true };
   }
 
   const commit = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
-  const edited = git(['status', '--porcelain', '--', 'AGENTS.md', PROFILE_METADATA_FILE], { cwd: dir }).stdout.trim() !== '';
+  const edited = git(['--literal-pathspecs', 'status', '--porcelain', '--', profile.instructions, PROFILE_METADATA_FILE], { cwd: dir }).stdout.trim() !== '';
   if (pin === true && (edited || !commit)) {
     throw usageError('pin.uncommitted', _('error.pin.uncommitted', { name }), _('hint.git.commit', { dir }));
   }
@@ -131,7 +132,7 @@ export function planFor(name: string, targetDir: string, pin: boolean | 'keep', 
   assertProjectDirectory(targetDir);
   const projectConfig = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE));
   const version = profileVersion(profile, projectConfig, pin);
-  assertNoHiddenCharacters([{ file: `${name}/AGENTS.md`, content: version.content }]);
+  assertNoHiddenCharacters([{ file: `${name}/${profile.instructions}`, content: version.content }]);
   const projectName = getProjectName(targetDir, typeof projectConfig.projectName === 'string' ? projectConfig.projectName : null);
   const plan = planProject({
     packageRoot: PACKAGE_ROOT,

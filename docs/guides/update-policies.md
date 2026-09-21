@@ -163,7 +163,7 @@ jobs:
 ## 고정하거나 풀기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: faca3f649c0e6c3009381ade54c7b201393fc5eea90b131d68ae4004cdd9e589 -->
+<!-- agctx-doc-sources-sha256: 6f01ffe18c818b21f65f303dc5a781f1d2f52a13ddd9623624d1d331b081c53b -->
 
 - 처음 고정하거나 새 커밋으로 옮기려면 `agctx profile apply <이름> <프로젝트> --pin`을 실행한다. Git에 연결했고 커밋하지 않은 수정이 없는 프로필이어야 한다.
 - 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.

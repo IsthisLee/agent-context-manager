@@ -14,8 +14,8 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 flowchart LR
   REMOTE["Git 원격<br/>팀·조직 프로필 저장소"]
   subgraph HOME["프로필 저장소 · ~/.agctx/profiles/이름"]
-    PAGENTS["AGENTS.md<br/>공통 지침 정본"]
-    PMETA["profile.json<br/>scope · setup 설정"]
+    PAGENTS["규칙 파일<br/>AGENTS.md 또는 instructions가 가리킨 파일<br/>공통 지침 정본"]
+    PMETA["profile.json<br/>scope · setup 설정 · 규칙 파일 경로"]
     PGIT[".git<br/>Git 프로필일 때 원격·브랜치"]
   end
   subgraph PROJECT["대상 프로젝트"]
@@ -39,7 +39,7 @@ flowchart LR
   AGENT --> CODE
 ```
 
-프로필 저장소의 `AGENTS.md`가 공통 지침의 정본이고 CLI는 이를 대상 프로젝트의 `AGENTS.md`와 포인터 파일로 적용한다. 팀은 프로필 폴더를 Git 원격으로 주고받고, CI는 프로필 보관함 없이 `agctx check`로 저장소가 기록한 버전과 맞는지 확인한다. 에이전트는 프로젝트 파일만 읽는다. agctx는 에이전트 세션 기록을 읽기만 하고, 사용자가 `verify --probe`로 요청할 때만 임시 사본에서 에이전트 CLI를 한 번 실행한다.
+프로필 저장소의 규칙 파일(기본 `AGENTS.md`, 또는 `profile.json`의 `instructions`가 가리킨 파일)이 공통 지침의 정본이고 CLI는 이를 대상 프로젝트의 `AGENTS.md`와 포인터 파일로 적용한다. 팀은 프로필 폴더를 Git 원격으로 주고받고, CI는 프로필 보관함 없이 `agctx check`로 저장소가 기록한 버전과 맞는지 확인한다. 에이전트는 프로젝트 파일만 읽는다. agctx는 에이전트 세션 기록을 읽기만 하고, 사용자가 `verify --probe`로 요청할 때만 임시 사본에서 에이전트 CLI를 한 번 실행한다.
 
 - **프로필 관리:** CLI는 옵션 기반 또는 TUI 방식으로 프로필을 생성·목록화·조회·설정·삭제한다. 프로필에는 `personal`, `company`, `team`, `workspace` scope가 있으며 `profile list --scope <scope>`로 필터링할 수 있다.
 - **명령 계약:** 모든 명령은 `src/commands/registry.ts`의 등록부에 있고, 도움말·옵션 검사·프로필 관리 메뉴가 이 목록을 읽는다. 결과는 종료 코드(뒤처짐 1, 충돌 2, 숨은 문자 3, 사용법 오류 64, 외부 도구 69, 그 밖 70)와 `--json` 결과 문서로 알린다. 파일을 바꾸거나 원격으로 보내는 명령은 터미널이 아니면 `--yes`가 있어야 진행한다. 결정은 [ADR 0016](../adr/0016-command-contract.md)이다.
@@ -48,7 +48,7 @@ flowchart LR
 - **수동 변경 감지와 충돌 해결:** 두 관리 영역의 hash를 `agctx.project.json`에, 관리 영역 원문을 `.agctx/base/`에 기록한다. 기록된 영역이 바뀌면 `apply`와 `sync`는 파일을 쓰기 전에 종료 코드 2로 중단하고, `--dry-run`은 충돌 파일과 diff를 보여 준 뒤 같은 코드로 끝난다. `profile resolve`는 마지막 적용본을 기준으로 관리 영역 안의 편집을 밖으로 옮기고 관리 영역을 새로 만든다. 마지막 적용본을 알 수 없으면 멈추고, `--discard`를 주면 `.agctx/backups/`에 백업한 뒤 새로 만든다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)이다.
 - **삭제와 재동기화:** 프로필 삭제는 해당 프로필 원본만 제거하고 이미 적용된 프로젝트 파일은 변경하지 않는다. `profile sync`는 `agctx.project.json`에 기록된 프로필을 사용한다.
 
-- **Git 공유와 적용 버전:** 프로필 폴더가 Git 작업 트리이면 `profile clone`·`status`·`pull`·`push`·`connect`로 원격과 주고받는다. 이 명령들은 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`·`AGENTS.md`를 검증하고 숨은 문자를 검사한 뒤에만 반영하며, pull은 fast-forward만 한다. `apply`·`sync`는 적용한 프로필의 `source { git, branch, commit }`와 고정 여부(`pin`)를 `agctx.project.json`에 기록하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 `AGENTS.md`로 다시 만든다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)이다.
+- **Git 공유와 적용 버전:** 프로필 폴더가 Git 작업 트리이면 `profile clone`·`status`·`pull`·`push`·`connect`로 원격과 주고받는다. 이 명령들은 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`과 그것이 가리키는 규칙 파일을 검증하고(규칙 파일이나 거쳐 가는 폴더가 심볼릭 링크면 거부) 숨은 문자를 검사한 뒤에만 반영하며, pull은 fast-forward만 한다. `apply`·`sync`는 적용한 프로필의 `source { git, branch, commit }`와 고정 여부(`pin`)를 `agctx.project.json`에 기록하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 `profile.json`이 가리키는 규칙 파일로 다시 만든다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)이고, 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)이다.
 - **저장소 검사:** `agctx check`는 파일을 바꾸지 않고 관리 영역 hash(충돌 2), 관리 파일의 숨은 문자(3), 프로필이나 원천 저장소보다 뒤처졌는지(1)를 판정한다. 보관함이 없는 CI에서는 `--refresh`가 `git ls-remote`로 원천 브랜치의 최신 커밋과 비교한다.
 - **여러 저장소:** `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록하고, `repos status`·`sync`·`pr`이 이 목록이나 `--targets` 파일의 저장소를 한 번에 다룬다. `repos pr`은 사용자 작업 폴더 대신 임시 worktree(URL은 임시 clone)에서 커밋해 push하고 `gh`로 PR을 연다. 렌더링이 폴더 이름에 흔들리지 않도록 프로젝트 이름을 `agctx.project.json`에 기록한다. 결정은 [ADR 0018](../adr/0018-multi-repository-sync.md)이다.
 - **전달 확인:** `agctx explain`은 에이전트마다 문서화된 로드 규칙과 실측으로, 한 폴더에서 시작한 에이전트가 읽는 지침 파일을 판정하고, 확인한 에이전트 가운데 하나라도 받지 못하는 파일(`missing`)이 있으면 4로 끝난다(`src/explain.ts`의 `explainPath`<!--s:869edbdafbce-->). `agctx verify`는 Codex·Claude Code 세션 기록에서 그 파일들이 실제로 들어갔는지 확인한다. `--probe`를 주면 확인을 받은 뒤, 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행한다. `explain`은 같은 규칙이 두 파일로 한 에이전트에 들어가는 중복도 경고한다([ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)). 결정은 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)다.

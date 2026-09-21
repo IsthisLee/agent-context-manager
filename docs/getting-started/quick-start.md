@@ -54,7 +54,7 @@ agctx help
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 3b64e7df14ac32981103732d20e30ebcf43cc6ed75d1ed5311006c46bd4d60c4 -->
+<!-- agctx-doc-sources-sha256: 76a8be5c08cf7517a47fe9b05c7495ef71d3479807da90804639c2e16c2b9d57 -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 

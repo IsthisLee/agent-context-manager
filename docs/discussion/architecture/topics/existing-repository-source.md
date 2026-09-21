@@ -1,7 +1,7 @@
 # 기존 Git 저장소를 프로필 원천으로 쓰기
 
 <!-- agctx:generated:status:start -->
-**상태:** Proposed
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -29,8 +29,8 @@
 | 선행 제안 | [프로필 모델과 저장소](profile-model.md), [Git 기반 프로필 관리](git-profile-management.md) |
 | 후속 제안 | 없음 |
 | 연관 제안 | [기존 저장소에서 프로필 만들기](profile-import.md)는 로컬 파일에서 고른 절을 복사해 새 프로필을 만드는 경로라 원천과의 연결이 끊긴다. 이 주제는 원천 저장소를 그대로 두고 `pull`로 따라간다. [프로필 설정 표면 확장](profile-config-surface.md)이 프로필에 규칙 말고 다른 파일을 담게 되면 여기서 정한 경로 제약을 함께 쓴다. |
-| 후속 작업 | 결정을 ADR로 기록하고, `docs/reference/file-formats.md`의 `profile.json` 절과 [팀과 Git으로 공유하기](../../../guides/team-sharing.md)에 기존 저장소를 쓰는 절을 더한다. |
-| 권장 다음 작업 | [결정할 것](#결정할-것)의 네 항목을 확정해 ADR로 기록한 뒤, [평가 계획](#평가-계획)의 실패하는 평가부터 작성해 구현한다. |
+| 후속 작업 | 없음. 결정은 [ADR 0036](../../../adr/0036-profile-json-names-rules-file.md)에, 사용 절차는 [기존 저장소를 프로필로 쓰기](../../../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)에, 형식은 [파일 형식](../../../reference/file-formats.md#profilejson)에 옮겼다. |
+| 권장 다음 작업 | 없음. 이 주제의 계약은 [구현 기록](#구현-기록)대로 모두 구현했다. |
 
 ## 목차
 
@@ -41,6 +41,7 @@
 - [결정할 것](#결정할-것)
 - [비범위](#비범위)
 - [평가 계획](#평가-계획)
+- [구현 기록](#구현-기록)
 
 ## 현재 동작
 
@@ -204,3 +205,20 @@ bare 원격에 `templates/AGENTS.md`와 `instructions`가 있는 `profile.json`�
 7. 빈 값, 절대 경로, `..`, 링크 파일, 링크 폴더를 거치는 경로, `.md`가 아닌 파일, 없는 파일을 가리키면 거부한다. (가)를 고르면 `schemaVersion` 1에 `instructions`가 있을 때도 거부한다.
 8. `instructions`가 없는 프로필의 기존 평가가 모두 그대로 통과한다.
 9. TUI의 「프로필 가져오기」 흐름에서도 같은 결과가 나온다.
+
+## 구현 기록
+
+#### 구현 기록: profile.json의 instructions와 거부 안내
+
+* **결정:** [ADR 0036](../../../adr/0036-profile-json-names-rules-file.md). [결정할 것](#결정할-것)의 네 항목은 모두 권장안으로 정했다. 필드 이름은 `instructions`이고, `instructions`가 있으면 `schemaVersion` 2를 요구하며, 경로는 `.md` 파일만 받고, 거부 안내는 같은 변경에서 고쳤다(2026-09-21 제품 소유자 결정).
+* **구현:** `src/profile/store.ts`의 `isValidProfileMetadata`(버전 규칙), `instructionsFile`·`isInstructionsPath`·`assertInstructionsPath`·`regularFileInside`, `readProfile`. `src/shared/git.ts`의 `committedFile`은 커밋 안의 일반 파일만 읽는다. `src/profile/git-profile.ts`의 `cloneProfile`·`pullProfile`이 가리킨 파일을 검사하고, `committedProfile`이 그 커밋의 `profile.json`에서 경로를 읽는다. `src/profile/apply.ts`의 `profileVersion`이 고정 복원과 수정 판정에 그 경로를 쓴다. 메시지는 한국어·영어 두 벌을 고쳤다.
+* **평가:** `evals/profile-instructions.test.ts` 19개가 통과한다. 거부 평가 11개는 `schemaVersion` 2를 통째로 거부하던 구현 전 코드에서도 통과했으므로, 검사를 하나씩 빼는 변이로 실패하는지 확인했다. `..`·`.` 조각, 역슬래시, `.md`, 버전 1의 `instructions`, 문자열 타입, `clone`의 링크 거부(`lstatSync`를 `statSync`로 바꾼 변이), `pull`의 링크 거부, 고정 복원 경로, 수정 판정 경로, `setup`이 쓰는 파일은 빼면 해당 평가가 실패했다.
+* **계획과 달라진 점:**
+  - [평가 계획](#평가-계획) 9번(TUI)은 따로 평가를 두지 않았다. TUI의 「프로필 가져오기」는 `src/tui/commands.ts`의 `runFromTui`로 CLI와 같은 처리기를 부르므로, CLI 평가가 같은 경로를 지난다.
+  - [경로에 허용할 범위](#3-경로에-허용할-범위)의 링크 제약은 원격에서 받는 파일에만 적용했다. 보관함에 이미 있는 로컬 프로필의 규칙 파일은 지금처럼 링크여도 읽는다. 막으면 규칙 파일을 다른 곳에 링크해 둔 로컬 프로필이 깨지기 때문이다.
+  - 평가 계획 5번의 `check`는 0이 아니라 1로 끝난다. 고정한 프로젝트는 보관함에 더 새 커밋이 있으면 원래 뒤처짐(1)으로 알리므로, 평가는 파일 단위 지적이 없고 그 판정 하나만 나오는지로 확인한다.
+* **제약:**
+  - 절대 경로와 `.git` 조각 검사는 이 검사만 빼도 평가가 실패하지 않는다. `path.join`이 절대 경로를 보관함 안쪽 경로로 붙이고 Git이 저장소 밖 경로를 스스로 거부하는 이중 방어이며, `.git` 아래에는 원격에서 파일을 넣을 수 없다. `pull`의 `..` 거부도 같은 이유로 Git이 먼저 막는다.
+  - 고정한 커밋에서 규칙 파일이 심볼릭 링크였다면 다시 만들지 못하고 69로 멈춘다. 이전 코드는 링크 대상 경로 문자열(`real.md` 같은)을 규칙 내용으로 썼다.
+  - 저장소 하나에 프로필 하나, 규칙 파일 하나만 받는다.
+* **다음 단계:** 없음. 규칙 파일을 루트로 옮겨 쓰던 저장소는 이 기능이 든 버전을 배포한 뒤 `instructions`로 되돌릴 수 있다.

@@ -189,7 +189,7 @@
         11
       ],
       "outcome": "규칙 파일을 옮기지 않고 `profile.json` 하나만 더해 기존 규칙 저장소를 `profile clone`으로 받고 `pull`로 따라감",
-      "status": "Proposed"
+      "status": "Implemented"
     },
     {
       "file": "implementation-contracts.md",

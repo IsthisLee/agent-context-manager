@@ -99,7 +99,7 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 ## 다른 컴퓨터에서 같은 프로필 쓰기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 89add602fa8c1c917f883d31e0ef3475aa490a8a9b20a7c11fe55d8c145eed96 -->
+<!-- agctx-doc-sources-sha256: e599869594b439e49ba8ce99545e830f3e762ce3a03e472b5a32cf2308afad0d -->
 
 프로필 보관함은 어떤 저장소에도 커밋되지 않는다. 컴퓨터를 옮겨도 같은 개인 프로필을 쓰려면 프로필 자체를 내 Git 저장소에 올린다.
 

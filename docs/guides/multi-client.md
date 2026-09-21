@@ -32,14 +32,14 @@ flowchart LR
 ## 1. 고객사 프로필 받기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 89add602fa8c1c917f883d31e0ef3475aa490a8a9b20a7c11fe55d8c145eed96 -->
+<!-- agctx-doc-sources-sha256: e599869594b439e49ba8ce99545e830f3e762ce3a03e472b5a32cf2308afad0d -->
 
 ```bash
 agctx profile clone https://git.client-a.example/rules.git
 agctx profile clone https://git.client-b.example/rules.git
 ```
 
-`clone`은 받은 저장소에 `profile.json`과 `AGENTS.md`가 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함(`~/.agctx/profiles`)에 등록한다([프로필 보관함](../concepts/profiles.md#프로필-보관함)). 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
+`clone`은 받은 저장소에 `profile.json`과 그것이 가리키는 규칙 파일(기본 `AGENTS.md`)이 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함(`~/.agctx/profiles`)에 등록한다([프로필 보관함](../concepts/profiles.md#프로필-보관함)). 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
 
 ## 2. 고객사 저장소에 적용
 

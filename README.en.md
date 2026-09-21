@@ -179,9 +179,9 @@ Refine such a draft by hand, then place it in the project extension area of `AGE
 agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) lists the topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
 <!-- agctx:generated:discussion-status:start -->
-- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management
+- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, using an existing Git repository as a Profile source
 - **In progress:** use through natural-language requests, safe synchronization of managed artifacts, evidence criteria and length budget for default guidance
-- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository, using an existing Git repository as a Profile source. These are not current behavior yet.
+- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository. These are not current behavior yet.
 <!-- agctx:generated:discussion-status:end -->
 
 ## Documentation

@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: a060a1205f4282275850018ccf7a46027bd3eac3efae934696e14c7413f49191 -->
+<!-- agctx-doc-sources-sha256: 2b6858350343d28b9c35a46927cc055096745112934e7db406c56352828ed1e6 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 6c85a5e276eaf10ba798d5183075143a42ac3ca70ded184102c39633b8f3bfb2 -->
+<!-- agctx-doc-sources-sha256: acbfa58cfd086d0cc11989a2b0a4cb69e88e5af8845115b5411a1075ef49b6ee -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

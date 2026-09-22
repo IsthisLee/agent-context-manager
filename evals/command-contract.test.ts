@@ -137,7 +137,7 @@ test('<command> --help는 명령을 실행하지 않고 사용법과 종료 코�
   const result = ok(['profile', 'apply', '--help']);
   assert.match(
     result.stdout,
-    /Usage: agctx profile apply \[--dry-run\] \[--agent <codex\|claude\|antigravity\|all>\] \[--pin\] \[--adopt\] \[--yes\] <name> \[<project>\]/
+    /Usage: agctx profile apply \[--dry-run\] \[--agent <codex\|claude\|antigravity\|all>\] \[--include <rules\|mcp\|all>\] \[--pin\] \[--adopt\] \[--yes\] <name> \[<project>\]/
   );
   assert.match(
     result.stdout,

@@ -32,7 +32,16 @@ import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
 import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
-import { AGENT_IDS, canonicalAgents, recordedAgents, type AgentId } from '../shared/agents.ts';
+import {
+  AGENT_IDS,
+  canonicalAgents,
+  recordedAgents,
+  recordedInclude,
+  type AgentId,
+  type IncludeKind
+} from '../shared/agents.ts';
+import { parseMcpServers, PROFILE_MCP_FILE } from '../mcp/servers.ts';
+import { MCP_TARGETS } from '../mcp/targets.ts';
 
 /** TUI 단계 하나를 실행하고, 실패하면 TUI를 나가지 않고 다음 명령과 함께 안내로 보여 준다. */
 export async function runTuiStep(step: () => Promise<void>): Promise<void> {
@@ -407,6 +416,34 @@ async function agentChoiceTui(targetDir: string): Promise<string | null> {
   return agentAnswer(selected);
 }
 
+/**
+ * TUI 적용 흐름이 MCP 서버를 쓸지 묻는지와, 미리 고를 답. 프로필에 `mcp.json`이 있을 때만 묻고, 저장소가
+ * 기록한 선택이 있으면 그것을, 없으면 쓰는 쪽을 미리 고른다.
+ */
+export function includePrompt(
+  name: string,
+  targetDir: string,
+  agents: readonly AgentId[] = AGENT_IDS
+): { ask: boolean; initial: boolean; servers: number; files: string } {
+  const profile = readProfile(name);
+  const mcpPath = path.join(profile.profileDir, PROFILE_MCP_FILE);
+  // MCP 파일을 받는 에이전트를 고르지 않았으면 물을 것이 없다.
+  const files = MCP_TARGETS.filter(target => agents.includes(target.agent))
+    .map(target => target.rel)
+    .join(', ');
+  if (!fs.existsSync(mcpPath) || !files) return { ask: false, initial: false, servers: 0, files };
+  let servers = 0;
+  try {
+    servers = Object.keys(parseMcpServers(fs.readFileSync(mcpPath, 'utf8'), mcpPath)).length;
+  } catch {}
+  const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
+  let recorded: IncludeKind[] | null = null;
+  try {
+    recorded = recordedInclude(readProjectConfig(configPath).include, configPath);
+  } catch {}
+  return { ask: true, initial: recorded === null || recorded.includes('mcp'), servers, files };
+}
+
 /** 프로필 메뉴 항목마다 하는 일. 키는 등록부의 명령 id다. */
 export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.setup': name => setupProfileTui(name),
@@ -420,6 +457,16 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
     if (!target) return cancel(_('actions.project.cancel'));
     const agent = await agentChoiceTui(target);
     if (agent === null) return cancel(_('actions.project.cancel'));
+    const mcp = includePrompt(name, target, agent === 'all' ? AGENT_IDS : (agent.split(',') as AgentId[]));
+    let include: string | null = null;
+    if (mcp.ask) {
+      const answer = await confirm({
+        message: _('actions.apply.mcp', { count: mcp.servers, files: mcp.files }),
+        initialValue: mcp.initial
+      });
+      if (cancelled(answer)) return cancel(_('actions.project.cancel'));
+      include = answer ? 'all' : 'rules';
+    }
     const choice = pinPrompt(name, target);
     let pin = false;
     if (choice.ask) {
@@ -428,7 +475,7 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
       pin = answer;
     }
     await withConflictRecovery(target, ({ adopt }) =>
-      runFromTui('profile.apply', [name, target], { agent, pin, adopt })
+      runFromTui('profile.apply', [name, target], { agent, include, pin, adopt })
     );
   },
   'profile.sync': async () => {

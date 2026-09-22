@@ -21,7 +21,7 @@
 ## 시작하기
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: abfd5a6114b88dee8bc093332436da89672ad20dc4055fa6cdf87bd2d1cce653 -->
+<!-- agctx-doc-sources-sha256: cc661a44efc0a2b49384fabb29915d2987fbbe2a33683bc7064942a80eff76aa -->
 
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
@@ -114,7 +114,7 @@ Created profile: team-backend (team)
 ## 지침 고르기
 
 <!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 41b97d8b3d045c3a09aaef2a878a81f17b05501e6c48a619415cbf26dc1ef03d -->
+<!-- agctx-doc-sources-sha256: 63d96a48c9eea2da50b82d85a73397db73d7a6d564490657bae9055b5a96859b -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -331,7 +331,7 @@ Next: agctx repos sync --profile team-backend
 ## 메뉴와 명령 대응표
 
 <!-- agctx-doc-sources: src/commands/registry.ts -->
-<!-- agctx-doc-sources-sha256: 94f6ea996c485da1c0c16b06b94efcbffd32f9636a7258087046ef49ef2b2dfd -->
+<!-- agctx-doc-sources-sha256: 40ca74f266db03dad58ce63605dbda6b7d6a4770cb35c7969e5ab81ac088c027 -->
 
 TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으로 바뀌어 같은 처리기로 실행된다. 가이드에 나오는 CLI 명령은 아래 메뉴로 바꿔 실행할 수 있다. 표시 언어를 한국어로 두면 메뉴 이름이 둘째 열처럼 나온다.
 

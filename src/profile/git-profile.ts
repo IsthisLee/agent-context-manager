@@ -6,6 +6,7 @@ import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isSymbolicLink } from '../shared/fs-utils.ts';
 import { committedFile, git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
+import { PROFILE_MCP_FILE } from '../mcp/servers.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
 import type { ProfileMetadata } from '../shared/types.ts';
 import {
@@ -170,9 +171,14 @@ export function cloneProfile(location: string, options: { branch?: string | null
         _('hint.profile.instructions')
       );
     }
+    // 받은 mcp.json이 심볼릭 링크면 이 컴퓨터의 다른 파일을 MCP 설정으로 퍼뜨릴 수 있으므로 받지 않는다.
+    const mcpPath = regularFileInside(temporary, PROFILE_MCP_FILE);
+    if (mcpPath === null && isSymbolicLink(path.join(temporary, PROFILE_MCP_FILE)))
+      throw usageError('clone.mcp-symlink', _('error.clone.mcp-symlink', { url: source }), _('hint.clone.mcp-symlink'));
     assertNoHiddenCharacters([
       { file: PROFILE_METADATA_FILE, content: metadataText },
-      { file, content: fs.readFileSync(instructionsPath, 'utf8') }
+      { file, content: fs.readFileSync(instructionsPath, 'utf8') },
+      ...(mcpPath ? [{ file: PROFILE_MCP_FILE, content: fs.readFileSync(mcpPath, 'utf8') }] : [])
     ]);
     const target = path.join(home, metadata.name);
     if (fs.existsSync(target) || isSymbolicLink(target)) {
@@ -255,9 +261,11 @@ export function pullProfile(name: string, options: { dryRun?: boolean } = {}): P
   if (!incoming) throw usageError('pull.invalid', _('error.pull.invalid', { name }), null);
   assertInstructionsPath(incoming.file, state.remote ?? name);
   if (incoming.content === null) throw usageError('pull.invalid', _('error.pull.invalid', { name }), null);
+  const incomingMcp = committedFile(state.dir, state.upstream, PROFILE_MCP_FILE);
   assertNoHiddenCharacters([
     { file: PROFILE_METADATA_FILE, content: incoming.metadataText },
-    { file: incoming.file, content: incoming.content }
+    { file: incoming.file, content: incoming.content },
+    ...(incomingMcp === null ? [] : [{ file: PROFILE_MCP_FILE, content: incomingMcp }])
   ]);
   if (options.dryRun) return { state, commits, changedFiles, applied: false };
   git(['merge', '--ff-only', '--quiet', state.upstream], { cwd: state.dir });

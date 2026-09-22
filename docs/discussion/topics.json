@@ -87,7 +87,7 @@
       "importance": "Critical",
       "prerequisites": [3, 4, 6, 13],
       "outcome": "프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화",
-      "status": "Proposed"
+      "status": "Implementing"
     },
     {
       "stage": 10,
@@ -127,7 +127,7 @@
       "importance": "High",
       "prerequisites": [3, 4],
       "outcome": "저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현",
-      "status": "Implementing"
+      "status": "Implemented"
     },
     {
       "stage": 14,

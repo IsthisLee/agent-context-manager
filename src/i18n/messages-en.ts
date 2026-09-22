@@ -548,7 +548,7 @@ export default {
   'error.project.unmanaged':
     'agctx did not write these files and they have no agctx markers, so nothing was changed: {files}',
   'hint.project.unmanaged':
-    'To keep what is in them and add the agctx managed area, run {command}. CLAUDE.md and rule files get the managed block below their content; AGENTS.md moves its content below the profile guidance.',
+    'To keep what is in them and add the agctx managed area, run {command}. CLAUDE.md and rule files get the managed block below their content; AGENTS.md moves its content below the profile guidance; .mcp.json and .codex/config.toml keep the servers and settings someone put there.',
   'repos.sync.unmanaged':
     'not changed: {files} exist without agctx markers. Run agctx profile sync {project} --adopt to add the managed area.',
   'repos.pr.unmanaged':
@@ -561,6 +561,49 @@ export default {
     '{files} also exist without agctx markers; after resolving, run agctx profile resolve {project} --adopt or leave them out.',
   'check.unmanaged':
     'exists without agctx markers, so sync stops here; run agctx profile sync {project} --adopt to add the managed area',
+  'error.profile.invalid-mcp': 'The profile MCP server list {file} is invalid: {detail}',
+  'hint.profile.mcp':
+    'Write mcp.json as { "servers": { "<name>": { "command": "...", "args": [...], "env": {...} } } } for a local server or { "url": "https://...", "headers": {...} } for a remote one. Put secrets in environment variables such as ${TOKEN}, not in the file.',
+  'error.include.unknown': 'Unknown target kind: {kind}.',
+  'error.include.rules': '--include must contain rules: every agent reads the rules in AGENTS.md.',
+  'hint.include': 'Use --include rules,mcp, --include rules, or --include all.',
+  'error.project.invalid-include': '{file} has an invalid include list: {value}.',
+  'error.project.invalid-mcp-file': '{file} cannot be read as MCP settings ({detail}), so agctx did not change it.',
+  'hint.project.invalid-mcp-file': 'Fix the JSON in {file}, or leave out MCP with --include rules.',
+  'error.project.invalid-managed-keys': 'managedKeys in {file} is not a map of file paths to lists of names.',
+  'hint.project.invalid-managed-keys':
+    'Fix or remove managedKeys in {file}, then run the command again. agctx rewrites it on the next apply.',
+  'error.project.mcp-name-taken':
+    'The project already defines MCP servers with the same names as the profile, so nothing was changed: {servers}',
+  'hint.project.mcp-name-taken':
+    "Rename or remove the server someone added, or rename it in the profile's mcp.json. agctx does not overwrite a server it did not write.",
+  'plan.warn.mcp-skip.codex-renamed-env':
+    'Warning: {agent} ({file}) did not get MCP server {name}: Codex forwards an environment variable only under its own name, so an env value like ${OTHER} cannot be passed. Use the same name, as in "TOKEN": "${TOKEN}".',
+  'plan.warn.mcp-skip.codex-env-reference':
+    'Warning: {agent} ({file}) did not get MCP server {name}: Codex does not expand ${...} inside env values. Use a whole value like "TOKEN": "${TOKEN}" or a literal value.',
+  'plan.warn.mcp-skip.codex-url-reference':
+    'Warning: {agent} ({file}) did not get MCP server {name}: Codex does not expand ${...} in a server URL.',
+  'plan.warn.mcp-skip.codex-header-reference':
+    'Warning: {agent} ({file}) did not get MCP server {name}: Codex takes a header from the environment only when the whole value is ${VAR}, or Authorization is Bearer ${VAR}.',
+  'plan.mcp.servers': 'MCP servers from the profile: {servers}',
+  'error.clone.mcp-symlink': 'The mcp.json in {url} is a symbolic link, so the profile was not cloned.',
+  'hint.clone.mcp-symlink': 'Commit mcp.json as a regular file in the profile repository.',
+  'view.mcp': 'MCP servers: {servers}',
+  'actions.apply.mcp': "Also write the profile's {count} MCP server(s) to {files} in this repository?",
+  'plan.warn.mcp-skip.codex-command-reference':
+    'Warning: {agent} ({file}) did not get MCP server {name}: Codex does not expand ${...} in command or args.',
+  'plan.warn.mcp-after-block':
+    'Warning: {file} has settings after the agctx block without a table header, so TOML adds them to the last MCP server in the block. Move them above the block.',
+  'plan.warn.mcp-codex-user':
+    'Warning: your Codex user settings also define MCP server(s) {servers}. Codex merges them key by key with {file}, so a key you set there (such as bearer_token_env_var or cwd) also applies to the team server.',
+  'plan.mcp.removed': 'MCP servers removed: {servers}',
+  'hint.project.conflict.mcp':
+    "For MCP settings, move the change into the profile's mcp.json, then run agctx profile resolve {project} --discard to back up the file and write it again.",
+  'error.resolve.mcp-discard':
+    'Someone changed MCP servers that agctx wrote in {files}. An edited server cannot be moved outside the managed area.',
+  'hint.resolve.mcp-discard':
+    "Move the change into the profile's mcp.json if you want to keep it, then run agctx profile resolve {project} --discard. The current file is copied to {backups}/ first.",
+  'view.mcp-invalid': 'MCP servers: mcp.json is invalid ({detail})',
   'plan.warn.agents-lines':
     'Warning: AGENTS.md will be {lines} lines after this run. Claude Code recommends keeping each instruction file under {limit} lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
   'plan.warn.agents-bytes':

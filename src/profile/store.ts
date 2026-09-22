@@ -8,6 +8,8 @@ import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import { shellWord } from '../shared/shell.ts';
 import type { ListedProfile, Profile, ProfileMetadata, Scope } from '../shared/types.ts';
+import { parseMcpServers, PROFILE_MCP_FILE } from '../mcp/servers.ts';
+import { describeServer } from '../mcp/targets.ts';
 
 export const SCOPES: readonly Scope[] = ['personal', 'company', 'team', 'workspace'];
 
@@ -472,12 +474,39 @@ export function removeProfile(name: string): void {
   say(_('remove.done', { name }));
 }
 
-export function viewProfile(name: string): { name: string; scope: Scope; instructions: string } {
+export function viewProfile(name: string): {
+  name: string;
+  scope: Scope;
+  instructions: string;
+  mcpServers: string[] | null;
+} {
   const profile = readProfile(name);
   const instructions = fs.readFileSync(profile.instructionsPath, 'utf8').trim();
   say(`${profile.metadata.name}\t${profile.metadata.scope}`);
   say(instructions);
-  return { name: profile.metadata.name, scope: profile.metadata.scope, instructions };
+  const mcpPath = path.join(profile.profileDir, PROFILE_MCP_FILE);
+  let servers: ReturnType<typeof parseMcpServers> | null = null;
+  try {
+    servers = fs.existsSync(mcpPath) ? parseMcpServers(fs.readFileSync(mcpPath, 'utf8'), mcpPath) : null;
+  } catch (error) {
+    // 보기는 읽기만 하므로, 잘못된 mcp.json 때문에 지침까지 못 보게 하지 않는다.
+    say(`\n${_('view.mcp-invalid', { detail: error instanceof Error ? error.message : String(error) })}`);
+  }
+  if (servers)
+    say(
+      `\n${_('view.mcp', {
+        servers:
+          Object.entries(servers)
+            .map(([server, spec]) => describeServer(server, spec))
+            .join(', ') || '-'
+      })}`
+    );
+  return {
+    name: profile.metadata.name,
+    scope: profile.metadata.scope,
+    instructions,
+    mcpServers: servers ? Object.keys(servers) : null
+  };
 }
 
 export function selectProfile(selection: string | undefined, profiles: ListedProfile[] = getProfiles()): string {

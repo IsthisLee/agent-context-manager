@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: efcf79af650e451a1221e79c81778137aae348748e13f8d2585ba95e99e16028 -->
+<!-- agctx-doc-sources-sha256: 90b2ce69c468dbdcf40b6385f16aaaa2714b327dcc13098b628160bc923c9f8d -->
 
 ```bash
 npm install --global agent-context-manager
@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 87dc0a829b2f136123fb75efcc3446e8f7563bae16c49bef2d5fbb403c9b86f1 -->
+<!-- agctx-doc-sources-sha256: 938337a26710f4099e098534a9d61baa6ce16c1ce61a5d31000e029864dda5f5 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -119,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: abfd5a6114b88dee8bc093332436da89672ad20dc4055fa6cdf87bd2d1cce653 -->
+<!-- agctx-doc-sources-sha256: cc661a44efc0a2b49384fabb29915d2987fbbe2a33683bc7064942a80eff76aa -->
 
 ```bash
 agctx
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 902d7f998469e8d6123b69821dfe6c3c017e71fd52aeb83254734ed28876fb3f -->
+<!-- agctx-doc-sources-sha256: 5a514eb5991e359f8affdd2efef3ab888fcec0405f6c6f36022bf9bdb3be2a62 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -333,7 +333,7 @@ agctx profile setup company --tdd on --security on
 
 <!-- agctx:generated:usage:profile.apply:start -->
 ```bash
-agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--adopt] [--yes] <name> [<project>]
+agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--include <rules|mcp|all>] [--pin] [--adopt] [--yes] <name> [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -345,6 +345,7 @@ agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin]
 | `<project>` | 적용할 프로젝트 경로; 생략하면 현재 디렉터리 |
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `--agent` | 연결 파일을 받을 에이전트. `codex`·`claude`·`antigravity`를 쉼표로 여러 개 주거나 `all`. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
+| `--include` | 받을 대상 종류. `rules`·`mcp`를 쉼표로 주거나 `all`. `rules`는 뺄 수 없다. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
 | `--pin` | Git 프로필의 현재 커밋에 프로젝트를 고정 |
 | `--adopt` | agctx 표지가 없는 기존 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`에도 관리 영역을 더함 |
 | `--yes` | 터미널이 아닌 환경에서 적용을 승인 |
@@ -392,6 +393,8 @@ Dry-run: no files were changed.
 ```
 
 결정은 [ADR 0042](../adr/0042-choose-agents-per-repository.md)다.
+
+**MCP 서버:** 프로필 폴더에 `mcp.json`이 있으면 고른 에이전트마다 Claude Code의 `.mcp.json`과 Codex의 `.codex/config.toml`에도 서버를 쓴다. 계획 아래에 `MCP servers from the profile: <이름> (<명령이나 URL>)` 줄로 쓸 서버를 보여 준다. agctx가 쓴 서버만 바꾸고 사람이 넣은 서버와 설정은 그대로 두며, 사람이 같은 이름의 서버를 두었으면 아무것도 쓰지 않고 종료 코드 2로 멈춘다. `--include rules`면 MCP를 쓰지 않고 이미 쓴 서버를 지우며, 그 선택을 `agctx.project.json`의 `include`에 남긴다. 파일 형식은 [파일 형식과 저장 위치](file-formats.md#mcpjson), 쓰는 법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md), 결정은 [ADR 0044](../adr/0044-mcp-servers-in-profiles.md)다.
 
 **하위 폴더 연결 파일:** Claude Code는 `AGENTS.md`를 직접 읽지 않으므로, 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 

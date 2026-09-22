@@ -32,6 +32,7 @@
 - [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
 - [포매터가 관리 영역을 바꾸는 범위](#포매터가-관리-영역을-바꾸는-범위)
+- [MCP 서버 설정 위치와 형식 근거](#mcp-서버-설정-위치와-형식-근거)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -1177,6 +1178,67 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 - **직접 실험(2026-09-20): 기본 설정의 Prettier는 목록 기호를 `-`로 바꾼다.** agctx를 적용한 프로젝트의 `AGENTS.md`(68줄, 관리 영역 3,783자)에 설정 파일 없이 `npx prettier@3 --write AGENTS.md`를 실행하자 한 줄만 바뀌었다. agctx가 쓴 `* **Project:** dev-agent-orch`가 `- **Project:** dev-agent-orch`가 됐다. 그 줄은 관리 영역 안이므로 관리 영역 해시가 달라졌고, `agctx check`는 `conflict AGENTS.md 프로필이 관리하는 영역을 직접 고쳤습니다`로 판정했다. 관리 영역 안에 `*` 목록은 그 한 줄뿐이었고 그 한 줄이 전부 바뀌었다. 같은 파일에 `--prose-wrap always --print-width 80`을 주면 18줄이 사라지고 100줄이 새로 쓰였다.
 - **직접 실험(2026-09-20): 목록 기호와 제목 뒤 빈 줄을 맞추면 기본 설정의 Prettier가 아무것도 바꾸지 않는다.** `templates/`의 Markdown 다섯 개와 `renderProfileAgents`의 출력을 같은 명령에 통과시켜 바뀌는 줄이 없음을 확인했다. 이 형태를 지키는지는 `evals/formatter-stability.test.ts`가 검사한다.
 - **직접 실험(2026-09-21): 문단을 다시 접어도 낱말과 그 차례는 바뀌지 않는다.** 위 `--prose-wrap always` 실험의 결과를 원문과 대조하자 달라진 것은 줄바꿈 위치와 주석 앞뒤의 빈 줄뿐이었고 낱말은 하나도 바뀌지 않았다. 문단 안의 단일 줄바꿈은 Markdown에서 공백이므로 두 파일은 같은 문서다. 적용한 프로젝트를 그 설정으로 포맷한 뒤 `agctx check`는 `behind`(1)로 끝났고 `profile sync` 한 번에 풀렸다. 같은 파일에서 낱말 하나를 `먼저 계획을 세운다`에서 `먼저 계획을 세우지 않는다`로 바꾸자 `conflict`(2)로 멈췄다.
+
+## MCP 서버 설정 위치와 형식 근거
+
+프로필의 MCP 서버를 에이전트마다 프로젝트 설정 파일에 쓰는 판정([ADR 0044](adr/0044-mcp-servers-in-profiles.md))이 기대는 사실이다.
+
+- **Claude Code는 저장소 루트의 `.mcp.json`을 팀 공유 설정으로 읽는다.** [Claude Code MCP](https://code.claude.com/docs/en/mcp) (확인일: 2026-09-22)
+
+  > "Project-scoped servers enable team collaboration by storing configurations in a `.mcp.json` file at your project's root directory."
+  >
+  > 번역: 프로젝트 범위 서버는 프로젝트 루트의 `.mcp.json` 파일에 설정을 저장해 팀 협업을 가능하게 합니다.
+
+  같은 문서는 대화형 세션에서 처음 쓰기 전에 승인을 묻고, 저장소에 커밋한 설정으로는 스스로 승인할 수 없다고 적는다.
+
+  > "For security reasons, Claude Code prompts for approval in interactive sessions before using project-scoped servers from `.mcp.json` files."
+  >
+  > 번역: 보안상 Claude Code는 대화형 세션에서 `.mcp.json`의 프로젝트 범위 서버를 쓰기 전에 승인을 묻습니다.
+
+- **Claude Code에서 원격 서버는 `type`이 있어야 하고, 같은 이름이면 항목을 통째로 쓴다.** [Claude Code MCP](https://code.claude.com/docs/en/mcp) (확인일: 2026-09-22)
+
+  > "A JSON entry that has a `url` but no `type` is a configuration error, because Claude Code reads an entry with no `type` as a stdio server."
+  >
+  > 번역: `url`은 있고 `type`이 없는 JSON 항목은 설정 오류입니다. Claude Code는 `type`이 없는 항목을 stdio 서버로 읽기 때문입니다.
+
+  > "The entire server entry from that source is used; fields are not merged across scopes."
+  >
+  > 번역: 그 출처의 서버 항목 전체를 쓰며, 범위끼리 필드를 합치지 않습니다.
+
+  환경 변수는 `${VAR}`와 `${VAR:-default}`로 `command`·`args`·`env`·`url`·`headers`에서 펼친다고 같은 문서가 적는다. 같은 이름의 서버가 여러 범위에 있으면 로컬 범위(`~/.claude.json`의 그 프로젝트 항목), 프로젝트 범위(`.mcp.json`), 사용자 범위 순서로 앞의 것을 쓴다.
+
+  > "When the same server is defined in more than one place, Claude Code connects to it once, using the definition from the highest-precedence source. … 1. Local scope 2. Project scope 3. User scope"
+  >
+  > 번역: 같은 서버가 여러 곳에 정의되면 Claude Code는 우선순위가 가장 높은 곳의 정의로 한 번만 연결합니다. … 1. 로컬 범위 2. 프로젝트 범위 3. 사용자 범위
+
+- **Codex는 신뢰한 프로젝트의 `.codex/config.toml`에서 `[mcp_servers.<이름>]`을 읽는다.** [Codex MCP](https://developers.openai.com/codex/mcp) (확인일: 2026-09-22)
+
+  > "By default this is `~/.codex/config.toml`, but you can also scope MCP servers to a project with `.codex/config.toml` (trusted projects only)."
+  >
+  > 번역: 기본은 `~/.codex/config.toml`이지만, `.codex/config.toml`로 MCP 서버를 프로젝트 범위로 둘 수도 있습니다(신뢰한 프로젝트만).
+
+  서버 필드는 stdio가 `command`·`args`·`env`·`env_vars`·`cwd`, 원격이 `url`·`bearer_token_env_var`·`http_headers`·`env_http_headers`다. 비밀값은 `${VAR}` 대신 변수 이름을 적는 필드로 넘긴다.
+
+  > "`env_vars` (optional): Environment variables to allow and forward."
+  >
+  > 번역: `env_vars`(선택): 허용해 넘길 환경 변수입니다.
+
+  > "`bearer_token_env_var` (optional): Environment variable name for a bearer token to send in `Authorization`."
+  >
+  > 번역: `bearer_token_env_var`(선택): `Authorization`에 보낼 bearer 토큰이 든 환경 변수 이름입니다.
+
+  설정의 우선순위는 프로젝트 파일이 사용자 파일보다 앞선다. [Codex config basics](https://developers.openai.com/codex/config-basic) (확인일: 2026-09-22)
+
+  > "2. Project config files: `.codex/config.toml`, ordered from the project root down to your current working directory (closest wins; trusted projects only) … 4. User config: `~/.codex/config.toml`"
+  >
+  > 번역: 2. 프로젝트 설정 파일: `.codex/config.toml`, 프로젝트 루트에서 현재 작업 폴더 순서(가장 가까운 것이 이김, 신뢰한 프로젝트만) … 4. 사용자 설정: `~/.codex/config.toml`
+
+- **직접 실험(Codex 0.155.1, 2026-09-22):** 임시 `CODEX_HOME`에서 한 조사다.
+  - 같은 이름의 서버가 사용자 설정과 프로젝트 설정에 모두 있으면 키 하나씩 합쳤다. 프로젝트 쪽에 `command`만 두자 `codex mcp get dup --json`의 `args`·`env`가 사용자 설정 값으로 나왔다. 그래서 agctx는 `args`·`env`·`env_vars` 같은 목록과 표 키를 비어 있어도 적는다.
+  - 프로젝트 파일의 `url`에 쓴 `${EXAMPLE_HOST}`는 `codex mcp get`에서 펼쳐지지 않았다. 그래서 `${...}`가 든 URL·헤더·환경 변수 값은 Codex로 옮기지 않고 경고한다.
+  - agctx가 만든 `.codex/config.toml`을 신뢰한 프로젝트로 두고 `codex mcp list`·`codex mcp get <이름> --json`을 실행하자, stdio 서버는 `env`·`env_vars`까지, 원격 서버는 `bearer_token_env_var`·`http_headers`까지 적은 대로 나왔다.
+- **직접 실험(Claude Code 2.1.278, 2026-09-22):** agctx가 만든 `.mcp.json`이 있는 폴더에서 `claude mcp get <이름>`을 실행하자 두 서버가 `Scope: Project config (shared via .mcp.json)`, `Status: ⏸ Pending approval`로 나왔다. 원격 서버의 `Authorization: Bearer ${DOCS_TOKEN}`은 적은 그대로다.
+- **Antigravity는 확인하지 못했다.** [Antigravity MCP](https://antigravity.google/docs/mcp)는 워크스페이스 설정으로 `.agents/mcp_config.json`을 적지만, 그 파일을 읽는 조건, 사용자 설정과의 우선순위, `${VAR}` 치환은 문서에서 찾지 못했다(확인일: 2026-09-22). agy 1.2.5의 `agy mcp list`는 사용자 수준 파일만 보여 주었고, 실제 세션이 워크스페이스 파일을 읽는지는 크레딧을 쓰는 실행이라 확인하지 않았다. 그래서 시범 구현은 Antigravity에 MCP 파일을 쓰지 않는다.
 
 ## 비교 대상
 

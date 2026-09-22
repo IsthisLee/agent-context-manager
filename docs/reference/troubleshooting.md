@@ -6,7 +6,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 6ff72507827890b9d1a836125349ca6dc3f4bba1bbc3b1177b0301207631b998 -->
+<!-- agctx-doc-sources-sha256: db4450a223359c2e82bbe379d4a54b2d93dc2897fc3a2e1b577d7bd8d3753144 -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
 
@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 86fd56ed500d7439b2224fcb5fc82ce70574e9b4a058fe247235042bfabde75e -->
+<!-- agctx-doc-sources-sha256: 50ad235fb28d0a68d98f5c167bd847eede0c6c0d1608a04d98b615775b035d0d -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`agctx did not write these files and they have no agctx markers`**(종료 코드 2): 사람이 쓴 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`가 이미 있다. 아무 파일도 바뀌지 않았다. 기존 내용을 남기고 agctx 영역을 더하려면 `Next:` 줄의 `--adopt` 명령을, 그 에이전트의 파일을 그대로 두려면 `--agent` 명령을 실행한다. 멈춘 파일이 심볼릭 링크면 `--adopt`로도 쓸 수 없으므로 `--agent`로 뺀다([`profile apply`](cli.md#profile-apply)).

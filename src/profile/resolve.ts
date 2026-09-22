@@ -110,7 +110,8 @@ export async function resolveProject(
     if (file.conflict.kind === 'missing') {
       overrides.set(file.rel, null);
       files.push({ file: file.rel, action: 'recreate' });
-    } else if (base === null) {
+    } else if (base === null || file.kind === 'mcp-json' || file.kind === 'mcp-toml') {
+      // MCP 설정 파일은 고친 줄을 관리 영역 밖으로 옮길 자리가 없다. 백업한 뒤 다시 만드는 것만 한다.
       if (!options.discard) {
         unresolved.push(file);
         continue;
@@ -139,6 +140,15 @@ export async function resolveProject(
     }
   }
 
+  const mcpUnresolved = unresolved.filter(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml');
+  if (mcpUnresolved.length) {
+    printConflicts(unresolved);
+    throw new CliError(
+      'resolve.mcp-discard',
+      _('error.resolve.mcp-discard', { files: mcpUnresolved.map(file => file.rel).join(', ') }),
+      { exitCode: EXIT.conflict, hint: _('hint.resolve.mcp-discard', { project: targetDir, backups: BACKUP_DIR }) }
+    );
+  }
   if (unresolved.length) {
     printConflicts(unresolved);
     throw new CliError(

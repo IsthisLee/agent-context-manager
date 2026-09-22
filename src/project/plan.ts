@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { createHash } from 'node:crypto';
 import {
   extractAgentsManagedDocument,
   extractManagedDocument,
@@ -10,7 +9,10 @@ import {
   mergeManagedDocument
 } from './analyzer.ts';
 import { apmRegenerates } from './apm.ts';
-import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
+import { knownBase, readIfExists, recordedHashFor, sha256 } from './base.ts';
+import { isMcpFile, mcpRegion, planMcpFiles } from './mcp-plan.ts';
+import type { McpServers } from '../mcp/servers.ts';
+import { AGCTX_GITIGNORE, baseFilePath, serializeBase } from './conflicts.ts';
 import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
 import { _ } from '../i18n/index.ts';
 import type { AgentId } from '../shared/agents.ts';
@@ -75,10 +77,6 @@ export function agentsLengthWarnings(content: string, crlf = false): string[] {
   ];
 }
 
-function sha256(text: string): string {
-  return createHash('sha256').update(text).digest('hex');
-}
-
 /** writeTextAtomic처럼, 이미 CRLF로 저장된 파일은 CRLF로 다시 쓰인다. */
 function writesCrlf(target: string): boolean {
   try {
@@ -88,13 +86,15 @@ function writesCrlf(target: string): boolean {
   }
 }
 
-function readIfExists(target: string): string | null {
-  return fs.existsSync(target) ? toLf(fs.readFileSync(target, 'utf8')) : null;
-}
-
 export function managedRegion(kind: ManagedKind, content: string | null | undefined): string | null {
   if (typeof content !== 'string') return null;
   return (kind === 'agents' ? extractAgentsManagedDocument(content) : extractManagedDocument(content)) || null;
+}
+
+/** 기록한 관리 파일의 지금 관리 영역. MCP 설정 파일은 형식마다 소유 영역을 다르게 찾는다. */
+export function recordedRegion(rel: string, content: string | null, projectConfig: ProjectConfig): string | null {
+  if (isMcpFile(rel)) return mcpRegion(rel, content, projectConfig);
+  return managedRegion(rel === 'AGENTS.md' ? 'agents' : 'pointer', content);
 }
 
 export function regionHash(region: string | null): string | null {
@@ -127,26 +127,6 @@ export function assertManagedPaths(projectConfig: ProjectConfig, targetDir: stri
   }
 }
 
-function recordedHashFor(projectConfig: ProjectConfig, relativePath: string): string | null {
-  return projectConfig.managedHashes?.[relativePath] ?? null;
-}
-
-/**
- * 알 수 있을 때, agctx가 마지막으로 쓴 관리 영역: 기록된 해시와 맞는 base 파일, 또는 다시 만들어도
- * 해시가 같은 영역.
- */
-function knownBase(
-  targetDir: string,
-  relativePath: string,
-  recordedHash: string,
-  nextRegion: string | null
-): string | null {
-  const stored = readIfExists(path.join(targetDir, baseFilePath(relativePath)));
-  if (stored !== null && sha256(parseBase(stored)) === recordedHash) return parseBase(stored);
-  if (nextRegion && sha256(nextRegion) === recordedHash) return nextRegion;
-  return null;
-}
-
 export interface PlanInput {
   packageRoot: string;
   targetDir: string;
@@ -164,6 +144,10 @@ export interface PlanInput {
   recordAgents: readonly AgentId[] | null;
   /** agctx 표지가 없는 기존 파일에 관리 영역을 더해도 된다는 사람의 허락(`--adopt`). */
   adopt?: boolean;
+  /** 이번에 쓸 MCP 서버. 프로필에 없거나 저장소가 MCP를 고르지 않았으면 null이다. */
+  mcpServers?: McpServers | null;
+  /** agctx.project.json의 `include`에 쓸 목록. null이면 키를 빼서 hooks를 뺀 전부를 뜻한다. */
+  recordInclude?: readonly string[] | null;
 }
 
 /**
@@ -180,7 +164,9 @@ export function planProject(
     record,
     agents,
     recordAgents,
-    adopt = false
+    adopt = false,
+    mcpServers = null,
+    recordInclude = null
   }: PlanInput,
   overrides: Map<string, string | null> = new Map()
 ): ProjectPlan {
@@ -294,6 +280,18 @@ export function planProject(
     }
   }
 
+  const mcp = planMcpFiles({ targetDir, projectConfig, agents, servers: mcpServers, adopt, overrides });
+  if (mcp.clashes.length) {
+    const taken = mcp.clashes.map(clash => `${clash.file}: ${clash.names.join(', ')}`).join('; ');
+    throw new CliError('project.mcp-name-taken', _('error.project.mcp-name-taken', { servers: taken }), {
+      exitCode: EXIT.conflict,
+      hint: _('hint.project.mcp-name-taken'),
+      details: mcp.clashes
+    });
+  }
+  files.push(...mcp.files);
+  warnings.push(...mcp.warnings);
+
   const agentsFile = files.find(file => file.rel === 'AGENTS.md');
   if (agentsFile) warnings.push(...agentsLengthWarnings(agentsFile.regenerated, writesCrlf(agentsFile.target)));
 
@@ -340,6 +338,8 @@ export function planProject(
     uncommitted: _uncommitted,
     managedHashes: _managedHashes,
     agents: _agents,
+    include: _include,
+    managedKeys: _managedKeys,
     ...kept
   } = projectConfig;
   const version = {
@@ -356,8 +356,10 @@ export function planProject(
         profile: profileName,
         projectName,
         ...(recordAgents ? { agents: recordAgents } : {}),
+        ...(recordInclude ? { include: recordInclude } : {}),
         ...version,
-        managedHashes
+        managedHashes,
+        ...(Object.keys(mcp.managedKeys).length ? { managedKeys: mcp.managedKeys } : {})
       },
       null,
       2

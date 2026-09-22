@@ -36,6 +36,44 @@ export function parseAgents(value: string | null): AgentId[] {
   return agents as AgentId[];
 }
 
+/** 저장소가 받을 대상 종류. 규칙은 모든 에이전트가 읽는 정본이라 늘 받는다. */
+export type IncludeKind = 'rules' | 'mcp';
+export const INCLUDE_KINDS: readonly IncludeKind[] = ['rules', 'mcp'];
+
+function isIncludeKind(value: unknown): value is IncludeKind {
+  return typeof value === 'string' && (INCLUDE_KINDS as readonly string[]).includes(value);
+}
+
+/** `--include` 값: 쉼표로 여러 개, 또는 `all`. `rules`는 뺄 수 없다. */
+export function parseInclude(value: string): IncludeKind[] | null {
+  if (value.trim() === 'all') return null;
+  const kinds = value
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+  const unknown = kinds.filter(kind => !isIncludeKind(kind));
+  if (unknown.length || !kinds.length)
+    throw usageError(
+      'include.unknown',
+      _('error.include.unknown', { kind: unknown.join(', ') || JSON.stringify(value) }),
+      _('hint.include')
+    );
+  if (!kinds.includes('rules')) throw usageError('include.rules', _('error.include.rules'), _('hint.include'));
+  return INCLUDE_KINDS.filter(kind => kinds.includes(kind));
+}
+
+/** `agctx.project.json`의 `include`. 기록이 없으면 null(전부)이고, 잘못됐으면 추측하지 않고 멈춘다. */
+export function recordedInclude(value: unknown, file: string): IncludeKind[] | null {
+  if (value === undefined) return null;
+  if (!Array.isArray(value) || !value.every(isIncludeKind) || !value.includes('rules'))
+    throw usageError(
+      'project.invalid-include',
+      _('error.project.invalid-include', { file, value: JSON.stringify(value) }),
+      _('hint.include')
+    );
+  return INCLUDE_KINDS.filter(kind => value.includes(kind));
+}
+
 /**
  * `agctx.project.json`의 `agents`가 고른 에이전트. 기록이 없으면 지원하는 에이전트 전부다. 기록이
  * 있는데 목록이 아니거나, 비었거나, 모르는 이름이 있으면 추측하지 않고 사용법 오류로 멈춘다.

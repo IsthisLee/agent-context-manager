@@ -3,13 +3,12 @@ import path from 'node:path';
 import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, planFor, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
 import { profileLocation } from './profile/store.ts';
-import { assertManagedPaths, managedRegion, regionHash } from './project/plan.ts';
+import { assertManagedPaths, recordedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
 import { toLf } from './shared/fs-utils.ts';
 import { shellWord } from './shared/shell.ts';
 import { git, isGitRoot } from './shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-chars.ts';
-import type { ManagedKind } from './shared/types.ts';
 
 /**
  * `agctx check`: 이 저장소가 기록해 둔 프로필 버전과 아직 맞는가? 보관함 없이도 CI에서 동작하고,
@@ -94,7 +93,6 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
 
   for (const [rel, recorded] of Object.entries(config.managedHashes ?? {})) {
     const file = path.join(targetDir, rel);
-    const kind: ManagedKind = rel === 'AGENTS.md' ? 'agents' : 'pointer';
     const content = fs.existsSync(file) ? toLf(fs.readFileSync(file, 'utf8')) : null;
     if (content === null) {
       findings.push({ kind: 'conflict', file: rel, detail: _('check.missing') });
@@ -103,7 +101,7 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
     for (const line of describeHiddenCharacters(rel, findHiddenCharacters(content))) {
       findings.push({ kind: 'hidden-characters', file: rel, detail: line });
     }
-    if (regionHash(managedRegion(kind, content)) !== recorded && !settled.has(rel)) {
+    if (regionHash(recordedRegion(rel, content, config)) !== recorded && !settled.has(rel)) {
       findings.push({ kind: 'conflict', file: rel, detail: _('check.edited') });
     }
   }

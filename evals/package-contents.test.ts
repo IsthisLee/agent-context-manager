@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-test('npm package contains only runtime assets and the package README', () => {
+test('npm 패키지에는 런타임 자산과 패키지 README만 들어간다', () => {
   const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
   const result = spawnSync(npmCommand, ['pack', '--dry-run', '--json'], {
     cwd: repoRoot,
@@ -25,7 +25,7 @@ test('npm package contains only runtime assets and the package README', () => {
   assert(paths.some(file => file.startsWith('dist/profile/')));
   assert(!paths.some(file => file.startsWith('src/')));
   assert(paths.some(file => file.startsWith('templates/')));
-  assert(paths.includes('skills/agctx/SKILL.md'), 'the agent skills ship with the CLI so agctx install can copy them');
+  assert(paths.includes('skills/agctx/SKILL.md'), '에이전트 스킬은 CLI와 함께 배포되어 agctx install이 복사할 수 있다');
   assert(paths.includes('skills/agctx-author/agents/openai.yaml'));
   assert(!paths.some(file => file.startsWith('docs/')));
   assert(!paths.some(file => file.startsWith('evals/')));
@@ -34,11 +34,20 @@ test('npm package contains only runtime assets and the package README', () => {
   assert.doesNotMatch(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
   assert.doesNotMatch(readme, /\]\((?:docs\/|CONTRIBUTING\.md|SECURITY\.md|CODE_OF_CONDUCT\.md)/);
   const links = [...readme.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match => new URL(match[1]));
-  assert.ok(links.some(link => link.hostname === 'img.shields.io' && link.pathname.startsWith('/badge/Node.js-22')), 'README shows the Node.js 22 badge');
-  assert.ok(links.some(link => link.hostname === 'github.com' && link.pathname.startsWith('/IsthisLee/agent-context-manager/blob/main/docs/')), 'README links documents by absolute GitHub URL');
+  assert.ok(
+    links.some(link => link.hostname === 'img.shields.io' && link.pathname.startsWith('/badge/Node.js-22')),
+    'README는 Node.js 22 배지를 보여 준다'
+  );
+  assert.ok(
+    links.some(
+      link =>
+        link.hostname === 'github.com' && link.pathname.startsWith('/IsthisLee/agent-context-manager/blob/main/docs/')
+    ),
+    'README는 문서를 GitHub 절대 URL로 링크한다'
+  );
 });
 
-test('repository exposes an installed-package smoke test', () => {
+test('저장소는 설치한 패키지로 도는 스모크 테스트를 제공한다', () => {
   const packageJson = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
   assert.equal(packageJson.scripts.typecheck, 'tsc -p tsconfig.json');
   assert.equal(packageJson.scripts.build, 'node tools/build.ts');
@@ -46,7 +55,13 @@ test('repository exposes an installed-package smoke test', () => {
   assert.equal(packageJson.scripts['check:release'], 'node tools/check-release.ts');
   assert.equal(packageJson.scripts['package:smoke'], 'node tools/package-smoke.ts');
   assert.equal(packageJson.scripts.prepublishOnly, 'pnpm run check && pnpm run pack:check');
-  assert.equal(packageJson.scripts.check, 'pnpm run typecheck && pnpm run check:docs && pnpm test');
+  assert.equal(packageJson.scripts.format, 'prettier --write .');
+  assert.equal(packageJson.scripts['format:check'], 'prettier --check .');
+  assert.equal(packageJson.scripts.lint, 'eslint src evals tools eslint.config.js');
+  assert.equal(
+    packageJson.scripts.check,
+    'pnpm run typecheck && pnpm run format:check && pnpm run lint && pnpm run check:docs && pnpm test'
+  );
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'package-smoke.ts')));
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'build.ts')));
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'check-release.ts')));

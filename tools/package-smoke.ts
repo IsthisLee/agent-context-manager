@@ -5,9 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-package-smoke-'));
 const packDir = path.join(smokeRoot, 'pack');
 const consumerDir = path.join(smokeRoot, 'consumer');
@@ -22,12 +20,15 @@ function quoteWindowsArg(value: string): string {
 
 type RunOptions = Omit<ExecFileSyncOptionsWithStringEncoding, 'encoding'>;
 
-/** Run a command and return its UTF-8 output; on Windows, npm and bin shims are `.cmd` files that need cmd.exe. */
+/** 명령을 실행하고 UTF-8 출력을 돌려준다. Windows에서 npm과 bin shim은 cmd.exe가 필요한 `.cmd` 파일이다. */
 function runCommand(command: string, args: string[], options: RunOptions = {}): string {
   if (!isWindows) return execFileSync(command, args, { ...options, encoding: 'utf8' });
   const commandToken = command.includes(' ') ? quoteWindowsArg(command) : command;
   const commandLine = [commandToken, ...args.map(quoteWindowsArg)].join(' ');
-  return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], { ...options, encoding: 'utf8' });
+  return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], {
+    ...options,
+    encoding: 'utf8'
+  });
 }
 
 try {
@@ -51,13 +52,15 @@ try {
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));
   assert(fs.existsSync(path.join(projectDir, 'agctx.project.json')));
-  // agctx install copies the skills shipped in the package, so they reach an agent's folder from the tarball alone.
+  // agctx install은 패키지에 든 스킬을 복사하므로, tarball만으로 스킬이 에이전트 폴더에 닿는다.
   const userHome = path.join(smokeRoot, 'user-home');
   fs.mkdirSync(path.join(userHome, '.claude'), { recursive: true });
   runCommand(agctx, ['install'], { env: { ...env, HOME: userHome, USERPROFILE: userHome }, stdio: 'ignore' });
   assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx', 'SKILL.md')));
   assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx-author', '.agctx-install.json')));
-  console.log('Installed package smoke test passed (help, profile setup, project apply, sync, and agent skill install).');
+  console.log(
+    'Installed package smoke test passed (help, profile setup, project apply, sync, and agent skill install).'
+  );
 } finally {
   fs.rmSync(smokeRoot, { recursive: true, force: true });
 }

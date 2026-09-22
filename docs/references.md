@@ -27,6 +27,7 @@
 - [CI에서 비공개 프로필 저장소를 읽는 근거](#ci에서-비공개-프로필-저장소를-읽는-근거)
 - [공개 npm·GitHub 저장소 운영 근거](#공개-npmgithub-저장소-운영-근거)
 - [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
+- [린트와 TypeScript 7 병행 설치 근거](#린트와-typescript-7-병행-설치-근거)
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
 - [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
@@ -1103,6 +1104,23 @@ agctx가 Microsoft APM(Agent Package Manager)과 한 저장소에서 부딪히�
   - `npx -p node@22.17.1 node main.ts`는 `ERR_UNKNOWN_FILE_EXTENSION`으로 실패했다.
   - `node_modules/dep/index.ts`를 `exports`로 가리키는 패키지를 import한 `use-dep.ts`는 Node.js v24.21.0에서 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`으로 실패했다.
   - TypeScript 7.0.2의 `tsc -p tsconfig.build.json`으로 만든 `dist/agentic.js`(이름을 바꾸기 전 진입점)는 첫 줄 `#!/usr/bin/env node`를 유지했고, 소스의 `import { run } from './commands/cli.ts'`를 `./commands/cli.js`로 바꿨다.
+
+## 린트와 TypeScript 7 병행 설치 근거
+
+[ADR 0040](adr/0040-lint-with-eslint-and-typescript6-compat.md)이 기대는 외부 사실이다.
+
+- **공식 자료(TypeScript 팀 블로그):** TypeScript 7.0은 API를 제공하지 않고, 7.1에서 새 API를 낼 예정이다. 그때까지 typescript-eslint처럼 컴파일러 API가 필요한 도구를 위해 6.0 API를 다시 내보내는 호환 패키지 `@typescript/typescript6`를 게시했다. 이 패키지의 실행 파일은 `tsc6`라서 7.0의 `tsc`와 이름이 겹치지 않는다. typescript-eslint는 peer 의존성으로 `typescript`를 직접 가져오므로, `typescript` 이름을 호환 패키지의 별칭으로 두고 7.0은 `@typescript/native` 같은 다른 별칭으로 설치하라고 안내한다. [Announcing TypeScript 7.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)의 「Running Side-by-Side with TypeScript 6.0」 절 (확인일: 2026-09-22)
+
+  > "While TypeScript 7.0 is here, it does not ship with an API. We expect TypeScript 7.1 to ship with a new (and different) API, but until then we have made it a priority to ensure TypeScript can be run side-by-side with TypeScript 6.0 for utilities that still need some programmatic access to the compiler (such as typescript-eslint)."
+  >
+  > 번역: TypeScript 7.0이 나왔지만 API는 함께 제공하지 않습니다. TypeScript 7.1이 새로운(그리고 다른) API를 제공할 것으로 예상하며, 그때까지는 컴파일러에 프로그래밍 방식으로 접근해야 하는 도구(typescript-eslint 등)를 위해 TypeScript를 TypeScript 6.0과 나란히 실행할 수 있게 하는 것을 우선했습니다.
+
+  > "Because some tools like typescript-eslint expect to import from typescript directly via peer dependencies, we recommend achieving this via npm aliases."
+  >
+  > 번역: typescript-eslint 같은 일부 도구는 peer 의존성을 통해 typescript에서 직접 가져오기를 기대하므로, 이것을 npm 별칭으로 해결하기를 권장합니다.
+
+- **npm 레지스트리(2026-09-22 조회):** `npm view typescript-eslint peerDependencies`는 `typescript`를 `>=4.8.4 <6.1.0`으로 요구했다(8.70.1). `@typescript/typescript6`의 최신 버전은 6.0.2였다.
+- **직접 실험(2026-09-22):** 스크래치패드의 빈 프로젝트에 `typescript@7.0.2`, `eslint@10.11.0`, `typescript-eslint@8.70.1`을 설치하고 `eslint`를 실행하자 `typescript-eslint does not support TS 7.0.`을 출력하고 실패했다. 같은 메시지는 TS 7.1 이상 지원을 추적하는 곳으로 [typescript-eslint 이슈 #10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)(제목 「Enhancement: Use TS 7 (tsgo / typescript-go) for type information」, 열려 있음)을 가리켰다 (확인일: 2026-09-22). pnpm `overrides`로 typescript-eslint 쪽 `typescript`만 6.0.3으로 바꾸려 했으나 설치된 것은 7.0.2 하나였다. 위 블로그대로 `"@typescript/native": "npm:typescript@7.0.2"`와 `"typescript": "npm:@typescript/typescript6@6.0.2"`로 바꾸자 `eslint`가 TypeScript 파일을 검사했고, `tsc --version`은 `Version 7.0.2`, `tsc6 --version`은 `Version 6.0.3`을 출력했다.
 
 ## CLI 계약과 지침 공급망 근거
 

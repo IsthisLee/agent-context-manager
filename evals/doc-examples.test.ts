@@ -6,9 +6,8 @@ import { spawnSync } from 'node:child_process';
 import { cli, makeWorkspace, repoRoot } from './support/git-workspace.ts';
 
 /**
- * The command examples in the quick start are real output. Run them again in an
- * isolated home, from a folder that stands in for the doc's `/work`, and compare
- * each command's output line by line with what the doc shows.
+ * 빠른 시작 문서의 명령 예시는 실제 출력이다. 격리한 홈에서 문서의 `/work`를 대신하는 폴더로
+ * 다시 실행하고, 각 명령의 출력을 문서에 적힌 것과 한 줄씩 비교한다.
  */
 
 const QUICK_START = 'docs/getting-started/quick-start.md';
@@ -18,7 +17,7 @@ interface Step {
   expected: string[];
 }
 
-/** `$ command` lines in bash blocks, each with the output lines that follow it. */
+/** bash 블록의 `$ command` 줄과, 각 줄 뒤에 오는 출력 줄. */
 function exampleSteps(markdown: string): Step[] {
   const steps: Step[] = [];
   for (const block of markdown.matchAll(/```bash\n([\s\S]*?)```/g)) {
@@ -39,18 +38,30 @@ function exampleSteps(markdown: string): Step[] {
   return steps;
 }
 
-/** Output with the scratch folder written as the doc's `/work`, using `/` on every platform. */
+/** 임시 폴더를 문서의 `/work`로 바꾸고 모든 플랫폼에서 `/`를 쓴 출력. */
 function asDocPath(output: string, work: string): string {
-  return output.split(work).join('/work').replace(/\/work((?:\\[^\s\\]+)+)/g, (_match, rest: string) => `/work${rest.replaceAll('\\', '/')}`);
+  return output
+    .split(work)
+    .join('/work')
+    .replace(/\/work((?:\\[^\s\\]+)+)/g, (_match, rest: string) => `/work${rest.replaceAll('\\', '/')}`);
 }
 
-test('every command example in the quick start prints what the doc shows', t => {
+test('빠른 시작의 모든 명령 예시는 문서에 적힌 대로 출력한다', t => {
   const { root, folder } = makeWorkspace(t, 'agctx-quick-start-');
   const work = folder('work');
   const userHome = folder('user-home');
-  const env = { ...process.env, AGCTX_HOME: path.join(root, 'home'), AGCTX_LANG: 'en', HOME: userHome, USERPROFILE: userHome };
+  const env = {
+    ...process.env,
+    AGCTX_HOME: path.join(root, 'home'),
+    AGCTX_LANG: 'en',
+    HOME: userHome,
+    USERPROFILE: userHome
+  };
   const steps = exampleSteps(fs.readFileSync(path.join(repoRoot, QUICK_START), 'utf8'));
-  assert.ok(steps.filter(step => step.command.startsWith('agctx ')).length >= 5, 'the quick start shows its commands with their output');
+  assert.ok(
+    steps.filter(step => step.command.startsWith('agctx ')).length >= 5,
+    '빠른 시작은 명령을 출력과 함께 보여 준다'
+  );
 
   for (const step of steps) {
     const [program, ...args] = step.command.split(' ');
@@ -58,7 +69,7 @@ test('every command example in the quick start prints what the doc shows', t => 
     if (program === 'mkdir') {
       fs.mkdirSync(path.join(work, ...args));
     } else {
-      assert.equal(program, 'agctx', `the example runner does not know: ${step.command}`);
+      assert.equal(program, 'agctx', `예시 실행기가 모르는 명령: ${step.command}`);
       const result = spawnSync(process.execPath, [cli, ...args], { cwd: work, env, encoding: 'utf8' });
       output = result.stdout + result.stderr;
     }

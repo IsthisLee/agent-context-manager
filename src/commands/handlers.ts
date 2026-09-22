@@ -5,11 +5,27 @@ import { checkProject } from '../check.ts';
 import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
-import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, pushProfile } from '../profile/git-profile.ts';
+import {
+  cloneProfile,
+  connectProfile,
+  planPush,
+  profileGitState,
+  pullProfile,
+  pushProfile
+} from '../profile/git-profile.ts';
 import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { brokenLinkHint, createProfile, getProfiles, profileLocation, readProfile, readStore, removeProfile, viewProfile } from '../profile/store.ts';
+import {
+  brokenLinkHint,
+  createProfile,
+  getProfiles,
+  profileLocation,
+  readProfile,
+  readStore,
+  removeProfile,
+  viewProfile
+} from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -28,10 +44,12 @@ type Handler = (parsed: ParsedArguments) => Promise<CommandOutcome>;
 const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode: EXIT.ok, data, warnings });
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
-const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
-const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(word => shellWord(word)), '--yes'].join(' ');
+const text = (parsed: ParsedArguments, name: string) =>
+  typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null;
+const retryWithYes = (words: string, parsed: ParsedArguments) =>
+  [`agctx ${words}`, ...parsed.raw.map(word => shellWord(word)), '--yes'].join(' ');
 
-/** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
+/** repos 명령을 위해 저장소를 기억한다. 목록이 깨져 있어도 이미 성공한 apply를 실패로 만들면 안 된다. */
 function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {
   try {
     recordRepo(targetDir, profile, pinned);
@@ -58,19 +76,45 @@ function printPrItems(items: readonly PrItem[]): void {
 
 function requirePositional(parsed: ParsedArguments, index: number, usage: string): string {
   const value = parsed.positional[index];
-  if (!value) throw usageError('argument.missing', _('error.argument.missing', { usage }), _('hint.command.options', { command: usage.split(' ').slice(1, 3).join(' ') }));
+  if (!value)
+    throw usageError(
+      'argument.missing',
+      _('error.argument.missing', { usage }),
+      _('hint.command.options', { command: usage.split(' ').slice(1, 3).join(' ') })
+    );
   return value;
 }
 
-/** Plan, show, confirm, and write for apply and sync. Conflicts stop with exit code 2 before anything is written. */
-async function applyOrSync(parsed: ParsedArguments, name: string, targetDir: string, pin: boolean | 'keep', retry: string): Promise<CommandOutcome> {
+/** apply와 sync의 계획·표시·확인·쓰기. 충돌이 있으면 아무것도 쓰기 전에 종료 코드 2로 멈춘다. */
+async function applyOrSync(
+  parsed: ParsedArguments,
+  name: string,
+  targetDir: string,
+  pin: boolean | 'keep',
+  retry: string
+): Promise<CommandOutcome> {
   const dryRun = flag(parsed, 'dry-run');
   const { plan, version, previousPin } = planFor(name, targetDir, pin);
-  const data = { profile: name, project: targetDir, source: version.source, pin: version.pin, uncommitted: version.uncommitted, changes: plan.changes.map(({ relativePath, status }) => ({ file: relativePath, status })), conflicts: plan.conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind })) };
-  const warnings = [...(pin === false && previousPin ? [_('apply.warn.unpin', { project: targetDir })] : []), ...plan.warnings];
+  const data = {
+    profile: name,
+    project: targetDir,
+    source: version.source,
+    pin: version.pin,
+    uncommitted: version.uncommitted,
+    changes: plan.changes.map(({ relativePath, status }) => ({ file: relativePath, status })),
+    conflicts: plan.conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind }))
+  };
+  const warnings = [
+    ...(pin === false && previousPin ? [_('apply.warn.unpin', { project: targetDir })] : []),
+    ...plan.warnings
+  ];
   if (!isJsonMode()) warnings.forEach(message => warn(message));
-  // Human output already printed the warnings; the JSON document carries them instead.
-  const done = (written: boolean): CommandOutcome => ({ exitCode: EXIT.ok, data: { ...data, written }, warnings: isJsonMode() ? warnings : [] });
+  // 사람이 읽는 출력은 이미 경고를 찍었다. JSON 문서는 대신 경고를 담는다.
+  const done = (written: boolean): CommandOutcome => ({
+    exitCode: EXIT.ok,
+    data: { ...data, written },
+    warnings: isJsonMode() ? warnings : []
+  });
   printPlan(plan, dryRun ? _('plan.label.dry-run') : _('plan.label.plan'));
   const changed = plan.changes.filter(change => change.status !== 'unchanged');
   if (plan.conflicts.length) {
@@ -100,7 +144,12 @@ export const HANDLERS: Record<string, Handler> = {
   'profile.create': async parsed => {
     const name = parsed.positional[0];
     if (!name) {
-      if (isJsonMode()) throw usageError('argument.missing', _('error.argument.missing', { usage: 'agctx profile create <name> [--scope <scope>]' }), _('hint.command.options', { command: 'profile create' }));
+      if (isJsonMode())
+        throw usageError(
+          'argument.missing',
+          _('error.argument.missing', { usage: 'agctx profile create <name> [--scope <scope>]' }),
+          _('hint.command.options', { command: 'profile create' })
+        );
       await createProfileTui();
       return ok();
     }
@@ -111,8 +160,11 @@ export const HANDLERS: Record<string, Handler> = {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
     const store = readStore();
     await listProfiles(scope, store);
-    // A broken link has no scope that can be read, so a scoped list leaves it out, as the text output does.
-    return ok({ profiles: store.profiles.filter(profile => !scope || profile.scope === scope), brokenLinks: scope ? [] : store.brokenLinks });
+    // 끊긴 링크는 읽을 수 있는 범위가 없으므로, 텍스트 출력과 마찬가지로 범위를 정한 목록에서 빠진다.
+    return ok({
+      profiles: store.profiles.filter(profile => !scope || profile.scope === scope),
+      brokenLinks: scope ? [] : store.brokenLinks
+    });
   },
   'profile.view': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile view <name>');
@@ -122,18 +174,34 @@ export const HANDLERS: Record<string, Handler> = {
     const name = parsed.positional[0] ?? null;
     const levelOptions = Object.keys(parsed.options).filter(option => !['json', 'lang'].includes(option));
     if (!levelOptions.length) {
-      if (isJsonMode()) throw usageError('argument.missing', _('error.argument.missing', { usage: 'agctx profile setup <name> --tdd <level> ...' }), _('hint.command.options', { command: 'profile setup' }));
+      if (isJsonMode())
+        throw usageError(
+          'argument.missing',
+          _('error.argument.missing', { usage: 'agctx profile setup <name> --tdd <level> ...' }),
+          _('hint.command.options', { command: 'profile setup' })
+        );
       await setupProfileTui(name);
       return ok();
     }
-    if (!name) throw usageError('argument.missing', _('error.argument.missing', { usage: 'agctx profile setup <name> [--tdd <level>] ...' }), null);
+    if (!name)
+      throw usageError(
+        'argument.missing',
+        _('error.argument.missing', { usage: 'agctx profile setup <name> [--tdd <level>] ...' }),
+        null
+      );
     return ok(setupProfile(name, parsed.raw));
   },
   'profile.apply': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile apply <name> [<project>]');
     const targetDir = projectDir(parsed.positional[1]);
     const pin = flag(parsed, 'pin');
-    return applyOrSync(parsed, name, targetDir, pin, `agctx profile apply ${name} ${targetDir}${pin ? ' --pin' : ''} --yes`);
+    return applyOrSync(
+      parsed,
+      name,
+      targetDir,
+      pin,
+      `agctx profile apply ${name} ${targetDir}${pin ? ' --pin' : ''} --yes`
+    );
   },
   'profile.sync': async parsed => {
     const targetDir = projectDir(parsed.positional[0]);
@@ -142,8 +210,16 @@ export const HANDLERS: Record<string, Handler> = {
   },
   'profile.resolve': async parsed => {
     const targetDir = projectDir(parsed.positional[0]);
-    const result = await resolveProject(targetDir, { dryRun: flag(parsed, 'dry-run'), discard: flag(parsed, 'discard'), edit: flag(parsed, 'edit') },
-      () => confirmChange(parsed, _('confirm.resolve', { project: targetDir }), `agctx profile resolve ${targetDir}${flag(parsed, 'discard') ? ' --discard' : ''}${flag(parsed, 'edit') ? ' --edit' : ''} --yes`));
+    const result = await resolveProject(
+      targetDir,
+      { dryRun: flag(parsed, 'dry-run'), discard: flag(parsed, 'discard'), edit: flag(parsed, 'edit') },
+      () =>
+        confirmChange(
+          parsed,
+          _('confirm.resolve', { project: targetDir }),
+          `agctx profile resolve ${targetDir}${flag(parsed, 'discard') ? ' --discard' : ''}${flag(parsed, 'edit') ? ' --edit' : ''} --yes`
+        )
+    );
     return ok(result);
   },
   'profile.remove': async parsed => {
@@ -152,23 +228,42 @@ export const HANDLERS: Record<string, Handler> = {
       await removeProfileTui(name);
       return ok();
     }
-    if (!name) throw usageError('argument.missing', _('error.argument.missing', { usage: 'agctx profile remove <name> --yes' }), null);
+    if (!name)
+      throw usageError(
+        'argument.missing',
+        _('error.argument.missing', { usage: 'agctx profile remove <name> --yes' }),
+        null
+      );
     removeProfile(name);
     return ok({ profile: name, removed: true });
   },
   'profile.clone': async parsed => {
     const url = requirePositional(parsed, 0, 'agctx profile clone <git-url>');
-    const state = cloneProfile(url, { branch: typeof parsed.options.branch === 'string' ? parsed.options.branch : null });
+    const state = cloneProfile(url, {
+      branch: typeof parsed.options.branch === 'string' ? parsed.options.branch : null
+    });
     say(_('clone.done', { name: state.name, commit: (state.commit ?? '').slice(0, 7) }));
     say(_('clone.next', { name: state.name }));
     return ok(state);
   },
   'profile.link': async parsed => {
-    const plan = planLink(projectDir(parsed.positional[0]), { name: text(parsed, 'name'), scope: text(parsed, 'scope'), instructions: text(parsed, 'instructions') });
+    const plan = planLink(projectDir(parsed.positional[0]), {
+      name: text(parsed, 'name'),
+      scope: text(parsed, 'scope'),
+      instructions: text(parsed, 'instructions')
+    });
     printLinkPlan(plan);
-    const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, written: false };
+    const data = {
+      profile: plan.name,
+      path: plan.dir,
+      scope: plan.scope,
+      instructions: plan.instructions,
+      metadata: plan.metadata ? 'create' : 'keep',
+      link: plan.link,
+      written: false
+    };
     if (!plan.changes) {
-      // Reading the profile brings the link record in step with the folder's profile.json.
+      // 프로필을 읽으면 링크 기록이 폴더의 profile.json과 맞춰진다.
       readProfile(plan.name);
       say(_('link.unchanged', { name: plan.name, path: plan.dir }));
       return ok(data);
@@ -188,7 +283,7 @@ export const HANDLERS: Record<string, Handler> = {
     const profiles = names.map(name => profileGitState(name, { refresh: flag(parsed, 'refresh') }));
     for (const state of profiles) {
       say(describeState(state));
-      // A linked folder is pulled and pushed with git there, so the next steps name git, not profile pull or push.
+      // 연결된 폴더는 그 폴더에서 git으로 pull·push하므로, 다음 단계는 profile pull·push가 아니라 git을 안내한다.
       if (state.link) {
         if (!state.connected) {
           say(_('status.link.local', { path: state.link }));
@@ -224,7 +319,13 @@ export const HANDLERS: Record<string, Handler> = {
     say(_('push.plan', { name, count: plan.commits.length, remote: plan.state.remote ?? '' }));
     for (const commit of plan.commits) say(`  ${commit}`);
     if (flag(parsed, 'dry-run')) return ok(plan);
-    if (!(await confirmChange(parsed, _('confirm.push', { name, count: plan.commits.length }), `agctx profile push ${name} --yes`))) {
+    if (
+      !(await confirmChange(
+        parsed,
+        _('confirm.push', { name, count: plan.commits.length }),
+        `agctx profile push ${name} --yes`
+      ))
+    ) {
       say(_('confirm.declined'));
       return ok(plan);
     }
@@ -235,7 +336,9 @@ export const HANDLERS: Record<string, Handler> = {
   'profile.connect': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile connect <name> <git-url>');
     const url = requirePositional(parsed, 1, 'agctx profile connect <name> <git-url>');
-    const state = connectProfile(name, url, { branch: typeof parsed.options.branch === 'string' ? parsed.options.branch : null });
+    const state = connectProfile(name, url, {
+      branch: typeof parsed.options.branch === 'string' ? parsed.options.branch : null
+    });
     say(_('connect.done', { name, remote: state.remote ?? '', branch: state.remoteBranch ?? state.branch ?? '' }));
     say(_('connect.next', { name }));
     return ok(state);
@@ -249,7 +352,9 @@ export const HANDLERS: Record<string, Handler> = {
   explain: async parsed => {
     const report = explainPath(projectDir(parsed.positional[0]), parseAgents(text(parsed, 'agent')));
     for (const agent of report.agents) {
-      say(`${agentName(agent.agent)} · ${_('explain.started-in', { dir: agent.startDir === '.' ? _('explain.project-root') : agent.startDir })}`);
+      say(
+        `${agentName(agent.agent)} · ${_('explain.started-in', { dir: agent.startDir === '.' ? _('explain.project-root') : agent.startDir })}`
+      );
       if (!agent.files.length) say(`  ${_('explain.none')}`);
       for (const file of agent.files) say(`  ${file.status.padEnd(12)} ${file.path}  ${file.reason}`);
       for (const finding of agent.findings) say(`  ${finding.kind.padEnd(12)} ${finding.message}`);
@@ -265,11 +370,18 @@ export const HANDLERS: Record<string, Handler> = {
     const agents = parseAgents(text(parsed, 'agent'));
     const probe = flag(parsed, 'probe');
     const names = agents.map(agentName).join(', ');
-    // A probe changes no files but spends agent usage, so the refusal names that cost instead of a dry run.
+    // probe는 파일을 바꾸지 않지만 에이전트 사용량을 쓰므로, 거절 메시지는 dry run 대신 그 비용을 말한다.
     if (probe && parsed.options.yes !== true && !canPrompt()) {
-      throw usageError('confirm.required', _('error.verify.probe-confirm', { agents: names }), _('hint.verify.probe-yes', { command: retryWithYes('verify', parsed) }));
+      throw usageError(
+        'confirm.required',
+        _('error.verify.probe-confirm', { agents: names }),
+        _('hint.verify.probe-yes', { command: retryWithYes('verify', parsed) })
+      );
     }
-    if (probe && !(await confirmChange(parsed, _('confirm.verify-probe', { agents: names }), retryWithYes('verify', parsed)))) {
+    if (
+      probe &&
+      !(await confirmChange(parsed, _('confirm.verify-probe', { agents: names }), retryWithYes('verify', parsed)))
+    ) {
       say(_('confirm.declined'));
       return ok();
     }
@@ -278,22 +390,29 @@ export const HANDLERS: Record<string, Handler> = {
     const stale: string[] = [];
     const errors: string[] = [];
     for (const agent of report.agents) {
-      const evidence = agent.evidence === 'session-log'
-        ? _('verify.evidence.session-log', { source: agent.source ?? '' })
-        : agent.evidence === 'probe' ? _('verify.evidence.probe', { command: agent.source ?? '' })
-          : agent.agent === 'antigravity' ? _('verify.evidence.unreadable') : _('verify.evidence.none');
+      const evidence =
+        agent.evidence === 'session-log'
+          ? _('verify.evidence.session-log', { source: agent.source ?? '' })
+          : agent.evidence === 'probe'
+            ? _('verify.evidence.probe', { command: agent.source ?? '' })
+            : agent.agent === 'antigravity'
+              ? _('verify.evidence.unreadable')
+              : _('verify.evidence.none');
       say(`${agent.agent.padEnd(12)} ${agent.status.padEnd(12)} ${evidence}`);
       for (const file of agent.delivered) say(`  ${'delivered'.padEnd(10)} ${file}`);
       for (const file of agent.missing) say(`  ${'missing'.padEnd(10)} ${file}`);
       for (const file of agent.stale) say(`  ${'stale'.padEnd(10)} ${file}`);
       if (agent.error) say(`  ${agent.error.message}`);
-      if (agent.status === 'no-evidence' && agent.agent !== 'antigravity') (agent.stale.length ? stale : unstarted).push(agentName(agent.agent));
+      if (agent.status === 'no-evidence' && agent.agent !== 'antigravity')
+        (agent.stale.length ? stale : unstarted).push(agentName(agent.agent));
       if (agent.error?.hint) errors.push(`${_('output.next')}: ${agent.error.hint}`);
     }
     const hints = [
       ...(unstarted.length ? [_('verify.hint.start', { agents: unstarted.join(', ') })] : []),
       ...(stale.length ? [_('verify.hint.stale', { agents: stale.join(', ') })] : []),
-      ...(report.agents.some(agent => agent.agent === 'antigravity' && agent.status === 'no-evidence') ? [_('verify.hint.antigravity')] : []),
+      ...(report.agents.some(agent => agent.agent === 'antigravity' && agent.status === 'no-evidence')
+        ? [_('verify.hint.antigravity')]
+        : []),
       ...errors
     ];
     return { exitCode: report.exitCode, data: report, warnings: hints };
@@ -304,9 +423,15 @@ export const HANDLERS: Record<string, Handler> = {
       say(_('repos.pruned', { count: removed.length }));
       for (const entry of removed) say(`  ${entry.path}`);
     }
-    const repos = selectRepos(text(parsed, 'profile')).map(entry => ({ ...entry, missing: !fs.existsSync(entry.path) }));
+    const repos = selectRepos(text(parsed, 'profile')).map(entry => ({
+      ...entry,
+      missing: !fs.existsSync(entry.path)
+    }));
     if (!repos.length) say(_('repos.none'));
-    for (const repo of repos) say(`${(repo.missing ? 'missing' : 'ok').padEnd(8)} ${repo.profile.padEnd(16)} ${(repo.pinned ? 'pinned' : '-').padEnd(6)} ${repo.path}`);
+    for (const repo of repos)
+      say(
+        `${(repo.missing ? 'missing' : 'ok').padEnd(8)} ${repo.profile.padEnd(16)} ${(repo.pinned ? 'pinned' : '-').padEnd(6)} ${repo.path}`
+      );
     return ok({ repos }, repos.some(repo => repo.missing) ? [_('repos.hint.prune')] : []);
   },
   'repos.status': async parsed => {
@@ -317,29 +442,43 @@ export const HANDLERS: Record<string, Handler> = {
       const version = status.commit
         ? `${status.commit.slice(0, 7)}${status.latestCommit && status.latestCommit !== status.commit ? `→${status.latestCommit.slice(0, 7)}` : ''}`
         : '-';
-      say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
+      say(
+        `${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`
+      );
       if (status.error) say(`  ${status.error.message}`);
       for (const warning of status.warnings) say(`  ${warning}`);
-      // A repository on a broken link is brought back by linking again; sync and pr would stop on the link.
+      // 끊긴 링크에 걸린 저장소는 다시 연결해서 되살린다. sync와 pr은 그 링크에서 멈출 것이다.
       const brokenHint = linkedFolder(status.profile) ? brokenLinkHint(status.profile) : null;
       if (brokenHint) hints.add(`${_('output.next')}: ${brokenHint}`);
       const linked = linkedFolder(status.profile);
       if (status.state === 'behind' && !brokenHint) {
-        // A linked folder's new commits reach teammates only once they are pushed there, so the hint says to push first.
-        hints.add(status.pinned ? (linked ? _('repos.next.pr.linked', { profile: status.profile, path: shellWord(linked) }) : _('repos.next.pr', { profile: status.profile })) : _('repos.next.sync', { profile: status.profile }));
+        // 연결된 폴더의 새 커밋은 그 폴더에서 push해야 동료에게 닿으므로, 안내가 먼저 push하라고 말한다.
+        hints.add(
+          status.pinned
+            ? linked
+              ? _('repos.next.pr.linked', { profile: status.profile, path: shellWord(linked) })
+              : _('repos.next.pr', { profile: status.profile })
+            : _('repos.next.sync', { profile: status.profile })
+        );
       }
       if (status.state === 'conflict') hints.add(_('repos.next.resolve', { project: status.path }));
       if (status.state === 'missing') hints.add(_('repos.hint.prune'));
       if (status.error?.hint) hints.add(`${_('output.next')}: ${status.error.hint}`);
     }
-    return { exitCode: worstExitCode(statuses.map(status => status.exitCode)), data: { repos: statuses }, warnings: [...hints] };
+    return {
+      exitCode: worstExitCode(statuses.map(status => status.exitCode)),
+      data: { repos: statuses },
+      warnings: [...hints]
+    };
   },
   'repos.sync': async parsed => {
     const planned = planReposSync(text(parsed, 'profile'));
     if (!planned.length) say(_('repos.none'));
     printSyncItems(planned);
-    // Plan warnings, such as a CLAUDE.md that does not import its AGENTS.md, name the repository they belong to.
-    const planWarnings = planned.flatMap(item => (item.plan?.plan.warnings ?? []).map(message => `${item.path}: ${message}`));
+    // AGENTS.md를 import하지 않는 CLAUDE.md 같은 계획 경고는 그것이 속한 저장소 이름을 붙인다.
+    const planWarnings = planned.flatMap(item =>
+      (item.plan?.plan.warnings ?? []).map(message => `${item.path}: ${message}`)
+    );
     const summary = (items: readonly SyncItem[]) => ({
       exitCode: worstExitCode(items.map(item => item.exitCode)),
       data: { repos: items.map(({ plan: _plan, ...item }) => item) },
@@ -351,7 +490,13 @@ export const HANDLERS: Record<string, Handler> = {
       return summary(planned);
     }
     if (!updates.length) return summary(planned);
-    if (!(await confirmChange(parsed, _('confirm.repos-sync', { count: updates.length }), retryWithYes('repos sync', parsed)))) {
+    if (
+      !(await confirmChange(
+        parsed,
+        _('confirm.repos-sync', { count: updates.length }),
+        retryWithYes('repos sync', parsed)
+      ))
+    ) {
       say(_('confirm.declined'));
       return summary(planned);
     }
@@ -360,7 +505,13 @@ export const HANDLERS: Record<string, Handler> = {
     return summary(synced);
   },
   'repos.pr': async parsed => {
-    const options: PrOptions = { profile: text(parsed, 'profile'), targets: text(parsed, 'targets'), base: text(parsed, 'base'), draft: flag(parsed, 'draft'), message: text(parsed, 'message') };
+    const options: PrOptions = {
+      profile: text(parsed, 'profile'),
+      targets: text(parsed, 'targets'),
+      base: text(parsed, 'base'),
+      draft: flag(parsed, 'draft'),
+      message: text(parsed, 'message')
+    };
     const dryRun = flag(parsed, 'dry-run');
     const prepared = prepareReposPrs(options, dryRun);
     try {
@@ -369,7 +520,13 @@ export const HANDLERS: Record<string, Handler> = {
       let items = prepared.items;
       if (dryRun) say(_('plan.dry-run.done'));
       else if (prepared.candidates.length) {
-        if (!(await confirmChange(parsed, _('confirm.repos-pr', { count: prepared.candidates.length }), retryWithYes('repos pr', parsed)))) {
+        if (
+          !(await confirmChange(
+            parsed,
+            _('confirm.repos-pr', { count: prepared.candidates.length }),
+            retryWithYes('repos pr', parsed)
+          ))
+        ) {
           say(_('confirm.declined'));
         } else {
           const opened = openPullRequests(prepared.candidates, options);
@@ -392,7 +549,11 @@ export const HANDLERS: Record<string, Handler> = {
       return ok({ ...data, written: false });
     }
     applyInstall(plan);
-    say(plan.items.some(item => item.state === 'create' || item.state === 'update') ? _('install.done') : _('install.unchanged'));
+    say(
+      plan.items.some(item => item.state === 'create' || item.state === 'update')
+        ? _('install.done')
+        : _('install.unchanged')
+    );
     return ok({ ...data, written: true });
   },
   uninstall: async parsed => {
@@ -417,20 +578,27 @@ export const HANDLERS: Record<string, Handler> = {
 
 function printLinkPlan(plan: LinkPlan): void {
   say(_('link.plan.title'));
-  say(`  ${(plan.metadata ? 'create' : 'keep').padEnd(9)} ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
+  say(
+    `  ${(plan.metadata ? 'create' : 'keep').padEnd(9)} ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`
+  );
   const action = plan.link === 'create' ? 'link' : plan.link;
   say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}`);
 }
 
-/** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */
+/** `name`이 연결된 폴더. 없으면 null. 링크가 거부하는 명령을 다음 단계로 안내하지 않으려고 쓴다. */
 function linkedFolder(name: string): string | null {
-  try { return profileLocation(name)?.link ?? null; } catch { return null; }
+  try {
+    return profileLocation(name)?.link ?? null;
+  } catch {
+    return null;
+  }
 }
 
-/** One line per skill folder, then one per agent left out because it was not found. */
+/** 스킬 폴더마다 한 줄, 그다음 찾지 못해 빠진 에이전트마다 한 줄. */
 function printSkillPlan(plan: SkillPlan): void {
   for (const item of plan.items) say(`${item.state.padEnd(10)} ${item.dir}${item.reason ? `  ${item.reason}` : ''}`);
-  for (const target of plan.skipped) say(`${'skipped'.padEnd(10)} ${target.dir}  ${_('install.skipped', { marker: target.marker })}`);
+  for (const target of plan.skipped)
+    say(`${'skipped'.padEnd(10)} ${target.dir}  ${_('install.skipped', { marker: target.marker })}`);
 }
 
 function skillPlanData(plan: SkillPlan) {
@@ -442,6 +610,16 @@ function skillPlanData(plan: SkillPlan) {
 
 function describeState(state: ReturnType<typeof profileGitState>): string {
   if (!state.connected) return _('status.local', { name: state.name });
-  const position = state.ahead === null ? _('status.no-upstream') : _('status.position', { ahead: state.ahead, behind: state.behind ?? 0 });
-  return _('status.git', { name: state.name, remote: state.remote ?? '-', branch: state.remoteBranch ?? state.branch ?? '-', commit: (state.commit ?? '').slice(0, 7), dirty: state.dirty.length ? _('status.dirty', { count: state.dirty.length }) : _('status.clean'), position });
+  const position =
+    state.ahead === null
+      ? _('status.no-upstream')
+      : _('status.position', { ahead: state.ahead, behind: state.behind ?? 0 });
+  return _('status.git', {
+    name: state.name,
+    remote: state.remote ?? '-',
+    branch: state.remoteBranch ?? state.branch ?? '-',
+    commit: (state.commit ?? '').slice(0, 7),
+    dirty: state.dirty.length ? _('status.dirty', { count: state.dirty.length }) : _('status.clean'),
+    position
+  });
 }

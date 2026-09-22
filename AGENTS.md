@@ -19,8 +19,10 @@
   - **Refactor:** 테스트 통과를 유지하며 코드를 깔끔하게 정리하라.
 3. **최소 변경 원칙 (Minimal Diff).**
   - 요청받은 기능/버그와 무관한 파일의 리팩터링이나 전역 포맷팅 변경을 하지 마라.
-4. **비밀값 보호.**
+4. **비밀값과 조직 정보 보호.**
   - `.env`, 비밀 키, 개인정보를 화면에 출력하거나 커밋하지 마라.
+  - 이 저장소는 공개다. 사용자가 일하는 조직의 이름, 그 조직의 저장소·프로필 이름과 그 일부를 딴 이름, 비공개 저장소의 커밋 해시, 그 저장소를 알아볼 수 있는 폴더 구조를 문서·평가·실측 출력·커밋 메시지에 쓰지 마라. 예시 이름은 `team-rules`나 `acme-*`를 쓰고, 실측 출력은 손으로 고치지 말고 예시 이름으로 다시 실행해서 얻는다.
+  - push하기 전에 조직 이름과 저장소 이름, 그 파생어를 넓은 패턴으로 검색해 0건인지 확인한다. `process.platform`의 `platform`처럼 우연히 걸린 낱말은 빼고 센다. 이미 push한 이력에는 지워도 남으므로 올리기 전에 커밋 자체를 고친다.
 5. **Git 워크플로.**
   - 사용자 승인 없는 `git push --force` 및 파괴적 명령 금지.
   - 커밋 메시지는 Conventional Commits 형식을 따르고 제목과 본문을 한국어로 쓴다. 타입(`feat`, `fix`, `docs` 등)과 코드 식별자·명령은 원문 그대로 둔다. 예: `docs: README 상단에 가로 목차 추가`
@@ -40,15 +42,17 @@
 
 ## 2. 프로젝트 실행 및 검사 명령
 
-- **형식 검사·문서 계약·저장소 평가:** `pnpm run check`
+- **형식 검사·서식 검사·린트·문서 계약·저장소 평가:** `pnpm run check`
+- **서식 맞추기:** `pnpm run format`(코드·JSON·YAML. Markdown은 대상이 아니다)
 - **CLI 직접 실행:** `node src/agctx.ts <command>`
 
 ---
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약
 
-- **개발 언어:** TypeScript (설치본 실행은 Node.js 22 이상, 저장소 개발은 Node.js 22.18 이상). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다.
+- **개발 언어:** TypeScript (설치본 실행은 Node.js 22 이상, 저장소 개발은 Node.js 22.18 이상). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다. 형식 검사와 빌드는 TypeScript 7(`@typescript/native` 별칭의 `tsc`)이 하고, `typescript` 이름에는 typescript-eslint가 쓰는 6.0 호환 패키지가 있다(ADR 0040).
 - **TypeScript 제약:** Node가 타입만 지워 실행할 수 있는 문법만 쓴다(`erasableSyntaxOnly`: `enum`·`namespace`·생성자 매개변수 속성 금지). 상대 import에는 `.ts` 확장자를 붙이고, 타입만 가져올 때는 `import type`을 쓴다(`verbatimModuleSyntax`). 형식 검사는 `pnpm run typecheck`이며 `pnpm run check`에 포함된다.
+- **코드 안의 설명:** 코드 주석, JSDoc, 설정 파일의 주석, 테스트 이름, 단언 메시지는 한국어로 쓴다. 명령·식별자·경로·원문 인용처럼 번역하면 정확성이 떨어지는 문자열은 그대로 둔다. CLI와 저장소 도구가 출력하는 문구는 이 규칙의 대상이 아니다. CLI 출력의 언어는 `src/i18n/`의 메시지 카탈로그가 정한다.
 - **패키지 매니저:** pnpm — 저장소 의존성·스크립트·CI는 고정된 pnpm 버전을 사용하라. 사용자의 npm 설치 명령은 배포 호환성을 위해 README에 유지한다.
 
 ---

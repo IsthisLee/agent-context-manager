@@ -7,12 +7,12 @@ import type { Locale } from './types.ts';
 
 export const PROFILE_METADATA_FILE = 'profile.json';
 
-/** The agctx data folder: `AGCTX_HOME` when set, otherwise `~/.agctx`. */
+/** agctx 데이터 폴더. `AGCTX_HOME`이 있으면 그것, 없으면 `~/.agctx`. */
 export function agctxHome(): string {
   return process.env.AGCTX_HOME || path.join(os.homedir(), '.agctx');
 }
 
-/** The folder holding one subfolder per profile. */
+/** 프로필마다 하위 폴더 하나를 두는 폴더. */
 export function profileHome(): string {
   return path.join(agctxHome(), 'profiles');
 }

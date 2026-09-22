@@ -744,7 +744,7 @@ test('check and sync read a guidance file with CRLF line endings as unchanged, a
   const project = folder('app');
   me.ok(['profile', 'create', 'personal']);
   me.ok(['profile', 'apply', 'personal', project, '--yes']);
-  // What a checkout with core.autocrlf leaves: every text file, base files included, with CRLF line endings.
+  // core.autocrlf로 checkout하면 남는 모습: base 파일을 포함한 모든 텍스트 파일이 CRLF 줄 끝이다.
   const managed = ['AGENTS.md', 'CLAUDE.md', '.agents/rules/agctx.md'];
   for (const rel of [...managed, ...managed.map(file => `.agctx/base/${file}.base`)]) {
     const file = path.join(project, rel);

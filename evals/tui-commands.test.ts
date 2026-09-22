@@ -12,7 +12,7 @@ const spec = (id: string) => {
   return command;
 };
 
-/** What the CLI would parse from the tokens a TUI answer stands for. */
+/** TUI 답변이 나타내는 토큰에서 CLI가 해석할 내용. */
 const parsedFrom = (id: string, positional: string[], options: Record<string, string | boolean | null>) => {
   const parsed = checkArguments(spec(id), commandTokens(id, positional, options));
   return { positional: parsed.positional, options: parsed.options };

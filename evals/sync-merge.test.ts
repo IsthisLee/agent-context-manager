@@ -58,24 +58,22 @@ test('mergeAgentsMd preserves user custom rules under section 4', () => {
 
   const merged = mergeAgentsMd(newTemplateContent, existingContent);
 
-  // 1. Updated core content must be present
+  // 1. 갱신한 핵심 내용이 있어야 한다
   assert.ok(merged.includes('# Agent Guidelines for my-app (Updated Core)'));
   assert.ok(merged.includes('Next.js (App Router)'));
 
-  // 2. User custom rules MUST be preserved
+  // 2. 사용자가 더한 규칙은 반드시 남아야 한다
   assert.ok(merged.includes('### 결제 모듈 규칙 (사용자가 추가한 커스텀 규칙)'));
   assert.ok(merged.includes('토스페이먼츠 샌드박스 키를 사용할 것.'));
   assert.ok(merged.includes('결제 승인 API 호출 시 멱등키(Idempotency Key)를 전송할 것.'));
 });
 
 test('mergeAgentsMd regenerates the profile-owned region above the extension header', () => {
-  // Ownership boundary contract: users add domain rules BELOW the
-  // `## N. 프로젝트 규칙 확장` header. Everything above it is profile-owned and is
-  // regenerated on every apply. The test above pins that the extension body is
-  // preserved; this one pins that the above-header region is replaced, not kept.
-  // On applied projects, manual edits to this region are caught by the AGENTS.md
-  // drift hash (which throws before writing), so silent loss is limited to a
-  // first apply onto a file that already carries the header.
+  // 소유 경계 계약: 사용자는 `## N. 프로젝트 규칙 확장` 제목 아래에 도메인 규칙을 더한다. 그 위는
+  // 모두 프로필 소유이고 적용할 때마다 다시 만든다. 위의 테스트는 확장 영역 본문이 남는 것을 고정하고,
+  // 이 테스트는 제목 위 영역이 남지 않고 바뀌는 것을 고정한다.
+  // 적용된 프로젝트에서 이 영역을 손으로 고치면 AGENTS.md 드리프트 해시가 잡아내고(쓰기 전에 예외를
+  // 던진다), 그래서 조용히 잃는 경우는 이미 그 제목이 있는 파일에 처음 적용할 때로 한정된다.
   const existing = [
     '# Hand-written core',
     '',
@@ -237,7 +235,7 @@ test("the managed end marker bounds AGENTS.md, so the extension heading is the p
 });
 
 test('the marker wins over an extension heading that appears above it', () => {
-  // A profile whose own guidance mentions the heading must not cut the area short.
+  // 자기 지침이 그 제목을 언급하는 프로필이 관리 영역을 중간에서 끊으면 안 된다.
   const content = `# Profile: demo\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n프로필이 쓴 안내\n\n${MANAGED_END}\n\n- 내 규칙\n`;
   assert.equal(
     extractAgentsManagedDocument(content),

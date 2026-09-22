@@ -1,24 +1,23 @@
 /**
- * Rules for which sources documents pin. Pinning a whole source root makes one
- * change fail every document at once, so readers stamp without re-reading; a
- * source no document pins can change without any document noticing.
+ * 문서가 어떤 소스를 핀하는지에 대한 규칙. 소스 루트 전체를 핀하면 변경 하나가 모든 문서를 한꺼번에
+ * 실패시켜, 읽는 사람이 다시 읽지 않고 stamp하게 된다. 어떤 문서도 핀하지 않은 소스는 아무 문서도
+ * 모르게 바뀔 수 있다.
  */
 
-/** Source roots a document must pin module by module, never as a whole. */
+/** 문서가 통째가 아니라 모듈 단위로 핀해야 하는 소스 루트. */
 export const SOURCE_ROOTS: readonly string[] = ['src'];
 
 const trimSlash = (value: string) => value.replace(/\/+$/, '');
 
-/** Pins that name a whole source root instead of the modules inside it. */
+/** 안의 모듈이 아니라 소스 루트 전체를 가리키는 핀. */
 export function wholeRootPins(sources: readonly string[]): string[] {
   return sources.filter(source => SOURCE_ROOTS.includes(trimSlash(source)));
 }
 
 /**
- * Source files that nothing covers. A file is covered when a document pins it,
- * directly or through a pinned folder, or when a document cites a name inside
- * it: a citation carries the same digest and fails the same way, so the pin
- * would only repeat it. Paths use `/` and are relative to the repository root.
+ * 아무것도 덮지 않는 소스 파일. 문서가 그 파일을 직접 또는 핀한 폴더를 통해 핀하거나, 그 안의 이름을
+ * 인용하면 덮인 것이다. 인용은 같은 지문을 갖고 같은 방식으로 실패하므로 핀은 그것을 되풀이할 뿐이다.
+ * 경로는 `/`를 쓰고 저장소 루트 기준이다.
  */
 export function unpinnedSources(
   sourceFiles: readonly string[],
@@ -32,39 +31,36 @@ export function unpinnedSources(
   );
 }
 
-/** The recorded-hash marker line of a document that pins sources. */
+/** 소스를 핀하는 문서의 기록된 해시 마커 줄. */
 const RECORDED_HASH = /<!--\s*agctx-doc-sources-sha256:\s*(?:[0-9a-f]{64}|PENDING)\s*-->/;
 
 /**
- * A pinned document as the gate hashes it: its own recorded hash is left out, so
- * restamping it does not change the hash of a document that pins it, and two
- * documents such as the README translations can pin each other.
+ * 게이트가 해시하는 형태의 핀한 문서. 자기 기록 해시는 빼므로, 그 문서를 다시 stamp해도 그것을 핀한
+ * 문서의 해시가 바뀌지 않고, README 번역본처럼 두 문서가 서로를 핀할 수 있다.
  */
 export function withoutRecordedHash(text: string): string {
   return text.replace(RECORDED_HASH, '<!-- agctx-doc-sources-sha256 -->');
 }
 
-/** A block between `<!-- agctx:generated:<name>:start -->` and its end marker, markers included. */
+/** `<!-- agctx:generated:<name>:start -->`와 그 끝 마커 사이의 블록. 마커를 포함한다. */
 const GENERATED_BLOCK = /(<!-- agctx:generated:(\S+):start -->)[\s\S]*?(<!-- agctx:generated:\2:end -->)/g;
 
 /**
- * A pinned document as the gate hashes it, without the contents of its
- * generated blocks. Evaluations already compare those blocks with their data,
- * so regenerating the status list in one README does not fail the README that
- * pins it.
+ * 게이트가 해시하는 형태의 핀한 문서에서 생성 블록의 내용을 뺀 것. 평가가 이미 그 블록을 데이터와
+ * 비교하므로, 한 README의 상태 목록을 다시 만들어도 그 README를 핀한 README가 실패하지 않는다.
  */
 export function withoutGeneratedBlocks(text: string): string {
   return text.replace(GENERATED_BLOCK, '$1\n$3');
 }
 
-/** A pinned section: the marker pair plus the text it owns, which runs to the next marker. */
+/** 핀한 절: 마커 쌍과, 다음 마커까지 이어지는 그 절의 글. */
 export interface DocSourceSection {
   sources: string[];
-  /** Recorded digest, `PENDING`, or null when the hash line is missing. */
+  /** 기록된 지문, `PENDING`, 또는 해시 줄이 없으면 null. */
   digest: string | null;
-  /** Heading the marker sits under, for a failure message that names the place to re-read. */
+  /** 마커가 놓인 제목. 실패 메시지가 다시 읽을 곳을 가리키게 한다. */
   heading: string;
-  /** Index of the list marker in the document, so a stamp can replace the right hash line. */
+  /** 문서에서 목록 마커의 위치. stamp가 알맞은 해시 줄을 바꿀 수 있게 한다. */
   index: number;
 }
 
@@ -72,9 +68,8 @@ const SOURCES_LIST = /<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/g;
 const SOURCES_HASH = /<!--\s*agctx-doc-sources-sha256:\s*([0-9a-f]{64}|PENDING)\s*-->/;
 
 /**
- * Every pinned section of a document, in order. A document may carry one marker
- * at the top, as most do, or one marker per section so that a changed source
- * points at the section to re-read instead of the whole document.
+ * 문서의 모든 핀 절. 순서대로. 문서는 대부분처럼 맨 위에 마커 하나를 두거나, 절마다 마커를 둬서
+ * 바뀐 소스가 문서 전체가 아니라 다시 읽을 절을 가리키게 할 수 있다.
  */
 export function docSourceSections(content: string): DocSourceSection[] {
   const markers = [...content.matchAll(SOURCES_LIST)];
@@ -95,10 +90,10 @@ export function docSourceSections(content: string): DocSourceSection[] {
   });
 }
 
-/** The digests a stamp writes: a section's recorded hash and the marker beside a cited name. */
+/** stamp가 쓰는 지문: 절의 기록 해시와, 인용한 이름 옆의 마커. */
 const DIGEST_IN_LINE = /(agctx-doc-sources-sha256:\s*)(?:[0-9a-f]{64}|PENDING)|<!--\s*s:[0-9a-f]{12}\s*-->/g;
 
-/** The same line with every digest blanked, so two lines that differ only in a digest compare equal. */
+/** 모든 지문을 비운 같은 줄. 지문만 다른 두 줄이 같게 비교되게 한다. */
 function withoutDigests(line: string): string {
   return line.replace(DIGEST_IN_LINE, (_whole, prefix: string | undefined) =>
     prefix ? `${prefix}<digest>` : '<digest>'
@@ -106,13 +101,12 @@ function withoutDigests(line: string): string {
 }
 
 /**
- * Markdown documents in a diff whose only change is a digest a stamp writes.
+ * diff에서 stamp가 쓰는 지문만 바뀐 Markdown 문서.
  *
- * Re-reading the document is the point of the gate, and `--stamp` passes without it, so a commit
- * that carries nothing but new digests is the shape of a document nobody re-read. Judged from the
- * diff alone: both sides are compared with their digests blanked, so a document that also gained,
- * lost, or reworded a line is left out. PR #54 is the case this catches, where a README kept the
- * sentence "6개 항목" while its hash moved on.
+ * 게이트의 목적은 문서를 다시 읽는 것인데 `--stamp`는 다시 읽지 않아도 통과하므로, 새 지문만 담은
+ * 커밋은 아무도 다시 읽지 않은 문서의 모양이다. diff만으로 판단한다. 양쪽을 지문을 비운 채 비교하므로,
+ * 줄이 더해지거나 빠지거나 표현이 바뀐 문서는 빠진다. PR #54가 이것이 잡는 경우다. 그때 README는
+ * 해시가 바뀌었는데도 「6개 항목」이라는 문장을 그대로 두었다.
  */
 export function restampOnlyDocuments(diff: string): string[] {
   const found: string[] = [];
@@ -148,20 +142,20 @@ export function restampOnlyDocuments(diff: string): string[] {
 }
 
 /**
- * The pinned sources among the files a checkout changed, so a failure names what to re-read
- * instead of repeating the whole pin list. A pinned folder covers every file beneath it.
+ * checkout이 바꾼 파일 가운데 핀한 소스. 실패 메시지가 핀 목록 전체를 되풀이하지 않고 다시 읽을 것을
+ * 가리키게 한다. 핀한 폴더는 그 아래의 모든 파일을 덮는다.
  */
 export function sourcesToReread(pinned: readonly string[], changed: readonly string[]): string[] {
   const pins = pinned.map(trimSlash);
   return changed.filter(file => pins.some(pin => file === pin || file.startsWith(`${pin}/`)));
 }
 
-/** What `--stamp` was asked to rewrite: every document, named ones, or nothing until one is named. */
+/** `--stamp`가 다시 쓰라고 요청받은 것: 모든 문서, 지정한 문서, 또는 지정할 때까지 아무것도 아님. */
 export type StampTargets = { kind: 'all' } | { kind: 'ask' } | { kind: 'paths'; paths: string[] };
 
 /**
- * Read `--stamp` and what follows it. Naming a document is the approval unit: one `--stamp` used to
- * rewrite every drifted document at once, so reading one and running it passed the rest as well.
+ * `--stamp`와 그 뒤에 오는 것을 읽는다. 문서를 지정하는 것이 승인 단위다. 예전에는 `--stamp` 한 번이
+ * 어긋난 문서를 모두 다시 써서, 하나만 읽고 실행해도 나머지까지 통과했다.
  */
 export function stampTargets(argv: readonly string[]): StampTargets {
   const at = argv.indexOf('--stamp');

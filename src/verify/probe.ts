@@ -9,10 +9,9 @@ import { CliError, EXIT } from '../shared/errors.ts';
 import { git } from '../shared/git.ts';
 
 /**
- * `agctx verify --probe`: copy the project's instruction files into a scratch
- * repository, append a unique marker line to each copy, run the agent CLI there
- * once with tools disabled, and see which markers it can repeat. The real
- * repository is never modified.
+ * `agctx verify --probe`: 프로젝트의 지침 파일을 임시 저장소에 복사하고, 사본마다 고유한 마커 줄을
+ * 붙이고, 도구를 끈 채 에이전트 CLI를 거기서 한 번 실행해, 어떤 마커를 되풀이할 수 있는지 본다.
+ * 실제 저장소는 바꾸지 않는다.
  */
 
 const MARKER = 'agctx probe marker:';
@@ -20,7 +19,7 @@ const PROMPT = `Do not use any tools and do not read files. From the instruction
 const TIMEOUT_MS = 5 * 60 * 1000;
 
 export interface ProbeResult {
-  /** Project-relative paths whose marker the agent repeated. */
+  /** 에이전트가 마커를 되풀이한 파일의 프로젝트 기준 경로. */
   received: Set<string>;
   command: string;
 }
@@ -36,7 +35,7 @@ function commandFor(agent: AgentId, scratchRoot: string, scratchStart: string): 
 }
 
 function run(command: string, args: string[], cwd: string) {
-  // Agent CLIs installed with npm are .cmd shims on Windows, which only a shell can start.
+  // npm으로 설치한 에이전트 CLI는 Windows에서 .cmd shim이라 셸만 시작할 수 있다.
   return process.platform === 'win32'
     ? spawnSync(
         command,

@@ -25,9 +25,8 @@ import type {
 } from '../shared/types.ts';
 
 /**
- * Plan what `profile apply`/`sync`/`resolve` would write to a project.
- * Managed areas edited since the last apply are reported as conflicts instead
- * of throwing, so callers can show them, stop, or resolve them.
+ * `profile apply`/`sync`/`resolve`가 프로젝트에 쓸 내용을 계획한다. 마지막 적용 뒤에 고친 관리
+ * 영역은 예외를 던지지 않고 충돌로 보고해서, 호출한 쪽이 보여 주거나, 멈추거나, 풀 수 있게 한다.
  */
 
 export const POINTER_TEMPLATES: ReadonlyArray<readonly [source: string, target: string]> = [
@@ -57,8 +56,8 @@ function recordedHashFor(projectConfig: ProjectConfig, relativePath: string): st
 }
 
 /**
- * The managed area as agctx last wrote it, when it can be known: a base file
- * matching the recorded hash, or a regenerated area that still hashes the same.
+ * 알 수 있을 때, agctx가 마지막으로 쓴 관리 영역: 기록된 해시와 맞는 base 파일, 또는 다시 만들어도
+ * 해시가 같은 영역.
  */
 function knownBase(
   targetDir: string,
@@ -77,16 +76,16 @@ export interface PlanInput {
   targetDir: string;
   projectName: string;
   profileName: string;
-  /** Profile AGENTS.md rendered for this project. */
+  /** 이 프로젝트용으로 렌더링한 프로필 AGENTS.md. */
   renderedAgents: string;
-  /** Parsed agctx.project.json. */
+  /** 해석한 agctx.project.json. */
   projectConfig: ProjectConfig;
-  /** The profile version written into agctx.project.json. */
+  /** agctx.project.json에 쓴 프로필 버전. */
   record: VersionRecord;
 }
 
 /**
- * @param overrides - resolved contents to plan from instead of the files on disk
+ * @param overrides - 디스크의 파일 대신 계획에 쓸, 이미 푼 내용
  */
 export function planProject(
   { packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig, record }: PlanInput,
@@ -110,10 +109,9 @@ export function planProject(
     const currentRegion = managedRegion(kind, existing);
     const nextRegion = managedRegion(kind, regenerated);
     const recordedHash = overridden ? null : recordedHashFor(projectConfig, relativePath);
-    // Two ways a differing hash still means nobody edited the managed area, both
-    // reached by editors that reformat Markdown on save. The area may already
-    // hold what this run would write, or it may differ from what agctx last
-    // wrote only in ways a formatter produces. Neither has anything to lose.
+    // 해시가 달라도 아무도 관리 영역을 고치지 않았다는 뜻인 경우가 둘 있다. 둘 다 저장할 때 Markdown을
+    // 다시 포맷하는 편집기에서 생긴다. 관리 영역에 이번 실행이 쓸 내용이 이미 있거나, agctx가 마지막으로
+    // 쓴 것과 포매터가 만드는 방식으로만 다르다. 어느 쪽도 잃을 것이 없다.
     const base = recordedHash ? knownBase(targetDir, relativePath, recordedHash, nextRegion) : null;
     const settled =
       currentRegion !== null &&
@@ -144,7 +142,7 @@ export function planProject(
     describe(relativePath, 'pointer', existing => mergeManagedDocument(template, existing));
   }
 
-  // Link every nested AGENTS.md for Claude Code, leaving CLAUDE.md files people wrote alone.
+  // 중첩된 AGENTS.md마다 Claude Code용 연결을 만든다. 사람이 쓴 CLAUDE.md는 건드리지 않는다.
   const warnings: string[] = [];
   const linkTemplate = toLf(fs.readFileSync(path.join(packageRoot, LINK_TEMPLATE), 'utf8'));
   const linked = new Set<string>();
@@ -220,7 +218,7 @@ export function planProject(
   };
 }
 
-/** Write every changed file, refusing unsafe targets before anything is written. */
+/** 바뀐 파일을 모두 쓴다. 무엇이든 쓰기 전에 안전하지 않은 대상을 거부한다. */
 export function writePlan(changes: readonly PlannedChange[], targetDir: string): PlannedChange[] {
   const changed = changes.filter(change => change.status !== 'unchanged');
   for (const change of changed) assertSafeTextTarget(change.target, targetDir);

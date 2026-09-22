@@ -20,8 +20,8 @@ import {
 import { gitIn } from './support/git-workspace.ts';
 
 /**
- * What the TUI decides around `profile link`, checked the way `evals/tui-pin.test.ts` checks the pin
- * question: each decision is a function, so it can be run without drawing a terminal screen.
+ * `profile link` 주변에서 TUI가 내리는 판단을, `evals/tui-pin.test.ts`가 고정 질문을 검사하는
+ * 방식으로 검사한다. 판단마다 함수라서 터미널 화면을 그리지 않고 실행할 수 있다.
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -211,7 +211,7 @@ test('the TUI checks a folder before searching it for rules files', t => {
   const { root, folder } = workspace(t);
   const home = path.join(root, 'user-home');
   fs.mkdirSync(home);
-  // os.homedir() reads HOME on POSIX and USERPROFILE on Windows.
+  // os.homedir()는 POSIX에서 HOME을, Windows에서 USERPROFILE을 읽는다.
   const previous = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   process.env.HOME = home;
   process.env.USERPROFILE = home;

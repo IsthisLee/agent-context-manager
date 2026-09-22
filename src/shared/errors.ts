@@ -1,4 +1,4 @@
-/** Exit codes shared by every command. When several apply, the most severe wins: 3 > 2 > 1. */
+/** 모든 명령이 같이 쓰는 종료 코드. 여럿이 해당하면 가장 심각한 것이 이긴다: 3 > 2 > 1. */
 export const EXIT = {
   ok: 0,
   behind: 1,
@@ -12,15 +12,15 @@ export const EXIT = {
 
 export type ExitCode = (typeof EXIT)[keyof typeof EXIT];
 
-/** The worst of several outcome codes, following 3 > 2 > 1 > 0. */
+/** 여러 결과 코드 가운데 가장 나쁜 것. 3 > 2 > 1 > 0 순서를 따른다. */
 export function worstExitCode(codes: readonly number[]): number {
   const order = [EXIT.hiddenCharacters, EXIT.conflict, EXIT.behind];
   return order.find(code => codes.includes(code)) ?? codes.find(code => code !== EXIT.ok) ?? EXIT.ok;
 }
 
 /**
- * An error a user can act on: what went wrong, the exit code, and the next
- * command to run. Messages are already localized when the error is created.
+ * 사용자가 조치할 수 있는 오류: 무엇이 잘못됐는지, 종료 코드, 다음에 실행할 명령. 메시지는 오류를
+ * 만들 때 이미 현지화돼 있다.
  */
 export class CliError extends Error {
   readonly exitCode: number;
@@ -41,7 +41,7 @@ export class CliError extends Error {
   }
 }
 
-/** Any thrown value as a CliError; unexpected errors become exit code 70. */
+/** 던져진 값을 CliError로 바꾼다. 예상하지 못한 오류는 종료 코드 70이 된다. */
 export function toCliError(error: unknown): CliError {
   return error instanceof CliError
     ? error

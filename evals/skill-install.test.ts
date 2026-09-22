@@ -17,8 +17,8 @@ import {
 import { packageVersion } from '../src/shared/runtime.ts';
 
 /**
- * `agctx install` copies the skills shipped in the package into the user-level skill folder of each agent found on
- * this machine, with a record that lets it replace only what it wrote. Every case runs in a temporary HOME.
+ * `agctx install`은 패키지에 든 스킬을 이 컴퓨터에서 찾은 에이전트마다 사용자 수준 스킬 폴더에
+ * 복사하고, 자기가 쓴 것만 바꿀 수 있게 기록을 남긴다. 모든 경우를 임시 HOME에서 실행한다.
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');

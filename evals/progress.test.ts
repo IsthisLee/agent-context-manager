@@ -16,7 +16,7 @@ import {
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const progress = () => fs.readFileSync(path.join(repoRoot, 'PROGRESS.md'), 'utf8');
 
-/** A shallow clone holds one commit, so the history checks have nothing to compare against. */
+/** 얕은 clone에는 커밋이 하나뿐이라 이력 검사가 비교할 대상이 없다. */
 const shallowClone =
   execSync('git rev-parse --is-shallow-repository', { cwd: repoRoot, encoding: 'utf8' }).trim() === 'true';
 

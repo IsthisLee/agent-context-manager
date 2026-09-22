@@ -17,9 +17,9 @@ import { readProfile } from './store.ts';
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
 
 /**
- * `<!-- agctx:guidance:start/end -->` belongs to the profile, where `profile
- * setup` rewrites what sits between them. In a project the pair means nothing
- * and reads as a second boundary above MANAGED_END, so only the text stays.
+ * `<!-- agctx:guidance:start/end -->`는 프로필에 속하고, 프로필에서는 `profile setup`이 그 사이를
+ * 다시 쓴다. 프로젝트에서는 이 쌍이 아무 뜻이 없고 MANAGED_END 위의 두 번째 경계처럼 읽히므로,
+ * 글만 남긴다.
  */
 const GUIDANCE_MARKERS = /^[ \t]*<!-- agctx:guidance:(?:start|end) -->[ \t]*\n*/gm;
 
@@ -29,9 +29,9 @@ export function renderProfileAgents(content: string, profileName: string, projec
 }
 
 /**
- * The project name shown in AGENTS.md: package.json's name, then the name recorded
- * at the last apply, then the folder name. Recording it keeps a clone in a folder
- * with another name (a teammate's copy, a temporary worktree) rendering the same files.
+ * AGENTS.md에 보이는 프로젝트 이름: package.json의 name, 그다음 마지막 적용 때 기록한 이름, 그다음
+ * 폴더 이름. 이름을 기록해 두면 다른 이름의 폴더에 있는 clone(동료의 사본, 임시 worktree)도 같은
+ * 파일을 만든다.
  */
 export function getProjectName(targetDir: string, recorded: string | null = null): string {
   const packagePath = path.join(targetDir, 'package.json');
@@ -88,7 +88,7 @@ export function conflictError(conflicts: readonly ConflictedFile[], targetDir: s
   );
 }
 
-/** Which profile content a project gets, and the version record written with it. */
+/** 프로젝트가 받는 프로필 내용과, 함께 쓰는 버전 기록. */
 export interface ProfileVersion {
   content: string;
   source: ProjectSource | null;
@@ -97,9 +97,9 @@ export interface ProfileVersion {
 }
 
 /**
- * - `pin: true` (apply --pin): the committed profile, pinned to HEAD. Uncommitted edits are refused.
- * - `pin: 'keep'` (sync): a pinned project renders the commit it recorded; others follow the store.
- * - `pin: false` (apply): the store as it is now, recording the commit and whether edits are uncommitted.
+ * - `pin: true` (apply --pin): 커밋된 프로필을 HEAD에 고정한다. 커밋하지 않은 수정은 거부한다.
+ * - `pin: 'keep'` (sync): 고정한 프로젝트는 기록한 커밋을 렌더링하고, 나머지는 보관함을 따른다.
+ * - `pin: false` (apply): 지금 보관함 그대로. 커밋과, 커밋하지 않은 수정이 있는지를 기록한다.
  */
 export function profileVersion(profile: Profile, projectConfig: ProjectConfig, pin: boolean | 'keep'): ProfileVersion {
   const dir = profile.profileDir;
@@ -107,7 +107,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   const connected = isGitRoot(dir);
   const pinned = pin === true || (pin === 'keep' && projectConfig.pin === true);
   if (pinned && !connected) {
-    // A linked folder is connected with git in that folder, not with profile connect, which refuses links.
+    // 연결된 폴더는 그 폴더에서 git으로 연결한다. profile connect는 링크를 거부한다.
     throw usageError(
       'pin.not-git',
       _('error.pin.not-git', { name }),
@@ -132,7 +132,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
 
   if (pin === 'keep' && projectConfig.pin === true) {
     const commit = projectConfig.source?.commit;
-    // The recorded commit's own profile.json names its rules file, which may have moved since.
+    // 기록된 커밋의 profile.json이 그 커밋의 규칙 파일을 가리킨다. 규칙 파일은 그 뒤에 옮겨졌을 수 있다.
     const shown =
       commit && /^[0-9a-f]{7,64}$/i.test(commit) ? (committedProfile(dir, commit, name)?.content ?? null) : null;
     if (!commit || shown === null) {
@@ -182,7 +182,7 @@ export interface ApplyPlan {
   targetDir: string;
   version: ProfileVersion;
   plan: ProjectPlan;
-  /** Whether agctx.project.json already pinned the project before this run. */
+  /** 이번 실행 전에 agctx.project.json이 이미 프로젝트를 고정했는지. */
   previousPin: boolean;
 }
 
@@ -245,7 +245,7 @@ export function printConflicts(conflicts: readonly ConflictedFile[]): void {
   }
 }
 
-/** The profile a project is bound to, or a usage error pointing at `profile apply`. */
+/** 프로젝트가 묶인 프로필. 없으면 `profile apply`를 안내하는 사용법 오류. */
 export function boundProfile(targetDir: string, command: string): string {
   const name = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).profile;
   if (!name)

@@ -21,7 +21,7 @@ interface VerifyDocument {
   data: { agents: VerifiedAgent[] };
 }
 
-/** A monorepo with a profile at the root and a payments folder, plus agent homes inside the workspace. */
+/** 루트에 프로필이 있고 payments 폴더가 있는 모노레포. 에이전트 홈도 작업 공간 안에 둔다. */
 function project(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-verify-');
   const me = person('me');
@@ -41,7 +41,7 @@ function project(t: TestContext) {
   return { repo, payments, codexHome, claudeHome, verify };
 }
 
-/** A Codex session log written after the instruction files, recording what Codex injected. */
+/** 지침 파일 뒤에 쓴 Codex 세션 기록. Codex가 주입한 내용을 담는다. */
 function codexSession(codexHome: string, cwd: string, instructions: string) {
   const dir = path.join(codexHome, 'sessions', '2026', '09', '15');
   fs.mkdirSync(dir, { recursive: true });
@@ -62,7 +62,7 @@ function codexSession(codexHome: string, cwd: string, instructions: string) {
   return file;
 }
 
-/** A Claude Code transcript that lists the instruction files loaded at session start. */
+/** 세션을 시작할 때 불러온 지침 파일을 나열하는 Claude Code 대화 기록. */
 function claudeTranscript(claudeHome: string, cwd: string, loaded: string[]) {
   const dir = path.join(claudeHome, 'projects', cwd.replace(/[^A-Za-z0-9]/g, '-'));
   fs.mkdirSync(dir, { recursive: true });
@@ -142,7 +142,7 @@ test('verify does not trust a session that started before an instruction file ch
   assert.deepEqual(codex.stale, ['services/payments/AGENTS.md']);
 });
 
-/** Fake agent CLIs that load files the way each agent's documented rules say, then answer with marker lines. */
+/** 에이전트마다 문서에 적힌 규칙대로 파일을 불러오고 마커 줄로 답하는 가짜 에이전트 CLI. */
 function fakeAgents(t: TestContext) {
   const markers = `const markers = files => files.filter(file => fs.existsSync(file)).flatMap(file => fs.readFileSync(file, 'utf8').split('\\n').filter(line => line.startsWith('agctx probe marker:')));
 const rootOf = start => { for (let dir = start; ; dir = path.dirname(dir)) { if (fs.existsSync(path.join(dir, '.git'))) return dir; if (path.dirname(dir) === dir) return start; } };`;

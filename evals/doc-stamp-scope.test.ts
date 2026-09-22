@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { restampOnlyDocuments, sourcesToReread, stampTargets } from '../tools/doc-sources.ts';
 
-/** A diff hunk for one file, in the shape `git diff --unified=0` produces. */
+/** 파일 하나의 diff 헝크. `git diff --unified=0`이 만드는 모양이다. */
 function diffFor(file: string, removed: string[], added: string[]): string {
   return [
     `diff --git a/${file} b/${file}`,

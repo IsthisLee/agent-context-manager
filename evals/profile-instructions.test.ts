@@ -5,8 +5,8 @@ import path from 'node:path';
 import { gitIn, makeWorkspace } from './support/git-workspace.ts';
 
 /**
- * A rules repository that existed before agctx: the rules file sits in a
- * subfolder, and profile.json points at it with `instructions`.
+ * agctx보다 먼저 있던 규칙 저장소: 규칙 파일이 하위 폴더에 있고, profile.json이 `instructions`로
+ * 그 파일을 가리킨다.
  */
 
 const noLinks = process.platform === 'win32' ? 'symbolic links need extra privileges on Windows' : false;
@@ -21,7 +21,7 @@ function metadata(fields: Record<string, unknown> = {}): string {
   );
 }
 
-/** A bare remote and the work clone its owner commits to. `null` removes a file. */
+/** bare 원격과, 그 주인이 커밋하는 작업용 clone. `null`은 파일을 지운다. */
 function rulesRepo(root: string, files: Record<string, string | null>) {
   const remote = path.join(root, 'remotes', 'team-rules.git');
   fs.mkdirSync(path.dirname(remote), { recursive: true });
@@ -144,8 +144,8 @@ test('a pinned project keeps the rules file of its recorded commit on sync and c
 
   member.ok(['profile', 'sync', project, '--yes']);
   assert.match(read(path.join(project, 'AGENTS.md')), /^# Pointed rules/);
-  // check rebuilds the files from the recorded commit: no file differs, and the one finding is that
-  // the store now holds a newer commit, which a pinned project is expected to report.
+  // check는 기록된 커밋에서 파일을 다시 만든다. 다른 파일은 없고, 찾은 것은 하나뿐이다: 보관함에
+  // 더 새로운 커밋이 있다는 것인데, 고정한 프로젝트라면 이것을 보고하는 것이 맞다.
   const checked = member.run(['check', project, '--json']);
   assert.equal(checked.status, 1, checked.stderr);
   const findings = JSON.parse(checked.stdout).data.findings;
@@ -189,9 +189,9 @@ const refusedValues: [string, (work: string) => Record<string, unknown>, { skip:
 
 for (const [label, fields, options] of refusedValues) {
   test(`clone refuses instructions set to ${label}, and registers nothing`, options ?? {}, t => {
-    // On Windows a backslash separates folders, so a file named `templates\AGENTS.md` is the rules file
-    // itself. Leave the key out there instead of passing null, which would delete the rules file and let
-    // every case below pass on a missing file rather than on the check it names.
+    // Windows에서는 역슬래시가 폴더를 나누므로 `templates\AGENTS.md`라는 이름의 파일은 규칙 파일
+    // 그 자체다. 거기서는 null을 넘기지 말고 키를 빼라. null은 규칙 파일을 지워서, 아래의 모든 경우가
+    // 이름이 가리키는 검사가 아니라 파일이 없다는 이유로 통과하게 만든다.
     const { member, source } = setup(t, {
       ...repoFiles,
       'templates/AGENTS.txt': '# Not Markdown\n',
@@ -202,7 +202,7 @@ for (const [label, fields, options] of refusedValues) {
       'the fixture keeps the rules file, so each refusal comes from the check it names'
     );
     source.commit({ 'profile.json': metadata(fields(source.work)) }, 'Point instructions');
-    // Only a path that escapes the repository can reach this file.
+    // 저장소 밖으로 벗어나는 경로만 이 파일에 닿을 수 있다.
     fs.mkdirSync(path.join(member.home, 'profiles'), { recursive: true });
     fs.writeFileSync(path.join(member.home, 'profiles', 'outside.md'), '# Outside the repository\n');
 

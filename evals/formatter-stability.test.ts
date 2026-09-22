@@ -16,10 +16,9 @@ import { renderProfileAgents } from '../src/profile/apply.ts';
 import { SUPPORTED_LOCALES, setLocale, t } from '../src/i18n/index.ts';
 
 /**
- * Editors that format Markdown on save rewrite the whole file. If anything
- * agctx writes into a managed area is not already in the shape formatters
- * produce, saving the file changes the managed bytes and `agctx check`
- * reports a conflict the person never caused.
+ * 저장할 때 Markdown을 포맷하는 편집기는 파일 전체를 다시 쓴다. agctx가 관리 영역에 쓰는 내용이
+ * 포매터가 만드는 모양이 아니면, 파일을 저장하기만 해도 관리 영역의 바이트가 바뀌고 `agctx check`가
+ * 그 사람이 만든 적 없는 충돌을 보고한다.
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -69,7 +68,7 @@ test('the project context agctx appends to AGENTS.md survives a formatter unchan
   }
 });
 
-/** A project with the profile already applied, in a throwaway agctx home. */
+/** 프로필을 이미 적용한 프로젝트. 버려도 되는 agctx 홈에 있다. */
 function applied(t: TestContext) {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-formatter-'));
   const project = path.join(home, 'project');
@@ -94,10 +93,9 @@ function applied(t: TestContext) {
 }
 
 test('a managed area that already holds what agctx would write is not a conflict', t => {
-  // An older agctx wrote `* **Project:**`, the editor's formatter turned it into
-  // `- **Project:**` on save, and this version writes `-` too. The file already
-  // holds what sync would write, so stopping costs the person a conflict they
-  // cannot resolve into anything better.
+  // 예전 agctx는 `* **Project:**`를 썼고 편집기의 포매터가 저장할 때 `- **Project:**`로 바꿨다.
+  // 이 버전도 `-`를 쓴다. 파일에는 이미 sync가 쓸 내용이 있으므로, 여기서 멈추면 그 사람은 더 나은
+  // 결과로 풀 수 없는 충돌만 떠안는다.
   const fixture = applied(t);
   const region = extractAgentsManagedDocument(fixture.read('AGENTS.md')) ?? '';
   assert.ok(region.includes('- **Project:**'), 'the applied managed area carries the project line');
@@ -143,9 +141,8 @@ test('a formatter changing one bullet marker in the managed area changes its has
 });
 
 test('an area only a formatter touched is not a conflict, even when agctx would write something else', t => {
-  // The base file says what agctx last wrote. If the difference from it is only
-  // what a formatter does, nobody edited the area, so a sync that also changes
-  // the area for other reasons still has nothing to lose.
+  // base 파일은 agctx가 마지막으로 쓴 내용을 알려 준다. 그것과의 차이가 포매터가 하는 일뿐이면
+  // 아무도 관리 영역을 고치지 않은 것이므로, 다른 이유로 그 영역을 바꾸는 sync도 잃을 것이 없다.
   const fixture = applied(t);
   const before = fixture.read('AGENTS.md');
   fixture.write(
@@ -220,9 +217,9 @@ test('formatterNormalized joins a paragraph a formatter rewrapped, because Markd
 });
 
 test('a managed area a formatter rewrapped is not a conflict', t => {
-  // Prettier with `proseWrap: always` refolds every paragraph. Nothing the
-  // person wrote changed, so agctx must not treat it as an edit: `resolve`
-  // would copy the whole area into the extension section as "added lines".
+  // `proseWrap: always`인 Prettier는 모든 문단을 다시 접는다. 그 사람이 쓴 것은 바뀌지 않았으므로
+  // agctx는 이것을 편집으로 보면 안 된다. 그렇게 보면 `resolve`가 관리 영역 전체를 「더한 줄」로
+  // 확장 영역에 복사한다.
   const fixture = applied(t);
   const before = fixture.read('AGENTS.md');
   const rewrapped = before

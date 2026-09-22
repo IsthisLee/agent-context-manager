@@ -5,17 +5,17 @@ import { isJsonMode } from './output.ts';
 import { GLOBAL_OPTIONS, type CommandSpec } from './registry.ts';
 
 export interface ParsedArguments {
-  /** Positional values in order, without option values. */
+  /** 옵션 값을 뺀 위치 인자. 순서대로. */
   positional: string[];
-  /** Option values; flags without a value map to true. */
+  /** 옵션 값. 값이 없는 플래그는 true다. */
   options: Record<string, string | true>;
-  /** The raw tokens after the command words, for handlers that still read flags directly. */
+  /** 명령 단어 뒤의 원래 토큰. 아직 플래그를 직접 읽는 처리기가 쓴다. */
   raw: string[];
 }
 
 /**
- * Split the tokens after the command words into positional values and options,
- * rejecting options the command does not take and extra positional values.
+ * 명령 단어 뒤의 토큰을 위치 인자와 옵션으로 나눈다. 명령이 받지 않는 옵션과 남는 위치 인자는
+ * 거부한다.
  */
 export function checkArguments(command: CommandSpec, tokens: readonly string[]): ParsedArguments {
   const known = new Map([...command.options, ...GLOBAL_OPTIONS].map(option => [option.name, option]));
@@ -69,15 +69,14 @@ export function checkArguments(command: CommandSpec, tokens: readonly string[]):
   return { positional, options, raw: [...tokens] };
 }
 
-/** Prompts need a terminal, and a --json run never prompts: scripts and agents read its stdout. */
+/** 프롬프트에는 터미널이 필요하고, --json 실행은 묻지 않는다. 스크립트와 에이전트가 stdout을 읽기 때문이다. */
 export function canPrompt(): boolean {
   return Boolean(process.stdin.isTTY) && !isJsonMode();
 }
 
 /**
- * Ask before a command changes a repository or sends to a remote. In a terminal
- * the user confirms; elsewhere (CI, bots, agents, --json) `--yes` is required.
- * Returns false when the user declines.
+ * 명령이 저장소를 바꾸거나 원격으로 보내기 전에 묻는다. 터미널에서는 사용자가 확인하고, 그 밖
+ * (CI, 봇, 에이전트, --json)에서는 `--yes`가 있어야 한다. 사용자가 거절하면 false를 돌려준다.
  */
 export async function confirmChange(parsed: ParsedArguments, question: string, retry: string): Promise<boolean> {
   if (parsed.options.yes === true) return true;

@@ -25,9 +25,9 @@ interface ExplainDocument {
 }
 
 /**
- * A monorepo with a profile applied at the root, a payments folder with its own
- * AGENTS.md, an Antigravity rule scoped by glob, and an old Cursor rules file.
- * User-level agent folders point into the workspace so the machine's own files never leak in.
+ * 루트에 프로필을 적용하고, 자기 AGENTS.md가 있는 payments 폴더, glob으로 범위를 정한
+ * Antigravity 규칙, 오래된 Cursor 규칙 파일을 둔 모노레포. 사용자 수준 에이전트 폴더는 작업
+ * 공간 안을 가리켜서 이 컴퓨터의 실제 파일이 섞이지 않는다.
  */
 function monorepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-explain-');
@@ -218,7 +218,7 @@ test('explain warns when the same rules reach an agent through two files', t => 
   fs.rmSync(path.join(repo, '.claude', 'rules', 'team.md'));
   const without = agentOf(parse(explain([repo, '--json']).stdout), 'claude');
   assert.ok(clean.findings.length > without.findings.length);
-  // APM writes the copy as a path-scoped rule; it still reaches Claude Code once a matching file is read.
+  // APM은 사본을 경로 범위 규칙으로 쓴다. 맞는 파일을 읽으면 여전히 Claude Code에 닿는다.
   fs.writeFileSync(path.join(repo, '.claude', 'rules', 'team.md'), `---\npaths:\n  - "**"\n---\n\n${rules}`);
   const scoped = agentOf(parse(explain([repo, '--agent', 'claude', '--json']).stdout), 'claude');
   assert.ok(
@@ -238,8 +238,8 @@ test('explain warns when the same rules reach an agent through two files', t => 
 });
 
 /**
- * A repository that keeps its rules in AGENTS.md alone, the layout Claude Code reads
- * directly. User-level folders point into the workspace so the machine's own files never leak in.
+ * 규칙을 AGENTS.md에만 두는 저장소. Claude Code가 직접 읽는 배치다. 사용자 수준 폴더는
+ * 작업 공간 안을 가리켜서 이 컴퓨터의 실제 파일이 섞이지 않는다.
  */
 function agentsOnlyRepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-explain-agents-');

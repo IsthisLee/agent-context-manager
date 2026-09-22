@@ -7,11 +7,10 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 /**
- * A guidance item is either deployed or it is not. The earlier three levels let
- * an agent grant itself an exception on rules such as "get approval before you
- * push", and no measurement showed that the two on-levels changed behavior
- * (ADR 0028). These evaluations fix the two-level contract: `on` and `off`, no
- * level line in the produced block, and no legend defining levels.
+ * 지침 항목은 배포되거나 배포되지 않거나 둘 중 하나다. 예전의 세 단계는 「push 전에 승인을 받아라」
+ * 같은 규칙에서 에이전트가 스스로 예외를 허락하게 했고, 켜는 두 단계가 행동을 바꿨다는 측정도
+ * 없었다(ADR 0028). 이 평가들은 두 단계 계약을 고정한다: `on`과 `off`, 만든 블록에 단계 줄이 없고,
+ * 단계를 정의하는 범례도 없다.
  */
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');

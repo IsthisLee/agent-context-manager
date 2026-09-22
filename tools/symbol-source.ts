@@ -1,27 +1,24 @@
 import { createHash } from 'node:crypto';
 
 /**
- * Cuts out the piece of a file that a documentation citation points at, so the
- * gate can fingerprint it and notice when it changes. Three kinds of files are
- * cited: TypeScript declarations, JSON keys and YAML keys. A line-based cut is
- * enough because this repository cites top-level declarations and keys, and it
- * keeps the tools free of a parser dependency: TypeScript 7 ships no
- * JavaScript parser API. The decision is in
- * docs/discussion/repository/topics/code-citation-style.md.
+ * 문서 인용이 가리키는 파일 조각을 잘라 내서, 게이트가 지문을 만들고 바뀐 것을 알아차리게 한다.
+ * 인용하는 파일은 세 종류다: TypeScript 선언, JSON 키, YAML 키. 이 저장소는 최상위 선언과 키만
+ * 인용하므로 줄 단위로 잘라도 충분하고, 도구가 파서 의존성을 갖지 않아도 된다. TypeScript 7에는
+ * JavaScript 파서 API가 없다. 결정은 docs/discussion/repository/topics/code-citation-style.md에 있다.
  */
 
 const KEYWORDS = ['function', 'const', 'let', 'var', 'class', 'interface', 'type', 'enum'];
 
 const escaped = (name: string) => name.replaceAll('$', '\\$');
 
-/** `export async function name`, `const name`, `export interface name` and the like. */
+/** `export async function name`, `const name`, `export interface name` 같은 것. */
 function declares(line: string, name: string): boolean {
   return new RegExp(
     `^(?:export\\s+)?(?:default\\s+)?(?:async\\s+)?(?:declare\\s+)?(?:${KEYWORDS.join('|')})\\s+${escaped(name)}\\b`
   ).test(line);
 }
 
-/** A line that starts another top-level declaration or its doc comment. */
+/** 다른 최상위 선언이나 그 문서 주석을 시작하는 줄. */
 function startsNextDeclaration(line: string): boolean {
   return /^(?:export\b|\/\*\*|\/\/)/.test(line) || KEYWORDS.some(keyword => new RegExp(`^${keyword}\\s`).test(line));
 }
@@ -43,7 +40,7 @@ export function symbolText(source: string, name: string): string | null {
   return lines.slice(start, end).join('\n');
 }
 
-/** The value of a JSON key, at the top level or one of the nested objects, as canonical JSON. */
+/** 최상위나 중첩 객체 안에 있는 JSON 키의 값. 정규 JSON으로. */
 export function jsonValue(source: string, name: string): string | null {
   let parsed: unknown;
   try {
@@ -62,7 +59,7 @@ export function jsonValue(source: string, name: string): string | null {
   return null;
 }
 
-/** A YAML key and the indented block under it. */
+/** YAML 키와 그 아래 들여쓴 블록. */
 export function yamlBlock(source: string, name: string): string | null {
   const lines = source.split('\n');
   const start = lines.findIndex(line => new RegExp(`^(\\s*)${escaped(name)}:`).test(line));
@@ -84,9 +81,8 @@ export function yamlBlock(source: string, name: string): string | null {
 }
 
 /**
- * The cited piece of a file, chosen by the file's kind. A citation that points
- * at another document carries no fingerprint: its prose changes constantly and
- * the pointing document does not describe it.
+ * 파일 종류에 따라 고른, 인용한 파일 조각. 다른 문서를 가리키는 인용에는 지문이 없다. 그 글은 계속
+ * 바뀌고, 가리키는 문서가 그것을 설명하지는 않기 때문이다.
  */
 export function citedText(filePath: string, source: string, name: string): string | null {
   if (filePath.endsWith('.md')) return null;
@@ -96,9 +92,8 @@ export function citedText(filePath: string, source: string, name: string): strin
 }
 
 /**
- * Short digest recorded beside a citation; long enough to make a collision
- * unlikely, short enough to read. Line endings are normalized so a checkout
- * that uses CRLF records the same digest as one that uses LF.
+ * 인용 옆에 기록하는 짧은 지문. 충돌할 가능성은 낮을 만큼 길고, 읽을 수 있을 만큼 짧다. 줄 끝을
+ * 정규화하므로 CRLF를 쓰는 checkout도 LF와 같은 지문을 기록한다.
  */
 export function symbolDigest(text: string): string {
   return createHash('sha256').update(text.replaceAll('\r\n', '\n')).digest('hex').slice(0, 12);

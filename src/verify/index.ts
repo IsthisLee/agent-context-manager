@@ -5,9 +5,8 @@ import { claudeSessionEvidence, codexReceived, codexSessionEvidence } from './ev
 import { probeAgent } from './probe.ts';
 
 /**
- * `agctx verify`: did each agent actually receive the project instruction files
- * `explain` expects it to read? Evidence comes from the agents' session logs, or
- * from a probe when `--probe` is given. A file that did not arrive exits with 4.
+ * `agctx verify`: 각 에이전트가 `explain`이 읽으리라 예상한 프로젝트 지침 파일을 실제로 받았는가?
+ * 증거는 에이전트의 세션 기록에서, `--probe`를 주면 probe에서 온다. 전달되지 않은 파일이 있으면 4로 끝난다.
  */
 
 export type VerifyStatus = 'pass' | 'fail' | 'no-evidence' | 'error';
@@ -19,10 +18,10 @@ export interface AgentVerification {
   source: string | null;
   exitCode: number;
   expected: string[];
-  /** Expected files that arrived, plus conditional or on-demand files that arrived. */
+  /** 전달된 예상 파일과, 전달된 조건부·필요 시 파일. */
   delivered: string[];
   missing: string[];
-  /** Files changed after the session started, so the log cannot tell. */
+  /** 세션이 시작한 뒤에 바뀌어서 기록으로는 알 수 없는 파일. */
   stale: string[];
   error: { code: string; message: string; hint: string | null } | null;
 }

@@ -6,9 +6,8 @@ import { spawnSync } from 'node:child_process';
 import { cli, makeWorkspace, repoRoot } from './support/git-workspace.ts';
 
 /**
- * The command examples in the quick start are real output. Run them again in an
- * isolated home, from a folder that stands in for the doc's `/work`, and compare
- * each command's output line by line with what the doc shows.
+ * 빠른 시작 문서의 명령 예시는 실제 출력이다. 격리한 홈에서 문서의 `/work`를 대신하는 폴더로
+ * 다시 실행하고, 각 명령의 출력을 문서에 적힌 것과 한 줄씩 비교한다.
  */
 
 const QUICK_START = 'docs/getting-started/quick-start.md';
@@ -18,7 +17,7 @@ interface Step {
   expected: string[];
 }
 
-/** `$ command` lines in bash blocks, each with the output lines that follow it. */
+/** bash 블록의 `$ command` 줄과, 각 줄 뒤에 오는 출력 줄. */
 function exampleSteps(markdown: string): Step[] {
   const steps: Step[] = [];
   for (const block of markdown.matchAll(/```bash\n([\s\S]*?)```/g)) {
@@ -39,7 +38,7 @@ function exampleSteps(markdown: string): Step[] {
   return steps;
 }
 
-/** Output with the scratch folder written as the doc's `/work`, using `/` on every platform. */
+/** 임시 폴더를 문서의 `/work`로 바꾸고 모든 플랫폼에서 `/`를 쓴 출력. */
 function asDocPath(output: string, work: string): string {
   return output
     .split(work)

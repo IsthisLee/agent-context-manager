@@ -5,15 +5,14 @@ import path from 'node:path';
 import { commitAndPush, fakeGh, gitIn, makeWorkspace, serviceRepo, type Person } from './support/git-workspace.ts';
 
 /**
- * `profile link` turns a rules repository folder that already exists on this
- * machine into a profile: it writes profile.json there and leaves a pointer in
- * the store, so the folder is applied as it is, before anything is committed.
+ * `profile link`는 이 컴퓨터에 이미 있는 규칙 저장소 폴더를 프로필로 만든다. 그 폴더에
+ * profile.json을 쓰고 보관함에는 포인터를 남겨서, 커밋하기 전에도 폴더를 있는 그대로 적용한다.
  */
 
 const read = (file: string) => fs.readFileSync(file, 'utf8');
 const json = (file: string) => JSON.parse(read(file));
 
-/** A rules repository with the given files, committed once when `git` is true. */
+/** 주어진 파일로 된 규칙 저장소. `git`이 true이면 한 번 커밋한다. */
 function rulesFolder(root: string, name: string, files: Record<string, string>, options: { git?: boolean } = {}) {
   const dir = path.join(root, name);
   for (const [rel, content] of Object.entries(files)) {
@@ -195,7 +194,7 @@ test('a link whose folder moved is listed as broken, names the old path when use
   const { root, admin, folder, pointer } = setup(t);
   const dir = rulesFolder(root, 'team-rules', subfolderRules);
   admin.ok(['profile', 'link', dir, '--yes']);
-  // Commit profile.json so the project records a clean version, and check has only the broken link to report.
+  // profile.json을 커밋해서 프로젝트가 깨끗한 버전을 기록하고, check가 보고할 것은 끊긴 링크뿐이게 한다.
   gitIn(dir, 'add', 'profile.json');
   gitIn(dir, 'commit', '--quiet', '-m', 'Add profile.json');
   const project = folder('orders-api');
@@ -254,7 +253,7 @@ test('a folder that is not a Git repository can be linked and applied, but not p
   assert.equal(admin.run(['profile', 'apply', 'plain-rules', project, '--pin', '--yes']).status, 64);
 });
 
-/** A linked Git folder one commit behind its remote, with profile.json committed. */
+/** 원격보다 한 커밋 뒤에 있는 연결된 Git 폴더. profile.json은 커밋되어 있다. */
 function linkedBehindRemote(t: TestContext) {
   const { root, admin, folder } = setup(t);
   const remote = path.join(root, 'remotes', 'team-rules.git');
@@ -283,7 +282,7 @@ test('status on a linked profile neither fetches in that folder nor points at pu
   assert.equal(gitIn(dir, 'rev-parse', 'refs/remotes/origin/main'), before, 'the linked folder is not fetched');
   assert.doesNotMatch(result.stdout, /agctx profile (pull|push)/);
 
-  // Once the person fetches there, status sees the folder behind and still names git, not profile pull.
+  // 그 사람이 거기서 fetch하면 status는 폴더가 뒤처졌다고 보고, 여전히 profile pull이 아니라 git을 안내한다.
   gitIn(dir, 'fetch', '--quiet');
   const behind = JSON.parse(admin.ok(['profile', 'status', 'team-rules', '--json']).stdout).data.profiles[0];
   assert.equal(behind.behind, 1);
@@ -751,11 +750,11 @@ test('a folder already linked under one name is not linked again under another',
   const dir = rulesFolder(root, 'team-rules', { 'AGENTS.md': '# Rules\n' }, { git: false });
   admin.ok(['profile', 'link', dir, '--yes']);
 
-  // A working link's folder holds profile.json, whose name the option cannot override.
+  // 동작하는 링크의 폴더에는 profile.json이 있고, 옵션으로 그 이름을 바꿀 수 없다.
   const healthy = admin.run(['profile', 'link', dir, '--name', 'other', '--yes']);
   assert.equal(healthy.status, 64);
 
-  // Once that link lost its profile.json, it is the link that holds the folder, and the hint brings it back.
+  // 그 링크가 profile.json을 잃으면 폴더를 붙잡고 있는 것은 링크이고, 안내가 그것을 되살린다.
   const company = rulesFolder(root, 'company-rules', { 'AGENTS.md': '# Company\n' }, { git: false });
   admin.ok(['profile', 'link', company, '--name', 'company', '--scope', 'company', '--yes']);
   fs.rmSync(path.join(company, 'profile.json'));

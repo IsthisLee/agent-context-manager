@@ -22,7 +22,7 @@ interface ListedRepo {
 
 const names = (repos: { path: string }[]) => repos.map(repo => path.basename(repo.path)).sort();
 
-/** The row `repos pr` prints for a result state: `<state> <target>  <detail>`. */
+/** `repos pr`이 결과 상태마다 출력하는 줄: `<state> <target>  <detail>`. */
 const resultRow = (stdout: string, state: string) =>
   stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
 
@@ -289,7 +289,7 @@ test('repos pr applies inside the worktree when a target folder is spelled with 
   const profile = publishProfile(root, admin, 'team-backend');
   bot.ok(['profile', 'clone', profile.remote]);
   const service = serviceRepo(root, 'orders-api');
-  // Windows can name one folder RUNNER~1 or runneradmin, and git reports the spelling on disk.
+  // Windows는 한 폴더를 RUNNER~1이나 runneradmin으로 부를 수 있고, git은 디스크의 표기를 보고한다.
   const respelled = path.join(root, 'WORK', 'orders-api');
   if (!fs.existsSync(respelled)) {
     t.skip('this file system tells folder names apart by letter case');
@@ -346,7 +346,7 @@ test('repos pr updates a project that lives in a repository subfolder', t => {
   );
 });
 
-/** Git as Git for Windows installs it: files are checked out with CRLF line endings (core.autocrlf). */
+/** Git for Windows가 설치하는 Git: 파일을 CRLF 줄 끝으로 checkout한다(core.autocrlf). */
 const CRLF_CHECKOUT = { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'core.autocrlf', GIT_CONFIG_VALUE_0: 'true' };
 
 test('check and repos pr read files git checks out with CRLF line endings as the ones agctx wrote', t => {

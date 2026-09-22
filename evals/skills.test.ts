@@ -19,10 +19,9 @@ test('skill command lists match the command registry', () => {
     );
   }
 });
-// Which command belongs in which skill is the agent surface contract, checked
-// by evals/agent-surface.test.ts. This file only checks that each list is
-// generated from the registry and that the two skills carry their invocation
-// policy and their approval rules.
+// 어떤 명령이 어떤 스킬에 들어가는지는 에이전트 표면 계약이고 evals/agent-surface.test.ts가
+// 검사한다. 이 파일은 각 목록이 등록부에서 생성되는지와, 두 스킬이 호출 정책과 승인 규칙을
+// 갖췄는지만 검사한다.
 
 test('the diagnosing skill may start on its own, and the publishing skill only when called by name', () => {
   assert.match(read('skills/agctx/SKILL.md'), /^---\nname: agctx\ndescription: .+\n---\n/);
@@ -42,8 +41,8 @@ test('the diagnosing skill may start on its own, and the publishing skill only w
 test('the publishing skill tells agents to show a dry run and wait for approval before --yes', () => {
   const author = read('skills/agctx-author/SKILL.md');
   assert.match(author, /--dry-run/);
-  // The skills are written in Korean (ADR 0030); this one English sentence stays
-  // so the rule reads the same to an agent working in either language.
+  // 스킬은 한국어로 쓴다(ADR 0030). 이 영어 문장 하나는 남겨서, 어느 언어로 일하는 에이전트에게도
+  // 규칙이 같게 읽히게 한다.
   assert.match(author, /Never add `--yes`/);
   assert.match(author, /승인/);
 });
@@ -63,5 +62,5 @@ test('the diagnosing skill offers nothing that writes', () => {
     'the prose never sends the agent to a writing command'
   );
 });
-// `verify --probe --yes` stays: the probe only reads, and the flag is there so
-// the run does not start without the user paying for agent CLI calls.
+// `verify --probe --yes`는 남는다. probe는 읽기만 하고, 이 플래그는 사용자가 에이전트 CLI 호출
+// 비용을 치르기로 하지 않으면 실행이 시작되지 않게 하려고 있다.

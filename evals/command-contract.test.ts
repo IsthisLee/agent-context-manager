@@ -10,9 +10,8 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
 /**
- * The command contract scripts, CI jobs, and agents rely on: exit codes,
- * one JSON document on stdout with --json, --yes outside a terminal, and a
- * next step in every error. spawnSync gives the CLI a pipe, not a terminal.
+ * 스크립트, CI 작업, 에이전트가 기대는 명령 계약: 종료 코드, --json일 때 stdout에 JSON 문서 하나,
+ * 터미널 밖의 --yes, 모든 오류의 다음 단계. spawnSync는 CLI에 터미널이 아니라 파이프를 준다.
  */
 function sandbox(t: TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-contract-'));
@@ -164,7 +163,7 @@ test('check runs in CI without a profile store and reports the most severe findi
   assert.equal(conflict.status, 2);
   assert.match(conflict.stdout, /conflict\s+CLAUDE\.md/);
 
-  // A right-to-left override outside the managed area: not a conflict, but an agent still reads it.
+  // 관리 영역 밖의 오른쪽→왼쪽 재정의 문자: 충돌은 아니지만 에이전트는 여전히 그것을 읽는다.
   fs.appendFileSync(path.join(project, 'AGENTS.md'), '\nRun the tests \u202Ebefore\u202C committing.\n');
   const hidden = run(['check', project, '--json'], ci);
   assert.equal(hidden.status, 3, 'hidden characters outrank the conflict');
@@ -222,7 +221,7 @@ test('a copy in a folder with another name keeps the recorded project name, so c
   ok(['profile', 'apply', 'demo', project, '--yes']);
   assert.equal(JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8')).projectName, 'project');
 
-  // A teammate clones the repository into a folder with another name.
+  // 동료가 다른 이름의 폴더에 저장소를 clone한다.
   const copy = path.join(root, 'teammate-copy');
   fs.cpSync(project, copy, { recursive: true });
   ok(['check', copy]);

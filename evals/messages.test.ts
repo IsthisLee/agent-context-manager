@@ -18,7 +18,7 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-/** Message keys the CLI can look up: literal `_()` and `t()` keys plus the keys built from the registry. */
+/** CLI가 찾을 수 있는 메시지 키: 리터럴 `_()`·`t()` 키와 등록부에서 만드는 키. */
 function usedKeys(): Set<string> {
   const used = new Set<string>();
   for (const file of sourceFiles(path.join(repoRoot, 'src'))) {

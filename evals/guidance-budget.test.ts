@@ -9,13 +9,11 @@ import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 import { guidanceSections, SUPPORTED_LOCALES } from '../src/i18n/index.ts';
 
 /**
- * The deployed guidance has a size budget: every user who runs `profile setup`
- * receives it, and a long instruction file makes agents follow fewer of its
- * rules. Claude Code targets under 200 lines per instruction file and Codex
- * stops reading at 32 KiB of combined instructions, so the block stays under a
- * third of the Codex cap and leaves the rest of the file to the user and the
- * project. Minimal is not the same as short: the budget caps the block, it does
- * not ask for fewer words than a rule needs.
+ * 배포하는 지침에는 분량 예산이 있다. `profile setup`을 실행하는 모든 사용자가 받고, 지침 파일이
+ * 길면 에이전트가 그 규칙을 덜 따른다. Claude Code는 지침 파일당 200줄 미만을 권하고 Codex는
+ * 지침을 합쳐 32 KiB에서 읽기를 멈추므로, 블록은 Codex 한도의 3분의 1 아래에 두고 나머지는
+ * 사용자와 프로젝트에 남긴다. 최소는 짧다는 뜻이 아니다. 예산은 블록의 크기를 제한할 뿐, 규칙에
+ * 필요한 말보다 적게 쓰라는 것이 아니다.
  */
 const LINE_BUDGET = 120;
 const BYTE_BUDGET = 10 * 1024;

@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-/** Folders never searched for instruction files: dependencies, build output, and agctx's own copies. */
+/** 지침 파일을 찾지 않는 폴더: 의존성, 빌드 결과, agctx 자신의 사본. */
 export const SKIPPED_FOLDERS: ReadonlySet<string> = new Set([
   '.git',
   'node_modules',
@@ -16,8 +16,8 @@ export const SKIPPED_FOLDERS: ReadonlySet<string> = new Set([
 const MAX_SCANNED_FOLDERS = 5000;
 
 /**
- * Files named one of `names` in folders below `start` (not in `start` itself),
- * skipping SKIPPED_FOLDERS and nested repositories, which own their own guidance.
+ * `start` 아래 폴더(`start` 자체는 빼고)에서 이름이 `names` 중 하나인 파일. SKIPPED_FOLDERS와,
+ * 자기 지침을 따로 갖는 중첩 저장소는 건너뛴다.
  */
 export function filesBelow(start: string, names: readonly string[]): string[] {
   const found: string[] = [];

@@ -11,7 +11,7 @@ import { withoutGeneratedBlocks } from '../tools/doc-sources.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), 'utf8');
 
-/** Render every generated file from `topics`, keyed by path, without writing anything. */
+/** `topics`에서 만드는 생성 파일을 모두 경로별로 렌더링하고, 아무것도 쓰지 않는다. */
 function rendered(topics: DiscussionTopics): Map<string, string> {
   return new Map(discussionOutputs(topics).map(output => [output.file, output.render(read(output.file))]));
 }

@@ -1,11 +1,10 @@
 /**
- * How a document points at code. Line numbers move whenever anything above
- * them changes, so a document names the file and the name inside it instead,
- * and `check:docs` verifies that the name is still there. The decision is in
- * docs/discussion/repository/topics/code-citation-style.md.
+ * 문서가 코드를 가리키는 방식. 줄 번호는 그 위의 무엇이든 바뀌면 움직이므로, 문서는 파일과 그 안의
+ * 이름을 적고 `check:docs`는 그 이름이 아직 있는지 확인한다. 결정은
+ * docs/discussion/repository/topics/code-citation-style.md에 있다.
  */
 
-/** Documents that record history keep the citations they were written with. */
+/** 이력을 기록하는 문서는 쓸 때의 인용을 그대로 둔다. */
 const EXEMPT_PREFIXES: readonly string[] = ['docs/discussion/', 'docs/adr/'];
 const EXEMPT_FILES: readonly string[] = ['CHANGELOG.md'];
 
@@ -14,7 +13,7 @@ export function citationExempt(relativePath: string): boolean {
   return EXEMPT_PREFIXES.some(prefix => posix.startsWith(prefix)) || EXEMPT_FILES.includes(posix);
 }
 
-/** Folders and root files this repository owns; other paths belong to another tool or to a user project. */
+/** 이 저장소가 소유한 폴더와 루트 파일. 다른 경로는 다른 도구나 사용자 프로젝트의 것이다. */
 const REPO_FOLDERS: readonly string[] = [
   'src/',
   'tools/',
@@ -40,7 +39,7 @@ export function repoFile(citedPath: string): boolean {
   return REPO_FOLDERS.some(folder => citedPath.startsWith(folder)) || REPO_FILES.includes(citedPath);
 }
 
-/** `path/to/file.ts:12` or `path/to/file.ts:12-20` inside backticks. */
+/** 백쿼트 안의 `path/to/file.ts:12`나 `path/to/file.ts:12-20`. */
 const LINE_CITATION = /`([\w./-]+\.[A-Za-z0-9]+:\d+(?:-\d+)?)`/g;
 
 export function lineNumberCitations(text: string): string[] {
@@ -50,11 +49,11 @@ export function lineNumberCitations(text: string): string[] {
 export interface NamedCitation {
   file: string;
   name: string;
-  /** Digest recorded beside the citation, or null when it carries none yet. */
+  /** 인용 옆에 기록한 지문. 아직 없으면 null. */
   digest: string | null;
 }
 
-/** `path/to/file.ts`의 `name`, with more names joined by `·`, `,`, `와` or `과`, each carrying its digest marker. */
+/** `path/to/file.ts`의 `name`. 이름이 더 있으면 `·`, `,`, `와`, `과`로 잇고, 이름마다 지문 마커가 붙는다. */
 const NAMED_CITATION =
   /`([\w./-]+\.[A-Za-z0-9]+)`의((?:\s*`[A-Za-z_$][\w$]*`(?:<!--\s*s:[0-9a-f]{12}\s*-->)?\s*[·,]?\s*(?:와|과)?)+)/g;
 const NAME = /`([A-Za-z_$][\w$]*)`(?:<!--\s*s:([0-9a-f]{12})\s*-->)?/g;
@@ -67,7 +66,7 @@ export function namedCitations(text: string): NamedCitation[] {
     );
 }
 
-/** The digest of what a citation points at, or null when that kind of target carries no digest. */
+/** 인용이 가리키는 것의 지문. 그런 대상에 지문이 없으면 null. */
 export type DigestLookup = (file: string, name: string) => string | null;
 
 function rewriteNames(names: string, file: string, digestFor: DigestLookup): string {
@@ -77,7 +76,7 @@ function rewriteNames(names: string, file: string, digestFor: DigestLookup): str
   });
 }
 
-/** The document with every citation marker written or refreshed, leaving fenced code blocks alone. */
+/** 모든 인용 마커를 쓰거나 새로 고친 문서. 펜스 코드 블록은 건드리지 않는다. */
 export function applyCitationMarkers(text: string, digestFor: DigestLookup): string {
   return text
     .split(/(```[\s\S]*?```)/g)
@@ -91,7 +90,7 @@ export function applyCitationMarkers(text: string, digestFor: DigestLookup): str
     .join('');
 }
 
-/** Citations whose marker is missing or no longer matches what they point at. */
+/** 마커가 없거나 가리키는 것과 더는 맞지 않는 인용. */
 export function citationMarkerProblems(text: string, digestFor: DigestLookup): string[] {
   return namedCitations(text).flatMap(({ file, name, digest }) => {
     const current = digestFor(file, name);

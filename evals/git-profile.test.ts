@@ -16,7 +16,7 @@ function gitIn(cwd: string, ...args: string[]): string {
   return result.stdout.trim();
 }
 
-/** Two people on one machine: an admin and a member with separate agctx homes, sharing a bare remote. */
+/** 한 컴퓨터의 두 사람: agctx 홈을 따로 쓰는 관리자와 구성원이 bare 원격 하나를 나눠 쓴다. */
 function makeTeam(t: TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-git-profile-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -149,7 +149,7 @@ test('a pinned sync never passes a recorded commit that is not an object name to
   team.member.ok('profile', 'apply', 'team-backend', project, '--pin', '--yes');
   const configPath = path.join(project, 'agctx.project.json');
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  // agctx.project.json arrives through pull requests, so a hostile value must not become a git option.
+  // agctx.project.json은 pull request로 들어오므로, 악의적인 값이 git 옵션이 되어서는 안 된다.
   config.source.commit = '--output=injected.txt';
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
 
@@ -172,7 +172,7 @@ test('connect and clone read a local remote path relative to the current folder,
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '--quiet', '-m', 'Add profile');
 
-  // The workspace runs agctx from its root, so this path is relative to the current folder.
+  // 작업 공간은 루트에서 agctx를 실행하므로 이 경로는 현재 폴더 기준이다.
   admin.ok(['profile', 'connect', 'team-backend', path.join('remotes', 'team-backend.git')]);
   assert.equal(
     fs.realpathSync(gitIn(dir, 'remote', 'get-url', 'origin')),
@@ -186,7 +186,7 @@ test('connect and clone read a local remote path relative to the current folder,
 test('connect and push see a profile repository through a home folder spelled with another letter case', t => {
   const team = makeTeam(t);
   const { admin, remote } = team;
-  // Windows can name one folder RUNNER~1 or runneradmin, and git reports the spelling on disk.
+  // Windows는 한 폴더를 RUNNER~1이나 runneradmin으로 부를 수 있고, git은 디스크의 표기를 보고한다.
   const respelled = path.join(team.root, 'ADMIN');
   if (!fs.existsSync(respelled)) {
     t.skip('this file system tells folder names apart by letter case');
@@ -220,7 +220,7 @@ test('connect --branch makes the current branch track that remote branch, and pu
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '-m', 'Add profile');
 
-  // The local branch is master, but the team's remote branch is main.
+  // 로컬 브랜치는 master지만 팀의 원격 브랜치는 main이다.
   const connected = admin.ok('profile', 'connect', 'team-backend', remote, '--branch', 'main');
   assert.match(connected.stdout, /\(branch main\)/);
   assert.equal(gitIn(dir, 'config', 'branch.master.merge'), 'refs/heads/main');
@@ -264,9 +264,9 @@ test('a credential helper that cannot answer reads as a sign-in failure, not an 
   assert.equal(isRemoteFailure('fatal: bad object HEAD\n'), false);
 });
 
-// The fake git below sits on PATH as a .cmd shim on Windows, and `git()` starts git without a
-// shell on purpose (src/shared/git.ts), so Windows runs the real git instead of the fake and the
-// run succeeds. The classification itself is covered on every platform by the test above.
+// 아래의 가짜 git은 Windows에서 .cmd shim으로 PATH에 놓이는데, `git()`은 일부러 셸 없이 git을
+// 시작한다(src/shared/git.ts). 그래서 Windows에서는 가짜 대신 진짜 git이 돌아 실행이 성공한다.
+// 분류 자체는 위의 테스트가 모든 플랫폼에서 확인한다.
 test(
   'a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error',
   { skip: process.platform === 'win32' ? 'a PATH shim cannot replace git without a shell on Windows' : false },
@@ -279,8 +279,8 @@ test(
     const project = folder('orders-api');
     member.ok(['profile', 'apply', 'team-backend', project, '--yes']);
 
-    // git prints this when a credential helper or askpass exists but cannot answer. That is a sign-in
-    // failure like a rejected password, so it must carry the Git credentials next step, not exit 70.
+    // 자격 증명 도우미나 askpass가 있지만 답하지 못할 때 git이 이렇게 출력한다. 비밀번호가 거부된
+    // 것과 같은 로그인 실패이므로 종료 코드 70이 아니라 Git 자격 증명 안내를 다음 단계로 줘야 한다.
     const realGit = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['git'], { encoding: 'utf8' })
       .stdout.split('\n')[0]
       .trim();

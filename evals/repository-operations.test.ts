@@ -49,8 +49,8 @@ test('public repository health and dependency automation files are present', () 
     '.gitattributes'
   ])
     assert(fs.existsSync(path.join(repoRoot, relative)), `${relative} must exist`);
-  // Dropped with ADR 0031: a code of conduct and issue templates need more than
-  // one person, and CODEOWNERS needs more than one owner.
+  // ADR 0031로 뺐다. 행동 규범과 이슈 템플릿은 두 사람 이상이 있어야 의미가 있고, CODEOWNERS는
+  // 소유자가 둘 이상이어야 의미가 있다.
   for (const relative of ['CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', '.github/CODEOWNERS', '.github/ISSUE_TEMPLATE']) {
     assert(!fs.existsSync(path.join(repoRoot, relative)), `${relative} was dropped and must stay dropped`);
   }

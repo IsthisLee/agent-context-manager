@@ -33,7 +33,7 @@ import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
 import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
 
-/** Run one TUI step and show a failure as a note with the next command, instead of leaving the TUI. */
+/** TUI 단계 하나를 실행하고, 실패하면 TUI를 나가지 않고 다음 명령과 함께 안내로 보여 준다. */
 export async function runTuiStep(step: () => Promise<void>): Promise<void> {
   try {
     await step();
@@ -44,8 +44,8 @@ export async function runTuiStep(step: () => Promise<void>): Promise<void> {
 }
 
 /**
- * Actions on one selected profile, in registry order. A profile command that
- * has a profile-menu entry appears here, so the menu cannot miss a command.
+ * 선택한 프로필 하나에 대한 동작. 등록부 순서다. 프로필 메뉴 항목이 있는 프로필 명령은 여기
+ * 나타나므로, 메뉴가 명령을 빠뜨릴 수 없다.
  */
 export const PROFILE_MENU_COMMANDS = COMMANDS.filter(
   command =>
@@ -108,13 +108,13 @@ export async function cloneProfileTui(): Promise<void> {
   outro(_('clone.outro'));
 }
 
-/** The select value that asks for a rules file path instead of a listed AGENTS.md. */
+/** 나열된 AGENTS.md 대신 규칙 파일 경로를 입력하겠다는 선택 값. */
 export const OTHER_RULES_FILE = '__other__';
 
 /**
- * The rules files the TUI offers for `dir`: every AGENTS.md that `profile link` finds, the one it would take by
- * itself first and preselected, and then a path of the person's own, so any rules file can be chosen as with
- * `--instructions`.
+ * TUI가 `dir`에 대해 제안하는 규칙 파일: `profile link`가 찾는 모든 AGENTS.md, 그중 스스로 가져갈
+ * 파일을 맨 앞에 미리 고른 채로, 그리고 그 사람이 직접 입력하는 경로. 그래서 `--instructions`처럼
+ * 어떤 규칙 파일이든 고를 수 있다.
  */
 export function linkRuleOptions(dir: string): { options: { value: string; label: string }[]; initial?: string } {
   const { detected, candidates } = ruleFileChoices(dir);
@@ -128,7 +128,7 @@ export function linkRuleOptions(dir: string): { options: { value: string; label:
   };
 }
 
-/** How a TUI link ended, read from what the command returned: linked, nothing to change, declined, or failed. */
+/** TUI 연결이 어떻게 끝났는지. 명령이 돌려준 것에서 읽는다: 연결됨, 바꿀 것 없음, 거절, 실패. */
 export function linkOutro(outcome: CommandOutcome): 'done' | 'unchanged' | 'declined' | 'failed' {
   if (outcome.exitCode !== EXIT.ok) return 'failed';
   const data = (outcome.data ?? {}) as { written?: boolean; link?: string; metadata?: string };
@@ -136,15 +136,15 @@ export function linkOutro(outcome: CommandOutcome): 'done' | 'unchanged' | 'decl
   return data.link === 'unchanged' && data.metadata === 'keep' ? 'unchanged' : 'declined';
 }
 
-/** The profile name the TUI offers for `dir`: the folder name, or the closest name that fits the naming rules. */
+/** TUI가 `dir`에 제안하는 프로필 이름: 폴더 이름, 또는 이름 규칙에 맞는 가장 가까운 이름. */
 export function linkNameDefault(dir: string): string {
   return suggestedName(path.basename(dir)) ?? path.basename(dir);
 }
 
 /**
- * Ask for a rules repository folder and link it as a profile. The folder's own profile.json decides the name,
- * scope, and rules file when it has one; otherwise the person picks them. The command shows the plan and asks
- * before writing, and the TUI ends with what actually happened.
+ * 규칙 저장소 폴더를 묻고 프로필로 연결한다. 폴더에 profile.json이 있으면 그것이 이름, 범위, 규칙
+ * 파일을 정하고, 없으면 그 사람이 고른다. 명령은 계획을 보여 주고 쓰기 전에 묻고, TUI는 실제로
+ * 일어난 일로 끝난다.
  */
 export async function linkProfileTui(): Promise<void> {
   if (!process.stdin.isTTY)
@@ -152,8 +152,7 @@ export async function linkProfileTui(): Promise<void> {
   intro(_('link.intro'));
   const chosen = await projectPathTui(_('link.path.message'));
   if (!chosen) return cancel(_('link.cancel'));
-  // The folder is checked before it is searched for rules files, so the home folder or a folder inside a
-  // repository stops with its hint instead of being read.
+  // 규칙 파일을 찾기 전에 폴더를 검사해서, 홈 폴더나 저장소 안의 폴더는 읽지 않고 안내와 함께 멈춘다.
   const dir = checkLinkFolder(chosen);
   const answers: Record<string, string | null> = { name: null, scope: null, instructions: null };
   if (!fs.existsSync(path.join(dir, PROFILE_METADATA_FILE))) {
@@ -204,8 +203,8 @@ function brokenLabel(link: BrokenLink): string {
 }
 
 /**
- * Which menu a profile picked in the TUI list opens: its actions, or the removal a broken link allows. The list
- * passes the broken links it already read.
+ * TUI 목록에서 고른 프로필이 여는 메뉴: 그 프로필의 동작, 또는 끊긴 링크에 허락되는 삭제. 목록은
+ * 이미 읽은 끊긴 링크를 넘긴다.
  */
 export function menuFor(
   name: string,
@@ -214,7 +213,7 @@ export function menuFor(
   return broken.some(link => link.name === name) ? 'broken-link' : 'profile';
 }
 
-/** What the TUI says about a broken link: where it points and the commands that bring it back or drop it. */
+/** 끊긴 링크에 대해 TUI가 하는 말: 어디를 가리키는지와, 되살리거나 버리는 명령. */
 export function brokenLinkNote(name: string): string {
   const link = profileLocation(name)?.link ?? '';
   const hint = brokenLinkHint(name);
@@ -222,8 +221,8 @@ export function brokenLinkNote(name: string): string {
 }
 
 /**
- * A broken link is only removed from the TUI. Bringing it back is remove, then link, and the note shows that
- * command with the scope and rules file the link was made with.
+ * 끊긴 링크는 TUI에서 지우기만 한다. 되살리는 길은 remove 뒤 link이고, 안내는 링크를 만들 때의 범위와
+ * 규칙 파일을 넣은 그 명령을 보여 준다.
  */
 async function brokenLinkTui(name: string): Promise<void> {
   note(brokenLinkNote(name), _('list.broken.title'));
@@ -231,8 +230,8 @@ async function brokenLinkTui(name: string): Promise<void> {
 }
 
 /**
- * Every store entry the TUI can remove: profiles, broken links, and folders that are not a profile, so a link that
- * stopped working or a folder left behind can still be cleared.
+ * TUI가 지울 수 있는 모든 보관함 항목: 프로필, 끊긴 링크, 프로필이 아닌 폴더. 그래서 동작을 멈춘
+ * 링크나 남은 폴더도 치울 수 있다.
  */
 export function removeChoices(): { value: string; label: string; hint: string }[] {
   const store = readStore();
@@ -252,8 +251,8 @@ export function removeChoices(): { value: string; label: string; hint: string }[
 }
 
 /**
- * What the TUI says before removing `name`: a link leaves the folder it points at, a profile goes with its scope,
- * and a store folder that is not a profile is named as such.
+ * `name`을 지우기 전에 TUI가 하는 말: 링크는 가리키는 폴더를 남기고, 프로필은 범위와 함께 사라지며,
+ * 프로필이 아닌 보관함 폴더는 그렇다고 알린다.
  */
 export function removeNote(name: string): string {
   validateProfileName(name);
@@ -264,7 +263,7 @@ export function removeNote(name: string): string {
   return _('remove.note.unreadable', { name, path: location?.dir ?? name });
 }
 
-/** Whether the TUI asks to fetch before showing a profile's Git status. A linked folder is the person's own and is not fetched. */
+/** 프로필의 Git 상태를 보여 주기 전에 TUI가 fetch할지 묻는지. 연결된 폴더는 그 사람의 것이라 fetch하지 않는다. */
 export function statusRefreshPrompt(name: string): { ask: boolean } {
   return { ask: !profileLocation(name)?.link };
 }
@@ -364,16 +363,16 @@ export async function projectPathTui(message: string): Promise<string | null> {
 }
 
 /**
- * Whether the TUI apply flow asks to pin, and which answer it preselects. Only a Git profile can be pinned,
- * and a project that is already pinned keeps its pin unless the person chooses otherwise, so applying from
- * the menu never drops a pin silently.
+ * TUI 적용 흐름이 고정할지 묻는지와, 어떤 답을 미리 고르는지. Git 프로필만 고정할 수 있고, 이미
+ * 고정한 프로젝트는 그 사람이 달리 고르지 않으면 고정을 유지해서, 메뉴에서 적용해도 고정이 조용히
+ * 풀리지 않는다.
  */
 export function pinPrompt(name: string, targetDir: string): { ask: boolean; initial: boolean } {
   if (!isGitRoot(readProfile(name).profileDir)) return { ask: false, initial: false };
   return { ask: true, initial: readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).pin === true };
 }
 
-/** What each profile-menu entry does. Keys are registry command ids. */
+/** 프로필 메뉴 항목마다 하는 일. 키는 등록부의 명령 id다. */
 export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.setup': name => setupProfileTui(name),
   'profile.view': async name => {
@@ -446,7 +445,7 @@ export async function profileActions(name: string): Promise<void> {
   await runTuiStep(() => MENU_ACTIONS[action](name));
 }
 
-/** Run apply or sync; when a managed area was edited, offer to resolve instead of leaving the user at an error. */
+/** apply나 sync를 실행한다. 관리 영역이 수정됐으면 사용자를 오류에 두지 않고 해결을 제안한다. */
 async function withConflictRecovery(target: string, step: () => Promise<unknown>): Promise<void> {
   try {
     await step();
@@ -459,7 +458,7 @@ async function withConflictRecovery(target: string, step: () => Promise<unknown>
   }
 }
 
-/** Preview the conflicts of a project, then resolve them the way the user picks. */
+/** 프로젝트의 충돌을 미리 보여 주고, 사용자가 고르는 방식으로 푼다. */
 export async function resolveProjectTui(target: string | null = null): Promise<void> {
   const project = target || (await projectPathTui(_('resolve.path')));
   if (!project) return cancel(_('actions.project.cancel'));

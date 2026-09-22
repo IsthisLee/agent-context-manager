@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { shellWord } from '../src/shared/shell.ts';
 
 /**
- * Commands agctx prints for a person to copy quote their arguments the way that person's shell reads them.
- * POSIX shells treat a backslash as an escape; cmd.exe and PowerShell do not, and Windows paths are full of them.
+ * agctx가 사람이 복사하도록 출력하는 명령은 그 사람의 셸이 읽는 방식으로 인자를 인용한다.
+ * POSIX 셸은 역슬래시를 이스케이프로 보지만 cmd.exe와 PowerShell은 그렇지 않고, Windows 경로에는
+ * 역슬래시가 가득하다.
  */
 
 test('a POSIX shell word is left bare when safe and double-quoted with escapes otherwise', () => {

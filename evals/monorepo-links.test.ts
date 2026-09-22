@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { gitIn, makeWorkspace } from './support/git-workspace.ts';
 
-/** A monorepo whose packages keep their own AGENTS.md, as most public monorepos with nested guidance do. */
+/** 패키지마다 자기 AGENTS.md를 두는 모노레포. 지침을 중첩해 두는 공개 모노레포 대부분이 이렇다. */
 function monorepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-links-');
   const me = person('me');

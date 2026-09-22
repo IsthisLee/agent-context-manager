@@ -6,14 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { COMMANDS, agentPolicy } from '../src/commands/registry.ts';
 
 /**
- * The agent is a third surface next to the CLI and the TUI, and it needs the
- * same contract: a command must not exist in a path the agent cannot reach.
+ * 에이전트는 CLI와 TUI 옆의 세 번째 표면이고, 같은 계약이 필요하다. 에이전트가 닿을 수 없는
+ * 경로에만 있는 명령이 있어서는 안 된다.
  *
- * Exposure is not enough. An agent decides whether to load a skill from its
- * `description` alone, so a command that sits in the command list without a
- * matching scenario has no way in. `profile create` was in the list and no
- * scenario mentioned creating a profile, so "make me a context profile" never
- * reached the skill (ADR 0029).
+ * 노출만으로는 부족하다. 에이전트는 스킬의 `description`만 보고 그 스킬을 불러올지 정하므로,
+ * 명령 목록에만 있고 맞는 상황 설명이 없는 명령은 들어갈 길이 없다. `profile create`는 목록에
+ * 있었지만 프로필을 만드는 상황을 말하는 설명이 없어서, 「컨텍스트 프로필을 만들어 줘」가 스킬에
+ * 닿지 못했다(ADR 0029).
  */
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -24,7 +23,7 @@ function read(rel: string): string {
   return fs.readFileSync(path.join(repoRoot, rel), 'utf8');
 }
 
-/** The part of a skill that tells the agent when to run what. */
+/** 스킬에서 에이전트에게 언제 무엇을 실행할지 알려 주는 부분. */
 function scenarios(skill: string): string {
   const body = read(skill);
   const start = body.indexOf('## Pick the command');

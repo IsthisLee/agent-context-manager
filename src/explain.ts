@@ -7,10 +7,9 @@ import { EXIT, usageError } from './shared/errors.ts';
 import { filesBelow } from './shared/scan.ts';
 
 /**
- * `agctx explain`: which instruction files each agent reads when started in a
- * folder, and where a file never reaches an agent. It follows each agent's
- * documented loading rules and, where documents are silent, the measured
- * behavior recorded in docs/references.md. Nothing is written.
+ * `agctx explain`: 각 에이전트가 한 폴더에서 시작할 때 어떤 지침 파일을 읽는지, 어떤 파일이
+ * 에이전트에 닿지 않는지. 에이전트마다 문서에 적힌 로드 규칙을 따르고, 문서가 말하지 않는 곳은
+ * docs/references.md에 기록한 측정 결과를 따른다. 아무것도 쓰지 않는다.
  */
 
 export type AgentId = 'codex' | 'claude' | 'antigravity';
@@ -20,7 +19,7 @@ export type FileStatus = 'read' | 'on-demand' | 'conditional' | 'not-read' | 'sh
 export type FileScope = 'managed-policy' | 'user' | 'project';
 
 export interface ExplainedFile {
-  /** Relative to the project root with `/`, or absolute for files outside it. */
+  /** 프로젝트 루트 기준으로 `/`를 쓴 경로. 루트 밖의 파일은 절대 경로. */
   path: string;
   absolutePath: string;
   status: FileStatus;
@@ -50,11 +49,11 @@ export interface Explanation {
   exitCode: number;
 }
 
-/** Codex stops adding project AGENTS.md files at this combined size by default. */
+/** Codex는 기본 설정에서 프로젝트 AGENTS.md를 합친 크기가 이 값에 이르면 더 붙이지 않는다. */
 const CODEX_MAX_BYTES = 32 * 1024;
-/** Claude Code follows imports at most this many hops. */
+/** Claude Code가 따라가는 import의 최대 단계 수. */
 const CLAUDE_IMPORT_DEPTH = 4;
-/** Lines two files must share before the same rules count as delivered twice. */
+/** 같은 규칙이 두 번 전달된다고 보려면 두 파일이 함께 가져야 하는 줄 수. */
 const DUPLICATE_LINES = 3;
 const UNSUPPORTED = [
   '.cursorrules',
@@ -75,7 +74,7 @@ const isFile = (file: string) => {
 const isNonEmptyFile = (file: string) => isFile(file) && fs.statSync(file).size > 0;
 const read = (file: string) => fs.readFileSync(file, 'utf8');
 
-/** The Git root above a folder, or the folder itself outside Git. */
+/** 폴더 위의 Git 루트. Git 밖이면 그 폴더 자체. */
 export function projectRoot(dir: string): string {
   for (let current = dir; ; current = path.dirname(current)) {
     if (fs.existsSync(path.join(current, '.git'))) return current;
@@ -83,13 +82,13 @@ export function projectRoot(dir: string): string {
   }
 }
 
-/** Folders from `root` down to `target`, both included. */
+/** `root`에서 `target`까지 내려가는 폴더들. 양 끝을 포함한다. */
 function chain(root: string, target: string): string[] {
   const parts = path.relative(root, target).split(path.sep).filter(Boolean);
   return [root, ...parts.map((_part, index) => path.join(root, ...parts.slice(0, index + 1)))];
 }
 
-/** Folders from the filesystem root down to `target`. */
+/** 파일 시스템 루트에서 `target`까지 내려가는 폴더들. */
 function ancestors(target: string): string[] {
   const folders: string[] = [];
   for (let current = target; ; current = path.dirname(current)) {
@@ -114,7 +113,7 @@ function markdownFiles(dir: string, recursive: boolean): string[] {
     .sort();
 }
 
-/** Simple `key: value` frontmatter at the very start of a file. */
+/** 파일 맨 앞의 간단한 `key: value` frontmatter. */
 function frontmatter(content: string): Record<string, string> | null {
   const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
   if (!match) return null;
@@ -132,7 +131,7 @@ function frontmatter(content: string): Record<string, string> | null {
   return fields;
 }
 
-/** `@path` imports outside code blocks and code spans, resolved from the importing file. */
+/** 코드 블록과 코드 스팬 밖의 `@path` import. import하는 파일 기준으로 경로를 푼다. */
 function claudeImports(file: string): string[] {
   const text = read(file)
     .replace(/```[\s\S]*?```/g, '')
@@ -225,7 +224,7 @@ function managedPolicyClaudeFile(): string {
   return '/etc/claude-code/CLAUDE.md';
 }
 
-/** Claude Code's Project instructions setting, taken from the user settings file alone. */
+/** Claude Code의 Project instructions 설정. 사용자 설정 파일에서만 읽는다. */
 type ClaudeInstructionFiles = 'claude-md-or-agents-md' | 'claude-md-and-agents-md' | 'claude-md' | 'managed-only';
 const CLAUDE_INSTRUCTION_FILES: readonly string[] = [
   'claude-md-or-agents-md',
@@ -233,12 +232,12 @@ const CLAUDE_INSTRUCTION_FILES: readonly string[] = [
   'claude-md',
   'managed-only'
 ];
-/** The files that make Claude Code read CLAUDE.md instead of AGENTS.md, in the order it lists them. */
+/** Claude Code가 AGENTS.md 대신 CLAUDE.md를 읽게 만드는 파일들. Claude Code가 나열하는 순서대로. */
 const CLAUDE_SHADOWING_NAMES = ['CLAUDE.md', path.join('.claude', 'CLAUDE.md'), 'CLAUDE.local.md'];
 
 /**
- * `pluginConfigs["agents-md@builtin"].options.instructionFiles` in `<config>/settings.json`.
- * Claude Code ignores the same value in project and local settings files, so neither is read.
+ * `<config>/settings.json`의 `pluginConfigs["agents-md@builtin"].options.instructionFiles`.
+ * Claude Code는 프로젝트·로컬 설정 파일의 같은 값을 무시하므로 둘 다 읽지 않는다.
  */
 function claudeInstructionFiles(configDir: string): ClaudeInstructionFiles {
   let value: unknown;
@@ -248,7 +247,7 @@ function claudeInstructionFiles(configDir: string): ClaudeInstructionFiles {
     };
     value = settings.pluginConfigs?.['agents-md@builtin']?.options?.instructionFiles;
   } catch {
-    // No settings file, or one Claude Code could not parse either: the default applies.
+    // 설정 파일이 없거나 Claude Code도 해석하지 못하는 파일이면 기본값이 적용된다.
   }
   return typeof value === 'string' && CLAUDE_INSTRUCTION_FILES.includes(value)
     ? (value as ClaudeInstructionFiles)
@@ -268,7 +267,7 @@ function explainClaude(collector: Collector, target: string): void {
     add(collector, file, 'read', scope, reason);
     launched.push(file);
   };
-  /** managed-only keeps only the organization's own CLAUDE.md in the launch context. */
+  /** managed-only는 시작 컨텍스트에 조직의 CLAUDE.md만 남긴다. */
   const launchUnlessManagedOnly = (file: string, scope: FileScope, reason: string) => {
     if (!managedOnly) return launch(file, scope, reason);
     if (isFile(file) && !known(file))
@@ -297,9 +296,9 @@ function explainClaude(collector: Collector, target: string): void {
     }
   }
 
-  // Claude Code v2.1.277 and later read AGENTS.md themselves. By default that happens only when no
-  // CLAUDE.md, .claude/CLAUDE.md, or CLAUDE.local.md sits in the start folder or above it; the user
-  // CLAUDE.md, the managed one, and .claude/rules files do not count and keep loading beside it.
+  // Claude Code v2.1.277 이상은 AGENTS.md를 직접 읽는다. 기본으로는 시작 폴더나 그 위에 CLAUDE.md,
+  // .claude/CLAUDE.md, CLAUDE.local.md가 없을 때만 그렇다. 사용자 CLAUDE.md, 관리 CLAUDE.md,
+  // .claude/rules 파일은 세지 않고 함께 계속 불러온다.
   const exempt = new Set([path.join(configDir, 'CLAUDE.md'), managedPolicyClaudeFile()]);
   const shadowing = (
     setting === 'claude-md-or-agents-md'
@@ -320,8 +319,8 @@ function explainClaude(collector: Collector, target: string): void {
       : _('explain.reason.claude.agents-launch');
   for (const file of agentsAtLaunch) launch(file, scopeOf(file), launchReason);
 
-  // Imports load with the file that names them, up to four hops. A project-level file that imports
-  // from outside the start folder loads it only after the user approves once; user-level files are trusted.
+  // import는 그것을 적은 파일과 함께 최대 네 단계까지 불러온다. 프로젝트 수준 파일이 시작 폴더
+  // 밖에서 import하면 사용자가 한 번 승인한 뒤에만 불러온다. 사용자 수준 파일은 신뢰한다.
   const trusted = (file: string) => file.startsWith(configDir + path.sep) || file === managedPolicyClaudeFile();
   const followImports = (files: string[], status: FileStatus) => {
     let frontier = files.map(file => ({ file, status, trusted: trusted(file), depth: 0 }));
@@ -356,7 +355,7 @@ function explainClaude(collector: Collector, target: string): void {
   for (const file of nested) add(collector, file, 'on-demand', 'project', _('explain.reason.claude.below-start'));
   followImports(nested, 'on-demand');
 
-  /** What to tell someone about an AGENTS.md that never arrives: import it from the CLAUDE.md beside it, or add one. */
+  /** 전달되지 않는 AGENTS.md에 대해 안내할 말: 옆의 CLAUDE.md에서 import하거나, CLAUDE.md를 더하라. */
   const importAdvice = (entry: ExplainedFile) => {
     const folder = path.dirname(entry.absolutePath);
     const personFile = [path.join(folder, 'CLAUDE.md'), path.join(folder, '.claude', 'CLAUDE.md')].find(isFile);
@@ -364,7 +363,7 @@ function explainClaude(collector: Collector, target: string): void {
       ? _('explain.missing.claude-no-import', { file: entry.path, claude: display(collector.root, personFile) })
       : _('explain.missing.claude', { file: entry.path });
   };
-  /** An AGENTS.md Claude Code does not read, with the file or the setting that keeps it out. */
+  /** Claude Code가 읽지 않는 AGENTS.md와, 그것을 막는 파일이나 설정. */
   const doesNotArrive = (file: string, shadows: string[]) => {
     if (!readsAgents) {
       const entry = add(
@@ -377,7 +376,7 @@ function explainClaude(collector: Collector, target: string): void {
       if (!managedOnly) collector.findings.push({ kind: 'missing', file: entry.path, message: importAdvice(entry) });
       return;
     }
-    // A CLAUDE.local.md is the person's own uncommitted file, so it is a warning rather than a repository defect.
+    // CLAUDE.local.md는 그 사람이 커밋하지 않은 자기 파일이므로, 저장소 결함이 아니라 경고로 다룬다.
     const committed = shadows.find(shadow => path.basename(shadow) !== 'CLAUDE.local.md');
     const nearest = committed ?? shadows[0];
     const entry = add(
@@ -403,8 +402,8 @@ function explainClaude(collector: Collector, target: string): void {
     }
   }
 
-  // Below the start folder Claude Code reads a folder's AGENTS.md when it opens a file there and
-  // that folder has none of the three CLAUDE.md files of its own.
+  // 시작 폴더 아래에서는, Claude Code가 어떤 폴더의 파일을 열고 그 폴더에 자기 CLAUDE.md 세 종류가
+  // 하나도 없을 때 그 폴더의 AGENTS.md를 읽는다.
   const nestedAgents: string[] = [];
   for (const file of filesBelow(target, ['AGENTS.md']).filter(isNonEmptyFile)) {
     if (known(file)) continue;
@@ -421,7 +420,7 @@ function explainClaude(collector: Collector, target: string): void {
   }
   followImports(nestedAgents, 'on-demand');
 
-  // explain never starts an agent, so it cannot tell whether this session is one that reads AGENTS.md directly.
+  // explain은 에이전트를 시작하지 않으므로, 이번 세션이 AGENTS.md를 직접 읽는 세션인지 알 수 없다.
   if (agentsAtLaunch.length || nestedAgents.length)
     collector.findings.push({ kind: 'warning', file: null, message: _('explain.warning.claude-direct-read') });
   if (managedOnly)
@@ -458,7 +457,7 @@ function explainAntigravity(collector: Collector): void {
       });
     }
   }
-  // Measured: a subfolder AGENTS.md did not arrive at session start; whether it loads later is unknown.
+  // 측정 결과: 하위 폴더의 AGENTS.md는 세션 시작 때 전달되지 않았다. 나중에 불러오는지는 모른다.
   for (const file of filesBelow(collector.root, ['AGENTS.md'])) {
     const entry = add(collector, file, 'conditional', 'project', _('explain.reason.antigravity.subfolder'));
     collector.findings.push({
@@ -469,7 +468,7 @@ function explainAntigravity(collector: Collector): void {
   }
 }
 
-/** Lines long enough to be a rule, without list bullets, headings, comments, or imports. */
+/** 규칙이라고 볼 만큼 긴 줄. 목록 기호, 제목, 주석, import는 뺀다. */
 function ruleLines(file: string): Set<string> {
   let text: string;
   try {
@@ -486,9 +485,9 @@ function ruleLines(file: string): Set<string> {
 }
 
 /**
- * The same rules reaching one agent through two files, such as AGENTS.md imported
- * by CLAUDE.md and a copy in .claude/rules. One of the two is read at launch; the
- * other may load later, like a path-scoped rule.
+ * 같은 규칙이 두 파일을 거쳐 한 에이전트에 닿는 경우. 예를 들어 CLAUDE.md가 import한 AGENTS.md와
+ * .claude/rules의 사본이다. 둘 중 하나는 시작할 때 읽고, 다른 하나는 경로 범위 규칙처럼 나중에
+ * 불러올 수 있다.
  */
 function duplicateFindings(collector: Collector): void {
   const reaching = collector.files

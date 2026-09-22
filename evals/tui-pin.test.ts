@@ -10,7 +10,7 @@ import { pinPrompt } from '../src/tui/profile.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
-/** A profile store with one profile, and an empty project folder. */
+/** 프로필 하나가 든 보관함과 빈 프로젝트 폴더. */
 function makeStore(t: TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-pin-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

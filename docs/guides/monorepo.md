@@ -1,7 +1,7 @@
 # 모노레포에서 쓰기
 
 
-모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일을 대신 만들어 준다. 연결 파일은 그 폴더의 `AGENTS.md`를 `@AGENTS.md`로 가져오는 `CLAUDE.md`다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문이다. 결정과 근거는 [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
+모노레포는 흔히 루트 `AGENTS.md`에 공통 지침을 두고, 패키지 폴더마다 그 패키지의 지침만 담은 `AGENTS.md`를 둔다. 프로필은 루트에 적용하고 하위 `AGENTS.md`는 사람이 쓴다. agctx는 Claude Code가 하위 파일을 받도록 연결 파일을 대신 만들어 준다. 연결 파일은 그 폴더의 `AGENTS.md`를 `@AGENTS.md`로 가져오는 `CLAUDE.md`다. Claude Code는 시작 폴더나 그 위에 `CLAUDE.md` 계열 파일이 없을 때만 `AGENTS.md`를 직접 읽는다(v2.1.277 이상). 프로필을 적용하면 루트에 `CLAUDE.md`가 생기므로, 패키지 폴더에서 시작하면 그 폴더의 `AGENTS.md`가 가려지고, 루트에서 시작하면 그 폴더의 파일을 열 때만 들어간다([ADR 0035](../adr/0035-claude-code-reads-agents-md.md)). 연결 파일은 어느 경우에도 그 폴더의 지침이 들어가게 한다. 결정과 근거는 [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)에 있다.
 
 ## 목차
 

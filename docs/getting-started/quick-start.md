@@ -129,7 +129,7 @@ Applied profile team-backend to /work/shop
 
 위 예시는 규칙만 든 프로필이다. 프로필에 MCP 서버나 skills·subagents·hooks를 두면 같은 `apply`가 에이전트별 설정 파일과 폴더에도 쓴다. 방법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md)와 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)에 있다.
 
-`CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문에 필요하다.
+`CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 시작 폴더나 그 위에 `CLAUDE.md` 계열 파일이 하나도 없을 때만 `AGENTS.md`를 직접 읽고(v2.1.277 이상), 그보다 오래된 버전은 읽지 않는다. 그래서 `CLAUDE.md`가 `@AGENTS.md`로 가져오게 해 어느 버전에서든 같은 지침을 받게 한다([에이전트가 읽는 파일](../concepts/agent-loading.md)).
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 규칙 확장 섹션 아래에 쓴다. 그 위의 공통 지침 부분(관리 영역)은 `apply`·`sync`가 다시 만든다. 그래서 관리 영역 안을 고치면, 다음 `apply`·`sync`가 고친 내용을 지우지 않으려고 파일을 쓰지 않고 멈춘다. 두 영역의 경계와 멈췄을 때 푸는 법은 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
 

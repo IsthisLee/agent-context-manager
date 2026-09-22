@@ -6,7 +6,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 핵심 개념 네 가지:
 
 - **프로필**: 공통 개발 지침을 담는 폴더. `~/.agctx/profiles/<이름>` 아래에 지침 `AGENTS.md`와 메타데이터가 있다. scope(`personal`·`company`·`team`·`workspace`)로 용도를 나눈다.
-- **적용(apply)**: 프로필의 지침을 대상 프로젝트에 복사해 `AGENTS.md`와 에이전트별 포인터 파일을 만든다. 포인터 파일은 `AGENTS.md`를 직접 읽지 않는 에이전트에게 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일이다. Claude Code용 `CLAUDE.md`는 `@AGENTS.md`로 그 파일을 가져오고, Antigravity용 `.agents/rules/agctx.md`는 작업을 시작할 때 `AGENTS.md`를 읽으라고 지시한다.
+- **적용(apply)**: 프로필의 지침을 대상 프로젝트에 복사해 `AGENTS.md`와 에이전트별 포인터 파일을 만든다. 포인터 파일은 에이전트가 어느 버전이든 `AGENTS.md`를 받도록 그 파일을 가리키는 짧은 파일이다. Claude Code용 `CLAUDE.md`는 `@AGENTS.md`로 그 파일을 가져오고, Antigravity용 `.agents/rules/agctx.md`는 작업을 시작할 때 `AGENTS.md`를 읽으라고 지시한다.
 - **관리 영역**: 적용된 파일에서 `apply`·`sync`가 다시 만드는 부분. 사용자가 직접 쓰는 부분과 분리돼 있어서, 동기화해도 사용자가 쓴 내용은 그대로 남는다.
 - **동기화(sync)**: 프로필을 고친 뒤 그 변경을 이미 적용한 프로젝트에 다시 반영한다. 관리 영역만 갱신한다.
 

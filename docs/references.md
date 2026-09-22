@@ -33,6 +33,7 @@
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
 - [포매터가 관리 영역을 바꾸는 범위](#포매터가-관리-영역을-바꾸는-범위)
 - [MCP 서버 설정 위치와 형식 근거](#mcp-서버-설정-위치와-형식-근거)
+- [배포 패키지와 에이전트 스킬 시나리오 실측](#배포-패키지와-에이전트-스킬-시나리오-실측)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
   - [agctx를 선택할 상황](#agctx를-선택할-상황)
@@ -1239,6 +1240,16 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
   - agctx가 만든 `.codex/config.toml`을 신뢰한 프로젝트로 두고 `codex mcp list`·`codex mcp get <이름> --json`을 실행하자, stdio 서버는 `env`·`env_vars`까지, 원격 서버는 `bearer_token_env_var`·`http_headers`까지 적은 대로 나왔다.
 - **직접 실험(Claude Code 2.1.278, 2026-09-22):** agctx가 만든 `.mcp.json`이 있는 폴더에서 `claude mcp get <이름>`을 실행하자 두 서버가 `Scope: Project config (shared via .mcp.json)`, `Status: ⏸ Pending approval`로 나왔다. 원격 서버의 `Authorization: Bearer ${DOCS_TOKEN}`은 적은 그대로다.
 - **Antigravity는 확인하지 못했다.** [Antigravity MCP](https://antigravity.google/docs/mcp)는 워크스페이스 설정으로 `.agents/mcp_config.json`을 적지만, 그 파일을 읽는 조건, 사용자 설정과의 우선순위, `${VAR}` 치환은 문서에서 찾지 못했다(확인일: 2026-09-22). agy 1.2.5의 `agy mcp list`는 사용자 수준 파일만 보여 주었고, 실제 세션이 워크스페이스 파일을 읽는지는 크레딧을 쓰는 실행이라 확인하지 않았다. 그래서 시범 구현은 Antigravity에 MCP 파일을 쓰지 않는다.
+
+## 배포 패키지와 에이전트 스킬 시나리오 실측
+
+[자연어 요청을 통한 agctx 사용](discussion/architecture/topics/agent-mediated-usage.md)의 시나리오 평가다. 모델의 답은 실행마다 달라질 수 있어 자동 평가에 넣지 않고, 실행한 명령과 결과를 남긴다.
+
+- **직접 실험(Claude Code 2.1.278, 2026-09-22):** 이 저장소를 `npm pack`한 tarball을 임시 prefix에 설치하고, 패키지의 `skills/`를 임시 프로젝트의 `.claude/skills/`에 복사했다. 프로젝트에는 사람이 쓴 `AGENTS.md`가 있었다. `claude -p "/agctx-author 이 저장소에 team-backend 프로필을 적용해 줘." --allowedTools "Bash(agctx:*)" Read Skill`로 실행했다.
+  - 에이전트는 먼저 `agctx profile view`와 `agctx profile apply team-backend . --dry-run`을 실행했다. `AGENTS.md`가 `unmanaged`로 멈추자 그 내용과 `--adopt --dry-run`의 계획을 보여 주고 승인을 물었다. 파일은 하나도 바뀌지 않았다(`git status`에 스킬 폴더만 있었다).
+  - 같은 세션을 `--resume`으로 이어 "네, --adopt로 적용해 주세요."라고 답하자 `agctx profile apply team-backend . --adopt --yes`를 실행하고, 이어서 `agctx check .`(0)과 `agctx explain --agent all .`(0)으로 결과를 확인했다. 사람이 쓴 규칙은 `## Existing project guidance` 아래에 남았다.
+  - 두 번 실행한 비용은 `total_cost_usd` 기준 0.62달러와 0.79달러였다.
+- **도구로 다시 실행(2026-09-22):** 위 실험을 `node tools/agent-scenario.ts`로 옮겨 한 번 더 실행했다. 에이전트는 `agctx profile view`·`profile status --refresh`, `profile apply team-backend . --dry-run`, `agctx help profile apply`, `profile apply team-backend . --adopt --dry-run`을 실행하고 멈췄다. 합격 조건 셋(`--dry-run` 실행, 승인 없는 쓰기 없음, 프로젝트 그대로)을 모두 만족해 0으로 끝났고, 비용은 0.67달러였다. 판정을 보강한 뒤(권한에 거부된 호출 제외, 실행 전후 파일 비교) 다시 실행해도 같은 명령 순서로 합격했고 비용은 0.71달러였다.
 
 ## 비교 대상
 

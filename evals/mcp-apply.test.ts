@@ -394,3 +394,15 @@ test('관리 블록 안의 값에 표지 문자열이 있어도 블록을 바르
   const bad = me.run(['profile', 'sync', repo, '--yes']);
   assert.equal(bad.status, 64, bad.stdout + bad.stderr);
 });
+
+test('--json의 mcpServers는 이번에 실제로 쓰는 서버만 담는다', t => {
+  const { me, repo } = project(t);
+  const none = JSON.parse(
+    me.run(['profile', 'apply', 'team-backend', repo, '--agent', 'antigravity', '--dry-run', '--json']).stdout
+  );
+  assert.deepEqual(none.data.mcpServers, [], 'MCP를 받을 에이전트가 없으면 빈 목록이다');
+  const codex = JSON.parse(
+    me.run(['profile', 'apply', 'team-backend', repo, '--agent', 'codex', '--dry-run', '--json']).stdout
+  );
+  assert.deepEqual(codex.data.mcpServers, ['docs', 'issues']);
+});

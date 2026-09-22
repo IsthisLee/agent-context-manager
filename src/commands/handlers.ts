@@ -102,12 +102,18 @@ async function applyOrSync(
     include: text(parsed, 'include'),
     adopt
   });
+  // MCP 서버는 다른 사람의 컴퓨터에서 실행될 명령이라, 쓰기 전에 무엇을 싣고 무엇을 빼는지 보여 준다.
+  const mcpFiles = plan.files.filter(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml');
+  const writing = new Set(mcpFiles.flatMap(file => regionServers(file, file.nextRegion)));
+  const removed = [...new Set(mcpFiles.flatMap(file => regionServers(file, file.currentRegion)))]
+    .filter(server => !writing.has(server))
+    .sort();
   const data = {
     profile: name,
     project: targetDir,
     agents,
     include,
-    mcpServers: mcpServers ? Object.keys(mcpServers) : [],
+    mcpServers: [...writing].sort(),
     source: version.source,
     pin: version.pin,
     uncommitted: version.uncommitted,
@@ -126,12 +132,6 @@ async function applyOrSync(
     warnings: isJsonMode() ? warnings : []
   });
   printPlan(plan, dryRun ? _('plan.label.dry-run') : _('plan.label.plan'));
-  // MCP 서버는 다른 사람의 컴퓨터에서 실행될 명령이라, 쓰기 전에 무엇을 싣고 무엇을 빼는지 보여 준다.
-  const mcpFiles = plan.files.filter(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml');
-  const writing = new Set(mcpFiles.flatMap(file => regionServers(file, file.nextRegion)));
-  const removed = [...new Set(mcpFiles.flatMap(file => regionServers(file, file.currentRegion)))]
-    .filter(server => !writing.has(server))
-    .sort();
   if (mcpServers && writing.size)
     say(
       _('plan.mcp.servers', {

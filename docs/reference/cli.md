@@ -396,7 +396,7 @@ Dry-run: no files were changed.
 
 **MCP 서버:** 프로필 폴더에 `mcp.json`이 있으면 고른 에이전트마다 Claude Code의 `.mcp.json`과 Codex의 `.codex/config.toml`에도 서버를 쓴다. 계획 아래에 `MCP servers from the profile: <이름> (<명령이나 URL>)` 줄로 쓸 서버를 보여 준다. agctx가 쓴 서버만 바꾸고 사람이 넣은 서버와 설정은 그대로 두며, 사람이 같은 이름의 서버를 두었으면 아무것도 쓰지 않고 종료 코드 2로 멈춘다. `--include rules`면 MCP를 쓰지 않고 이미 쓴 서버를 지우며, 그 선택을 `agctx.project.json`의 `include`에 남긴다. 파일 형식은 [파일 형식과 저장 위치](file-formats.md#mcpjson), 쓰는 법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md), 결정은 [ADR 0044](../adr/0044-mcp-servers-in-profiles.md)다.
 
-**하위 폴더 연결 파일:** 루트에 `CLAUDE.md`가 있으면 Claude Code는 하위 폴더 `AGENTS.md`를 직접 읽지 않으므로([ADR 0035](../adr/0035-claude-code-reads-agents-md.md)), 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
+**하위 폴더 연결 파일:** 루트에 `CLAUDE.md`가 있으면 Claude Code는 하위 폴더에서 시작할 때 그 폴더의 `AGENTS.md`를 읽지 않고, 루트에서 시작하면 그 폴더의 파일을 열 때만 읽으므로([ADR 0035](../adr/0035-claude-code-reads-agents-md.md)), 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 
 - 프로젝트가 Git 저장소 루트면 `.gitignore`로 무시한 파일은 빼고 아직 커밋하지 않은 새 파일은 넣는다. `node_modules`·`dist`·`build`·`vendor`·`.venv`·`target`·`coverage` 폴더와 중첩된 Git 저장소는 보지 않는다.
 - 같은 폴더에 사람이 둔 `CLAUDE.md`나 `.claude/CLAUDE.md`(심볼릭 링크 포함)가 있으면 쓰지 않는다. 그 파일이 `AGENTS.md`를 가져오지 않으면 경고한다. 경고는 stderr로 나가고 `--json`이면 `warnings`에 담긴다.

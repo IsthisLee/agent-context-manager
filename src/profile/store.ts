@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { say } from '../commands/output.ts';
 import { _, getLocale } from '../i18n/index.ts';
-import { usageError } from '../shared/errors.ts';
+import { toCliError, usageError } from '../shared/errors.ts';
 import { isSymbolicLink, writeTextAtomic } from '../shared/fs-utils.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
@@ -54,8 +54,19 @@ export function isPointerFolder(dir: string): boolean {
   }
 }
 
-function isDirectory(target: string): boolean {
+export function isDirectory(target: string): boolean {
   try { return fs.statSync(target).isDirectory(); } catch { return false; }
+}
+
+/** Whether `a` and `b` name the same folder, as the file system sees it, letter case included. */
+export function sameFolder(a: string, b: string): boolean {
+  if (path.resolve(a) === path.resolve(b)) return true;
+  try { return fs.realpathSync.native(a) === fs.realpathSync.native(b); } catch { return false; }
+}
+
+/** The parsed content of a profile.json, or null when it cannot be read as JSON. */
+export function readMetadataFile(file: string): unknown {
+  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
 }
 
 /** Whether `target` is a file, following links: the rules file in a person's own folder may be one. */
@@ -107,8 +118,7 @@ export interface ProfileLocation {
 function inspectProfileFolder(dir: string, name: string): Pick<ProfileLocation, 'dir' | 'problem' | 'metadata'> {
   const metadataPath = path.join(dir, PROFILE_METADATA_FILE);
   if (!fs.existsSync(metadataPath)) return { dir, problem: 'missing-metadata', metadata: null };
-  let metadata: unknown = null;
-  try { metadata = JSON.parse(fs.readFileSync(metadataPath, 'utf8')); } catch {}
+  const metadata = readMetadataFile(metadataPath);
   if (!isValidProfileMetadata(metadata, name)) return { dir, problem: 'invalid-metadata', metadata: null };
   const rules = instructionsFile(metadata);
   if (!isInstructionsPath(rules) || !isFile(path.join(dir, ...rules.split('/')))) return { dir, problem: 'missing-rules', metadata };
@@ -173,9 +183,26 @@ export function readStore(): StoreContents {
   return contents;
 }
 
-/** Linked profiles that cannot be used, with the reason. */
-export function getBrokenLinks(): BrokenLink[] {
-  return readStore().brokenLinks;
+/**
+ * The command that links a folder as the profile `name` again, with the scope and rules file its pointer recorded,
+ * so a link removed to be brought back returns as it was.
+ */
+export function relinkCommand(name: string, pointer: ProfileLink | null, folder: string): string {
+  return [
+    'agctx profile link', folder, '--name', name,
+    ...(pointer?.scope ? ['--scope', pointer.scope] : []),
+    ...(pointer?.instructions ? ['--instructions', shellWord(pointer.instructions)] : [])
+  ].join(' ');
+}
+
+/** What to run to bring back the broken link `name`, or null when it can be used. */
+export function brokenLinkHint(name: string): string | null {
+  try {
+    readProfile(name);
+    return null;
+  } catch (error) {
+    return toCliError(error).hint;
+  }
 }
 
 /** Refuse a command that would move Git history or settings in the folder a linked profile points at. */
@@ -261,11 +288,11 @@ export function readProfile(name: string): Profile {
   // A pointer that cannot be read says so itself, with how to link it again or remove it.
   if (problem === 'invalid-link') profileLink(name);
   if (problem === 'missing-folder') {
-    throw usageError('profile.link-broken', _('error.profile.link-broken', { name, path: link ?? profileDir }), _('hint.profile.link-broken', { name }));
+    throw usageError('profile.link-broken', _('error.profile.link-broken', { name, path: link ?? profileDir }), _('hint.profile.link-broken', { name, command: relinkCommand(name, location.pointer, '<new path>') }));
   }
   if (problem === 'missing-metadata') {
     if (!link) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
-    throw usageError('profile.link-metadata-missing', _('error.profile.link-metadata-missing', { name, path: profileDir }), _('hint.profile.link-metadata-missing', { name, path: shellWord(profileDir) }));
+    throw usageError('profile.link-metadata-missing', _('error.profile.link-metadata-missing', { name, path: profileDir }), _('hint.profile.link-metadata-missing', { name, path: shellWord(profileDir), command: relinkCommand(name, location.pointer, shellWord(profileDir)) }));
   }
   if (!metadata) {
     if (!link) throw usageError('profile.invalid-metadata', _('error.profile.invalid-metadata', { name, file: metadataPath }), null);

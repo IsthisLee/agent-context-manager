@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 1c63a84b9514b1905595f6e649fc3602ae6d3ee5a5ed573fb5c0cf7a17e19d3c -->
+<!-- agctx-doc-sources-sha256: cfd47144b503ea882b8cfe7e6048bfe09606dc3cc5b2c5c538ffaad4f73dd31c -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -25,10 +25,12 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`is not a Git repository yet`**: 로컬 프로필을 원격에 연결하려 했다. `Next:` 줄의 `git init`·`add`·`commit`을 실행한 뒤 다시 `profile connect`한다.
 - **`is not a profile repository: profile.json is missing at its root`**(종료 코드 64): 규칙은 있지만 프로필 메타데이터가 없는 저장소를 `profile clone`했다. 그 저장소 루트에 `profile.json`을 더해 올린다. 규칙 파일이 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **`"instructions" in profile.json (…) must be a relative path to a .md file`·`the rules file profile.json names (…) is missing`**(종료 코드 64): `instructions` 값이 규칙에 맞지 않거나, 가리킨 파일이 없거나 심볼릭 링크다. 허용하는 경로는 [파일 형식](file-formats.md#profilejson)에 있다.
-- **`is linked to a folder that is missing`**(종료 코드 64): `profile link`로 연결한 폴더를 옮기거나 지웠다. 옮겼다면 `agctx profile link <새 경로> --name <name>`을 실행해 같은 프로필로 다시 잇고, 필요 없으면 `agctx profile remove <name> --yes`로 링크를 지운다. `profile list`의 끊긴 링크 목록에서 원래 경로를 볼 수 있다.
-- **`is linked to …, which has no profile.json`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 없어졌다. `link`가 만든 `profile.json`은 커밋하기 전이라 `git clean`이나 브랜치 전환으로 지워지기 쉽다. 커밋했었다면 그 폴더에서 `git restore profile.json`으로 되살리고, 아니면 `agctx profile link <경로> --name <name>`으로 다시 만든다. `--name`을 빼면 폴더 이름으로 새 프로필이 생기고 원래 프로필은 끊긴 채 남는다.
+- **`is linked to a folder that is missing`**(종료 코드 64): `profile link`로 연결한 폴더를 옮기거나 지웠다. 옮겼다면 안내에 나온 대로 `agctx profile remove <name> --yes`로 링크를 지운 뒤 `agctx profile link <새 경로> --name <name> --scope <scope> --instructions <file>`로 같은 프로필을 다시 잇는다. 용도와 규칙 파일은 안내에 채워져 있다. 필요 없으면 링크만 지운다. `profile list`의 끊긴 링크 목록에서 원래 경로를 볼 수 있다.
+- **`is linked to …, which has no profile.json`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 없어졌다. `link`가 만든 `profile.json`은 커밋하기 전이라 `git clean`이나 브랜치 전환으로 지워지기 쉽다. 커밋했었다면 그 폴더에서 `git restore profile.json`으로 되살리고, 아니면 안내에 나온 대로 링크를 지운 뒤 연결할 때의 이름·용도·규칙 파일로 다시 연결한다.
 - **`which no longer has its rules file`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 가리키는 규칙 파일이 없어졌다. 다른 브랜치로 바꿨거나 파일을 옮긴 경우다. 파일을 되돌려 놓거나, 그 폴더의 `profile.json`에 지금 위치를 적는다.
-- **`The link of profile … cannot be read`**(종료 코드 64): 보관함의 `link.json`이 깨졌다. `agctx profile link <경로> --name <name>`으로 같은 이름에 다시 연결하거나 `agctx profile remove <name> --yes`로 지운다.
+- **`The link of profile … cannot be read`**(종료 코드 64): 보관함의 `link.json`이 깨졌다. `agctx profile remove <name> --yes`로 지운 뒤 `agctx profile link <경로> --name <name>`으로 다시 연결한다.
+- **`is a broken link to`**(종료 코드 64): 같은 이름의 링크가 끊겨 있다. `profile link`는 끊긴 링크를 다른 폴더로 옮기지 않는다. 안내에 나온 대로 링크를 지운 뒤 다시 연결한다.
+- **`is already linked as profile`**(종료 코드 64): 이 폴더를 가리키는 끊긴 링크가 다른 이름으로 이미 있다. 새 이름으로 연결하면 프로필이 둘로 갈라지므로, 안내에 나온 대로 그 링크를 지운 뒤 원래 이름으로 다시 연결한다.
 - **`is already linked to`**(종료 코드 64): 같은 이름의 링크가 멀쩡히 다른 폴더를 가리키고 있다. 폴더 이름이 같은 다른 폴더를 연결하면 이렇게 된다. 옮기려면 `agctx profile remove <name> --yes`로 링크를 지운 뒤 다시 연결하고, 둘 다 두려면 `--name`으로 다른 이름을 준다.
 - **`but its profile.json is not for profile`**(종료 코드 64): 연결한 폴더의 `profile.json`에서 `name`이 바뀌었다. 안내에 나온 파일의 `name`을 원래 이름으로 되돌리거나, 링크를 지운 뒤 새 이름으로 다시 연결한다.
 - **`is your home folder, not a rules repository folder`**(종료 코드 64): 홈 폴더에서 인자 없이 `profile link`를 실행했거나 홈 폴더를 줬다. 규칙 저장소 폴더를 준다.

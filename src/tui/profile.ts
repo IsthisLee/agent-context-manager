@@ -9,7 +9,7 @@ import { _, getLocale, guidanceDescriptions, guidanceLabels, levelOptions, scope
 import { isJsonMode, say, type CommandOutcome } from '../commands/output.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { GUIDANCE_KEYS, guidanceDefaults, setupProfile } from '../profile/setup.ts';
-import { createProfile, getProfiles, isInstructionsPath, isProfileName, isScope, profileLocation, readProfile, readStore, regularFileInside, removeProfile, SCOPES, selectProfile, type BrokenLink, type BrokenLinkReason, type StoreContents } from '../profile/store.ts';
+import { brokenLinkHint, createProfile, getProfiles, isInstructionsPath, isProfileName, isScope, profileLocation, readProfile, readStore, regularFileInside, removeProfile, SCOPES, selectProfile, validateProfileName, type BrokenLink, type StoreContents } from '../profile/store.ts';
 import { checkLinkFolder, ruleFileChoices, suggestedName } from '../profile/link.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
@@ -98,29 +98,25 @@ export function linkOutro(outcome: CommandOutcome): 'done' | 'unchanged' | 'decl
   return data.link === 'unchanged' && data.metadata === 'keep' ? 'unchanged' : 'declined';
 }
 
-/**
- * Whether the TUI asks for the profile name when linking `dir`, and the name it uses or offers. Linking a broken
- * link again keeps that link's name, so the same profile comes back instead of a new one named after the folder.
- */
-export function linkNameStep(name: string | null, dir: string): { ask: boolean; name: string } {
-  return name ? { ask: false, name } : { ask: true, name: suggestedName(path.basename(dir)) ?? path.basename(dir) };
+/** The profile name the TUI offers for `dir`: the folder name, or the closest name that fits the naming rules. */
+export function linkNameDefault(dir: string): string {
+  return suggestedName(path.basename(dir)) ?? path.basename(dir);
 }
 
 /**
  * Ask for a rules repository folder and link it as a profile. The folder's own profile.json decides the name,
- * scope, and rules file when it has one; otherwise the person picks them. `name` is given when a broken link is
- * linked again. The command shows the plan and asks before writing, and the TUI ends with what actually happened.
+ * scope, and rules file when it has one; otherwise the person picks them. The command shows the plan and asks
+ * before writing, and the TUI ends with what actually happened.
  */
-export async function linkProfileTui(options: { name?: string | null } = {}): Promise<void> {
+export async function linkProfileTui(): Promise<void> {
   if (!process.stdin.isTTY) throw usageError('tui.required', _('error.tui.required', { command: 'profile link' }), _('hint.tui.link'));
   intro(_('link.intro'));
   const chosen = await projectPathTui(_('link.path.message'));
   if (!chosen) return cancel(_('link.cancel'));
   // The folder is checked before it is searched for rules files, so the home folder or a folder inside a
   // repository stops with its hint instead of being read.
-  const dir = checkLinkFolder(chosen, { name: options.name ?? null });
-  const nameStep = linkNameStep(options.name ?? null, dir);
-  const answers: Record<string, string | null> = { name: nameStep.ask ? null : nameStep.name, scope: null, instructions: null };
+  const dir = checkLinkFolder(chosen);
+  const answers: Record<string, string | null> = { name: null, scope: null, instructions: null };
   if (!fs.existsSync(path.join(dir, PROFILE_METADATA_FILE))) {
     const rules = linkRuleOptions(dir);
     let instructions: string | symbol = OTHER_RULES_FILE;
@@ -140,17 +136,15 @@ export async function linkProfileTui(options: { name?: string | null } = {}): Pr
       if (cancelled(typed)) return cancel(_('link.cancel'));
       instructions = typed.trim();
     }
-    if (nameStep.ask) {
-      const name = await text({
-        message: _('link.name.message'),
-        initialValue: nameStep.name,
-        validate(value) {
-          if (!isProfileName((value ?? '').trim())) return _('create.name.invalid');
-        }
-      });
-      if (cancelled(name)) return cancel(_('link.cancel'));
-      answers.name = name.trim();
-    }
+    const name = await text({
+      message: _('link.name.message'),
+      initialValue: linkNameDefault(dir),
+      validate(value) {
+        if (!isProfileName((value ?? '').trim())) return _('create.name.invalid');
+      }
+    });
+    if (cancelled(name)) return cancel(_('link.cancel'));
+    answers.name = name.trim();
     const scope = await select({ message: _('create.scope.message'), options: scopeOptions(getLocale()) });
     if (cancelled(scope)) return cancel(_('link.cancel'));
     answers.instructions = instructions as string;
@@ -167,33 +161,26 @@ function brokenLabel(link: BrokenLink): string {
 }
 
 /**
- * Which menu a profile picked in the TUI list opens: its actions, or the two things a broken link allows. The list
+ * Which menu a profile picked in the TUI list opens: its actions, or the removal a broken link allows. The list
  * passes the broken links it already read.
  */
 export function menuFor(name: string, broken: readonly BrokenLink[] = readStore().brokenLinks): 'profile' | 'broken-link' {
   return broken.some(link => link.name === name) ? 'broken-link' : 'profile';
 }
 
-/**
- * What the TUI offers for a broken link: link it again under the same name, or remove it. A link whose profile.json
- * names another profile cannot be linked again under this name until that file is fixed, so it offers removal only.
- */
-export function brokenMenuOptions(reason: BrokenLinkReason): { value: string; label: string; hint: string }[] {
-  return [
-    ...(reason === 'invalid-metadata' ? [] : [{ value: 'link', label: _('broken.menu.link'), hint: _('broken.menu.link.hint') }]),
-    { value: 'remove', label: _('broken.menu.remove'), hint: _('broken.menu.remove.hint') }
-  ];
+/** What the TUI says about a broken link: where it points and the commands that bring it back or drop it. */
+export function brokenLinkNote(name: string): string {
+  const link = profileLocation(name)?.link ?? '';
+  const hint = brokenLinkHint(name);
+  return [_('broken.menu.message', { name, path: link }), ...(hint ? [hint] : [])].join('\n');
 }
 
-async function brokenLinkTui(name: string, broken: readonly BrokenLink[]): Promise<void> {
-  const link = broken.find(entry => entry.name === name);
-  if (link?.reason === 'invalid-metadata') note(_('broken.menu.invalid-metadata', { name, file: path.join(link.path, PROFILE_METADATA_FILE) }), _('list.broken.title'));
-  const action = await select<string>({
-    message: _('broken.menu.message', { name, path: link?.path ?? '' }),
-    options: brokenMenuOptions(link?.reason ?? 'missing-folder')
-  });
-  if (cancelled(action)) return cancel(_('list.cancel'));
-  if (action === 'link') return linkProfileTui({ name });
+/**
+ * A broken link is only removed from the TUI. Bringing it back is remove, then link, and the note shows that
+ * command with the scope and rules file the link was made with.
+ */
+async function brokenLinkTui(name: string): Promise<void> {
+  note(brokenLinkNote(name), _('list.broken.title'));
   return removeProfileTui(name);
 }
 
@@ -215,8 +202,10 @@ export function removeChoices(): { value: string; label: string; hint: string }[
  * and a store folder that is not a profile is named as such.
  */
 export function removeNote(name: string): string {
+  validateProfileName(name);
   const location = profileLocation(name);
   if (location?.link) return _('remove.note.link', { name, path: location.link });
+  if (location?.kind === 'symlink') return _('remove.note.link', { name, path: fs.realpathSync.native(location.dir) });
   if (location?.metadata) return _('remove.note.body', { scope: location.metadata.scope, name });
   return _('remove.note.unreadable', { name, path: location?.dir ?? name });
 }
@@ -278,7 +267,7 @@ export async function listProfiles(scopeFilter: string | null = null, store: Sto
     if (selected === '__create__') return createProfileTui();
     if (selected === '__clone__') return cloneProfileTui();
     if (selected === '__link__') return linkProfileTui();
-    if (menuFor(selected, broken) === 'broken-link') return brokenLinkTui(selected, broken);
+    if (menuFor(selected, broken) === 'broken-link') return brokenLinkTui(selected);
     await profileActions(selected);
     return;
   }

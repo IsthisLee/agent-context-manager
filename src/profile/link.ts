@@ -8,7 +8,7 @@ import { git } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { shellWord } from '../shared/shell.ts';
 import type { ProfileMetadata, Scope } from '../shared/types.ts';
-import { assertInstructionsPath, DEFAULT_INSTRUCTIONS, instructionsFile, isInstructionsPath, isProfileName, isScope, isValidProfileMetadata, LINK_FILE, profileLocation, regularFileInside, SCOPES, validateProfileName } from './store.ts';
+import { assertInstructionsPath, brokenLinkHint, DEFAULT_INSTRUCTIONS, instructionsFile, isDirectory, isInstructionsPath, isProfileName, isScope, isValidProfileMetadata, LINK_FILE, profileLocation, readMetadataFile, readStore, regularFileInside, sameFolder, SCOPES, validateProfileName } from './store.ts';
 
 /**
  * `profile link` makes a rules repository folder that already exists on this machine a profile. It writes
@@ -38,10 +38,8 @@ export interface LinkPlan {
   instructions: string;
   /** profile.json to write, or null when the folder already has one. */
   metadata: ProfileMetadata | null;
-  /** What happens to the pointer: a new link, a broken link pointed here, or a link that already points here. */
-  link: 'create' | 'relink' | 'unchanged';
-  /** The folder a broken link pointed at, when this plan points it here; null when its pointer could not be read. */
-  relinkFrom: string | null;
+  /** What happens to the pointer: a new link, or a link that already points here. */
+  link: 'create' | 'unchanged';
   /** Whether running the plan changes anything. */
   changes: boolean;
 }
@@ -77,8 +75,7 @@ export function instructionCandidates(dir: string): { files: string[]; complete:
 function readExistingMetadata(dir: string): ProfileMetadata | null {
   const file = path.join(dir, PROFILE_METADATA_FILE);
   if (!fs.existsSync(file)) return null;
-  let metadata: unknown = null;
-  try { metadata = JSON.parse(fs.readFileSync(file, 'utf8')); } catch {}
+  const metadata = readMetadataFile(file);
   if (!isValidProfileMetadata(metadata)) {
     throw usageError('link.invalid-metadata', _('error.link.invalid-metadata', { file }), null);
   }
@@ -111,22 +108,23 @@ function chooseInstructions(dir: string): string {
   throw usageError('link.many-rules', _('error.link.many-rules', { dir, files }), _('hint.link.instructions'));
 }
 
-function sameFolder(a: string, b: string): boolean {
-  if (path.resolve(a) === path.resolve(b)) return true;
-  try { return fs.realpathSync(a) === fs.realpathSync(b); } catch { return false; }
-}
-
 /**
- * The root of the Git repository whose commits hold `dir` below its root, or null when `dir` is a repository root,
- * is not in Git, or is a folder Git does not track, such as one under a home folder kept in a dotfiles repository.
- * Without git installed nothing counts as inside a repository, since a folder outside Git can be linked.
+ * The Git repository `dir` sits in below its root, as its root and the `/`-separated path from there, both read from
+ * the folders on disk so a path through a link names the real repository. Null when `dir` is a repository root, is
+ * not in Git, is a folder the repository's commits do not hold, or sits in a home folder kept as a dotfiles
+ * repository. A repository without commits holds nothing yet, so its folders count as inside it. Without git
+ * installed nothing counts as inside a repository, since a folder outside Git can be linked.
  */
-function enclosingRepository(dir: string): string | null {
+function enclosingRepository(dir: string): { root: string; prefix: string } | null {
   try {
-    const top = git(['rev-parse', '--show-cdup'], { cwd: dir, allowFailure: true });
-    const up = top.stdout.trim();
-    if (top.status !== 0 || !up) return null;
-    return git(['rev-parse', '--verify', '--quiet', 'HEAD:./'], { cwd: dir, allowFailure: true }).status === 0 ? path.resolve(dir, up) : null;
+    const top = git(['rev-parse', '--show-toplevel'], { cwd: dir, allowFailure: true });
+    if (top.status !== 0) return null;
+    const root = path.resolve(top.stdout.trim());
+    const real = fs.realpathSync.native(dir);
+    if (sameFolder(root, real) || sameFolder(root, os.homedir())) return null;
+    const committed = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).status === 0;
+    if (committed && git(['rev-parse', '--verify', '--quiet', 'HEAD:./'], { cwd: dir, allowFailure: true }).status !== 0) return null;
+    return { root, prefix: path.relative(fs.realpathSync.native(root), real).split(path.sep).join('/') };
   } catch {
     return null;
   }
@@ -146,7 +144,8 @@ export function suggestedName(folder: string): string | null {
 function symbolicLinkHint(dir: string, file: string): string {
   let target: string | null = null;
   try { target = path.relative(dir, path.resolve(path.dirname(file), fs.readlinkSync(file))).split(path.sep).join('/'); } catch {}
-  return target && isInstructionsPath(target) && regularFileInside(dir, target) ? _('hint.link.rules-symlink-target', { file: shellWord(target) }) : _('hint.link.instructions');
+  if (target && isInstructionsPath(target) && regularFileInside(dir, target)) return _('hint.link.rules-symlink-target', { file: shellWord(target) });
+  return target && (target === '..' || target.startsWith('../') || path.isAbsolute(target)) ? _('hint.link.rules-symlink-outside') : _('hint.link.instructions');
 }
 
 /**
@@ -155,26 +154,24 @@ function symbolicLinkHint(dir: string, file: string): string {
  */
 export function checkLinkFolder(dirInput: string, request: LinkRequest = {}): string {
   const dir = path.resolve(dirInput);
-  let isDirectory = false;
-  try { isDirectory = fs.statSync(dir).isDirectory(); } catch {}
-  if (!isDirectory) throw usageError('link.not-directory', _('error.link.not-directory', { dir }), null);
+  if (!isDirectory(dir)) throw usageError('link.not-directory', _('error.link.not-directory', { dir }), null);
   if (sameFolder(dir, os.homedir())) throw usageError('link.home-folder', _('error.link.home-folder', { dir }), _('hint.link.home-folder'));
   // Pinning, status, and clone work on a repository root, so a folder inside a repository is linked through its root.
   const repository = enclosingRepository(dir);
   if (repository) {
     let existing: ProfileMetadata | null = null;
     try { existing = readExistingMetadata(dir); } catch {}
-    const prefix = path.relative(repository, dir).split(path.sep).join('/');
+    const { root, prefix } = repository;
     const inner = request.instructions || (existing ? instructionsFile(existing) : ruleFileChoices(dir).detected);
     const name = request.name || existing?.name || suggestedName(path.basename(dir));
     const scope = request.scope || existing?.scope;
     const command = [
-      'agctx profile link', shellWord(repository),
+      'agctx profile link', shellWord(root),
       '--instructions', inner ? shellWord(path.posix.join(prefix, inner)) : `${shellWord(prefix)}/<file>`,
       ...(name ? ['--name', shellWord(name)] : []),
       ...(scope ? ['--scope', shellWord(scope)] : [])
     ].join(' ');
-    throw usageError('link.inside-repository', _('error.link.inside-repository', { dir, root: repository }), _('hint.link.inside-repository', { command }));
+    throw usageError('link.inside-repository', _('error.link.inside-repository', { dir, root }), _('hint.link.inside-repository', { command }));
   }
   return dir;
 }
@@ -206,19 +203,24 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     validateProfileName(name);
   }
 
-  // A name already in the store is linked here only when it is a link that no longer works. A working link keeps
-  // its folder, since a folder of the same name elsewhere would otherwise take its place without a question.
+  // One folder is one link. A working link's name is the one in the folder's profile.json, so only a broken link
+  // can hold this folder under another name; linking it again would split the profile in two.
+  const linkedAs = readStore().brokenLinks.find(link => link.name !== name && sameFolder(link.path, dir));
+  if (linkedAs) throw usageError('link.folder-linked', _('error.link.folder-linked', { dir, name: linkedAs.name }), brokenLinkHint(linkedAs.name));
+
+  // A name already in the store is never pointed at another folder, broken or not: a folder of the same name
+  // elsewhere would otherwise take its place without a question. Bringing a broken link back is remove, then link.
   const location = profileLocation(name);
-  let relinkFrom: string | null = null;
   let linked = false;
-  let unreadable = false;
   if (location) {
+    if (location.kind === 'symlink' && !location.link) {
+      throw usageError('link.exists', _('error.link.exists-symlink', { name, path: location.dir }), _('hint.link.exists-symlink', { name }));
+    }
     // The name comes from profile.json when the folder has one, so --name cannot get around the clash.
     if (!location.link) throw usageError('link.exists', _('error.link.exists', { name }), existing ? _('hint.link.exists-metadata', { name, file: metadataFile }) : _('hint.link.exists', { name }));
-    if (location.problem === 'invalid-link') unreadable = true;
-    else if (sameFolder(location.link, dir)) linked = true;
-    else if (!location.problem) throw usageError('link.linked-elsewhere', _('error.link.linked-elsewhere', { name, from: location.link }), _('hint.link.linked-elsewhere', { name, path: dir }));
-    else relinkFrom = location.link;
+    if (location.problem) throw usageError('link.broken-exists', _('error.link.broken-exists', { name, path: location.link, reason: _(`list.broken.${location.problem}`) }), brokenLinkHint(name));
+    if (!sameFolder(location.link, dir)) throw usageError('link.linked-elsewhere', _('error.link.linked-elsewhere', { name, from: location.link }), _('hint.link.linked-elsewhere', { name, path: dir }));
+    linked = true;
   }
 
   let scope: Scope;
@@ -227,12 +229,10 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     scope = existing.scope;
     instructions = instructionsFile(existing);
   } else {
-    // A link whose profile.json was lost gets back the scope and rules file it was linked with.
-    const recorded = location?.pointer ?? null;
-    const requestedScope = request.scope || recorded?.scope || 'personal';
+    const requestedScope = request.scope || 'personal';
     if (!isScope(requestedScope)) throw usageError('profile.invalid-scope', _('error.profile.invalid-scope', { scope: requestedScope, scopes: SCOPES.join(', ') }), null);
     scope = requestedScope;
-    instructions = request.instructions || (recorded?.instructions && regularFileInside(dir, recorded.instructions) ? recorded.instructions : chooseInstructions(dir));
+    instructions = request.instructions || chooseInstructions(dir);
   }
   assertInstructionsPath(instructions, metadataFile);
   if (!regularFileInside(dir, instructions)) {
@@ -245,26 +245,21 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   const metadata: ProfileMetadata | null = existing ? null : instructions === DEFAULT_INSTRUCTIONS
     ? { schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }
     : { schemaVersion: 2, name, scope, instructions, createdAt: new Date().toISOString() };
-  const link = linked ? 'unchanged' : relinkFrom || unreadable ? 'relink' : 'create';
-  return { dir, name, scope, instructions, metadata, link, relinkFrom, changes: Boolean(metadata) || !linked };
+  return { dir, name, scope, instructions, metadata, link: linked ? 'unchanged' : 'create', changes: Boolean(metadata) || !linked };
 }
 
-/** The confirmation question for a plan. Pointing a broken link here names the folder it pointed at, or says its pointer could not be read. */
+/** The confirmation question for a plan. */
 export function linkQuestion(plan: LinkPlan): string {
-  if (plan.relinkFrom) return _('confirm.relink', { name: plan.name, from: plan.relinkFrom, path: plan.dir });
-  if (plan.link === 'relink') return _('confirm.relink-unreadable', { name: plan.name, path: plan.dir });
   return _('confirm.link', { name: plan.name, path: plan.dir });
 }
 
 /**
  * Write profile.json when the plan has one, then the pointer. The pointer also records the scope and rules file, so
- * linking again after profile.json is lost writes it back as it was. A broken operating system link made by hand
- * under the same name becomes a pointer.
+ * the hint for a link that lost its profile.json can name them in the command that brings it back.
  */
 export function writeLink(plan: LinkPlan): void {
   if (plan.metadata) writeTextAtomic(path.join(plan.dir, PROFILE_METADATA_FILE), JSON.stringify(plan.metadata, null, 2) + '\n');
   const storeDir = path.join(profileHome(), plan.name);
-  if (isSymbolicLink(storeDir)) fs.unlinkSync(storeDir);
   fs.mkdirSync(storeDir, { recursive: true });
   const record = { schemaVersion: 1, path: plan.dir, scope: plan.scope, instructions: plan.instructions };
   writeTextAtomic(path.join(storeDir, LINK_FILE), JSON.stringify(record, null, 2) + '\n');

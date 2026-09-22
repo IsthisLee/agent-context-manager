@@ -80,7 +80,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 ## 같은 규칙이 두 번 들어가는지 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 2251fb337466e875848cc65d5777fdc7709ff1f5625d61148d2e8d546d899a6e -->
+<!-- agctx-doc-sources-sha256: bb758239200f1829286b271c5ed6936df33dc7a3e26078f7871d800c7ece28c1 -->
 
 `apm install`은 같은 규칙을 `.claude/rules/`에도 넣으므로 Claude Code에는 두 경로로 들어간다. 에이전트마다 읽는 지침 파일을 보여 주는 `agctx explain`이 이런 중복을 경고한다. 아래는 APM 지침 파일에 규칙 세 줄을 두고 `apm install`과 `apm compile`을 실행한 저장소에서 실제로 실행한 결과다.
 

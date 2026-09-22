@@ -5,8 +5,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { checkLinkFolder, linkQuestion, MAX_FOLDERS, planLink, ruleFileChoices } from '../src/profile/link.ts';
-import { brokenMenuOptions, linkNameStep, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, removeNote, statusRefreshPrompt } from '../src/tui/profile.ts';
+import { checkLinkFolder, MAX_FOLDERS, planLink, ruleFileChoices } from '../src/profile/link.ts';
+import { brokenLinkNote, linkNameDefault, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, removeNote, statusRefreshPrompt } from '../src/tui/profile.ts';
 import { gitIn } from './support/git-workspace.ts';
 
 /**
@@ -92,7 +92,7 @@ test('the TUI does not offer to fetch before showing the status of a linked prof
   assert.deepEqual(statusRefreshPrompt('copied'), { ask: true });
 });
 
-test('moving a link that still works is refused, naming the folder it keeps; a broken link asks, naming its old folder', t => {
+test('link never moves a link to another folder, working or broken, and names how to do it', t => {
   const { agctx, folder, root } = workspace(t);
   const first = folder('a/rules', { 'AGENTS.md': '# First\n' });
   const second = folder('b/rules', { 'AGENTS.md': '# Second\n' });
@@ -101,10 +101,7 @@ test('moving a link that still works is refused, naming the folder it keeps; a b
   assert.throws(() => planLink(second), (error: Error) => error.message.includes(first));
 
   fs.renameSync(first, path.join(root, 'a', 'moved'));
-  const plan = planLink(second);
-  assert.equal(plan.link, 'relink');
-  assert.ok(linkQuestion(plan).includes(first), 'the question names the folder being replaced');
-  assert.ok(!linkQuestion(planLink(folder('c/fresh', { 'AGENTS.md': '# Fresh\n' }))).includes(first));
+  assert.throws(() => planLink(second), (error: { hint?: string }) => Boolean(error.hint?.includes('profile remove rules --yes')));
 });
 
 test('the TUI rules file list leaves out hidden, dependency, and build folders and very deep files', t => {
@@ -120,22 +117,25 @@ test('the TUI rules file list leaves out hidden, dependency, and build folders a
   assert.deepEqual(linkRuleOptions(dir).options.map(option => option.value), ['templates/AGENTS.md', OTHER_RULES_FILE]);
 });
 
-test('a link whose pointer cannot be read can be pointed at a folder again under the same name', t => {
+test('a link whose pointer cannot be read is removed before its name is linked again', t => {
   const { agctx, folder, root } = workspace(t);
   const dir = folder('company-rules', { 'AGENTS.md': '# Company\n' });
   agctx('profile', 'link', dir, '--name', 'company', '--yes');
   fs.writeFileSync(path.join(root, 'home', 'profiles', 'company', 'link.json'), 'not json\n');
 
-  const plan = planLink(dir, { name: 'company' });
-
-  assert.equal(plan.link, 'relink');
-  assert.equal(plan.relinkFrom, null, 'an unreadable pointer names no folder it pointed at');
-  assert.ok(!linkQuestion(plan).includes('link.json'), 'the question does not call the pointer file a linked folder');
+  assert.throws(() => planLink(dir, { name: 'company' }), (error: { code?: string; hint?: string }) => error.code === 'link.broken-exists' && Boolean(error.hint?.includes('profile remove company --yes')));
 });
 
-test('linking a broken link again from its menu keeps its name instead of asking for one', () => {
-  assert.deepEqual(linkNameStep('company', '/work/team-rules'), { ask: false, name: 'company' });
-  assert.deepEqual(linkNameStep(null, '/work/team-rules'), { ask: true, name: 'team-rules' });
+test('the TUI shows a broken link with the commands that bring it back', t => {
+  const { agctx, folder } = workspace(t);
+  const dir = folder('company-rules', { 'AGENTS.md': '# Company\n' });
+  agctx('profile', 'link', dir, '--name', 'company', '--scope', 'company', '--yes');
+  fs.rmSync(path.join(dir, 'profile.json'));
+
+  const text = brokenLinkNote('company');
+
+  assert.ok(text.includes('agctx profile remove company --yes'), text);
+  assert.ok(text.includes(`agctx profile link ${dir} --name company --scope company`), text);
 });
 
 test('the TUI list decides which menu to open from the broken links it already read', t => {
@@ -165,12 +165,14 @@ test('the TUI can remove a store folder that is not a profile, and says what it 
 });
 
 test('the TUI offers a name that fits the naming rules when the folder name does not', () => {
-  assert.deepEqual(linkNameStep(null, '/work/Team_Rules'), { ask: true, name: 'team-rules' });
+  assert.equal(linkNameDefault('/work/Team_Rules'), 'team-rules');
+  assert.equal(linkNameDefault('/work/team-rules'), 'team-rules');
 });
 
-test('a broken link whose profile.json names another profile offers only removal in the TUI', () => {
-  assert.deepEqual(brokenMenuOptions('invalid-metadata').map(option => option.value), ['remove']);
-  assert.deepEqual(brokenMenuOptions('missing-folder').map(option => option.value), ['link', 'remove']);
+test('the TUI refuses a profile name that is not one before describing what removal deletes', t => {
+  workspace(t);
+
+  assert.throws(() => removeNote('../..'), { code: 'profile.invalid-name' });
 });
 
 test('the TUI checks a folder before searching it for rules files', t => {

@@ -49,7 +49,7 @@
 ## profile.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: bfcbd7f4d3cb58bdc507984f391007b2bf3f4ef0e2deb5b664c43e18bc5115b0 -->
+<!-- agctx-doc-sources-sha256: a9abeb711e5e87dd7f87f793f2f27393cab85bd9d73e0f88bd5118e1c14122fe -->
 
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다. `setup`은 이미 있는 다른 필드를 그대로 둔다.
 
@@ -76,7 +76,7 @@
 ## link.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/link.ts -->
-<!-- agctx-doc-sources-sha256: d0324b3eaf17644cfb3ae47a2f631b1353b49fe0f5b1d46834418a96f3e858eb -->
+<!-- agctx-doc-sources-sha256: 932b3be078c40a4fef89d6c3e9a1ad1553f6d163b1d745bf74b37fa04b87431f -->
 
 `profile link`로 연결한 프로필이 보관함의 `profiles/<이름>/`에 두는 포인터다. `profile.json`과 규칙 파일은 가리키는 폴더에 있다.
 
@@ -89,10 +89,10 @@
 }
 ```
 
-- 읽으려면 `schemaVersion`(1)과 `path`가 있어야 한다. `scope`와 `instructions`는 마지막으로 연결할 때의 용도와 규칙 파일이다. 연결한 폴더에서 `profile.json`이 없어진 뒤 같은 이름으로 다시 `profile link`하면 이 값으로 `profile.json`을 다시 만든다. 평소에는 연결한 폴더의 `profile.json`이 정본이고, 이 값은 읽지 않는다.
+- 읽으려면 `schemaVersion`(1)과 `path`가 있어야 한다. `scope`와 `instructions`는 연결할 때의 용도와 규칙 파일이다. 끊긴 링크를 되살리는 안내 명령(`agctx profile link <경로> --name <name> --scope <scope> --instructions <file>`)에 이 값을 넣는다. 평소에는 연결한 폴더의 `profile.json`이 정본이고, 이 값은 읽지 않는다.
 - `link.json`이 있고 `profile.json`이 없는 보관함 폴더만 포인터로 본다. 받아 온 저장소가 루트에 자기 `link.json`을 가지고 있어도 사본 프로필이다. 판정은 `src/profile/store.ts`의 `isPointerFolder`<!--s:3cf97987e045-->가 한다.
-- `path`는 절대 경로다. 그 폴더가 없거나(`missing-folder`), 그 폴더의 `profile.json`이 없거나(`missing-metadata`) 이 프로필의 것이 아니거나(`invalid-metadata`), `profile.json`이 가리키는 규칙 파일이 없거나(`missing-rules`), `link.json`을 읽을 수 없으면(`invalid-link`) 끊긴 링크다. `invalid-link`의 `path`는 `link.json` 파일의 경로다. `profile link`가 생기기 전에 손으로 만든 운영체제 심볼릭 링크도 가리키던 폴더가 없어지면 `missing-folder`인 끊긴 링크다. `profile list`는 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `{ name, path, reason }`), 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 멈춘다. 판정은 `src/profile/store.ts`의 `profileLocation`<!--s:ccfb210f16ab-->이 하고, 목록은 `src/profile/store.ts`의 `getBrokenLinks`<!--s:40375c0bdcf7-->가 모은다.
-- 형식이 틀리면 읽을 수 없다고 멈춘다. 같은 이름으로 `profile link`하면 포인터를 새로 쓰고, `profile remove`로 지울 수도 있다.
+- `path`는 절대 경로다. 그 폴더가 없거나(`missing-folder`), 그 폴더의 `profile.json`이 없거나(`missing-metadata`) 이 프로필의 것이 아니거나(`invalid-metadata`), `profile.json`이 가리키는 규칙 파일이 없거나(`missing-rules`), `link.json`을 읽을 수 없으면(`invalid-link`) 끊긴 링크다. `invalid-link`의 `path`는 `link.json` 파일의 경로다. `profile link`가 생기기 전에 손으로 만든 운영체제 심볼릭 링크도 가리키던 폴더가 없어지면 `missing-folder`인 끊긴 링크다. `profile list`는 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `{ name, path, reason }`), 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 멈춘다. 판정은 `src/profile/store.ts`의 `profileLocation`<!--s:ccfb210f16ab-->이 하고, 목록은 `src/profile/store.ts`의 `readStore`<!--s:f6dc2cbbbc40-->가 모은다.
+- 형식이 틀리면 읽을 수 없다고 멈춘다. `profile remove`로 지운 뒤 다시 연결한다.
 - `profile remove`는 이 파일이 든 보관함 폴더만 지우고, 가리키는 폴더는 건드리지 않는다.
 - `profile list --json`의 `profiles` 항목에는 연결한 프로필에만 `link`(가리키는 경로)가 붙는다.
 

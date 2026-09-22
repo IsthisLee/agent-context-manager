@@ -9,7 +9,7 @@ import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, p
 import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getProfiles, profileLocation, readStore, removeProfile, viewProfile } from '../profile/store.ts';
+import { brokenLinkHint, createProfile, getProfiles, profileLocation, readStore, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -165,7 +165,7 @@ export const HANDLERS: Record<string, Handler> = {
   'profile.link': async parsed => {
     const plan = planLink(projectDir(parsed.positional[0]), { name: text(parsed, 'name'), scope: text(parsed, 'scope'), instructions: text(parsed, 'instructions') });
     printLinkPlan(plan);
-    const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, relinkedFrom: plan.relinkFrom, written: false };
+    const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, written: false };
     if (!plan.changes) {
       say(_('link.unchanged', { name: plan.name, path: plan.dir }));
       return ok(data);
@@ -317,8 +317,11 @@ export const HANDLERS: Record<string, Handler> = {
       say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
       if (status.error) say(`  ${status.error.message}`);
       for (const warning of status.warnings) say(`  ${warning}`);
+      // A repository on a broken link is brought back by linking again; sync and pr would stop on the link.
+      const brokenHint = linkedFolder(status.profile) ? brokenLinkHint(status.profile) : null;
+      if (brokenHint) hints.add(`${_('output.next')}: ${brokenHint}`);
       const linked = linkedFolder(status.profile);
-      if (status.state === 'behind') {
+      if (status.state === 'behind' && !brokenHint) {
         // A linked folder's new commits reach teammates only once they are pushed there, so the hint says to push first.
         hints.add(status.pinned ? (linked ? _('repos.next.pr.linked', { profile: status.profile, path: shellWord(linked) }) : _('repos.next.pr', { profile: status.profile })) : _('repos.next.sync', { profile: status.profile }));
       }
@@ -389,8 +392,7 @@ function printLinkPlan(plan: LinkPlan): void {
   say(_('link.plan.title'));
   say(`  ${(plan.metadata ? 'create' : 'keep').padEnd(9)} ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
   const action = plan.link === 'create' ? 'link' : plan.link;
-  const from = plan.relinkFrom ? `  ${_('link.plan.from', { path: plan.relinkFrom })}` : '';
-  say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}${from}`);
+  say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}`);
 }
 
 /** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */

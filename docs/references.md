@@ -800,6 +800,16 @@
   >
   > 번역: Codex는 사용자 프롬프트를 보고 스킬을 암묵적으로 호출하지 않지만, `$skill`로 명시해 호출하는 방식은 여전히 동작합니다.
 
+- **공식 문서(스킬의 사용자 전역 위치, 2026-09-22):** 모든 프로젝트에 쓰는 스킬을 두는 폴더는 에이전트마다 다르다.
+  - Claude Code는 개인 위치를 `~/.claude/skills/<skill-name>/SKILL.md`로 든다. 문서에는 `CLAUDE_CONFIG_DIR`로 이 위치가 바뀐다는 말이 없다. [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-22)
+  - Codex는 사용자 위치를 `$HOME/.agents/skills`로 든다. `CODEX_HOME` 아래가 아니다. [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-22)
+
+    > "Any skills checked into the user’s personal folder."
+    >
+    > 번역: 사용자의 개인 폴더에 넣어 둔 스킬.
+
+  - Antigravity는 전역 위치를 앱·IDE는 `~/.gemini/config/skills/<skill-folder>/`, CLI는 `~/.gemini/antigravity-cli/skills/<skill-folder>/`로 나눈다. 페이지를 스크립트로 그려 원문을 내려받아 대조하지는 못했고, 렌더링한 페이지에서 확인했다. [Google Antigravity Skills](https://antigravity.google/docs/skills/) (확인일: 2026-09-22)
+- **직접 실험(skills CLI의 Antigravity 전역 설치, 2026-09-22):** 스크래치패드의 빈 폴더를 `HOME`과 npm 캐시로 두고, 저장소의 `skills/`를 복사한 Git 저장소에서 `DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 npx -y skills@latest add <사본> -g -a antigravity -y`를 실행했다(skills 1.7.0). `SKILL.md`는 `~/.agents/skills/agctx`와 `~/.agents/skills/agctx-author`에만 생겼고, `~/.gemini` 폴더는 만들어지지 않았다. 위 공식 문서의 Antigravity 전역 위치에는 설치하지 않는다는 뜻이다. Antigravity가 `~/.agents/skills`도 전역으로 읽는지는 문서에 없고, 에이전트를 실행해 확인하지는 않았다.
 - **비공식 자료(skills CLI):** skills CLI는 저장소의 `skills/` 등에서 스킬을 찾고, `add`의 `--skill`(`'*'`는 전부), `-a`·`--agent`, `-g`·`--global`, `-y`·`--yes`, `--list`로 설치 대상을 고른다. 프로젝트 설치 위치는 Claude Code `.claude/skills/`, Codex와 Antigravity `.agents/skills/`다. 익명 사용 통계를 모으며 `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`로 끈다. [vercel-labs/skills](https://github.com/vercel-labs/skills) (확인일: 2026-09-15)
 
   > "This CLI collects anonymous usage data to help improve the tool. No personal information is collected."

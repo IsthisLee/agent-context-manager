@@ -10,6 +10,7 @@ import { getSavedLocale, saveLocale } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { _, DEFAULT_LOCALE, resolveLocale, setLocale } from '../i18n/index.ts';
 import { mainTui, promptLocale } from '../tui/main.ts';
+import { skillNotice } from '../skills/install.ts';
 
 async function resolveActiveLocale(langFlag: string | null | undefined): Promise<void> {
   let locale = resolveLocale({ flag: langFlag ?? null, env: process.env.AGCTX_LANG || null, saved: getSavedLocale(), isTTY: Boolean(process.stdin.isTTY) && !isJsonMode() });
@@ -64,22 +65,36 @@ export async function main(argv: readonly string[] = process.argv): Promise<Invo
 }
 
 /** Run the CLI: print or emit the outcome and set the process exit code. */
+/** Commands that manage the skills themselves, so they do not repeat the notice about them. */
+const NO_SKILL_NOTICE = new Set(['install', 'uninstall']);
+
+/** The version notice for this run, when the installed skills are from another agctx version. */
+function noticeFor(argv: readonly string[]): string[] {
+  const command = findCommand(argv.slice(2).filter(value => !value.startsWith('--')));
+  if (command && NO_SKILL_NOTICE.has(command.id)) return [];
+  const notice = skillNotice();
+  return notice ? [notice] : [];
+}
+
 export async function run(argv: readonly string[] = process.argv): Promise<void> {
   let commandName = '';
   try {
     const { command, outcome } = await main(argv);
     commandName = command ? command.words.join(' ') : '';
-    if (isJsonMode()) writeJson(envelope(commandName, outcome));
-    else for (const warning of outcome.warnings ?? []) warn(warning);
+    const warnings = [...(outcome.warnings ?? []), ...noticeFor(argv)];
+    if (isJsonMode()) writeJson(envelope(commandName, { ...outcome, warnings }));
+    else for (const warning of warnings) warn(warning);
     process.exitCode = outcome.exitCode;
   } catch (error) {
     const cliError = error instanceof CliError ? error : new CliError('internal', error instanceof Error ? error.message : String(error));
     if (!commandName) commandName = findCommand(argv.slice(2).filter(value => !value.startsWith('--')))?.words.join(' ') ?? '';
+    const warnings = noticeFor(argv);
     if (isJsonMode()) {
-      writeJson(envelope(commandName, { exitCode: cliError.exitCode }, cliError));
+      writeJson(envelope(commandName, { exitCode: cliError.exitCode, warnings }, cliError));
     } else {
       process.stderr.write(`${_('output.error')}: ${cliError.message}\n`);
       if (cliError.hint) process.stderr.write(`${_('output.next')}: ${cliError.hint}\n`);
+      for (const warning of warnings) warn(warning);
     }
     process.exitCode = cliError.exitCode;
   }

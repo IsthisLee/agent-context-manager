@@ -113,7 +113,7 @@
   - [ADR 0016: 명령 등록부와 종료 코드·JSON 출력·변경 확인 계약](adr/0016-command-contract.md) (일부 대체: ADR 0025)
   - [ADR 0017: 프로필을 Git 원격으로 공유하고 적용한 버전을 기록](adr/0017-git-profile-sharing.md)
   - [ADR 0018: 적용한 저장소를 목록으로 관리하고 동기화·PR을 한 번에 확인한 뒤 실행](adr/0018-multi-repository-sync.md) (일부 대체: ADR 0025)
-  - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md) (일부 정정: ADR 0035)
+  - [ADR 0019: 에이전트가 지침을 받는지 설명·검증하고 에이전트용 스킬을 배포](adr/0019-explain-verify-and-agent-skills.md) (일부 정정: ADR 0035, ADR 0038)
   - [ADR 0020: APM이 다시 만드는 파일에는 쓰지 않고, 하위 AGENTS.md마다 Claude Code 연결 파일을 만듦](adr/0020-apm-coexistence-and-monorepo-links.md)
   - [ADR 0021: 프로필이 담을 대상을 규칙·스킬·MCP·subagents로 정함](adr/0021-profile-scope-skills-mcp-subagents.md) (일부 대체: ADR 0022, ADR 0027)
   - [ADR 0022: 프로필이 담을 대상에 hooks를 더함](adr/0022-profile-scope-hooks.md)
@@ -131,6 +131,7 @@
   - [ADR 0034: AGENTS.md의 관리 영역 경계를 마커로 표시](adr/0034-managed-end-marker-in-agents-md.md)
   - [ADR 0035: Claude Code가 AGENTS.md를 직접 읽는 조건을 explain 판정에 반영](adr/0035-claude-code-reads-agents-md.md)
   - [ADR 0036: profile.json이 프로필의 규칙 파일을 가리킨다](adr/0036-profile-json-names-rules-file.md)
+  - [ADR 0038: 에이전트 스킬을 CLI 패키지에 넣고 agctx install로 설치](adr/0038-install-agent-skills-from-cli-package.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

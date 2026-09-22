@@ -51,7 +51,13 @@ try {
   assert(fs.existsSync(path.join(projectDir, 'AGENTS.md')));
   assert(fs.existsSync(path.join(projectDir, 'CLAUDE.md')));
   assert(fs.existsSync(path.join(projectDir, 'agctx.project.json')));
-  console.log('Installed package smoke test passed (help, profile setup, project apply, and sync).');
+  // agctx install copies the skills shipped in the package, so they reach an agent's folder from the tarball alone.
+  const userHome = path.join(smokeRoot, 'user-home');
+  fs.mkdirSync(path.join(userHome, '.claude'), { recursive: true });
+  runCommand(agctx, ['install'], { env: { ...env, HOME: userHome, USERPROFILE: userHome }, stdio: 'ignore' });
+  assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx', 'SKILL.md')));
+  assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx-author', '.agctx-install.json')));
+  console.log('Installed package smoke test passed (help, profile setup, project apply, sync, and agent skill install).');
 } finally {
   fs.rmSync(smokeRoot, { recursive: true, force: true });
 }

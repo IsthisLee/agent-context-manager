@@ -21,8 +21,11 @@ export interface OptionSpec {
  */
 export type Surface = 'profile' | 'repository' | 'global';
 
-/** What a command may change; commands that change a repository or send to a remote ask before they act. */
-export type Changes = 'none' | 'profile-store' | 'repository' | 'remote';
+/**
+ * What a command may change; commands that change a repository or send to a remote ask before they act.
+ * `agent-skills` is the skill folders agctx install writes in each agent's user folder.
+ */
+export type Changes = 'none' | 'profile-store' | 'repository' | 'remote' | 'agent-skills';
 
 /**
  * How the agent surface offers a command. An agent decides whether to load a
@@ -93,6 +96,8 @@ export const COMMANDS: readonly CommandSpec[] = [
   { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'repos.menu.status.label' },
   { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository', tui: 'repos.menu.sync.label' },
   { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote', tui: 'repos.menu.pr.label' },
+  { id: 'install', words: ['install'], args: [], options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, { name: 'force' }, dryRun], exitCodes: common, surface: 'global', changes: 'agent-skills', tui: 'main.install.label', agent: 'never' },
+  { id: 'uninstall', words: ['uninstall'], args: [], options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, dryRun], exitCodes: common, surface: 'global', changes: 'agent-skills', tui: 'main.uninstall.label', agent: 'never' },
   { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label', agent: 'never' },
   { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label', agent: 'never' }
 ];

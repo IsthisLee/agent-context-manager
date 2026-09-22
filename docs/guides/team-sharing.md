@@ -144,7 +144,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ed0e8f557b16e02533575741480663fed0b81579bf3347ffd8b5f2ed55b5a11b -->
+<!-- agctx-doc-sources-sha256: f1c29d526e3755a0a8f03c23567069edd35dcff6e48817c5d4317276b6eebe6e -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 그 저장소에 `profile.json`만 더하면 적용 담당이 [1. 프로필 받기](#1-프로필-받기)처럼 바로 받는다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
@@ -373,7 +373,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5cda8f63a45973855f258e8a49d8115496e160455925e305f2721f90c59106f3 -->
+<!-- agctx-doc-sources-sha256: d9b5c453657359b7fb0d5537d1becc1f48a1262814f22e444ea93e86e6dd1227 -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
 <!-- agctx-doc-sources: src/project -->
-<!-- agctx-doc-sources-sha256: 8c3c82331116daa3d2a09b57811c13f416b016225e32b050b553289045101835 -->
+<!-- agctx-doc-sources-sha256: a2477b411ffd98e99aafafbf2b12826377f4f02dafc4c4707cb1e0113649d5dd -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 
@@ -68,7 +68,7 @@ agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 �
 ## 관리 영역을 고쳐서 멈췄을 때
 
 <!-- agctx-doc-sources: src/profile/resolve.ts -->
-<!-- agctx-doc-sources-sha256: 8f29ec6a640648529ce996ecff3af7085923a6f283c28ef970fa5508c983cde8 -->
+<!-- agctx-doc-sources-sha256: 2a6723aed471dcbe85b825f070f9125f3cdc918c83c2322f37988e765f063bad -->
 
 `apply`·`sync`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
 

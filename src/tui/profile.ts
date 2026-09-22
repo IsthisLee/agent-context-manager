@@ -427,12 +427,14 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
       if (cancelled(answer)) return cancel(_('actions.project.cancel'));
       pin = answer;
     }
-    await withConflictRecovery(target, () => runFromTui('profile.apply', [name, target], { agent, pin }));
+    await withConflictRecovery(target, ({ adopt }) =>
+      runFromTui('profile.apply', [name, target], { agent, pin, adopt })
+    );
   },
   'profile.sync': async () => {
     const target = await projectPathTui(_('actions.sync.path'));
     if (!target) return cancel(_('actions.project.cancel'));
-    await withConflictRecovery(target, () => runFromTui('profile.sync', [target], {}));
+    await withConflictRecovery(target, ({ adopt }) => runFromTui('profile.sync', [target], { adopt }));
   },
   'profile.resolve': () => resolveProjectTui(),
   'profile.remove': name => removeProfileTui(name),
@@ -482,12 +484,34 @@ export async function profileActions(name: string): Promise<void> {
   await runTuiStep(() => MENU_ACTIONS[action](name));
 }
 
-/** apply나 sync를 실행한다. 관리 영역이 수정됐으면 사용자를 오류에 두지 않고 해결을 제안한다. */
-async function withConflictRecovery(target: string, step: () => Promise<unknown>): Promise<void> {
+/**
+ * apply·sync가 멈춘 오류에 TUI가 제안할 다음 단계. 관리 영역을 고쳤으면 resolve, agctx 표지가 없는
+ * 기존 파일이면 그 파일에 관리 영역을 더할지(--adopt) 묻는다.
+ */
+export function recoveryFor(error: unknown): 'resolve' | 'adopt' | null {
+  if (!(error instanceof CliError)) return null;
+  if (error.code === 'project.conflict') return 'resolve';
+  if (error.code === 'project.unmanaged') return 'adopt';
+  return null;
+}
+
+/** apply나 sync를 실행한다. 멈추면 사용자를 오류에 두지 않고 다음 단계를 제안한다. */
+async function withConflictRecovery(
+  target: string,
+  step: (answers: { adopt: boolean }) => Promise<unknown>
+): Promise<void> {
   try {
-    await step();
+    await step({ adopt: false });
   } catch (error) {
-    if (!(error instanceof CliError) || error.code !== 'project.conflict') throw error;
+    const recovery = recoveryFor(error);
+    if (!recovery || !(error instanceof CliError)) throw error;
+    if (recovery === 'adopt') {
+      note(error.message, _('adopt.title'));
+      const adopt = await confirm({ message: _('adopt.offer'), initialValue: false });
+      if (cancelled(adopt) || !adopt) return cancel(_('actions.project.cancel'));
+      await withConflictRecovery(target, () => step({ adopt: true }));
+      return;
+    }
     note(`${error.message}\n\n${_('output.next')}: ${error.hint ?? ''}`, _('resolve.conflict.title'));
     const next = await confirm({ message: _('resolve.offer'), initialValue: true });
     if (cancelled(next) || !next) return cancel(_('actions.project.cancel'));
@@ -516,11 +540,22 @@ export async function resolveProjectTui(target: string | null = null): Promise<v
     ]
   });
   if (cancelled(mode)) return cancel(_('actions.project.cancel'));
-  await resolveProject(
-    project,
-    { dryRun: false, discard: mode === 'discard', edit: mode === 'edit' },
-    async () => true
-  );
+  const run = (adopt: boolean) =>
+    resolveProject(
+      project,
+      { dryRun: false, discard: mode === 'discard', edit: mode === 'edit', adopt },
+      async () => true
+    );
+  try {
+    await run(false);
+  } catch (error) {
+    // 표지 없는 파일이 함께 있으면 resolve도 편입을 허락받기 전에는 쓰지 않는다.
+    if (recoveryFor(error) !== 'adopt' || !(error instanceof CliError)) throw error;
+    note(error.message, _('adopt.title'));
+    const adopt = await confirm({ message: _('adopt.offer'), initialValue: false });
+    if (cancelled(adopt) || !adopt) return cancel(_('actions.project.cancel'));
+    await run(true);
+  }
   outro(_('resolve.outro'));
 }
 

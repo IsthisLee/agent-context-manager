@@ -209,7 +209,7 @@ flowchart TD
 
 - 프로필 데이터의 기준 위치는 (`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:1674cbf36d97-->, `src/profile/store.ts`의 `createProfile`<!--s:a908d869e3ef-->).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 고른 에이전트의 포인터 파일(기본은 전부), `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:a03b1fbe1875-->, `src/project/plan.ts`의 `planProject`<!--s:74278c153fb4-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 고른 에이전트의 포인터 파일(기본은 전부), `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:8b11930e9b02-->, `src/project/plan.ts`의 `planProject`<!--s:1d468d256c69-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -412,7 +412,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 - **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:bb1c1caae2da-->). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:bb1c1caae2da-->).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts`의 `writeTextAtomic`<!--s:73aeeeefec26-->). 교체할 파일이 CRLF 줄 끝을 쓰고 있으면 새 내용도 CRLF로 쓴다. 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts`의 `writePlan`<!--s:fc7064455fef-->).
-- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts`의 `planProject`<!--s:74278c153fb4-->). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다` 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts`의 `planProject`<!--s:74278c153fb4-->). 다만 현재 관리 영역이 이번에 쓸 내용과 글자까지 같으면 덮어써도 잃을 것이 없으므로 멈추지 않는다. 편집기가 저장하면서 Markdown을 다시 포맷한 경우가 여기에 해당한다. `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
+- **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts`의 `planProject`<!--s:1d468d256c69-->). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다` 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts`의 `planProject`<!--s:1d468d256c69-->). 다만 현재 관리 영역이 이번에 쓸 내용과 글자까지 같으면 덮어써도 잃을 것이 없으므로 멈추지 않는다. 편집기가 저장하면서 Markdown을 다시 포맷한 경우가 여기에 해당한다. `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
 - 이 안전장치들은 테스트로 검증된다: 심볼릭 링크 거부·디렉터리 대상 거부·임시 파일 잔여물 없음(`evals/file-safety.test.ts`), 관리 영역 hash가 프로젝트 확장부를 제외하고 프로필 영역 편집을 감지함(`evals/sync-merge.test.ts`의 관련 케이스).
 
 파일 하나를 쓸 때 통과하는 관문을 그림으로 보면 이렇다.
@@ -452,8 +452,8 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:a03b1fbe1875-->). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts`의 `profile.apply` 항목).
-- **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->).
+- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:8b11930e9b02-->). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts`의 `profile.apply` 항목).
+- **로그**: 각 변경의 상태(create/update/remove/unchanged/conflict/unmanaged)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts`의 `printPlan`<!--s:d9c078cea294-->).
 - **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts`의 `run`<!--s:2ba71c9bbb82-->), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 서식 검사 → 린트 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json`의 `check`<!--s:82db547bca58--> 스크립트). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트), 서식 검사는 `prettier --check .`가 코드·JSON·YAML의 서식이 설정과 같은지 확인하며(`package.json`의 `format:check` 스크립트), 린트는 ESLint가 `src`·`evals`·`tools`를 검사하며(`package.json`의 `lint`<!--s:9c66d492df48--> 스크립트), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json`의 `test`<!--s:e1f6fc9efc0d--> 스크립트).
@@ -551,9 +551,9 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 1. **(사용자)** `npm install -g agent-context-manager` → **(npm)** tarball을 받아 전역 설치하고 `agctx` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agctx` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `dist/agctx.js` 실행 → **(agctx)** TTY면 메인 TUI를 연다(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->).
 3. **(사용자)** 프로필 생성·설정 선택 → **(agctx)** `~/.agctx/profiles/<name>/`(기본 위치이며 `AGCTX_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `profile.json`과 `AGENTS.md`를 만들고(`src/profile/store.ts`의 `createProfile`<!--s:a908d869e3ef-->), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->).
-4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:a03b1fbe1875-->, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
+4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:8b11930e9b02-->, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. agctx는 에이전트 런타임을 실행하지 않는다([빠른 시작 6절](../getting-started/quick-start.md#6-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
-6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/commands/handlers.ts`의 `profile.sync` 처리기). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts`의 `resolveProject`<!--s:25d0d89646a0-->).
+6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/commands/handlers.ts`의 `profile.sync` 처리기). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts`의 `resolveProject`<!--s:5596ba9fac01-->).
 
 주체별로 누가 무엇을 하는지 시퀀스로 보면 이렇다.
 

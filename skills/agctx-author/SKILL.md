@@ -14,6 +14,8 @@ disable-model-invocation: true
 
 - "컨텍스트 프로필 만들어 줘." `agctx profile create <이름> --scope <scope>`를 실행하고, 이어서 지침 열 개 가운데 무엇을 켤지 사용자에게 물어 `agctx profile setup <이름> --<항목> on|off`를 실행한다. 항목을 대신 고르지 않는다.
 - "이 저장소에 이 프로필 적용해 줘." `agctx profile apply <프로필> <프로젝트> --dry-run`으로 계획을 보여 준 뒤 `--yes`를 붙인다. 저장소를 지금 프로필 커밋에 고정하려면 `--pin`을 더한다.
+- 적용이 `unmanaged`로 멈추면 사람이 쓴 `AGENTS.md`·`CLAUDE.md`가 이미 있다는 뜻이다. 그 파일을 사용자에게 보여 주고, 기존 내용을 남긴 채 agctx 영역을 더할지 묻는다. 승인하면 같은 명령에 `--adopt`를 붙인다. 그 에이전트의 파일을 그대로 두고 싶어 하면 `--agent`로 그 에이전트를 뺀다.
+- "이 저장소는 Codex랑 Claude Code만 써." `agctx profile apply <프로필> <프로젝트> --agent codex,claude --dry-run`으로 지워질 파일(`remove`)까지 보여 준 뒤 승인받아 `--yes`를 붙인다. 목록에는 지금 쓰는 에이전트를 모두 적는다. 빠진 에이전트의 파일은 지워진다.
 - "이 저장소를 새 규칙으로 맞춰 줘." 프로필이 뒤처졌으면 `agctx profile pull <프로필>`을 먼저 실행하고, `agctx profile sync <프로젝트> --dry-run` 다음에 `--yes`를 붙인다.
 - "누가 관리 영역을 고쳤어." `agctx profile resolve <프로젝트> --dry-run`을 실행하고 어떻게 해소할지 사용자에게 묻는다. `--discard`는 백업한 뒤 수정을 버리고, `--edit`은 병합 화면을 연다.
 - "팀 프로필을 이 컴퓨터로 받아 줘." `agctx profile clone <git-url>`을 실행한다. 이미 있는 로컬 프로필을 원격에 연결하려면 `agctx profile connect <프로필> <git-url>`을 쓴다.
@@ -32,6 +34,7 @@ disable-model-invocation: true
 ## Safety rules
 
 - 바로 앞에 보여 준 dry-run 출력을 사용자가 승인하지 않았으면 `--yes`를 붙이지 않는다. Never add `--yes` on your own.
+- 사용자가 승인하지 않았으면 `--adopt`를 붙이지 않는다. 사람이 쓴 파일을 바꾸는 옵션이다.
 - force-push, 프로필 저장소 이력 다시 쓰기, 원격 브랜치 삭제는 하지 않는다.
 - 프로필이 뒤처졌거나 커밋하지 않은 변경이 있어서 `profile push`가 멈추면 그 사실을 알리고 묻는다. reset으로 풀지 않는다.
 - `repos pr`은 임시 worktree에서 동작하며 사용자의 작업 사본을 바꾸지 않는다. 어느 저장소에 pull request가 열렸고 어느 저장소는 브랜치만 push됐는지 알린다.
@@ -44,9 +47,9 @@ disable-model-invocation: true
 - `agctx profile list [--scope <scope>]`: scope별 프로필을 보고 하나를 관리합니다.
 - `agctx profile view <name>`: 프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다.
 - `agctx profile setup [--workflow <on|off>] [--context <on|off>] [--tdd <on|off>] [--review <on|off>] [--verification <on|off>] [--instructions <on|off>] [--docs <on|off>] [--security <on|off>] [--untrusted <on|off>] [--language <on|off>] [<name>]`: 프로필에 담을 지침 항목을 켜고 끕니다.
-- `agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--yes] <name> [<project>]`: 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --agent는 파일을 받을 에이전트를 고르고 이후 sync를 위해 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.
-- `agctx profile sync [--dry-run] [--yes] [<project>]`: 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.
-- `agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]`: 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다.
+- `agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--adopt] [--yes] <name> [<project>]`: 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --agent는 파일을 받을 에이전트를 고르고 이후 sync를 위해 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.
+- `agctx profile sync [--dry-run] [--adopt] [--yes] [<project>]`: 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.
+- `agctx profile resolve [--dry-run] [--discard] [--edit] [--adopt] [--yes] [<project>]`: 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다.
 - `agctx profile clone [--branch <branch>] <git-url>`: 파일과 숨은 문자를 검사한 뒤 Git 저장소에서 프로필을 가져옵니다.
 - `agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--dry-run] [--yes] [<path>]`: 이 컴퓨터에 있는 규칙 저장소 폴더를 프로필로 연결합니다. profile.json이 없으면 만들고, 커밋은 하지 않습니다.
 - `agctx profile status [--refresh] [<name>]`: 프로필의 원격·브랜치·커밋·로컬 수정과 원격 대비 위치를 보여 줍니다. --refresh를 붙이면 먼저 fetch합니다.

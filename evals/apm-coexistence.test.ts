@@ -98,5 +98,5 @@ test('파일 아래쪽의 APM 마커는 소유 표시가 아니라 내용이다'
     path.join(dir, 'AGENTS.md'),
     `# Project\n\nNotes.\n\nMore notes.\n\nEven more.\n\n${APM_AGENTS_HEADER}\n`
   );
-  me.ok(['profile', 'apply', 'company', dir, '--yes']);
+  me.ok(['profile', 'apply', 'company', dir, '--adopt', '--yes']);
 });

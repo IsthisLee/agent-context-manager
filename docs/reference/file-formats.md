@@ -13,7 +13,7 @@
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: a09809debc73937cdfb04b25f63a0c8ede81786bf28d00ff1d823315a09046d8 -->
+<!-- agctx-doc-sources-sha256: 00de71b07b3cbb6acf62597b21ac630cb5d3227cd4ed7e2b8ffd72cd0af47567 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 

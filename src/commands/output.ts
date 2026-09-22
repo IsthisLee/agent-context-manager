@@ -39,7 +39,7 @@ export interface JsonEnvelope {
   ok: boolean;
   data: unknown;
   warnings: string[];
-  errors: { code: string; message: string; hint: string | null }[];
+  errors: { code: string; message: string; hint: string | null; details?: unknown }[];
 }
 
 export function envelope(command: string, outcome: CommandOutcome, error: CliError | null = null): JsonEnvelope {
@@ -50,7 +50,16 @@ export function envelope(command: string, outcome: CommandOutcome, error: CliErr
     ok: outcome.exitCode === 0,
     data: outcome.data ?? null,
     warnings: outcome.warnings ?? [],
-    errors: error ? [{ code: error.code, message: error.message, hint: error.hint }] : []
+    errors: error
+      ? [
+          {
+            code: error.code,
+            message: error.message,
+            hint: error.hint,
+            ...(error.details === undefined ? {} : { details: error.details })
+          }
+        ]
+      : []
   };
 }
 

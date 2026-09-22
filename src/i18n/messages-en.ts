@@ -545,6 +545,22 @@ export default {
     'managedHashes in agctx.project.json has paths outside the project, so nothing was changed: {paths}',
   'hint.project.invalid-managed-path':
     'Paths in managedHashes must be relative to the project root, use /, and not contain .. . Fix or remove those keys in {file}, then run the command again.',
+  'error.project.unmanaged':
+    'agctx did not write these files and they have no agctx markers, so nothing was changed: {files}',
+  'hint.project.unmanaged':
+    'To keep what is in them and add the agctx managed area, run {command}. CLAUDE.md and rule files get the managed block below their content; AGENTS.md moves its content below the profile guidance.',
+  'repos.sync.unmanaged':
+    'not changed: {files} exist without agctx markers. Run agctx profile sync {project} --adopt to add the managed area.',
+  'repos.pr.unmanaged':
+    'not changed: {files} exist without agctx markers. Run agctx profile sync --adopt in that repository first.',
+  'adopt.title': 'Existing files',
+  'adopt.offer': 'Keep what is in these files and add the agctx managed area?',
+  'hint.project.unmanaged.agent': 'To leave them untouched, apply without their agents: {command}.',
+  'hint.project.unmanaged.symlink': '{files} is a symbolic link, so agctx cannot add its managed area to it.',
+  'hint.project.conflict.unmanaged':
+    '{files} also exist without agctx markers; after resolving, run agctx profile resolve {project} --adopt or leave them out.',
+  'check.unmanaged':
+    'exists without agctx markers, so sync stops here; run agctx profile sync {project} --adopt to add the managed area',
   'plan.warn.agents-lines':
     'Warning: AGENTS.md will be {lines} lines after this run. Claude Code recommends keeping each instruction file under {limit} lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
   'plan.warn.agents-bytes':

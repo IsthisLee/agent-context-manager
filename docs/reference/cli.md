@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 2fc3def1fbadad3d2fb079af254e595aac26a34c52dea40620587631ede5a599 -->
+<!-- agctx-doc-sources-sha256: efcf79af650e451a1221e79c81778137aae348748e13f8d2585ba95e99e16028 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 26fdc373944fe4f367105f7f36e7bce5b529e2d627353cefeffb19b41a76249b -->
+<!-- agctx-doc-sources-sha256: 87dc0a829b2f136123fb75efcc3446e8f7563bae16c49bef2d5fbb403c9b86f1 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -84,7 +84,7 @@ Next: Did you mean agctx profile list?
 | `ok` | `exitCode`가 0이면 `true` |
 | `data` | 명령별 결과. 실패하면 `null` |
 | `warnings` | 경고 문장 목록 |
-| `errors` | `{ code, message, hint }` 목록. `code`는 `confirm.required`·`profile.not-found`처럼 로케일과 무관한 식별자다 |
+| `errors` | `{ code, message, hint }` 목록. `code`는 `confirm.required`·`profile.not-found`처럼 로케일과 무관한 식별자다. 어느 파일에서 멈췄는지 알 수 있는 오류(`project.conflict`·`project.unmanaged`)는 `details`에 `{ file, kind }` 목록을 더한다 |
 
 아래는 CI에서 실행한 `check`의 stdout이다. stderr로 나간 사람용 줄은 생략했다.
 
@@ -119,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 219c9c6ae4f6b15a3de001d8b4849948bd9eff20953e0f23a5fb5ba120c6a094 -->
+<!-- agctx-doc-sources-sha256: abfd5a6114b88dee8bc093332436da89672ad20dc4055fa6cdf87bd2d1cce653 -->
 
 ```bash
 agctx
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: dc18052f6e556a6446eb8b9cac55691424814a2f60658ded46bc39654a99f0d1 -->
+<!-- agctx-doc-sources-sha256: 902d7f998469e8d6123b69821dfe6c3c017e71fd52aeb83254734ed28876fb3f -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -333,7 +333,7 @@ agctx profile setup company --tdd on --security on
 
 <!-- agctx:generated:usage:profile.apply:start -->
 ```bash
-agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--yes] <name> [<project>]
+agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--adopt] [--yes] <name> [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -346,6 +346,7 @@ agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin]
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `--agent` | 연결 파일을 받을 에이전트. `codex`·`claude`·`antigravity`를 쉼표로 여러 개 주거나 `all`. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
 | `--pin` | Git 프로필의 현재 커밋에 프로젝트를 고정 |
+| `--adopt` | agctx 표지가 없는 기존 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`에도 관리 영역을 더함 |
 | `--yes` | 터미널이 아닌 환경에서 적용을 승인 |
 
 - **만드는 파일:** 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일(`CLAUDE.md`·`.agents/rules/agctx.md`), `agctx.project.json`을 만든다. 마지막으로 쓴 관리 영역 원문은 `.agctx/base/<경로>.base`에 기록하고, `.agctx/.gitignore`로 `backups/`를 커밋에서 뺀다.
@@ -454,7 +455,20 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 - **TUI:** 관리 메뉴의 적용은 Git 프로필이면 고정할지 묻고, Yes를 고르면 `--pin`을 준 것과 같다. 이미 고정한 프로젝트는 Yes가 미리 선택되어 있다([TUI로 쓰기](../guides/tui.md#프로젝트에-적용하기)).
 - 적용할 프로필 내용에 숨은 문자가 있으면 파일을 쓰지 않고 종료 코드 3으로 멈춘다.
 - `AGENTS.md`의 관리 영역은 파일 처음부터 `<!-- agctx:managed:end -->`까지다. 그 아래는 사용자 것이므로 처음 적용할 때 써 주는 `## 4. 프로젝트 규칙 확장 (SSOT)`(ko)·`## 4. Project rule extensions (SSOT)`(en) 제목을 바꿔도 된다. 마커가 없는 기존 파일은 이 제목으로 경계를 찾으며 두 로케일을 모두 인식한다.
-- 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 `## Existing project guidance` 아래로 옮겨 보존한다.
+- **이미 있는 파일:** agctx가 쓴 적 없고 agctx 표지도 없는 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`가 있으면 아무것도 쓰지 않고 종료 코드 2로 멈춘다. 계획에는 그 파일이 `unmanaged`로 나오고, `--json`이면 오류 코드는 `project.unmanaged`다. 빈 파일은 없는 것으로 본다.
+- **`--adopt`:** 멈춘 파일의 내용을 사용자 영역으로 남기고 관리 영역을 더한다. `CLAUDE.md`·규칙 파일은 기존 내용 아래에 관리 블록이 붙고, 확장 섹션이 없는 기존 `AGENTS.md`는 내용을 프로필 지침 아래 `## Existing project guidance`로 옮긴다. 한 번 편입하면 `managedHashes`에 기록되어 다음 `apply`·`sync`는 묻지 않는다. `CLAUDE.md`·규칙 파일은 그 에이전트를 `--agent`로 빼서 그대로 둘 수도 있고, 안내가 뺀 목록을 채운 명령을 보여 준다. 모든 에이전트가 읽는 `AGENTS.md`는 뺄 수 없다. 멈춘 파일이 심볼릭 링크면(예: `CLAUDE.md -> AGENTS.md`) agctx가 쓸 수 없으므로 편입 대신 그 에이전트를 빼라고만 안내한다. 옛 agctx가 쓴 확장 섹션 제목(`## 4. Project rule extensions (SSOT)` 등 번호·단계가 달라도 인정)이나 `> Applied from agctx profile:` 줄이 있는 `AGENTS.md`는 agctx 파일로 보고 멈추지 않는다. 결정은 [ADR 0043](../adr/0043-stop-on-unmanaged-files.md)이다.
+
+  ```bash
+  $ agctx profile apply team-backend . --yes
+  Plan: 7 file(s) to change.
+    create    AGENTS.md
+    unmanaged CLAUDE.md
+    create    .agents/rules/agctx.md
+    …
+  Error: agctx did not write these files and they have no agctx markers, so nothing was changed: CLAUDE.md
+  Next: To keep what is in them and add the agctx managed area (below the existing content, or below the profile guidance in AGENTS.md), run agctx profile apply team-backend /work/shop --adopt. To leave an agent's file alone, remove that agent with --agent.
+  ```
+
 - 기록된 관리 영역을 밖에서 고친 프로젝트에서는 `apply`도 `sync`와 같이 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다: <파일 목록>`과 종료 코드 2로 멈춘다. 다음 단계로 차이를 볼 명령(`profile sync --dry-run`)과 푸는 명령(`profile resolve`)을 알려 준다. 푸는 절차는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)에 있다.
 
 ### `profile sync`
@@ -463,7 +477,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 
 <!-- agctx:generated:usage:profile.sync:start -->
 ```bash
-agctx profile sync [--dry-run] [--yes] [<project>]
+agctx profile sync [--dry-run] [--adopt] [--yes] [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -482,10 +496,11 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 
 `--dry-run`을 사용하면 실제 파일을 바꾸지 않고 계획만 출력한다. `apply --dry-run`도 같다.
 
-- **파일 상태:** 파일마다 `create`(새로 만듦)·`update`(고침)·`remove`(고르지 않은 에이전트의 파일이라 지움)·`unchanged`(그대로)·`conflict`(관리 영역을 밖에서 고쳐 쓰지 못함) 중 하나를 붙인다. `--json`의 `changes[].status`도 같은 값이다.
+- **파일 상태:** 파일마다 `create`(새로 만듦)·`update`(고침)·`remove`(고르지 않은 에이전트의 파일이라 지움)·`unchanged`(그대로)·`conflict`(관리 영역을 밖에서 고쳐 쓰지 못함)·`unmanaged`(agctx 표지가 없는 기존 파일이라 `--adopt` 없이 쓰지 않음) 중 하나를 붙인다. `--json`의 `data.changes[].status`에는 `create`·`update`·`remove`·`unchanged`만 나온다. `conflict`·`unmanaged`는 멈출 때의 표시라, `--json`에서는 `data`가 `null`이고 멈춘 파일이 `errors[].details`에 담긴다.
 - **충돌 파일의 diff:** `conflict` 파일은 diff를 함께 출력한다. 마지막 적용본(`.agctx/base/`)이 있으면 그 뒤에 사람이 관리 영역 안에서 고친 부분과 agctx가 새로 쓸 프로필·템플릿 변경을 나눠 보여 준다. 없으면 지금의 관리 영역과 agctx가 쓸 내용을 비교한다.
 - **종료 코드:** 충돌이 하나라도 있으면 계획을 끝까지 출력한 뒤 종료 코드 2로 끝난다.
-- **TUI:** 프로젝트 적용·동기화를 고르면 계획을 보여 준 뒤 적용할지 묻고, 충돌로 멈추면 충돌 해결로 이어갈지 묻는다.
+- **TUI:** 프로젝트 적용·동기화를 고르면 계획을 보여 준 뒤 적용할지 묻고, 충돌로 멈추면 충돌 해결로 이어갈지 묻는다. agctx 표지가 없는 파일에서 멈추면 그 파일에 관리 영역을 더할지 묻고(기본 No), Yes면 `--adopt`로 다시 실행한다.
+- **`--adopt`:** `apply`와 같다. 기록에 에이전트를 더했는데 그 에이전트의 파일을 사람이 이미 써 둔 경우처럼, 적용한 저장소에서도 표지 없는 파일이 생길 수 있다.
 
 ### `profile resolve`
 
@@ -493,7 +508,7 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 
 <!-- agctx:generated:usage:profile.resolve:start -->
 ```bash
-agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]
+agctx profile resolve [--dry-run] [--discard] [--edit] [--adopt] [--yes] [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -505,6 +520,7 @@ agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]
 | `--dry-run` | 파일별로 옮길 줄·되살릴 줄·백업 경로만 출력하고 파일은 변경하지 않음 |
 | `--discard` | 마지막 적용본을 알 수 없는 충돌에서 현재 파일을 `.agctx/backups/<시각>/`에 복사한 뒤 관리 영역을 새로 만듦 |
 | `--edit` | 마지막 적용본을 아는 충돌마다 VS Code 3-way merge 편집기(`code --wait --merge`)를 엶 |
+| `--adopt` | 충돌을 풀면서 agctx 표지가 없는 기존 파일에도 관리 영역을 더함. 그런 파일이 있으면 이 옵션 없이는 아무것도 쓰지 않고 종료 코드 2로 멈춤 |
 | `--yes` | 터미널이 아닌 환경에서 해결을 승인 |
 
 - 충돌이 없으면 `Nothing to resolve`를 출력하고 파일을 바꾸지 않는다.

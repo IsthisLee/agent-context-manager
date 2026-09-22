@@ -58,7 +58,7 @@ test('--agent로 고른 에이전트의 파일만 만들고 선택을 기록한�
 test('뺀 에이전트는 관리 블록만 지우고, 사람이 쓴 내용이 있으면 파일을 남긴다', t => {
   const { me, repo, exists, read, write, config } = project(t);
   write('CLAUDE.md', '# Notes a person wrote\n\nRun pnpm test before pushing.\n');
-  me.ok(['profile', 'apply', 'team-backend', repo, '--yes']);
+  me.ok(['profile', 'apply', 'team-backend', repo, '--adopt', '--yes']);
   assert.match(read('CLAUDE.md'), /agctx:managed:start/);
 
   const preview = me.run(['profile', 'apply', 'team-backend', repo, '--agent', 'codex', '--dry-run']);
@@ -78,7 +78,7 @@ test('뺀 에이전트는 관리 블록만 지우고, 사람이 쓴 내용이 �
   assert.deepEqual(config().agents, ['codex']);
   assert.equal(me.run(['check', repo]).status, 0);
 
-  const back = me.run(['profile', 'apply', 'team-backend', repo, '--agent', 'all', '--yes']);
+  const back = me.run(['profile', 'apply', 'team-backend', repo, '--agent', 'all', '--adopt', '--yes']);
   assert.equal(back.status, 0, back.stderr);
   assert.equal(config().agents, undefined, 'all은 기록을 지워 지원 에이전트 전부를 뜻하게 한다');
   assert.ok(exists('.agents/rules/agctx.md'));

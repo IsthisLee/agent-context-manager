@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: 023919e01749f04ca62cdbe536e8d9a24fc7956a368f39aebcc7411afe08890c -->
+<!-- agctx-doc-sources-sha256: d2e16e12c00dd5cb0c82a55388e0217fa4d18cc214cf83ec8fb7b4e5bc0d2eaa -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -97,7 +97,7 @@ Documentation check failed:
 - 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->).
 - 줄바꿈을 LF로 맞춘 뒤 계산하므로 CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다. 공백과 주석은 빼지 않는다. 이 저장소는 코드 옆 주석을 이유의 정본으로 삼으므로, 주석이 바뀌면 문서를 다시 읽는 편이 맞다.
 - 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
-- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:6778b9c431ef-->에 있다.
+- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:637ed5d422a3-->에 있다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: b9624c77d900b1ba7cc5bfd41fa87ae41d7e154f9e2a8b00595044f7b9da208d -->
+<!-- agctx-doc-sources-sha256: 5fc1437e8cb808acbf5b03578fd8f6de234fd95808c47c718695396696d237cb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -125,7 +125,7 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f39dc53e122f944791a3b55c9dedb121c34a17a5b6132492a0c5ce8e4875a6d2 -->
+<!-- agctx-doc-sources-sha256: c83af6ea462748fef83ec5297742ab4982f2b87acca0a8474401ac6618213d8b -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -146,7 +146,7 @@ Applied profile company to /path/to/project
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: d33f661555509cb367b181c727e995ac903711e9f05cec03a648b9f582c8d83e -->
+<!-- agctx-doc-sources-sha256: cd4e52f50873cef8cd9ec070707458be5439e83ec3f244b8fca73df8a4d73bab -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 

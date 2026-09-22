@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: read
-  security-events: write
 
 jobs:
   analyze:
@@ -19,6 +18,10 @@ jobs:
     # 보고되지 않는다.
     name: Analyze ${{ matrix.language }}
     runs-on: ubuntu-latest
+    # 분석 결과를 올리는 이 작업에만 쓰기 권한을 준다.
+    permissions:
+      contents: read
+      security-events: write
     timeout-minutes: 10
     strategy:
       fail-fast: false

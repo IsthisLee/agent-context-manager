@@ -89,6 +89,22 @@ test('모든 GitHub 워크플로는 checkout 자격 증명을 남기지 않는�
   }
 });
 
+test('워크플로의 최상위 권한은 읽기뿐이고, 쓰기 권한은 그것이 필요한 작업에만 준다', () => {
+  const workflows = fs
+    .readdirSync(path.join(repoRoot, '.github/workflows'))
+    .filter(name => name.endsWith('.yml'))
+    .map(name => `.github/workflows/${name}`);
+  assert.ok(workflows.length > 0);
+  for (const relative of workflows) {
+    const top = read(relative).match(/^permissions:\n((?:[ \t]+.*\n)+)/m);
+    assert.ok(top, `${relative}에 최상위 permissions가 있어야 한다`);
+    assert.doesNotMatch(top[1], /:\s*write/, `${relative}의 최상위 permissions에 쓰기 권한이 있다`);
+  }
+  // 쓰기 권한은 옮겼을 뿐 없애지 않았다.
+  assert.match(read('.github/workflows/codeql.yml'), /^ {4}permissions:\n(?: {6}.*\n)*? {6}security-events: write$/m);
+  assert.match(read('.github/workflows/publish.yml'), /^ {4}permissions:\n(?: {6}.*\n)*? {6}id-token: write$/m);
+});
+
 test('release check는 빠진 태그를 스택 추적 없는 깔끔한 오류로 보고한다', () => {
   const result = runReleaseCheck([]);
   assert.equal(result.status, 1);

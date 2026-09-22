@@ -521,12 +521,12 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 | 자격 증명     | 장기 토큰을 CI 비밀로 저장     | 저장 안 함. CI가 단기 OIDC 토큰 발급                       |
 | 유출 위험     | 저장된 비밀이 새면 오래 유효   | 저장된 비밀이 없음                                         |
 | 워크플로 설정 | `NODE_AUTH_TOKEN` 등 토큰 주입 | `id-token: write` + `--provenance`                         |
-| 근거          | 해당 없음                      | `.github/workflows/publish.yml`의 `permissions`<!--s:1a8d0bc69f9e-->, `50` (토큰 참조 없음) |
+| 근거          | 해당 없음                      | `.github/workflows/publish.yml`의 `publish`<!--s:5709e6514dda--> 잡 권한 (토큰 참조 없음) |
 
 ### 이 패키지에서의 적용 예시
 
 - 이 저장소의 배포 워크플로는 **OIDC 방식으로 구성돼 있다.** 근거는 세 가지다:
-  1. 잡 권한에 `id-token: write`가 있다(`.github/workflows/publish.yml`의 `permissions`<!--s:1a8d0bc69f9e-->).
+  1. 게시하는 잡에만 `id-token: write`가 있다(`.github/workflows/publish.yml`의 `publish`<!--s:5709e6514dda-->). 워크플로 최상위 권한은 `contents: read`뿐이다.
   2. 게시 단계가 `npm publish --provenance --access public`이다(`.github/workflows/publish.yml`의 `Publish with provenance` 단계).
   3. 워크플로 어디에도 `NODE_AUTH_TOKEN`/`NPM_TOKEN`/`secrets.*` 같은 저장된 npm 토큰 참조가 없다(전체 검색 결과 토큰 관련 참조는 `id-token: write` 한 줄뿐).
 - 즉 “저장된 토큰으로 인증”이 아니라 “워크플로 신원으로 인증”하도록 돼 있다.

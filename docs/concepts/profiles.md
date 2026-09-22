@@ -13,9 +13,9 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: c86ae4bcb31c5742c0074cdb1398237dd670de56af1b3b4657677eecbf000066 -->
+<!-- agctx-doc-sources-sha256: 65fb1e82ca3f27d0eb113012b23638612e21e551afa281b6b8d8662dd94d0133 -->
 
-프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
+프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 에이전트 환경까지 나눠 주려면 MCP 서버 목록 `mcp.json`, `skills/`, `subagents/`, `hooks.json`을 함께 둔다([팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md), [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)). 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
 
 이미 컴퓨터에 받아 둔 규칙 저장소 폴더는 `profile link`로 연결할 수 있다. 그러면 보관함의 `profiles/<이름>` 폴더에는 그 폴더의 경로를 적은 `link.json`만 남고, agctx는 연결한 폴더의 `profile.json`과 규칙 파일을 직접 읽는다. 그래서 커밋하기 전의 수정도 바로 적용된다. 연결한 프로필은 그 폴더에서 git으로 받고 올리며, 지우면 포인터만 없어진다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 
@@ -44,12 +44,13 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 56b6f59bf4a09a6ea08a26454562ea89a4cea7928afde64bd1c206db12dac41b -->
+<!-- agctx-doc-sources-sha256: 6fa97f90e95b39bd53838c257ce2d1eab224ce662f37f533aaa88ea65d909311 -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.
 - 두 명령 모두 `agctx.project.json`에 적용한 프로필과 버전(Git 프로필이면 원격·브랜치·커밋)을 기록한다.
-- `apply`에 `--pin`을 붙이면 그 커밋에 고정된다. 고정한 프로젝트는 프로필에 새 커밋이 생겨도 `sync`가 기록한 커밋의 내용을 그대로 다시 쓰고, `apply --pin`을 다시 실행해야 새 커밋으로 옮겨 간다. 기록한 커밋의 내용은 그 커밋의 `profile.json`이 가리키는 규칙 파일에서 읽으므로, 그 뒤에 규칙 파일이 옮겨져도 같은 내용이 나온다. 실제 차이는 [갱신 방식 고르기](../guides/update-policies.md#두-방식의-차이-확인하기)에 있다.
+- 프로필에 MCP 서버·skills·subagents·hooks가 있으면 에이전트마다 그 설정 파일도 쓴다. 저장소마다 `--agent`로 받을 에이전트를, `--include`로 받을 종류를 고른다. hooks는 다른 사람의 컴퓨터에서 실행될 명령이라 저장소가 `--include`에 `hooks`를 적어야만 받는다.
+- `apply`에 `--pin`을 붙이면 그 커밋에 고정된다. 고정한 프로젝트는 프로필에 새 커밋이 생겨도 `sync`가 기록한 커밋의 내용을 그대로 다시 쓰고, `apply --pin`을 다시 실행해야 새 커밋으로 옮겨 간다. 기록한 커밋의 내용은 그 커밋의 `profile.json`이 가리키는 규칙 파일과 그 커밋의 `mcp.json`·`skills/`·`subagents/`·`hooks.json`에서 읽으므로, 그 뒤에 규칙 파일이 옮겨져도 같은 내용이 나온다. 실제 차이는 [갱신 방식 고르기](../guides/update-policies.md#두-방식의-차이-확인하기)에 있다.
 
 ## 프로필 삭제
 

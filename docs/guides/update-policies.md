@@ -103,14 +103,16 @@ Plan: 0 file(s) to change.
 ## 고정하지 않은 저장소
 
 <!-- agctx-doc-sources: src/repos/sync.ts -->
-<!-- agctx-doc-sources-sha256: 8a90c88740f920b4f929d105643c69575005fff397faf5e3dd60ea0e86cd4192 -->
+<!-- agctx-doc-sources-sha256: 38381818abe79ea20fc68f31d357fcecb7d216e835019aee17a8152ef17bf44d -->
 
 프로필을 고치거나 `profile pull`로 받은 뒤 `agctx repos sync --profile <이름>`을 실행한다. 절차와 출력은 [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](multi-repo-individual.md#여러-저장소를-한-번에-맞추기)에 있다.
+
+hooks를 받는 저장소에서 hooks가 바뀌면 `repos sync`는 그 저장소를 쓰지 않고 `review`로 남기며 종료 코드 1로 끝난다. hooks는 다른 사람의 컴퓨터에서 실행될 명령이므로, 안내대로 `agctx profile sync <저장소>`를 실행해 명령을 확인한 뒤 적용한다([팀 skills·subagents·hooks 나눠 쓰기](skills-subagents-hooks.md)).
 
 ## 고정한 저장소를 PR로 갱신
 
 <!-- agctx-doc-sources: src/repos/pr.ts -->
-<!-- agctx-doc-sources-sha256: 6ee7b50ae1ade4ea5bd13e2b0a4034c55c22b40fb4b08febf5a2cd66f85c5b85 -->
+<!-- agctx-doc-sources-sha256: 0a0318b345b3afe225cebd3a2c8480b5f24764d59e6e67308fbf5e075daf84f7 -->
 
 ```bash
 agctx profile pull team-backend
@@ -118,7 +120,7 @@ agctx repos pr --profile team-backend --dry-run
 agctx repos pr --profile team-backend
 ```
 
-`repos pr`은 사용자의 작업 폴더를 건드리지 않는다. 저장소마다 원격 base 브랜치를 임시 worktree(작업 폴더와 별도로 만든 임시 체크아웃)에 받아 와 새 커밋으로 다시 고정하고, `agctx/<프로필>-<커밋>` 브랜치로 push한 뒤 `gh`(GitHub CLI)로 PR을 연다. 같은 브랜치에 열린 PR이 있거나 그 브랜치가 이미 원격에 있으면 새로 만들지 않는다. `gh`가 없거나 GitHub가 아닌 원격이면 push까지 하고 PR을 직접 열도록 안내한다. 옵션과 실제 출력은 [CLI Reference](../reference/cli.md#repos-pr)에 있다.
+`repos pr`은 사용자의 작업 폴더를 건드리지 않는다. 저장소마다 원격 base 브랜치를 임시 worktree(작업 폴더와 별도로 만든 임시 체크아웃)에 받아 와 새 커밋으로 다시 고정하고, `agctx/<프로필>-<커밋>` 브랜치로 push한 뒤 `gh`(GitHub CLI)로 PR을 연다. 같은 브랜치에 열린 PR이 있거나 그 브랜치가 이미 원격에 있으면 새로 만들지 않는다. `gh`가 없거나 GitHub가 아닌 원격이면 push까지 하고 PR을 직접 열도록 안내한다. hooks가 바뀌는 저장소는 리뷰어가 diff를 열기 전에 볼 수 있도록 PR 본문에 실행될 hook 명령을 적는다. 옵션과 실제 출력은 [CLI Reference](../reference/cli.md#repos-pr)에 있다.
 
 ## 예약 봇으로 PR 열기
 
@@ -165,12 +167,12 @@ jobs:
 ## 고정하거나 풀기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: db4450a223359c2e82bbe379d4a54b2d93dc2897fc3a2e1b577d7bd8d3753144 -->
+<!-- agctx-doc-sources-sha256: 402ad75e3ba94219a8395a325b053fa999818611f97c30f72b01106747dd90e9 -->
 
 - 처음 고정하거나 새 커밋으로 옮기려면 `agctx profile apply <이름> <프로젝트> --pin`을 실행한다. Git에 연결했고 커밋하지 않은 수정이 없는 프로필이어야 한다.
 - 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.
 - TUI의 **Apply to a project**는 Git 프로필이면 고정할지 묻는다. 이미 고정한 프로젝트는 **Yes**가 미리 선택되어 있으므로 `Enter`만 누르면 고정을 유지한 채 지금 프로필 커밋으로 옮기고, **No**를 고르면 고정이 풀린다([TUI로 쓰기](tui.md#프로젝트에-적용하기)).
-- 고정한 프로젝트의 `sync`는 기록한 커밋의 지침으로 다시 만들므로 보관함을 `pull`해도 바뀌지 않는다. 옵션과 출력은 [CLI Reference](../reference/cli.md#profile-apply)에 있다.
+- 고정한 프로젝트의 `sync`는 기록한 커밋의 지침, `mcp.json`, skills·subagents·hooks 파일로 다시 만들므로 보관함을 `pull`해도 바뀌지 않는다. `--pin`으로 적용할 때도 작업 폴더가 아니라 그 커밋의 파일을 쓰므로, `.gitignore`로 뺀 파일은 들어가지 않는다. 옵션과 출력은 [CLI Reference](../reference/cli.md#profile-apply)에 있다.
 
 ## 다음 단계
 

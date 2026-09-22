@@ -31,6 +31,6 @@ export function knownBase(
 ): string | null {
   const stored = readIfExists(path.join(targetDir, baseFilePath(relativePath)));
   if (stored !== null && sha256(parseBase(stored)) === recordedHash) return parseBase(stored);
-  if (nextRegion && sha256(nextRegion) === recordedHash) return nextRegion;
+  if (nextRegion !== null && sha256(nextRegion) === recordedHash) return nextRegion;
   return null;
 }

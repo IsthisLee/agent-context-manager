@@ -32,7 +32,7 @@
 | 후속 제안 | 아티팩트별 병합 어댑터(MCP → skills → subagents, hooks의 자리는 미정), 도구별 설정 위치 레지스트리 |
 | 연관 제안 | [에이전트 규칙 위치 탐지](agent-rule-discovery.md)의 기존 설정 스캔, [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)의 비대화형 경로 |
 | 후속 작업 | 아티팩트 종류별 소스·타깃·병합 난이도 표를 확정하고, MCP부터 실패 평가와 최소 구현을 붙인다. |
-| 권장 다음 작업 | MCP 시범 구현을 [ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md)로 확정해 Claude Code와 Codex에 구현했다. 남은 것은 Antigravity의 워크스페이스 MCP 설정(`.agents/mcp_config.json`)을 실제 세션에서 읽는지 확인하고 더하는 일, 같은 소유 영역 계약을 skills·subagents로 넓히는 일, hooks의 순서와 적용 전 확인 방식을 정하는 일이다. |
+| 권장 다음 작업 | MCP([ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md))와 skills·subagents·hooks([ADR 0046](../../../adr/0046-skills-subagents-hooks-in-profiles.md))를 Claude Code와 Codex에 구현했다. 남은 것은 Antigravity가 워크스페이스의 MCP 설정(`.agents/mcp_config.json`), subagents(`.agents/agents/`), hooks(`.agents/hooks.json`)를 실제 세션에서 읽는 조건을 확인하고 더하는 일(agy 1.2.5 `-p` 실행에서는 읽지 않았다), 바이너리 파일이 든 skill, 이벤트 목록 갱신 절차다. |
 
 ## 목차
 
@@ -198,3 +198,16 @@ ruler는 이 어려움을 덮어쓰기로 회피했다(그래서 `.bak`). agctx�
 * **계획과 달라진 점:** Antigravity는 문서에 워크스페이스 파일이 있지만 읽는 조건과 `${VAR}` 지원을 확인하지 못해 이번에는 쓰지 않았다. 사람이 같은 이름의 서버를 두었을 때는 `--adopt`로도 덮어쓰지 않는다.
 * **검수 반영:** 새 컨텍스트의 검수에서 드러난 것을 고쳤다. 점 표기·인라인 표·따옴표 이름·하위 표로 같은 서버를 정의한 `.codex/config.toml`도 찾아 멈추고, `command`·`args`의 `${...}`도 Codex에서 빼고 경고한다. 관리한 적 없는 사람의 설정 파일은 쓸 서버가 없으면 건드리지 않는다. 적용 계획의 서버 줄은 제어 문자를 드러내고 env·헤더 이름과 빼는 서버를 보여 주며, MCP를 받을 에이전트가 없으면 나오지 않는다. 표지는 줄 전체일 때만 블록 경계로 읽고, 짝 없는 서로게이트와 객체가 아닌 `mcpServers`는 받지 않는다. MCP 충돌은 프로필 `mcp.json`으로 옮긴 뒤 `resolve --discard`하라고 안내한다. Codex 사용자 설정에 같은 이름의 서버가 있으면 키가 합쳐진다고 경고한다.
 * **제약:** `.mcp.json`을 다시 쓸 때 들여쓰기 외의 서식은 `JSON.stringify` 모양이 된다. Codex가 사용자 설정과 키 하나씩 합치는 것은 경고할 뿐 막지 못한다. 비밀값인지 판정하지 않는다.
+
+#### 구현 기록: skills·subagents·hooks (2026-09-23)
+
+* **결정:** [ADR 0046](../../../adr/0046-skills-subagents-hooks-in-profiles.md). 프로필의 `skills/<이름>/`, `subagents/<이름>.md`, `hooks.json`을 에이전트마다 옮겨 쓴다. [안전 병합 계약의 멀티포맷 확장](#안전-병합-계약의-멀티포맷-확장)의 파일 트리 행은 "생성 파일마다 해시를 기록하고 파일째 소유한다"로 정했고, 고아 정리는 agctx가 기록한 파일만 지우는 것으로 정했다. hooks는 이름 없는 matcher 묶음을 해시로 가르는 구조화 설정의 관리 영역이다.
+* **구현:** 프로필 파일 읽기는 `src/artifacts/profile-files.ts`의 `workingArtifactFiles`·`committedArtifactFiles`, 정의 검사는 `src/artifacts/definitions.ts`의 `parseProfileArtifacts`, 에이전트별 위치와 변환은 `src/artifacts/targets.ts`, hooks 병합은 `src/artifacts/hooks-merge.ts`의 `mergeHooks`·`hooksRegion`, 계획은 `src/project/artifact-plan.ts`의 `planArtifactFiles`가 한다. 대상 종류(`include`)에 `skills`·`subagents`·`hooks`를 더했다.
+* **결정·검증 항목의 처리:**
+  - 우선순위: MCP 다음에 skills·subagents·hooks를 함께 구현했다. hooks는 저장소가 `include`에 `hooks`를 적을 때만 받는다.
+  - hooks의 확인 방식: apply·sync·resolve가 쓰기 전에 에이전트·이벤트·matcher·명령을 보여 주고, 터미널이 아니면 `--yes`가 있어야 쓴다. `repos sync`는 hooks가 바뀌는 저장소를 `review`로 두고 쓰지 않고, `repos pr`은 본문에 명령을 적는다. 받은 hooks의 숨은 문자는 규칙 파일과 같이 검사한다.
+  - 실패 평가 시나리오: `evals/profile-artifacts.test.ts` 24개. 처음 적용과 실행 권한, 에이전트 고르기와 빼기, skill 빼기, 사람이 둔 같은 이름의 skill, 같은 내용의 파일 맡기, 고친 파일의 충돌과 `resolve --discard`, hooks의 보존·확인·빼기·충돌, 사람이 둔 같은 묶음, 형식 오류 여섯 가지, 숨은 문자, skill 안의 `AGENTS.md`, 고정한 Git 프로필, `repos sync`의 `review`, `profile view`, 심볼릭 링크 `clone` 거부, TUI의 선택, `.gitignore`가 가린 파일, 부산물 폴더, 빈 파일, 사람이 더한 파일, `resolve`의 hooks 표시, `repos pr` 본문을 검사한다.
+* **실측:** agctx가 쓴 skill·subagent·hook을 Claude Code 2.1.278이 모두 읽었고, Codex 0.155.1이 skill·subagent를 목록에 올리고 hook을 실행했다([근거](../../../references.md#skillssubagentshooks-위치와-형식-근거)).
+* **계획과 달라진 점:** Antigravity에는 skills만 쓴다. subagents와 hooks는 문서의 워크스페이스 위치에 두어도 agy 1.2.5 실행에서 읽히지 않았다. `--include all`은 기존 계약대로 hooks를 뺀 전부이고, hooks는 이름으로 골라야 받는다. hooks는 도구 이름과 이벤트가 달라 도구 중립 형식 대신 에이전트별로 적는다.
+* **검수 반영:** 새 컨텍스트의 검수에서 재현한 것을 고쳤다. Git 프로필에서 `.gitignore`가 가린 파일(`.env` 등)이 복사되던 것을 막고 `--pin`은 커밋한 파일을 쓴다. `resolve --discard`가 hook 묶음을 두 번 넣던 것을 고치고, 고친 묶음이 남는다고 알린다. `resolve`가 hooks를 다시 쓸 때 명령을 보여 준다. 빈 파일도 기록한다. 사람이 agctx의 skill 폴더에 더한 파일 때문에 동기화가 멈추지 않는다. Git이 아닌 프로필은 `__pycache__` 같은 부산물 폴더를 건너뛴다. Windows에서는 실행 권한을 비교하지 않는다. `repos pr` 본문에 hook 명령을 적는다.
+* **제약:** 사람이 hook 묶음을 고치면 그 묶음은 사람의 것으로 남는다. 사람이 이미 둔 것과 같은 묶음은 편입할 때 한 번 더 들어간다(Claude Code는 같은 처리기를 한 번만 실행한다). 에이전트를 뺐다가 다시 고르면 사람이 만든 설정 파일에 다시 `--adopt`가 필요하다. 바이너리 파일이 든 skill은 받지 않는다. 이벤트 목록은 문서가 늘면 갱신해야 한다.

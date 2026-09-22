@@ -9,6 +9,8 @@ import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import { shellWord } from '../shared/shell.ts';
 import type { ListedProfile, Profile, ProfileMetadata, Scope } from '../shared/types.ts';
 import { parseMcpServers, PROFILE_MCP_FILE } from '../mcp/servers.ts';
+import { parseProfileArtifacts, type ProfileArtifacts } from '../artifacts/definitions.ts';
+import { workingArtifactFiles } from '../artifacts/profile-files.ts';
 import { describeServer } from '../mcp/targets.ts';
 
 export const SCOPES: readonly Scope[] = ['personal', 'company', 'team', 'workspace'];
@@ -479,6 +481,9 @@ export function viewProfile(name: string): {
   scope: Scope;
   instructions: string;
   mcpServers: string[] | null;
+  skills: string[];
+  subagents: string[];
+  hooks: string[] | null;
 } {
   const profile = readProfile(name);
   const instructions = fs.readFileSync(profile.instructionsPath, 'utf8').trim();
@@ -501,11 +506,26 @@ export function viewProfile(name: string): {
             .join(', ') || '-'
       })}`
     );
+  let artifacts: ProfileArtifacts | null = null;
+  try {
+    artifacts = parseProfileArtifacts(workingArtifactFiles(profile.profileDir));
+  } catch (error) {
+    say(`\n${_('view.artifacts-invalid', { detail: error instanceof Error ? error.message : String(error) })}`);
+  }
+  if (artifacts?.skills.length)
+    say(`\n${_('view.skills', { names: artifacts.skills.map(skill => skill.name).join(', ') })}`);
+  if (artifacts?.subagents.length)
+    say(`\n${_('view.subagents', { names: artifacts.subagents.map(definition => definition.name).join(', ') })}`);
+  if (artifacts?.hooks)
+    say(`\n${_('view.hooks', { names: artifacts.hooks.map(hook => hook.name).join(', ') || '-' })}`);
   return {
     name: profile.metadata.name,
     scope: profile.metadata.scope,
     instructions,
-    mcpServers: servers ? Object.keys(servers) : null
+    mcpServers: servers ? Object.keys(servers) : null,
+    skills: artifacts?.skills.map(skill => skill.name) ?? [],
+    subagents: artifacts?.subagents.map(definition => definition.name) ?? [],
+    hooks: artifacts?.hooks ? artifacts.hooks.map(hook => hook.name) : null
   };
 }
 

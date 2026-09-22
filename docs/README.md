@@ -30,6 +30,7 @@
 | CI와 스크립트                           | [CI와 자동화에서 쓰기](guides/ci.md)                                          |
 | Microsoft APM과 함께                    | [APM과 함께 쓰기](guides/apm-coexistence.md)                                  |
 | 팀 MCP 서버 나눠 쓰기                   | [팀 MCP 서버 나눠 쓰기](guides/mcp-servers.md)                                |
+| 팀 skills·subagents·hooks 나눠 쓰기     | [팀 skills·subagents·hooks 나눠 쓰기](guides/skills-subagents-hooks.md)       |
 
 ### 개념
 
@@ -74,7 +75,7 @@
 | `README.md`                                      | 외부 사용자를 위한 한 페이지 패키지 소개: 핵심 문제·기능·구조·빠른 시작·문서 링크                                                     |
 | `docs/README.md`                                 | 문서 입구: 사용 흐름 요약, 사용자·기여자 문서 목차, ADR 색인                                                                          |
 | `docs/getting-started/`                          | 설치와 첫 적용·확인까지의 최소 흐름                                                                                                   |
-| `docs/guides/`                                   | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM·MCP                                                           |
+| `docs/guides/`                                   | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM·MCP·skills·subagents·hooks                                                          |
 | `docs/concepts/`                                 | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인                                                                  |
 | `docs/reference/`                                | CLI 명령·옵션·종료 코드·`--json` 결과 형식·파일 형식·지원 에이전트·배포 지침 목록·문제 해결의 정확한 사양                                                |
 | `docs/faq.md`                                    | 자주 묻는 질문의 짧은 답과 정본 링크                                                                                                  |
@@ -141,6 +142,7 @@
   - [ADR 0043: agctx 표지가 없는 기존 파일은 `--adopt` 없이 쓰지 않는다](adr/0043-stop-on-unmanaged-files.md)
   - [ADR 0044: 프로필의 MCP 서버를 Claude Code `.mcp.json`과 Codex `.codex/config.toml`에 소유 영역만 병합해 쓴다](adr/0044-mcp-servers-in-profiles.md)
   - [ADR 0045: 명령 출력을 싣는 문서 예시는 메시지 카탈로그를 핀하지 않고 실제 실행과 대조한다](adr/0045-run-doc-examples-instead-of-pinning-messages.md)
+  - [ADR 0046: 프로필의 skills·subagents·hooks를 에이전트마다 저장소에 쓰고, hooks는 저장소가 고를 때만 쓴다](adr/0046-skills-subagents-hooks-in-profiles.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

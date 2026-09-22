@@ -13,7 +13,8 @@ import { recordRepo, selectRepos } from './registry.ts';
  * 고정한 저장소는 `repos pr`로만 바뀐다.
  */
 
-export type SyncState = 'update' | 'updated' | 'up-to-date' | 'pinned' | 'dirty' | 'conflict' | 'missing' | 'error';
+export type SyncState =
+  'update' | 'updated' | 'up-to-date' | 'pinned' | 'dirty' | 'conflict' | 'review' | 'missing' | 'error';
 
 export interface SyncItem {
   path: string;
@@ -134,6 +135,19 @@ export function planReposSync(profileFilter: string | null): SyncItem[] {
           exitCode: EXIT.conflict,
           files,
           detail: _('repos.sync.unmanaged', { files: files.join(', '), project: shellWord(entry.path) })
+        };
+      }
+      // hooks는 다른 사람의 컴퓨터에서 실행될 명령이라, 여러 저장소를 한 번에 확인하는 대신 저장소마다
+      // 명령을 보여 주는 profile sync로 넘긴다(ADR 0022).
+      if (plan.plan.files.some(file => file.kind === 'hooks-json' && file.currentRegion !== file.nextRegion)) {
+        const files = plan.plan.files.filter(file => file.kind === 'hooks-json').map(file => file.rel);
+        return {
+          ...item,
+          profile,
+          state: 'review',
+          exitCode: EXIT.behind,
+          files,
+          detail: _('repos.sync.hooks', { project: shellWord(entry.path) })
         };
       }
       if (!plan.plan.changes.some(change => change.status !== 'unchanged')) {

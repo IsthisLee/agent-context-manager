@@ -135,7 +135,7 @@ export const COMMANDS: readonly CommandSpec[] = [
     options: [
       dryRun,
       { name: 'agent', value: '<codex|claude|antigravity|all>' },
-      { name: 'include', value: '<rules|mcp|all>' },
+      { name: 'include', value: '<rules,mcp,skills,subagents,hooks|all>' },
       { name: 'pin' },
       { name: 'adopt' },
       yes

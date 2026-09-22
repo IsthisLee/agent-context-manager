@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 90b2ce69c468dbdcf40b6385f16aaaa2714b327dcc13098b628160bc923c9f8d -->
+<!-- agctx-doc-sources-sha256: 891df7016e8a761c730f1dbc36b08a7f612d8fe266b3706c887a300e21e55b59 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 938337a26710f4099e098534a9d61baa6ce16c1ce61a5d31000e029864dda5f5 -->
+<!-- agctx-doc-sources-sha256: e17c8069048ad87ce5c67ca093a2d70930d530394778f55f22ca64f4db805f2e -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -119,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: cc661a44efc0a2b49384fabb29915d2987fbbe2a33683bc7064942a80eff76aa -->
+<!-- agctx-doc-sources-sha256: 0f88725f17c871ee33705c3ca2166d23f46c0d2ea748305d43995290c7169290 -->
 
 ```bash
 agctx
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 758cb304d3e6b56de7122bddc4e88a28d6ebefae3b5a2c7f378fbdecc32ea046 -->
+<!-- agctx-doc-sources-sha256: aff94d44c3f6b7d343fce46650785dc7e9bc0d77b05a278bc6d35cbe2b63cf82 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -257,7 +257,7 @@ scope가 없는 프로필을 임의로 선택하지 않으며, 해당 scope에 �
 
 ### `profile view`
 
-프로필의 scope와 현재 규칙 파일 내용을 출력한다. 규칙 파일은 `AGENTS.md`이고, `profile.json`의 `instructions`가 있으면 그 파일이다([파일 형식](file-formats.md#profilejson)).
+프로필의 scope와 현재 규칙 파일 내용을 출력한다. 규칙 파일은 `AGENTS.md`이고, `profile.json`의 `instructions`가 있으면 그 파일이다([파일 형식](file-formats.md#profilejson)). 프로필에 MCP 서버, skills, subagents, hooks가 있으면 그 이름을 마지막 줄들에 덧붙인다.
 
 <!-- agctx:generated:usage:profile.view:start -->
 ```bash
@@ -333,7 +333,7 @@ agctx profile setup company --tdd on --security on
 
 <!-- agctx:generated:usage:profile.apply:start -->
 ```bash
-agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--include <rules|mcp|all>] [--pin] [--adopt] [--yes] <name> [<project>]
+agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--include <rules,mcp,skills,subagents,hooks|all>] [--pin] [--adopt] [--yes] <name> [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -345,9 +345,9 @@ agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--incl
 | `<project>` | 적용할 프로젝트 경로; 생략하면 현재 디렉터리 |
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
 | `--agent` | 연결 파일을 받을 에이전트. `codex`·`claude`·`antigravity`를 쉼표로 여러 개 주거나 `all`. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
-| `--include` | 받을 대상 종류. `rules`·`mcp`를 쉼표로 주거나 `all`. `rules`는 뺄 수 없다. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
+| `--include` | 받을 대상 종류. `rules`·`mcp`·`skills`·`subagents`·`hooks`를 쉼표로 주거나 `all`. `rules`는 뺄 수 없다. `all`은 기록을 지우고 hooks를 뺀 전부를 받는다. hooks는 목록에 적어야만 받는다. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 hooks를 뺀 전부 |
 | `--pin` | Git 프로필의 현재 커밋에 프로젝트를 고정 |
-| `--adopt` | agctx 표지가 없는 기존 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`에도 관리 영역을 더함 |
+| `--adopt` | agctx 표지가 없는 기존 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`와 사람이 만든 `.mcp.json`·`.codex/config.toml`·`.claude/settings.json`·`.codex/hooks.json`에도 관리 영역을 더함 |
 | `--yes` | 터미널이 아닌 환경에서 적용을 승인 |
 
 - **만드는 파일:** 프로젝트에 `AGENTS.md`, 에이전트별 포인터 파일(`CLAUDE.md`·`.agents/rules/agctx.md`), `agctx.project.json`을 만든다. 마지막으로 쓴 관리 영역 원문은 `.agctx/base/<경로>.base`에 기록하고, `.agctx/.gitignore`로 `backups/`를 커밋에서 뺀다.
@@ -395,6 +395,8 @@ Dry-run: no files were changed.
 결정은 [ADR 0042](../adr/0042-choose-agents-per-repository.md)다.
 
 **MCP 서버:** 프로필 폴더에 `mcp.json`이 있으면 고른 에이전트마다 Claude Code의 `.mcp.json`과 Codex의 `.codex/config.toml`에도 서버를 쓴다. 계획 아래에 `MCP servers from the profile: <이름> (<명령이나 URL>)` 줄로 쓸 서버를 보여 준다. agctx가 쓴 서버만 바꾸고 사람이 넣은 서버와 설정은 그대로 두며, 사람이 같은 이름의 서버를 두었으면 아무것도 쓰지 않고 종료 코드 2로 멈춘다. `--include rules`면 MCP를 쓰지 않고 이미 쓴 서버를 지우며, 그 선택을 `agctx.project.json`의 `include`에 남긴다. 파일 형식은 [파일 형식과 저장 위치](file-formats.md#mcpjson), 쓰는 법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md), 결정은 [ADR 0044](../adr/0044-mcp-servers-in-profiles.md)다.
+
+**skills·subagents·hooks:** 프로필 폴더에 `skills/<이름>/`, `subagents/<이름>.md`, `hooks.json`이 있으면 고른 에이전트마다 옮겨 쓴다. 계획 아래에 `Skills from the profile: <이름>`, `Subagents from the profile: <이름>` 줄과, hook마다 `<hook>: <에이전트> <이벤트> <matcher>: <명령>` 줄을 보여 준다. 사람이 같은 skill 폴더나 subagent 파일에 다른 내용을 두었으면 `project.artifact-taken`으로 아무것도 쓰지 않고 종료 코드 2로 멈추며, `--adopt`로도 덮어쓰지 않는다. hooks는 `--include`에 `hooks`를 적은 저장소만 받는다. 위치와 형식은 [파일 형식과 저장 위치](file-formats.md#skillssubagentshooks), 쓰는 법은 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md), 결정은 [ADR 0046](../adr/0046-skills-subagents-hooks-in-profiles.md)이다.
 
 **하위 폴더 연결 파일:** 루트에 `CLAUDE.md`가 있으면 Claude Code는 하위 폴더에서 시작할 때 그 폴더의 `AGENTS.md`를 읽지 않고, 루트에서 시작하면 그 폴더의 파일을 열 때만 읽으므로([ADR 0035](../adr/0035-claude-code-reads-agents-md.md)), 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 
@@ -532,6 +534,7 @@ agctx profile resolve [--dry-run] [--discard] [--edit] [--adopt] [--yes] [<proje
 - **파일이 없는 경우:** 다시 만든다.
 - **마지막 적용본을 모르는 경우:** base가 없는 상태에서 프로필까지 바뀐 경우다. 사용자 편집과 프로필 변경을 가려낼 수 없으므로 diff를 보여 주고 종료 코드 2로 멈춘다. `--discard`를 주면 백업한 뒤 새로 만든다.
 - **`--edit`:** 아래쪽 Result 창은 자동 해결과 같은 내용, 곧 관리 영역 안에서 추가·수정한 줄을 밖으로 옮긴 파일로 열린다. 위쪽 창에서 변경을 받아들이지 않아도 되며, Result 창을 확인하고 고친 뒤 저장한다. 편집기를 열기 전에 터미널이 확인 순서를 안내한다. 위쪽 `current-<파일>` 창의 강조 영역은 원래 고친 위치이므로 수락하지 않는다. 탭을 닫을 때 VS Code가 처리되지 않은 충돌 경고를 띄우면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 편집기를 닫으면 결과 파일에서 관리 영역 **밖**의 내용만 가져오고 관리 영역은 agctx가 새로 만든다. 저장할 때 포매터가 관리 영역을 바꿔도 적용된다. 결과의 관리 영역 안에 남은 변경은 적용하지 않고 diff와 보존한 결과 파일 경로로 알린다. 결과 파일에서 관리 마커가 사라졌으면 결과 파일 경로를 알려 주고 종료 코드 2로 멈춘다. `code` 명령을 실행할 수 없으면 설치 방법을 안내하고 종료 코드 69로 멈춘다. 근거는 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)이다.
+- **MCP·hooks 설정과 skills·subagents 파일:** 고친 내용을 관리 영역 밖으로 옮길 자리가 없으므로 `--discard`로만 푼다. hooks 파일을 다시 쓸 때는 확인을 받기 전에 실행될 명령을 보여 준다. 사람이 고친 hook 묶음은 해시가 달라 사람의 hook으로 남으므로 경고한다.
 - 풀 수 없는 충돌이 하나라도 남으면 어떤 파일도 쓰지 않는다. 쓸 때는 관리 hash와 `.agctx/base/`를 함께 갱신한다.
 
 `profile list`의 관리 메뉴에서는 `프로젝트 충돌 해결`을 고른다. 경로를 고르면 계획을 먼저 보여 주고 자동 해결·VS Code에서 병합·백업 후 다시 생성 중 하나를 선택한다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)에 있다.
@@ -1071,15 +1074,16 @@ agctx repos sync [--profile <name>] [--dry-run] [--yes]
 | `--dry-run` | 저장소마다 바뀔 파일만 보여 주고 쓰지 않음 |
 | `--yes` | 터미널이 아닌 환경에서 동기화를 승인 |
 
-모든 저장소의 계획을 먼저 출력하고, 확인은 한 번만 받은 뒤 쓴다. 아래 표에서 `pinned`·`dirty`·`conflict`·`missing` 상태인 저장소는 건너뛴다. 한 저장소가 실패해도 나머지 저장소는 계속 처리하고, 종료 코드는 모든 저장소 가운데 가장 심각한 값이다.
+모든 저장소의 계획을 먼저 출력하고, 확인은 한 번만 받은 뒤 쓴다. 아래 표에서 `pinned`·`dirty`·`conflict`·`review`·`missing` 상태인 저장소는 건너뛴다. 한 저장소가 실패해도 나머지 저장소는 계속 처리하고, 종료 코드는 모든 저장소 가운데 가장 심각한 값이다.
 
 | 상태 | 뜻 | 종료 코드 |
 | --- | --- | --- |
 | `update` → `updated` | 바뀔 파일이 있어 동기화함 | 0 |
 | `up-to-date` | 바꿀 것이 없음 | 0 |
 | `pinned` | 고정한 저장소. `repos pr`로 갱신 | 0 |
-| `dirty` | `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`·`agctx.project.json`에 커밋하지 않은 변경이 있음 | 1 |
+| `dirty` | `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`·`agctx.project.json`과 `managedHashes`에 기록한 관리 파일(skills·subagents·hooks 파일 포함)에 커밋하지 않은 변경이 있음 | 1 |
 | `conflict` | 관리 영역을 밖에서 고침. `profile resolve`로 해결 | 2 |
+| `review` | hooks가 바뀜. 저장소마다 실행될 명령을 보여 주려고 쓰지 않는다. 그 저장소에서 `profile sync`로 확인한 뒤 씀 | 1 |
 | `missing` | 폴더가 없어짐 | 0 |
 | `error` | 그 저장소에서 난 오류(숨은 문자 3, 외부 도구 69 등) | 오류의 코드 |
 
@@ -1126,7 +1130,7 @@ agctx repos pr [--profile <name>] [--targets <file>] [--base <branch>] [--draft]
 - 저장소마다 원격 base 브랜치를 가져와 임시 worktree에 분리된 상태로 체크아웃하고 그곳에서 계획한다. `--targets`의 경로는 대상 파일이 있는 폴더 기준이며, bare 저장소 경로와 URL은 임시 폴더에 clone한다. 임시 작업 공간은 끝나면 지운다.
 - 고정한 저장소는 프로필의 현재 커밋으로 다시 고정하고, 고정하지 않은 저장소는 보관함 내용으로 동기화한다. 고정한 저장소는 프로필 보관함에 커밋하지 않은 변경이 없어야 한다.
 - 브랜치 이름은 `agctx/<프로필>-<커밋 7자리>`다. 바뀐 것이 없으면 `up-to-date`, 그 브랜치에 열린 PR이 있으면 `pr-exists`, 원격에 그 브랜치가 이미 있으면 `branch-exists`로 끝나고 아무것도 만들지 않는다. 그래서 예약 실행을 반복해도 PR이 쌓이지 않는다.
-- 열 PR 목록을 출력한 뒤 한 번 확인하고, 분리된 HEAD에서 커밋해 `git push origin HEAD:refs/heads/<브랜치>`로 올린 다음 `gh pr create`를 실행한다. PR 본문에는 버전 범위·프로필 커밋·바뀐 파일이 들어간다. 성공하면 `opened`와 PR 주소를 보여 준다.
+- 열 PR 목록을 출력한 뒤 한 번 확인하고, 분리된 HEAD에서 커밋해 `git push origin HEAD:refs/heads/<브랜치>`로 올린 다음 `gh pr create`를 실행한다. PR 본문에는 버전 범위·프로필 커밋·바뀐 파일이 들어가고, hooks가 바뀌면 hook마다 실행될 명령도 들어간다. 성공하면 `opened`와 PR 주소를 보여 준다.
 - `gh`가 없거나 인증되지 않았거나 원격이 GitHub가 아니면 push까지 한 상태를 `pushed`로 알리고 PR을 직접 열 방법을 안내한다(원격이 GitHub이면 비교 페이지 주소도 함께). 커밋 작성자는 실행한 환경의 Git 설정(`user.name`·`user.email`)을 따른다.
 - 종료 코드는 저장소 가운데 가장 심각한 값이다(`conflict` 2, 그 저장소의 오류 코드).
 

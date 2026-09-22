@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { isSymbolicLink } from '../shared/fs-utils.ts';
 import { git } from '../shared/git.ts';
 import { filesBelow, SKIPPED_FOLDERS } from '../shared/scan.ts';
 
@@ -63,12 +64,26 @@ export function personLink(targetDir: string, folder: string): string | null {
 
 /** CLAUDE.md가 `agentsFile`에 닿는지: 그 파일을 가리키는 심볼릭 링크이거나, 코드 밖의 `@` import. */
 export function linksTo(claudeFile: string, agentsFile: string): boolean {
-  if (fs.lstatSync(claudeFile).isSymbolicLink()) return true;
-  const text = fs
-    .readFileSync(claudeFile, 'utf8')
-    .replace(/```[\s\S]*?```/g, '')
-    .replace(/`[^`\n]*`/g, '');
-  return [...text.matchAll(/(?:^|\s)@([^\s@`)\]]+)/gm)].some(
-    match => path.resolve(path.dirname(claudeFile), match[1]) === agentsFile
-  );
+  // 먼저 파일을 열어 읽을 대상을 고정하고, 그다음 경로가 링크인지 본다. 경로로 확인한 뒤 경로로 다시 읽으면
+  // 그 사이에 다른 파일로 바뀔 수 있다.
+  let fd: number;
+  try {
+    fd = fs.openSync(claudeFile, 'r');
+  } catch (error) {
+    // 대상이 없는 링크는 열 수 없지만 여전히 링크다.
+    if (isSymbolicLink(claudeFile)) return true;
+    throw error;
+  }
+  try {
+    if (isSymbolicLink(claudeFile)) return true;
+    const text = fs
+      .readFileSync(fd, 'utf8')
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`[^`\n]*`/g, '');
+    return [...text.matchAll(/(?:^|\s)@([^\s@`)\]]+)/gm)].some(
+      match => path.resolve(path.dirname(claudeFile), match[1]) === agentsFile
+    );
+  } finally {
+    fs.closeSync(fd);
+  }
 }

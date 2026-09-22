@@ -54,13 +54,17 @@ export function writeTextAtomic(target: string, content: string): void {
   assertSafeTextTarget(target);
   let mode = 0o666;
   let crlf = false;
+  // 모드와 줄 끝은 한 번 연 파일에서 읽는다. 경로로 확인한 뒤 경로로 다시 읽으면 그 사이에 다른 파일로 바뀔 수 있다.
+  let fd: number | null = null;
   try {
-    const stat = fs.lstatSync(target);
-    mode = stat.mode & 0o777;
+    fd = fs.openSync(target, 'r');
+    mode = fs.fstatSync(fd).mode & 0o777;
     // CRLF로 checkout한 파일은 CRLF를 유지해서, 다시 써도 모든 줄이 diff가 되지 않게 한다.
-    crlf = fs.readFileSync(target, 'utf8').includes('\r\n');
+    crlf = fs.readFileSync(fd, 'utf8').includes('\r\n');
   } catch (error) {
     if (errorCode(error) !== 'ENOENT') throw error;
+  } finally {
+    if (fd !== null) fs.closeSync(fd);
   }
 
   fs.mkdirSync(path.dirname(target), { recursive: true });

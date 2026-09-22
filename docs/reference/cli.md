@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 7ee2012ac15a13335c152ea42cc821cad4cf822cd3e06f7e3ac13ccf527c934d -->
+<!-- agctx-doc-sources-sha256: 507eab1ae9a1801328d34d2e2e79fbd2b0c44866cef050af55100ba177503d9e -->
 
 ```bash
 npm install --global agent-context-manager
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 7ed05754fd683e5418c93b3f90742ef7564a5b0fd89a5038af18676c4b864cbd -->
+<!-- agctx-doc-sources-sha256: 4901c6b30636bdcd68e8ea32eb5e5867c701f0a74fb453cfc963a696c36ab607 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

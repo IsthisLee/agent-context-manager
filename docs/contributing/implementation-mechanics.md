@@ -288,7 +288,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 다른 도구가 생성한 파일을 덮어쓰지 않고, 하위 폴더의 `AGENTS.md`에는 Claude Code가 읽을 연결 파일을 만든다. 두 판정 모두 계획 단계에서 이뤄지므로 `apply`·`sync`·`resolve`·`check`·`repos sync`·`repos pr`이 같은 결과를 받는다.
 
 - APM 판정: `src/project/apm.ts`의 `apmRegenerates`<!--s:094241ddc410-->
-- 연결 파일: `src/project/links.ts`의 `nestedAgentsFiles`<!--s:8aa5635f000a-->·`gitListed`<!--s:24fef030ad3d-->·`personLink`<!--s:d4c5f5340948-->·`linksTo`<!--s:6ccf6c8d104c-->
+- 연결 파일: `src/project/links.ts`의 `nestedAgentsFiles`<!--s:8aa5635f000a-->·`gitListed`<!--s:24fef030ad3d-->·`personLink`<!--s:d4c5f5340948-->·`linksTo`<!--s:004d73831ac4-->
 - 폴더 탐색: `src/shared/scan.ts`의 `filesBelow`<!--s:896ffb39ffb1-->
 - 이유: [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)
 - 지키는 평가: `evals/apm-coexistence.test.ts`, `evals/monorepo-links.test.ts`

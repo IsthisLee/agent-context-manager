@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: cec195a27b98fe8a0e61dd6d6faeccc8e0a1a6415c9d63f3a5dc3729e6e98dc0 -->
+<!-- agctx-doc-sources-sha256: 0d8cba5e20579cc2da7021bd4b5a783bccb6d5c05b136ec77b5fc590f64f81bb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -24,7 +24,7 @@
 
 ## 에이전트 컨텍스트를 한곳에서 만들고 관리합니다
 
-**TDD·보안·문서화·스킬·MCP 같은 기준을 이미 CLAUDE.md에 정해 두셨을 것입니다. 그런데 프로젝트와 AI 도구가 늘어날 때마다 같은 설정을 처음부터 다시 하고 계시지는 않나요?**
+**TDD·보안·문서화·스킬·MCP 같은 기준을 이미 저장소에 정해 두셨을 것입니다. 그런데 프로젝트와 AI 도구가 늘어날 때마다 같은 설정을 처음부터 다시 하고 계시지는 않나요?**
 
 agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트에 적용하면 Codex·Claude Code·Antigravity가 읽는 지침 파일을 한 번에 만듭니다. 프로필에서 기준을 바꾼 뒤 동기화하면 프로젝트마다 파일을 다시 고치지 않아도 되고, 각 프로젝트만의 도메인 규칙은 그대로 남습니다. `profile create` → `profile setup` → `profile apply`·`profile sync`로 이어지는 한 흐름입니다.
 
@@ -76,7 +76,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 ## 시작하기
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
+<!-- agctx-doc-sources-sha256: 8f00a3712502f02541eff34821e19fe31bfc083caa3e065aef9b384301c5c036 -->
 
 > 실행 환경: Node.js 22 LTS 이상
 

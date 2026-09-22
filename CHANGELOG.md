@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-23
+
 ### Added
 
 - 프로필이 skills·subagents·hooks를 담는다. 프로필 폴더의 `skills/<이름>/`, `subagents/<이름>.md`, `hooks.json`을 `profile apply`·`sync`가 에이전트마다 옮겨 쓴다. skills는 Claude Code `.claude/skills/`와 Codex·Antigravity가 읽는 `.agents/skills/`에 실행 권한까지 그대로 복사한다. subagents는 Claude Code `.claude/agents/`에 그대로, Codex `.codex/agents/<이름>.toml`로 옮겨 쓰고 옮기지 못한 머리말 키(`tools` 등)는 경고한다. hooks는 저장소가 `--include`에 `hooks`를 적었을 때만 Claude Code `.claude/settings.json`의 `hooks`와 Codex `.codex/hooks.json`에 쓰고, 쓰기 전에 에이전트·이벤트·matcher·명령을 보여 준다. `--include all`은 지금처럼 hooks를 뺀 전부다. agctx가 쓴 파일과 hook 묶음만 바꾸고 지우며, 사람이 둔 skill·subagent·hooks와 권한 설정은 그대로 둔다. 같은 skill 폴더나 subagent 파일에 사람이 둔 다른 내용이 있으면 `--adopt`로도 덮어쓰지 않고 멈춘다. `repos sync`는 hooks가 바뀌는 저장소를 `review`로 두고 쓰지 않으며, `repos pr`은 본문에 hook 명령을 적는다. `profile view`가 프로필의 skills·subagents·hooks 이름을 보여 주고, TUI의 「프로젝트에 적용」은 받을 종류를 고르게 한다. Git 프로필은 `.gitignore`가 가린 파일을 나눠 주지 않는다. Antigravity에는 저장소의 subagents·hooks를 읽는 것을 확인하지 못해 skills만 쓴다. Codex는 받은 hook을 사람마다 `/hooks`에서 승인해야 실행한다. 근거는 [ADR 0046](docs/adr/0046-skills-subagents-hooks-in-profiles.md)
@@ -23,6 +25,7 @@
 - 프로젝트 `AGENTS.md`의 관리 영역 경계를 `<!-- agctx:managed:end -->` 마커로 표시한다. 파일 처음부터 그 줄까지가 agctx 것이고 아래는 전부 사용자 것이다. 지금까지는 확장 섹션 제목(`## 4. 프로젝트 규칙 확장 (SSOT)`)의 생김새로 경계를 알아맞혔기 때문에, 파일을 열어도 어디까지가 agctx 영역인지 보이지 않았고 제목을 바꾸면 파일 전체가 관리 영역이 되어 충돌했다. 이제 제목과 그 아래 안내 한 줄은 사용자 것이므로 자기 말로 바꾸거나 지워도 된다. 처음 적용할 때 쓸 자리를 알려 주려고 한 번 써 줄 뿐이다. 기존 저장소는 `agctx profile sync` 한 번이면 마커가 들어가고, 마커가 없는 동안에는 지금까지처럼 제목으로 경계를 찾는다. 근거는 [ADR 0034](docs/adr/0034-managed-end-marker-in-agents-md.md)
 - 프로젝트 `AGENTS.md`에서 프로필용 표지 `<!-- agctx:guidance:start -->`와 `<!-- agctx:guidance:end -->`를 뺀다. 그 사이의 지침 본문은 그대로 둔다. 이 표지는 `profile setup`이 프로필에서 다시 쓰는 범위를 뜻할 뿐 프로젝트에서는 의미가 없는데, 관리 영역 안에서 경계처럼 보였다
 - 관리 영역이 `.agctx/base/`의 원문과 표현만 다르면 사람이 고친 것으로 보지 않는다. 목록 기호, 줄 끝 공백, 블록 사이의 빈 줄, 줄 끝 문자, 문단 안의 줄바꿈이 대상이고 낱말은 그대로 비교한다. 편집기가 저장할 때 Markdown을 다시 포맷해도 충돌하지 않게 하려는 것이며, 문단을 정해진 너비로 다시 접는 설정(Prettier의 `proseWrap: always`)까지 포함한다. 문단 안의 단일 줄바꿈이 Markdown에서 공백과 같기 때문이고, 줄바꿈에 뜻이 있는 코드 블록은 그대로 비교한다. 적용된 파일을 포맷 대상에서 뺄 필요가 없다. 낱말이나 그 차례가 바뀌면 지금까지처럼 충돌하고, 원문을 알 수 없으면 해시만 비교한다
+- 관리 영역 충돌 문구를 바꿨다. `agctx 밖에서 관리 파일을 고쳤습니다`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`가 되고, 안내에 프로젝트 규칙을 어디에 쓰면 되는지 한 줄을 더했다. 영어 문구도 같이 바꿨다.
 
 ### Fixed
 
@@ -31,10 +34,6 @@
 - 관리 영역이 이미 agctx가 쓰려는 내용과 똑같은데도 충돌로 멈추던 문제를 고쳤다. 덮어써도 잃을 것이 없는 상황이라 이제 그대로 진행한다. 옛 버전이 쓴 관리 영역을 포매터가 고쳐 놓았고 새 버전이 그 형태로 쓰는 경우가 여기에 해당하며, `resolve`로 풀면 오히려 쓸모없는 줄이 확장 영역에 남았다. 관리 영역에 다른 내용이 들어 있으면 지금까지처럼 멈춘다
 - `check`와 `profile sync`가 같은 관리 영역을 두고 다른 판정을 내리던 문제를 고쳤다. `check`는 기록된 해시만 비교해 충돌(2)이라고 했고 `sync`는 통과했다. 프로필이 이 컴퓨터의 보관함에 있으면 `check`도 `sync`와 같은 기준으로 판정한다. 프로필이 없으면 비교할 기준이 해시뿐이므로 지금까지처럼 충돌로 본다
 - `AGENTS.md`에서 프로젝트 확장 섹션의 제목을 찾는 조건을 넓혔다. 번호나 점이 없거나 제목 단계가 `###`로 바뀌면 경계를 찾지 못해 파일 전체를 관리 영역으로 보았고, 그래서 확장 영역에만 규칙을 써도 `check`가 계속 충돌로 판정했다.
-
-### Changed
-
-- 관리 영역 충돌 문구를 바꿨다. `agctx 밖에서 관리 파일을 고쳤습니다`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`가 되고, 안내에 프로젝트 규칙을 어디에 쓰면 되는지 한 줄을 더했다. 영어 문구도 같이 바꿨다.
 
 ### Security
 

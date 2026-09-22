@@ -143,13 +143,14 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 
 ## 기존 저장소를 프로필로 쓰기
 
-<!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5f87331f3c466bb3e40e3626366f54dbb432df26a206606e4eb69035ebf0b4ab -->
+<!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts -->
+<!-- agctx-doc-sources-sha256: 42eaa386253c16a87947a5df22d96c0baaf7b9991f614e773eadc4c99e97ae71 -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
 1. **저장소 루트에서 연결한다.** `profile link`가 규칙 파일을 찾아 `profile.json`을 만들고, 보관함에는 그 폴더를 가리키는 포인터만 둔다. 커밋은 하지 않는다.
 
+   <!-- agctx-example: link-rules -->
    ```bash
    $ cd /work/team-rules
    $ agctx profile link --yes
@@ -168,6 +169,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 
 3. **팀과 나눈다.** 그 폴더에서 `profile.json`을 커밋해 저장소의 평소 방식대로 올린다. 적용 담당은 [1. 프로필 받기](#1-프로필-받기)처럼 받는다.
 
+   <!-- agctx-example: link-rules -->
    ```bash
    $ agctx profile clone git@github.com:acme/team-rules.git
    Cloned profile team-rules at commit 1df750b.
@@ -194,6 +196,7 @@ team-rules/
 
 `profile.json`이 없는 저장소를 받으면 무엇을 더할지 알려 주고 멈춘다.
 
+<!-- agctx-example: link-rules -->
 ```bash
 $ agctx profile clone git@github.com:acme/team-rules.git
 Error: git@github.com:acme/team-rules.git is not a profile repository: profile.json is missing at its root.
@@ -391,8 +394,8 @@ Applied profile team-backend to /path/to/orders-api
 
 ## 개발자: 저장소 받기
 
-<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 40456257b253bcaaf9d862baf494ff90762a751a232f3edc084436c01c6bd3dd -->
+<!-- agctx-doc-sources: src/explain.ts -->
+<!-- agctx-doc-sources-sha256: e93bc5b760763507a4a026f326b8db388866ac35d538dd6c487de6f0bc1979fa -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

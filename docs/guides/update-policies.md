@@ -53,18 +53,19 @@ flowchart LR
 
 ## 두 방식의 차이 확인하기
 
-<!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 326e2971c8b808b58eb0ebcc55e05bfbb1aabe3307d02f4c6db9c5586b0495fb -->
+<!-- agctx-doc-sources: src/check.ts -->
+<!-- agctx-doc-sources-sha256: 9d3f44d62bfcca8b576408a7f385133f0804e9771f69528a3eb8999a7f4a9e3a -->
 
-두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
+두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 지침을 켜서 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 
 고정하지 않은 `web-app`은 `sync`로 새 커밋의 내용을 받는다.
 
+<!-- agctx-example: update-policies -->
 ```bash
 $ cd /path/to/web-app && agctx check .
 behind            AGENTS.md  differs from the current profile; run agctx profile sync
 
-$ agctx profile sync /path/to/web-app
+$ agctx profile sync /path/to/web-app --yes
 Plan: 3 file(s) to change.
   update    AGENTS.md
   unchanged CLAUDE.md
@@ -79,11 +80,12 @@ Applied profile team-backend to /path/to/web-app
 
 고정한 `orders-api`는 `check`가 새 커밋이 있다고 알려 주지만, `sync`는 기록한 커밋의 내용으로 다시 만들기 때문에 바뀌는 파일이 없다.
 
+<!-- agctx-example: update-policies -->
 ```bash
 $ cd /path/to/orders-api && agctx check .
 behind            -  the profile store has a newer commit (c61bea6)
 
-$ agctx profile sync /path/to/orders-api
+$ agctx profile sync /path/to/orders-api --yes
 Plan: 0 file(s) to change.
   unchanged AGENTS.md
   unchanged CLAUDE.md
@@ -96,7 +98,7 @@ Plan: 0 file(s) to change.
 /path/to/orders-api is already up to date.
 ```
 
-실행 뒤 `AGENTS.md`의 변경 검토 수준은 `web-app`이 `strict`, `orders-api`가 `recommended`였다. 두 저장소 모두 `check`는 종료 코드 1(뒤처짐)로 끝났다. 고정한 저장소도 새 버전이 나왔다는 사실은 알 수 있다. 다만 새 커밋으로 옮기는 일은 아래 [고정한 저장소를 PR로 갱신](#고정한-저장소를-pr로-갱신)이나 `apply --pin`으로만 한다. 바꿀 파일이 있으면 터미널에서는 쓰기 전에 확인을 묻는다.
+실행 뒤 변경 검토 지침은 `web-app`의 `AGENTS.md`에만 들어갔고, `orders-api`는 고정한 커밋의 내용 그대로였다. 두 저장소 모두 `check`는 종료 코드 1(뒤처짐)로 끝났다. 고정한 저장소도 새 버전이 나왔다는 사실은 알 수 있다. 다만 새 커밋으로 옮기는 일은 아래 [고정한 저장소를 PR로 갱신](#고정한-저장소를-pr로-갱신)이나 `apply --pin`으로만 한다. 바꿀 파일이 있으면 터미널에서는 쓰기 전에 확인을 묻는다.
 
 ## 고정하지 않은 저장소
 

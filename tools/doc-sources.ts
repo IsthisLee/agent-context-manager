@@ -32,11 +32,11 @@ export function unpinnedSources(
 }
 
 /** 소스를 핀하는 문서의 기록된 해시 마커 줄. */
-const RECORDED_HASH = /<!--\s*agctx-doc-sources-sha256:\s*(?:[0-9a-f]{64}|PENDING)\s*-->/;
+const RECORDED_HASH = /<!--\s*agctx-doc-sources-sha256:\s*(?:[0-9a-f]{64}|PENDING)\s*-->/g;
 
 /**
- * 게이트가 해시하는 형태의 핀한 문서. 자기 기록 해시는 빼므로, 그 문서를 다시 stamp해도 그것을 핀한
- * 문서의 해시가 바뀌지 않고, README 번역본처럼 두 문서가 서로를 핀할 수 있다.
+ * 게이트가 해시하는 형태의 핀한 문서. 절마다 둔 기록 해시를 모두 빼므로, 그 문서의 어느 절을 다시
+ * stamp해도 그것을 핀한 문서의 해시가 바뀌지 않고, README 번역본처럼 두 문서가 서로를 핀할 수 있다.
  */
 export function withoutRecordedHash(text: string): string {
   return text.replace(RECORDED_HASH, '<!-- agctx-doc-sources-sha256 -->');

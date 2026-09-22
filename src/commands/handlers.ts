@@ -350,7 +350,7 @@ export const HANDLERS: Record<string, Handler> = {
       return ok({ ...data, written: false });
     }
     applyInstall(plan);
-    say(_('install.done'));
+    say(plan.items.some(item => item.state === 'create' || item.state === 'update') ? _('install.done') : _('install.unchanged'));
     return ok({ ...data, written: true });
   },
   uninstall: async parsed => {

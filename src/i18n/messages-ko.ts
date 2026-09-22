@@ -141,6 +141,7 @@ export default {
     'main.uninstall.hint': 'agctx install이 둔 스킬을 지웁니다',
     'install.skipped': '없음: {marker}',
     'install.done': 'agctx 스킬을 설치했습니다. 에이전트 세션을 새로 시작하면 불러옵니다.',
+    'install.unchanged': 'agctx 스킬이 이미 최신입니다.',
     'error.install.blocked': 'agctx install이 두지 않았거나 그 뒤로 바뀐 스킬 폴더가 있어 아무것도 쓰지 않았습니다.',
     'hint.install.force': '위에 나온 폴더를 확인한 뒤 agctx install --force로 바꾸세요.',
     'uninstall.none': '설치된 agctx 스킬이 없습니다.',

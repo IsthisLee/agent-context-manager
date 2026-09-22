@@ -152,7 +152,10 @@ test('agctx install lists each skill folder it writes and each agent it skips', 
   assert.match(result.stdout, new RegExp(`create\\s+${path.join(dir, '.claude', 'skills', 'agctx').replace(/[.\\]/g, '\\$&')}`));
   assert.match(result.stdout, /skipped\s+.*\.agents.skills/);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx-author', 'SKILL.md')));
-  assert.match(agctx(dir, ['install']).stdout, /unchanged/);
+  const again = agctx(dir, ['install']).stdout;
+  assert.match(again, /unchanged/);
+  assert.match(again, /already up to date/);
+  assert.doesNotMatch(again, /Installed the agctx skills/);
 });
 
 test('agctx install writes nothing and stops when a skill folder was edited, and --force replaces it', t => {

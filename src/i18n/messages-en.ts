@@ -141,6 +141,7 @@ export default {
     'main.uninstall.hint': 'Remove the skills agctx install wrote',
     'install.skipped': 'not found: {marker}',
     'install.done': 'Installed the agctx skills. Start a new agent session to load them.',
+    'install.unchanged': 'The agctx skills are already up to date.',
     'error.install.blocked': 'Some skill folders were not written by agctx install or were changed since, so nothing was written.',
     'hint.install.force': 'Check the folders listed above, then replace them with agctx install --force.',
     'uninstall.none': 'No agctx skills are installed.',

@@ -56,7 +56,7 @@ agctx install
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 2501315ed7713bed8b597dbdb6e3e921624875430690185824536da3c8beb7e3 -->
+<!-- agctx-doc-sources-sha256: 513d93023a8978f8b170efe06c6cac97b3bd8846bab82a7f7f999ed5134b2da3 -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -72,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 96f01f6c96dc3cc62325966e36c1f85e65a3348e51e042db66d4de63864dc5a1 -->
+<!-- agctx-doc-sources-sha256: b655d940431ecb7b33462633ac910cff5837238d8ea93e0e12289784f36b12ba -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -91,7 +91,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: 7d579785e26ad784996ec67afbe6042c9b3d0f12a366b7c8baae82df102a2586 -->
+<!-- agctx-doc-sources-sha256: 9eec9304b3fb91dd592e9bf06b16d2d5603c16c0e42e21349d75a407c9286432 -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -128,6 +128,8 @@ Applied profile team-backend to /work/shop
 `CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문에 필요하다.
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 규칙 확장 섹션 아래에 쓴다. 그 위의 공통 지침 부분(관리 영역)은 `apply`·`sync`가 다시 만든다. 그래서 관리 영역 안을 고치면, 다음 `apply`·`sync`가 고친 내용을 지우지 않으려고 파일을 쓰지 않고 멈춘다. 두 영역의 경계와 멈췄을 때 푸는 법은 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
+
+확장 섹션에 규칙을 계속 더해 `AGENTS.md`가 200줄을 넘거나 24 KiB 이상이 되면 `apply`·`sync`가 `Warning: AGENTS.md will be 230 lines after this run.`처럼 경고한다. 에이전트가 긴 지침을 덜 따르거나 뒷부분을 읽지 않을 수 있다는 안내이며, 파일은 그대로 쓰고 종료 코드도 바뀌지 않는다. 기준은 [CLI Reference](../reference/cli.md#profile-apply)에 있다.
 
 생성된 파일은 `.agctx/base/`까지 모두 커밋한다. 그래야 저장소를 받는 팀원이 agctx 없이도 같은 지침을 받고, CI의 `check`가 기록한 버전과 비교할 수 있다.
 

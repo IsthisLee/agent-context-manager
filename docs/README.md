@@ -134,6 +134,7 @@
   - [ADR 0038: 에이전트 스킬을 CLI 패키지에 넣고 agctx install로 설치](adr/0038-install-agent-skills-from-cli-package.md)
   - [ADR 0039: 코드·JSON·YAML의 서식을 Prettier로 맞추고 Markdown은 뺀다](adr/0039-format-code-with-prettier.md)
   - [ADR 0040: ESLint로 린트하고, typescript-eslint에는 TypeScript 6 호환 패키지를 준다](adr/0040-lint-with-eslint-and-typescript6-compat.md)
+  - [ADR 0041: 프로젝트 `AGENTS.md`가 200줄을 넘거나 24 KiB 이상이면 적용할 때 경고만 한다](adr/0041-warn-on-long-project-agents-md.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

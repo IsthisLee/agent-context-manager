@@ -505,6 +505,10 @@ export default {
     'apm.yml에 compilation.agents_md.mode: managed_section을 두고 {file} 파일을 다른 이름으로 옮긴 뒤 agctx profile apply를 다시 실행하세요. 그다음 프로젝트 규칙 확장 제목 아래에 <!-- apm:start -->와 <!-- apm:end -->를 넣고 apm compile을 실행하세요.',
   'plan.warn.link-no-import':
     '{file} 파일이 AGENTS.md를 가져오지 않아 Claude Code가 {agents} 파일을 읽지 않습니다. @AGENTS.md 같은 가져오기 줄을 더하세요.',
+  'plan.warn.agents-lines':
+    '경고: 이번에 쓰는 AGENTS.md는 {lines}줄입니다. Claude Code는 지침 파일마다 {limit}줄 미만을 권장하며, 파일이 길면 에이전트가 규칙을 덜 따릅니다. 자주 쓰지 않는 규칙은 줄이거나, 필요할 때만 읽는 파일로 옮기는 것을 검토하세요.',
+  'plan.warn.agents-bytes':
+    '경고: 이번에 쓰는 AGENTS.md는 {size} KiB로 경고 기준 {threshold} KiB 이상입니다. Codex는 기본 설정에서 ~/.codex/AGENTS.md를 포함한 지침 파일의 합산 크기가 32 KiB(project_doc_max_bytes)에 이르면 파일을 더 넣지 않으므로, 이 파일 뒤에 읽을 지침 파일이 빠질 수 있습니다. 자주 쓰지 않는 규칙은 줄이거나, 필요할 때만 읽는 파일로 옮기는 것을 검토하세요.',
   'plan.warn.link-dropped': '{agents} 파일이 없어져 {file} 파일은 더 이상 관리하지 않습니다. 필요 없으면 지우세요.',
   'hint.project.apm-generated.claude':
     '{file} 파일을 다른 이름으로 옮긴 뒤 agctx profile apply를 다시 실행하고, 커밋하기 전에 apm compile이 CLAUDE.md를 다시 만들지 않는지 확인하세요.',

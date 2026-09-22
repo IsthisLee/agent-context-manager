@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: e580c1c03e86147a902c6ec6a674ff0bb51604838c0a7378aa95d332e352753c -->
+<!-- agctx-doc-sources-sha256: cd83d0d2e0ac728ea64b8a93bd60b53f6bffe8238f0f91bc79cb9ee93c9e266b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -123,7 +123,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: c83af6ea462748fef83ec5297742ab4982f2b87acca0a8474401ac6618213d8b -->
+<!-- agctx-doc-sources-sha256: dd3afbc8772d44b7d6c25f75309def7f29675a52e25cb9891107c2802d5b72b5 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
@@ -144,7 +144,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, formatti
 ## Supported agents
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: cd4e52f50873cef8cd9ec070707458be5439e83ec3f244b8fca73df8a4d73bab -->
+<!-- agctx-doc-sources-sha256: 24568316e42e31074f3445fadab17f533a66ef3180fc9950b83c45c40fbdbd96 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 
@@ -179,8 +179,8 @@ Refine such a draft by hand, then place it in the project extension area of `AGE
 agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) lists the topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
 <!-- agctx:generated:discussion-status:start -->
-- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
-- **In progress:** use through natural-language requests, safe synchronization of managed artifacts, evidence criteria and length budget for default guidance
+- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, evidence criteria and length budget for default guidance, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
+- **In progress:** use through natural-language requests, safe synchronization of managed artifacts
 - **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository. These are not current behavior yet.
 <!-- agctx:generated:discussion-status:end -->
 

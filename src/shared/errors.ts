@@ -27,17 +27,20 @@ export class CliError extends Error {
   readonly code: string;
   readonly hint: string | null;
   readonly details: unknown;
+  /** 멈추기 전에 사람에게 이미 보여 준 경고. `--json`이면 이것을 결과의 `warnings`에 담는다. */
+  readonly warnings: readonly string[];
 
   constructor(
     code: string,
     message: string,
-    options: { exitCode?: number; hint?: string | null; details?: unknown } = {}
+    options: { exitCode?: number; hint?: string | null; details?: unknown; warnings?: readonly string[] } = {}
   ) {
     super(message);
     this.code = code;
     this.exitCode = options.exitCode ?? EXIT.software;
     this.hint = options.hint ?? null;
     this.details = options.details;
+    this.warnings = options.warnings ?? [];
   }
 }
 

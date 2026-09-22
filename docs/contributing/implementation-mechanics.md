@@ -68,7 +68,7 @@ flowchart LR
 설치본과 저장소가 같은 경로로 명령을 찾도록, 진입점은 실행만 맡고 명령 해석은 한 곳에 모은다.
 
 - 진입점: `src/agctx.ts`. 설치본에서는 컴파일한 `dist/agctx.js`가 같은 일을 한다.
-- 전역 옵션 분리와 명령 찾기: `src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->·`run`<!--s:4724943a91e5-->, `src/commands/args.ts`의 `stripFlag`<!--s:3a20e16f337b-->
+- 전역 옵션 분리와 명령 찾기: `src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->·`run`<!--s:2ba71c9bbb82-->, `src/commands/args.ts`의 `stripFlag`<!--s:3a20e16f337b-->
 - 명령 조회와 오타 제안: `src/commands/registry.ts`의 `findCommand`<!--s:f564c4c5c891-->·`suggestCommands`<!--s:0a3290b4e6ca-->·`usageLine`<!--s:1e6aea3c47c2-->, `src/commands/cli.ts`의 `unknownCommand`<!--s:d9a9924eeab0-->
 
 ## 2. 로케일 해석과 저장
@@ -111,8 +111,8 @@ flowchart LR
 
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
-- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:5acaa3599c14-->
-- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:43118de2a466-->, `src/project/plan.ts`의 `planProject`<!--s:a72b2288a52a-->
+- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:f9abd7e6b273-->
+- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:43118de2a466-->, `src/project/plan.ts`의 `planProject`<!--s:e29ec3b62061-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
 - 지키는 평가: `evals/profile.test.ts`, `evals/sync-merge.test.ts`
@@ -133,7 +133,7 @@ flowchart LR
 `sync`는 프로젝트에 기록된 프로필만 다시 적용하고 프로필을 바꾸지 않는다. 프로필 전환은 `apply`의 몫이다.
 
 - 기록된 프로필 읽기: `src/profile/apply.ts`의 `boundProfile`<!--s:4a7d617ed27c-->
-- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:5acaa3599c14-->
+- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:f9abd7e6b273-->
 - 지키는 평가: `evals/profile.test.ts`
 
 ## 9. 안전한 파일 쓰기
@@ -150,7 +150,7 @@ flowchart LR
 
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->
 - 사람용·기계용 출력 분리: `src/commands/output.ts`의 `say`<!--s:b99734f31558-->·`warn`<!--s:971ab0d30f97-->
-- 종료 코드: `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->·`worstExitCode`<!--s:fdecbb48af6f-->·`CliError`<!--s:8bd6926e8572-->
+- 종료 코드: `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->·`worstExitCode`<!--s:fdecbb48af6f-->·`CliError`<!--s:879c3666a193-->
 - 이유: [ADR 0016](../adr/0016-command-contract.md)
 - 지키는 평가: `evals/command-contract.test.ts`
 
@@ -201,8 +201,8 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 사람이 관리 영역을 고쳤으면 덮어쓰지 않고 멈춘다. 마지막 적용본을 `.agctx/base/`에 남겨 두어 3-way 병합으로 복구한다. 다만 현재 관리 영역이 이번에 쓸 내용과 같으면 잃을 것이 없으므로 멈추지 않는다.
 
-- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:a72b2288a52a-->·`knownBase`<!--s:f35f58e3e30d-->
-- 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:59ba50885123-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:46e8e209a1fb-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
+- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:e29ec3b62061-->·`knownBase`<!--s:f35f58e3e30d-->
+- 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:8fe859c2c944-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:46e8e209a1fb-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
 - 복구 명령: `src/profile/resolve.ts`의 `resolveProject`<!--s:07bc57886259-->·`mergeWithEditor`<!--s:757a38979834-->·`withBaseRegion`<!--s:e1ff5455598d-->, `src/project/merge-editor.ts`의 `mergeInVsCode`<!--s:3b347041fbc3-->
 - TUI 복구: `src/tui/profile.ts`의 `resolveProjectTui`<!--s:ef177d991fab-->
 - 이유: [ADR 0008](../adr/0008-managed-conflict-recovery.md), 편집 병합 계약은 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)
@@ -299,7 +299,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 - 대상과 판정: `src/skills/install.ts`의 `skillTargets`<!--s:d78bdc4f8da0-->·`planInstall`<!--s:32bd2c1d333d-->·`planUninstall`<!--s:0612b36435ed-->
 - 쓰기와 지우기: `src/skills/install.ts`의 `applyInstall`<!--s:85c182654efd-->·`applyUninstall`<!--s:68352b1b01f0-->
-- 버전 알림: `src/skills/install.ts`의 `skillNotice`<!--s:96e35bb59bbd-->, 명령마다 붙이는 곳은 `src/commands/cli.ts`의 `run`<!--s:4724943a91e5-->, TUI 첫 화면은 `src/tui/main.ts`의 `mainTui`<!--s:1666baf9d9f1-->
+- 버전 알림: `src/skills/install.ts`의 `skillNotice`<!--s:96e35bb59bbd-->, 명령마다 붙이는 곳은 `src/commands/cli.ts`의 `run`<!--s:2ba71c9bbb82-->, TUI 첫 화면은 `src/tui/main.ts`의 `mainTui`<!--s:1666baf9d9f1-->
 - 이유: [ADR 0038](../adr/0038-install-agent-skills-from-cli-package.md)
 - 지키는 평가: `evals/skill-install.test.ts`, 설치한 패키지로 실행하는 확인은 `tools/package-smoke.ts`
 

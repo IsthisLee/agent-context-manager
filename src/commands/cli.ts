@@ -102,6 +102,7 @@ export async function run(argv: readonly string[] = process.argv): Promise<void>
       commandName = findCommand(argv.slice(2).filter(value => !value.startsWith('--')))?.words.join(' ') ?? '';
     const warnings = noticeFor(argv);
     if (isJsonMode()) {
+      warnings.unshift(...cliError.warnings);
       writeJson(envelope(commandName, { exitCode: cliError.exitCode, warnings }, cliError));
     } else {
       process.stderr.write(`${_('output.error')}: ${cliError.message}\n`);

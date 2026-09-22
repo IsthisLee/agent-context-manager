@@ -181,7 +181,7 @@ agctx's implementation is managed in stages around where the shared context live
 <!-- agctx:generated:discussion-status:start -->
 - **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, using an existing Git repository as a Profile source
 - **In progress:** use through natural-language requests, safe synchronization of managed artifacts, evidence criteria and length budget for default guidance
-- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository. These are not current behavior yet.
+- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, choosing agents and context types per repository, creating a Profile from an existing repository, installing agent skills with an agctx command. These are not current behavior yet.
 <!-- agctx:generated:discussion-status:end -->
 
 ## Documentation

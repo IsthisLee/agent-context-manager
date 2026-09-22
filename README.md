@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 2a31bbb4b09eb1d7270ab763766b82106cf88cf655d3bd602017f1d5982d283e -->
+<!-- agctx-doc-sources-sha256: ad4cef7203146c5704f3d9668f20f3055e5ba9de1a79341736cb0aa3fa26deac -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -31,7 +31,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 - 👥 개인·팀·회사별로 프로필 나누기
 - 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 모으기 (Antigravity의 MCP·subagents·hooks는 구현 예정)
 - 📋 TDD·검증·보안 같은 권장 지침 고르기
-- 🎯 저장소마다 적용할 프로필과 에이전트 고르기 (에이전트 선택은 구현 예정)
+- 🎯 저장소마다 적용할 프로필과 에이전트 고르기
 - 🔄 프로필이 바뀌면 한 번에 동기화하기
 - 🛡️ 프로젝트마다 따로 쓴 지침은 그대로 두기
 - 🌿 Git으로 공유하고, CI로 검사하고, 여러 저장소에 PR 열기

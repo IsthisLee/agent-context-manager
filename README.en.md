@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: a1ffa38730b9cf1bfd41579da6f4b48c31cf6eca2bffb56a871ac8028faa993e -->
+<!-- agctx-doc-sources-sha256: 5821ac1ac2471a802436e377725cb5b87639fb5b518897fb7f82c0452242fb67 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -29,7 +29,7 @@ agctx manages those standards as a Profile. Applying the Profile to a project cr
 - 👥 Personal, Team & Company Profiles
 - 🧩 Rules, Skills, MCP, Subagents & Hooks in One Profile (MCP, subagents, and hooks for Antigravity are planned)
 - 📋 Choose Recommended Guidance: TDD, Verification, Security & More
-- 🎯 Pick a Profile and Agents per Repository (agent selection: planned)
+- 🎯 Pick a Profile and Agents per Repository
 - 🔄 One-Step Sync
 - 🛡️ Project-Specific Guidance Stays Intact
 - 🌿 Git Sharing, CI Checks & Multi-Repo PRs

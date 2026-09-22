@@ -1,5 +1,8 @@
 import fs from 'node:fs';
-import { explainPath, type AgentExplanation, type AgentId, type ExplainedFile } from '../explain.ts';
+import path from 'node:path';
+import { explainPath, projectRoot, type AgentExplanation, type AgentId, type ExplainedFile } from '../explain.ts';
+import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
+import { recordedAgents } from '../shared/agents.ts';
 import { EXIT, toCliError, worstExitCode } from '../shared/errors.ts';
 import { claudeSessionEvidence, codexReceived, codexSessionEvidence } from './evidence.ts';
 import { probeAgent } from './probe.ts';
@@ -9,7 +12,8 @@ import { probeAgent } from './probe.ts';
  * 증거는 에이전트의 세션 기록에서, `--probe`를 주면 probe에서 온다. 전달되지 않은 파일이 있으면 4로 끝난다.
  */
 
-export type VerifyStatus = 'pass' | 'fail' | 'no-evidence' | 'error';
+/** `not-selected`: 이 저장소가 고르지 않았고 `--agent`로 따로 지정하지도 않아 확인하지 않은 에이전트. */
+export type VerifyStatus = 'pass' | 'fail' | 'no-evidence' | 'error' | 'not-selected';
 
 export interface AgentVerification {
   agent: AgentId;
@@ -76,7 +80,28 @@ function fromSessionLog(
   return judged(found, expected, optional, file => evidence.loaded.has(fs.realpathSync(file.absolutePath)));
 }
 
-export function verifyPath(requested: string, agents: readonly AgentId[], options: { probe: boolean }): Verification {
+/**
+ * verify가 실제로 확인할 에이전트. `--agent`로 이름을 대지 않았으면 저장소가 agctx.project.json에서
+ * 고른 에이전트만 확인한다. probe 확인 질문이 확인하지 않을 에이전트의 비용까지 말하지 않게 한다.
+ */
+export function agentsToVerify(requested: string, agents: readonly AgentId[], named: boolean): AgentId[] {
+  if (named) return [...agents];
+  const target = fs.existsSync(requested) && fs.statSync(requested).isFile() ? path.dirname(requested) : requested;
+  if (!fs.existsSync(target)) return [...agents];
+  const root = projectRoot(fs.realpathSync(target));
+  const configPath = path.join(root, PROJECT_CONFIG_FILE);
+  const chosen = recordedAgents(readProjectConfig(configPath).agents, configPath);
+  return chosen ? agents.filter(agent => chosen.includes(agent)) : [...agents];
+}
+
+/**
+ * @param options.named - `--agent`로 에이전트를 직접 지정했는지. 지정하면 고르지 않은 에이전트도 확인한다.
+ */
+export function verifyPath(
+  requested: string,
+  agents: readonly AgentId[],
+  options: { probe: boolean; named?: boolean }
+): Verification {
   const explanation = explainPath(requested, agents);
   const results = explanation.agents.map((agent): AgentVerification => {
     const expected = agent.files.filter(file => file.status === 'read' && file.scope === 'project');
@@ -95,6 +120,8 @@ export function verifyPath(requested: string, agents: readonly AgentId[], option
       stale: [],
       error: null
     };
+    // probe는 에이전트 사용량을 쓰므로, 저장소가 고르지 않은 에이전트는 이름으로 부탁할 때만 확인한다.
+    if (!agent.selected && !options.named) return { ...base, status: 'not-selected' };
     if (!options.probe) return fromSessionLog(agent, explanation.path, base, expected, optional);
     try {
       const probe = probeAgent(agent, explanation.root, explanation.path);

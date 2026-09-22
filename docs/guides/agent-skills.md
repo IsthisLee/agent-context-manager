@@ -37,7 +37,7 @@
 ## 설치하기
 
 <!-- agctx-doc-sources: skills, src/skills/install.ts -->
-<!-- agctx-doc-sources-sha256: 3a74b0f8965c23bb62e8f9a340cffed9ef5690413201adf62f20e97134ab1352 -->
+<!-- agctx-doc-sources-sha256: 343734ee32813a54560b58352197fa2aba447820dcdc195cc728574f356b9d33 -->
 
 1. 아래 명령을 실행한다. 이 컴퓨터의 모든 프로젝트에서 쓰도록 사용자 전역 위치에 두므로 실행 위치는 상관없다.
 

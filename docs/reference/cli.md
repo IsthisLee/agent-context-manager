@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 47ea26c511b03365186cadd143c90e048320cc2c967905e1a791e37a36e16ad8 -->
+<!-- agctx-doc-sources-sha256: 2fc3def1fbadad3d2fb079af254e595aac26a34c52dea40620587631ede5a599 -->
 
 ```bash
 npm install --global agent-context-manager
@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: dbd5e7e28ae4376e5ae5fcab91dc3cca11b17a8c6a0349e668a27146c12b8079 -->
+<!-- agctx-doc-sources-sha256: 26fdc373944fe4f367105f7f36e7bce5b529e2d627353cefeffb19b41a76249b -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -119,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 9dcc2b394827075a84cc0fb7de223632b07cff945e7a5a5c7a292f60a50ae6c3 -->
+<!-- agctx-doc-sources-sha256: 219c9c6ae4f6b15a3de001d8b4849948bd9eff20953e0f23a5fb5ba120c6a094 -->
 
 ```bash
 agctx
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: cb24c270844d9df59c4b243e3c35e17422a50a994bf5330cb99593b46bc6b2d6 -->
+<!-- agctx-doc-sources-sha256: dc18052f6e556a6446eb8b9cac55691424814a2f60658ded46bc39654a99f0d1 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -155,7 +155,7 @@ agctx --tui
 | [`profile list`](#profile-list) | scope별 프로필을 보고 하나를 관리합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
 | [`profile view`](#profile-view) | 프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다. | 없음 | CLI · TUI · 프로필 메뉴 |
 | [`profile setup`](#profile-setup) | 프로필에 담을 지침 항목을 켜고 끕니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
-| [`profile apply`](#profile-apply) | 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
+| [`profile apply`](#profile-apply) | 프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --agent는 파일을 받을 에이전트를 고르고 이후 sync를 위해 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile sync`](#profile-sync) | 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile resolve`](#profile-resolve) | 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다. | 저장소 파일 | CLI · TUI · 프로필 메뉴 |
 | [`profile remove`](#profile-remove) | 프로필을 지웁니다. 프로젝트에 적용한 파일은 남습니다. | 프로필 보관함 | CLI · TUI · 프로필 메뉴 |
@@ -333,7 +333,7 @@ agctx profile setup company --tdd on --security on
 
 <!-- agctx:generated:usage:profile.apply:start -->
 ```bash
-agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
+agctx profile apply [--dry-run] [--agent <codex|claude|antigravity|all>] [--pin] [--yes] <name> [<project>]
 ```
 
 종료 코드: `0` 성공 · `2` 충돌 · `3` 숨은 문자 · `64` 사용법 오류 · `69` 외부 도구·네트워크 사용 불가 · `70` 기타 오류
@@ -344,6 +344,7 @@ agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
 | `<name>` | 적용할 프로필 이름; 필수 |
 | `<project>` | 적용할 프로젝트 경로; 생략하면 현재 디렉터리 |
 | `--dry-run` | 변경 계획만 출력하고 파일은 변경하지 않음 |
+| `--agent` | 연결 파일을 받을 에이전트. `codex`·`claude`·`antigravity`를 쉼표로 여러 개 주거나 `all`. 생략하면 `agctx.project.json`에 기록한 선택, 기록도 없으면 전부 |
 | `--pin` | Git 프로필의 현재 커밋에 프로젝트를 고정 |
 | `--yes` | 터미널이 아닌 환경에서 적용을 승인 |
 
@@ -359,6 +360,37 @@ agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
   Dry-run: 0 file(s) to change.
   …
   ```
+
+**에이전트 고르기:** `--agent`로 이 저장소가 파일을 받을 에이전트를 고른다. `AGENTS.md`는 모든 에이전트가 읽는 정본이라 어떤 선택이든 쓴다. 고르는 것은 에이전트마다 따로 있는 연결 파일이다.
+
+| 에이전트 | 고르면 쓰는 파일 |
+| --- | --- |
+| `codex` | 없음(`AGENTS.md`를 직접 읽는다) |
+| `claude` | `CLAUDE.md`, 하위 폴더 `AGENTS.md` 옆의 연결 파일 `CLAUDE.md` |
+| `antigravity` | `.agents/rules/agctx.md` |
+
+- **기록:** 고른 목록은 `agctx.project.json`의 `agents`에 등록 순서로 남는다. 그래서 `profile sync`·`repos sync`·`repos pr`·`check`와 `--agent` 없이 다시 실행한 `apply`가 같은 선택을 따른다. 기록은 커밋되므로 선택을 바꾸면 PR diff에 드러난다.
+- **전부:** `--agent all`은 기록을 지운다. 기록이 없으면 지원 에이전트 전부이므로, 나중에 지원 에이전트가 늘면 그 에이전트의 파일도 받는다. `codex,claude,antigravity`처럼 전부를 나열하면 그 목록이 그대로 기록된다.
+- **빼기:** 빠진 에이전트의 파일은 agctx 관리 블록만 지운다. 블록 밖에 사람이 쓴 내용이 있으면 파일을 남기고, 없으면 파일과 `.agctx/base/`의 사본을 지우며 그래서 빈 폴더도 지운다. 관리한 적 없는 파일(관리 블록이 없는 사람이 쓴 `CLAUDE.md`)은 건드리지 않는다. 지울 파일은 계획에 `remove`로 나온다.
+- **고친 블록:** 빼려는 파일의 관리 블록을 사람이 고쳤으면 다른 충돌처럼 아무것도 쓰지 않고 종료 코드 2로 멈추며, 선택도 기록하지 않는다. `profile resolve`로 고친 줄을 블록 밖으로 옮긴 뒤 같은 `apply`를 다시 실행하면, 옮긴 줄이 남은 파일에서 블록만 지운다.
+- **잘못된 기록:** `agents`가 목록이 아니거나, 비었거나, 모르는 이름을 담고 있으면 종료 코드 64로 멈춘다. 이름을 고치거나 키를 지우거나 `--agent`로 다시 기록한다.
+- **고정한 저장소:** 선택은 `apply`로만 바꾼다. 고정한 저장소에서 `--pin` 없이 실행하면 고정이 풀리고, `--pin`을 붙이면 지금 프로필 커밋으로 다시 고정한다.
+
+```bash
+$ agctx profile apply team-backend . --agent codex,claude --dry-run
+Dry-run: 3 file(s) to change.
+  unchanged AGENTS.md
+  unchanged CLAUDE.md
+  remove    .agents/rules/agctx.md
+  unchanged .agctx/base/AGENTS.md.base
+  unchanged .agctx/base/CLAUDE.md.base
+  remove    .agctx/base/.agents/rules/agctx.md.base
+  unchanged .agctx/.gitignore
+  update    agctx.project.json
+Dry-run: no files were changed.
+```
+
+결정은 [ADR 0042](../adr/0042-choose-agents-per-repository.md)다.
 
 **하위 폴더 연결 파일:** Claude Code는 `AGENTS.md`를 직접 읽지 않으므로, 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 
@@ -450,7 +482,7 @@ agctx profile sync [--dry-run] [--yes] [<project>]
 
 `--dry-run`을 사용하면 실제 파일을 바꾸지 않고 계획만 출력한다. `apply --dry-run`도 같다.
 
-- **파일 상태:** 파일마다 `create`(새로 만듦)·`update`(고침)·`unchanged`(그대로)·`conflict`(관리 영역을 밖에서 고쳐 쓰지 못함) 중 하나를 붙인다.
+- **파일 상태:** 파일마다 `create`(새로 만듦)·`update`(고침)·`remove`(고르지 않은 에이전트의 파일이라 지움)·`unchanged`(그대로)·`conflict`(관리 영역을 밖에서 고쳐 쓰지 못함) 중 하나를 붙인다. `--json`의 `changes[].status`도 같은 값이다.
 - **충돌 파일의 diff:** `conflict` 파일은 diff를 함께 출력한다. 마지막 적용본(`.agctx/base/`)이 있으면 그 뒤에 사람이 관리 영역 안에서 고친 부분과 agctx가 새로 쓸 프로필·템플릿 변경을 나눠 보여 준다. 없으면 지금의 관리 영역과 agctx가 쓸 내용을 비교한다.
 - **종료 코드:** 충돌이 하나라도 있으면 계획을 끝까지 출력한 뒤 종료 코드 2로 끝난다.
 - **TUI:** 프로젝트 적용·동기화를 고르면 계획을 보여 준 뒤 적용할지 묻고, 충돌로 멈추면 충돌 해결로 이어갈지 묻는다.
@@ -760,6 +792,7 @@ agctx explain [--agent <codex|claude|antigravity|all>] [<path>]
 파일 목록 아래에는 판정이 붙는다.
 
 - `missing`: 프로젝트 지침 파일이 이 에이전트에 닿지 않는다. 하나라도 있으면 종료 코드 4다. 커밋되는 `CLAUDE.md`가 가리는데 그 파일이 가져오지도 않는 `AGENTS.md`(Claude Code), `trigger: glob`이거나 `trigger` frontmatter가 없는 규칙(Antigravity)이 여기에 해당한다. `CLAUDE.local.md`만 가리는 경우는 개인 파일이라 `warning`으로 둔다.
+- `not-selected`: 이 저장소가 `agctx.project.json`의 `agents`에서 고르지 않은 에이전트다([에이전트 고르기](#profile-apply)). agctx가 이 에이전트의 연결 파일을 쓰지 않으므로, 이 에이전트의 `missing`은 보여 주되 종료 코드 4로 세지 않는다. `--json`이면 에이전트마다 `selected`가 `false`다.
 - `warning`: 시작 위치나 한 번의 승인에 따라 달라지는 경우다. 종료 코드는 바꾸지 않는다. 루트에서 시작한 Codex가 건너뛰는 하위 폴더 `AGENTS.md`, 합산 32 KiB를 넘어 빠지는 파일, 하위 폴더에서 시작한 Claude Code가 승인해야 읽는 시작 폴더 밖 가져오기, Antigravity가 세션 시작에 받지 않은 하위 폴더 `AGENTS.md`, 규칙으로 보이는 줄을 3줄 이상 함께 담은 두 파일(하나는 세션 시작에 읽는 파일)이 같은 에이전트에 들어가는 중복이 여기에 해당한다.
 - Codex·Claude Code·Antigravity가 읽지 않는 다른 도구의 규칙 파일(`.cursorrules`, `.cursor/rules`, `.github/copilot-instructions.md`, `.windsurfrules`, `.clinerules`, `.agent/rules`)은 마지막에 목록으로 보여 준다.
 - 사용자 수준 파일(`~/.codex/AGENTS.md`, `~/.claude/CLAUDE.md`, `~/.gemini/GEMINI.md` 등)도 함께 보여 주지만 `missing`으로 판정하지 않는다. `CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 설정했으면 그 폴더를 본다.
@@ -864,7 +897,7 @@ agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]
 | 옵션·인자 | 설명 |
 | --- | --- |
 | `<path>` | 에이전트를 시작한 폴더. 생략하면 현재 폴더 |
-| `--agent` | 확인할 에이전트. 쉼표로 여러 개를 주거나 `all`(기본) |
+| `--agent` | 확인할 에이전트. 쉼표로 여러 개를 주거나 `all`(기본). 이름을 대면 저장소가 고르지 않은 에이전트도 확인한다 |
 | `--probe` | 세션 기록 대신 에이전트 CLI를 한 번씩 실행해 확인. 실행 전에 확인을 받는다 |
 | `--yes` | 터미널이 아닌 환경에서 probe를 승인 |
 
@@ -890,6 +923,7 @@ agctx verify [--agent <codex|claude|antigravity|all>] [--probe] [--yes] [<path>]
 | `fail` | 들어오지 않은 파일(`missing`)이 있음 | 4 |
 | `no-evidence` | 판정할 기록이 없거나 오래됨 | 0 |
 | `error` | probe를 실행하지 못함 | 69 |
+| `not-selected` | 저장소가 `agctx.project.json`에서 고르지 않은 에이전트라 확인하지 않음. `--agent`로 이름을 대면 확인한다. probe 확인 질문도 이 에이전트를 세지 않는다 | 0 |
 
 아래는 `explain` 예시와 같은 저장소에서 실행한 결과다. 마지막 명령은 설치된 Codex·Claude Code·Antigravity CLI로 실제로 실행했다. Claude Code는 루트 `AGENTS.md`를 받지 않았지만 승인이 필요한 `conditional` 파일이라 `pass`다.
 

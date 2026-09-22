@@ -123,7 +123,7 @@ export default {
     '프로필의 scope와 규칙 파일(profile.json이 다른 파일을 가리키지 않으면 AGENTS.md)을 출력합니다.',
   'command.profile.setup.summary': '프로필에 담을 지침 항목을 켜고 끕니다.',
   'command.profile.apply.summary':
-    '프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.',
+    '프로필을 프로젝트에 적용해 에이전트 파일을 만들고 프로필 버전을 기록합니다. --agent는 파일을 받을 에이전트를 고르고 이후 sync를 위해 기록합니다. --pin은 다시 적용할 때까지 프로젝트를 지금 커밋에 고정합니다.',
   'command.profile.sync.summary': '프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.',
   'command.profile.resolve.summary': '관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다.',
   'command.profile.remove.summary': '프로필을 지웁니다. 프로젝트에 적용한 파일은 남습니다.',
@@ -424,6 +424,7 @@ export default {
   'repos.pr.body.yes': '예',
   'repos.pr.body.no': '아니요',
   'repos.pr.body.commits': '프로필 커밋:',
+  'repos.pr.body.removed': '(삭제)',
   'repos.pr.body.files': '바뀐 파일:',
   'repos.pr.body.check': '`agctx check --refresh`로 확인하세요.',
   'error.repos.targets-unreadable': '대상 파일 {file}을 읽을 수 없습니다.',
@@ -505,6 +506,25 @@ export default {
     'apm.yml에 compilation.agents_md.mode: managed_section을 두고 {file} 파일을 다른 이름으로 옮긴 뒤 agctx profile apply를 다시 실행하세요. 그다음 프로젝트 규칙 확장 제목 아래에 <!-- apm:start -->와 <!-- apm:end -->를 넣고 apm compile을 실행하세요.',
   'plan.warn.link-no-import':
     '{file} 파일이 AGENTS.md를 가져오지 않아 Claude Code가 {agents} 파일을 읽지 않습니다. @AGENTS.md 같은 가져오기 줄을 더하세요.',
+  'error.project.invalid-agents': '{file}의 agents 목록이 잘못됐습니다: {value}.',
+  'hint.project.invalid-agents':
+    'agents에는 codex, claude, antigravity 가운데 하나 이상을 적으세요. 예: "agents": ["codex", "claude"]. 지원 에이전트 전부에 적용하려면 키를 지우고, agctx profile apply에 --agent를 붙여 실행하면 다시 기록합니다.',
+  'explain.not-selected':
+    '이 저장소는 agctx.project.json에서 이 에이전트를 고르지 않았으므로 agctx가 이 에이전트의 파일을 쓰지 않고, 빠진 파일도 종료 코드 4로 세지 않습니다. 추가하려면 프로젝트 루트에서 agctx profile apply {profile} --agent {agents}를 실행하세요.',
+  'explain.not-selected.codex':
+    '이 저장소는 agctx.project.json에서 Codex를 고르지 않았습니다. 그래도 agctx는 Codex가 읽는 AGENTS.md를 쓰며, 빠진 파일은 종료 코드 4로 세지 않습니다.',
+  'verify.evidence.not-selected':
+    '확인하지 않음: 이 저장소가 agctx.project.json에서 고르지 않은 에이전트입니다. 그래도 확인하려면 --agent로 이름을 지정하세요.',
+  'actions.apply.agents': '이 저장소에 어느 에이전트의 파일을 쓸까요? AGENTS.md는 항상 씁니다.',
+  'actions.apply.agents.codex': 'AGENTS.md를 읽음',
+  'actions.apply.agents.claude': 'AGENTS.md를 가져오는 CLAUDE.md와 하위 폴더 연결 파일',
+  'actions.apply.agents.antigravity': 'AGENTS.md를 가리키는 .agents/rules/agctx.md',
+  'hint.project.conflict.remove':
+    '고친 파일은 이번에 빼는 에이전트의 파일입니다. agctx profile resolve {project}로 고친 내용을 관리 블록 밖에 남긴 뒤, 같은 명령을 다시 실행하세요.',
+  'error.project.invalid-managed-path':
+    'agctx.project.json의 managedHashes에 프로젝트 밖을 가리키는 경로가 있어 아무것도 바꾸지 않았습니다: {paths}',
+  'hint.project.invalid-managed-path':
+    'managedHashes의 경로는 프로젝트 루트 기준 상대 경로여야 하고, /로 나누며 ..를 쓸 수 없습니다. {file}에서 그 키를 고치거나 지운 뒤 다시 실행하세요.',
   'plan.warn.agents-lines':
     '경고: 이번에 쓰는 AGENTS.md는 {lines}줄입니다. Claude Code는 지침 파일마다 {limit}줄 미만을 권장하며, 파일이 길면 에이전트가 규칙을 덜 따릅니다. 자주 쓰지 않는 규칙은 줄이거나, 필요할 때만 읽는 파일로 옮기는 것을 검토하세요.',
   'plan.warn.agents-bytes':

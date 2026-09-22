@@ -132,7 +132,7 @@ export const COMMANDS: readonly CommandSpec[] = [
     id: 'profile.apply',
     words: ['profile', 'apply'],
     args: ['<name>', '[<project>]'],
-    options: [dryRun, { name: 'pin' }, yes],
+    options: [dryRun, { name: 'agent', value: '<codex|claude|antigravity|all>' }, { name: 'pin' }, yes],
     exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
     surface: 'profile',
     changes: 'repository',

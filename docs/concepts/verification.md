@@ -1,7 +1,7 @@
 # 전달 확인과 검증의 범위
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 25e68e746ba4b29583a787af5cadde2f30b5d512c69a8ca20735115bd5b23645 -->
+<!-- agctx-doc-sources-sha256: 0b420dd7ac266bfdc1dc79f0f2dd836a5d84e34d2192f2fb814c11d509f73f07 -->
 
 agctx가 확인하는 것은 세 층이다. 층마다 증거가 다르므로 필요한 만큼만 쓴다.
 
@@ -14,7 +14,7 @@ agctx가 확인하는 것은 세 층이다. 층마다 증거가 다르므로 필
 ## 실제로 들어갔는지 확인하기
 
 <!-- agctx-doc-sources: src/verify, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 0e0f4fda4d4704cda2b97f4083d8ab57e52898a372bc76020b75fac1cc3d7de6 -->
+<!-- agctx-doc-sources-sha256: b6209d5eb62842edb8c42cc9225516c7f3459aae0bd88f19caefec7f1662b033 -->
 
 그 폴더에서 Codex나 Claude Code를 한 번 쓴 뒤 `verify`를 실행하면, 에이전트가 이 컴퓨터에 남긴 세션 기록에서 기대한 파일이 들어갔는지 본다. 아래 출력은 실제 결과에서 경로만 바꿨다.
 

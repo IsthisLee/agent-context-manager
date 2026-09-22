@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { _ } from '../i18n/index.ts';
 import { say } from '../commands/output.ts';
+import { AGENT_IDS, canonicalAgents, parseAgents, recordedAgents, type AgentId } from '../shared/agents.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { toLf } from '../shared/fs-utils.ts';
 import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
@@ -86,7 +87,9 @@ export function conflictError(
     _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }),
     {
       exitCode: EXIT.conflict,
-      hint: _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
+      hint: conflicts.some(file => file.remove)
+        ? `${_('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE })} ${_('hint.project.conflict.remove', { project: targetDir })}`
+        : _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
       details: conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind })),
       warnings
     }
@@ -189,17 +192,46 @@ export interface ApplyPlan {
   plan: ProjectPlan;
   /** 이번 실행 전에 agctx.project.json이 이미 프로젝트를 고정했는지. */
   previousPin: boolean;
+  /** 연결 파일을 쓸 에이전트. */
+  agents: AgentId[];
+}
+
+/**
+ * 이번에 연결 파일을 쓸 에이전트와 agctx.project.json에 남길 목록. `--agent`가 없으면 기록을 따르고,
+ * 기록도 없으면 전부다. `all`은 기록을 지워서, 나중에 지원 에이전트가 늘면 그것도 받게 한다.
+ */
+export function agentSelection(
+  option: string | null,
+  projectConfig: ProjectConfig,
+  configPath: string
+): { agents: AgentId[]; record: AgentId[] | null } {
+  if (option === null) {
+    const recorded = recordedAgents(projectConfig.agents, configPath);
+    return { agents: recorded ?? [...AGENT_IDS], record: recorded };
+  }
+  if (option.trim() === '')
+    throw usageError(
+      'explain.unknown-agent',
+      _('error.explain.unknown-agent', { agent: '""' }),
+      _('hint.explain.agents')
+    );
+  if (option.trim() === 'all') return { agents: [...AGENT_IDS], record: null };
+  const chosen = canonicalAgents(parseAgents(option));
+  return { agents: chosen, record: chosen };
 }
 
 export function planFor(
   name: string,
   targetDir: string,
   pin: boolean | 'keep',
-  overrides?: Map<string, string | null>
+  overrides?: Map<string, string | null>,
+  agentOption: string | null = null
 ): ApplyPlan {
   const profile = readProfile(name);
   assertProjectDirectory(targetDir);
-  const projectConfig = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE));
+  const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
+  const projectConfig = readProjectConfig(configPath);
+  const selection = agentSelection(agentOption, projectConfig, configPath);
   const version = profileVersion(profile, projectConfig, pin);
   assertNoHiddenCharacters([{ file: `${name}/${profile.instructions}`, content: version.content }]);
   const projectName = getProjectName(
@@ -214,11 +246,13 @@ export function planFor(
       profileName: name,
       renderedAgents: renderProfileAgents(version.content, name, projectName),
       projectConfig,
-      record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted }
+      record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted },
+      agents: selection.agents,
+      recordAgents: selection.record
     },
     overrides
   );
-  return { name, targetDir, version, plan, previousPin: projectConfig.pin === true };
+  return { name, targetDir, version, plan, previousPin: projectConfig.pin === true, agents: selection.agents };
 }
 
 export function printPlan(plan: ProjectPlan, label: string): void {

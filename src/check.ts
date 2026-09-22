@@ -3,7 +3,7 @@ import path from 'node:path';
 import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, planFor, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
 import { profileLocation } from './profile/store.ts';
-import { managedRegion, regionHash } from './project/plan.ts';
+import { assertManagedPaths, managedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
 import { toLf } from './shared/fs-utils.ts';
 import { git, isGitRoot } from './shared/git.ts';
@@ -75,6 +75,7 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
     );
   }
   const config = readProjectConfig(configPath);
+  assertManagedPaths(config, targetDir);
   const findings: CheckFinding[] = [];
   const warnings: string[] = [];
 

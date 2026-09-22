@@ -1,9 +1,9 @@
 # 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/project/links.ts, templates, src/explain.ts, src/verify -->
-<!-- agctx-doc-sources-sha256: 67f3044a01071b799469c1f94a817a82422471c978ee54ce3884485dc0f70f96 -->
+<!-- agctx-doc-sources-sha256: 54a3c06782002446b4cf8c9826580867b70043f118c97af4fed6bba1e65143fe -->
 
-agctx가 파일을 만들고 전달을 확인하는 에이전트는 Codex·Claude Code·Antigravity다. Cursor·GitHub Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)).
+agctx가 파일을 만들고 전달을 확인하는 에이전트는 Codex·Claude Code·Antigravity다. Cursor·GitHub Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)). 저장소마다 `profile apply --agent`로 파일을 받을 에이전트를 고를 수 있고, 고르지 않은 에이전트의 파일은 만들지 않는다. `AGENTS.md`는 어떤 선택이든 만든다([에이전트 고르기](cli.md#profile-apply)).
 
 | 에이전트 | agctx가 만드는 파일 | 세션 시작에 읽는 파일 | `verify`의 증거 |
 | --- | --- | --- | --- |

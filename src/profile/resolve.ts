@@ -114,7 +114,7 @@ export async function resolveProject(
       });
       overrides.set(file.rel, file.regenerated);
       files.push({ file: file.rel, action: 'discard', backup });
-    } else if (options.edit && !options.dryRun && file.currentRegion) {
+    } else if (options.edit && !options.dryRun && file.currentRegion && !file.remove) {
       edits.push(file);
       files.push({ file: file.rel, action: 'edit' });
     } else {

@@ -123,7 +123,7 @@ export default {
     "Print a profile's scope and rules file (AGENTS.md unless profile.json names another).",
   'command.profile.setup.summary': 'Turn the guidance items in a profile on or off.',
   'command.profile.apply.summary':
-    'Apply a profile to a project: create the agent files and record the profile version. --pin keeps the project on the current commit until you apply again.',
+    'Apply a profile to a project: create the agent files and record the profile version. --agent picks which agents get files and is recorded for later syncs. --pin keeps the project on the current commit until you apply again.',
   'command.profile.sync.summary':
     'Re-apply the profile a project already uses. A pinned project stays on its recorded commit.',
   'command.profile.resolve.summary': 'Move edits made inside managed areas outside them and regenerate the areas.',
@@ -441,6 +441,7 @@ export default {
   'repos.pr.body.yes': 'yes',
   'repos.pr.body.no': 'no',
   'repos.pr.body.commits': 'Profile commits:',
+  'repos.pr.body.removed': '(removed)',
   'repos.pr.body.files': 'Changed files:',
   'repos.pr.body.check': 'Verify with `agctx check --refresh`.',
   'error.repos.targets-unreadable': 'Cannot read the targets file {file}.',
@@ -525,6 +526,25 @@ export default {
     'Set compilation.agents_md.mode: managed_section in apm.yml, move {file} aside, and run agctx profile apply again. Then put <!-- apm:start --> and <!-- apm:end --> below the project rule extensions heading and run apm compile.',
   'plan.warn.link-no-import':
     '{file} does not import AGENTS.md, so Claude Code never reads {agents}. Add an import of it, such as @AGENTS.md.',
+  'error.project.invalid-agents': '{file} has an invalid agents list: {value}.',
+  'hint.project.invalid-agents':
+    'List one or more of codex, claude, and antigravity in agents, for example "agents": ["codex", "claude"]. Remove the key to apply to every supported agent, or run agctx profile apply with --agent to rewrite it.',
+  'explain.not-selected':
+    'This repository did not choose this agent in agctx.project.json, so agctx does not write its files and missing files do not count toward exit code 4. To add it, run agctx profile apply {profile} --agent {agents} in the project root.',
+  'explain.not-selected.codex':
+    'This repository did not choose Codex in agctx.project.json. agctx still writes AGENTS.md, which Codex reads, and missing files do not count toward exit code 4.',
+  'verify.evidence.not-selected':
+    'not checked: this repository did not choose this agent in agctx.project.json. Name it with --agent to check it anyway.',
+  'actions.apply.agents': 'Which agents should this repository get files for? AGENTS.md is always written.',
+  'actions.apply.agents.codex': 'reads AGENTS.md',
+  'actions.apply.agents.claude': 'CLAUDE.md and folder links that import AGENTS.md',
+  'actions.apply.agents.antigravity': '.agents/rules/agctx.md that points to AGENTS.md',
+  'hint.project.conflict.remove':
+    'The edited files belong to agents you are removing. Run agctx profile resolve {project} to keep your edits outside the managed block, then run the same command again.',
+  'error.project.invalid-managed-path':
+    'managedHashes in agctx.project.json has paths outside the project, so nothing was changed: {paths}',
+  'hint.project.invalid-managed-path':
+    'Paths in managedHashes must be relative to the project root, use /, and not contain .. . Fix or remove those keys in {file}, then run the command again.',
   'plan.warn.agents-lines':
     'Warning: AGENTS.md will be {lines} lines after this run. Claude Code recommends keeping each instruction file under {limit} lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
   'plan.warn.agents-bytes':

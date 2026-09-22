@@ -23,19 +23,23 @@ test('스킬의 명령 목록은 명령 등록부와 맞다', () => {
 // 검사한다. 이 파일은 각 목록이 등록부에서 생성되는지와, 두 스킬이 호출 정책과 승인 규칙을
 // 갖췄는지만 검사한다.
 
-test('진단 스킬은 스스로 시작할 수 있고, 게시 스킬은 이름으로 부를 때만 시작한다', () => {
-  assert.match(read('skills/agctx/SKILL.md'), /^---\nname: agctx\ndescription: .+\n---\n/);
-  assert.doesNotMatch(read('skills/agctx/SKILL.md'), /disable-model-invocation/);
-  assert.match(
-    read('skills/agctx-author/SKILL.md'),
-    /^---\nname: agctx-author\ndescription: .+\ndisable-model-invocation: true\n---\n/,
-    'Claude Code는 이 스킬을 스스로 시작하지 않는다'
-  );
-  assert.match(
-    read('skills/agctx-author/agents/openai.yaml'),
-    /^policy:\n {2}allow_implicit_invocation: false$/m,
-    'Codex는 이 스킬을 스스로 시작하지 않는다'
-  );
+test('두 스킬 모두 사용자가 이름으로 부를 때만 시작한다(ADR 0047)', () => {
+  for (const name of ['agctx', 'agctx-author']) {
+    const skill = read(`skills/${name}/SKILL.md`);
+    assert.match(
+      skill,
+      new RegExp(`^---\\nname: ${name}\\ndescription: .+\\ndisable-model-invocation: true\\n---\\n`),
+      `Claude Code는 ${name} 스킬을 스스로 시작하지 않는다`
+    );
+    assert.match(
+      read(`skills/${name}/agents/openai.yaml`),
+      /^policy:\n {2}allow_implicit_invocation: false$/m,
+      `Codex는 ${name} 스킬을 스스로 시작하지 않는다`
+    );
+    // Antigravity에는 자동 호출을 끄는 설정이 없어 본문의 규칙으로 막는다.
+    assert.match(skill, new RegExp(`\\/${name}`), `${name} 스킬은 /${name}로 부를 때만 쓴다고 적는다`);
+    assert.match(skill, /명시적으로 부르지 않았으면/, `${name} 스킬은 스스로 시작하지 말라는 규칙을 적는다`);
+  }
 });
 
 test('게시 스킬은 에이전트에게 --yes 전에 dry run을 보여 주고 승인을 기다리라고 한다', () => {

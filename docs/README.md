@@ -143,6 +143,7 @@
   - [ADR 0044: 프로필의 MCP 서버를 Claude Code `.mcp.json`과 Codex `.codex/config.toml`에 소유 영역만 병합해 쓴다](adr/0044-mcp-servers-in-profiles.md)
   - [ADR 0045: 명령 출력을 싣는 문서 예시는 메시지 카탈로그를 핀하지 않고 실제 실행과 대조한다](adr/0045-run-doc-examples-instead-of-pinning-messages.md)
   - [ADR 0046: 프로필의 skills·subagents·hooks를 에이전트마다 저장소에 쓰고, hooks는 저장소가 고를 때만 쓴다](adr/0046-skills-subagents-hooks-in-profiles.md)
+  - [ADR 0047: 에이전트용 스킬 두 개 모두 사용자가 이름으로 부를 때만 쓴다](adr/0047-agent-skills-explicit-invocation-only.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

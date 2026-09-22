@@ -6,6 +6,8 @@ disable-model-invocation: true
 
 # agctx-author
 
+이 스킬은 사용자가 `/agctx-author`로 부를 때만 쓴다. 사용자가 명시적으로 부르지 않았으면 대화 내용이 agctx와 관련 있어 보여도 이 스킬을 시작하지 않는다.
+
 이 스킬은 여러 저장소와 팀원이 받는 내용을 바꾸므로, 모든 push와 모든 pull request는 이 대화에서 사용자의 승인을 받아야 한다. 명령은 `agctx`로 실행하고, 설치되어 있지 않으면 `npx agent-context-manager`에 같은 인자를 붙인다.
 
 ## Pick the command

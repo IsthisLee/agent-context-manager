@@ -32,7 +32,7 @@ flowchart LR
 
 | 정책 | 담는 스킬 | 대상 |
 | --- | --- | --- |
-| `auto` | `skills/agctx` (모델이 스스로 부름) | `changes: 'none'`인 읽기 전용 명령 |
+| `auto` | `skills/agctx` (이름으로 부를 때만, 불리면 승인 없이 실행. [ADR 0047](../../../adr/0047-agent-skills-explicit-invocation-only.md)) | `changes: 'none'`인 읽기 전용 명령 |
 | `ask` | `skills/agctx-author` (이름으로 부를 때만) | 프로필 보관함·저장소·원격을 바꾸는 명령 |
 | `never` | 없음 | `profile remove`·`config lang`·`help` |
 

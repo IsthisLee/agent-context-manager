@@ -799,6 +799,10 @@
   > 번역: 엔터프라이즈·개인·프로젝트 위치의 `<skill-name>` 항목은 디스크의 다른 곳에 있는 디렉터리를 가리키는 심볼릭 링크일 수 있습니다. Claude Code는 대상에서 `SKILL.md`를 읽고, 여러 위치가 같은 대상을 가리켜도 스킬을 한 번만 불러옵니다.
 
 - **공식 문서(Codex 스킬):** Codex는 현재 폴더부터 저장소 루트까지의 `.agents/skills`에서 스킬을 찾고, `SKILL.md`에는 `name`과 `description`이 있어야 한다. `agents/openai.yaml`의 `policy.allow_implicit_invocation`을 `false`로 두면 명시적으로 부를 때만 쓴다. 처음 넣는 스킬 목록은 모델 컨텍스트 창의 2%, 창 크기를 모르면 8,000자까지만 쓴다. [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-15)
+- **직접 실험(스킬을 이름으로 부를 때만 쓰기, 2026-09-23):** 두 스킬에 [ADR 0047](adr/0047-agent-skills-explicit-invocation-only.md)의 설정을 넣고 임시 저장소의 `.claude/skills/`와 `.agents/skills/`에 복사했다.
+  - Codex 0.155.1: `codex debug prompt-input -c 'projects={"<경로>"={trust_level="trusted"}}' "hi"`가 렌더링한 스킬 목록에 `agctx`와 `agctx-author`가 둘 다 없었다. 목록에 없는 스킬은 모델이 스스로 고를 수 없다. [Codex skills](https://learn.chatgpt.com/docs/build-skills)는 이 설정이 `false`면 명시적인 `$skill` 호출만 동작하고, `/skills`나 `$`로 스킬을 부른다고 적는다(확인일: 2026-09-23).
+  - Claude Code 2.1.278: `claude -p "<요청>" --model haiku --allowedTools Skill Read --disallowedTools Bash --max-turns 3`을 두 번 실행했다. init 이벤트의 `skills`에는 두 스킬이 모두 있었다. "이 저장소의 에이전트 지침이 최신 팀 규칙을 반영했는지 확인해 줘."에는 스킬을 부르지 않고 `Glob`·`Read`로 파일만 읽었다(0.126달러). 같은 요청 앞에 `/agctx`를 붙이자 `Skill`로 `agctx`를 불러 `check --refresh --json`을 실행하려 했다(0.100달러).
+  - Antigravity: 자동 호출을 끄는 설정을 [Antigravity skills](https://antigravity.google/docs/skills) 문서에서 찾지 못했다. 문서는 에이전트가 맥락을 보고 스스로 읽는 방식과 `/<skill-name>`으로 부르는 방식을 적는다(확인일: 2026-09-23). 실행해 확인하지 않았다.
 
   > "Codex won't implicitly invoke the skill based on user prompt; explicit `$skill` invocation still works."
   >

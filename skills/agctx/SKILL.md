@@ -1,11 +1,14 @@
 ---
 name: agctx
-description: agctx(Agent Context Manager)가 관리하는 에이전트 지침을 읽고 진단한다. Codex·Claude Code·Antigravity가 저장소의 AGENTS.md·CLAUDE.md·.agents/rules를 무시하는 것처럼 보일 때, 어떤 폴더에 어느 규칙이 걸리는지 물을 때, 저장소가 최신 공용 규칙을 반영했는지 물을 때, 어느 저장소가 뒤처졌는지 물을 때, 프로필에 무엇이 담겼는지나 Git 원격과 비교해 어디에 있는지 물을 때 쓴다. Read and diagnose the agent guidance that agctx manages. 프로필을 바꾸거나 배포하려면 agctx-author 스킬을 쓴다.
+description: agctx(Agent Context Manager)가 관리하는 에이전트 지침을 읽고 진단한다. Codex·Claude Code·Antigravity가 저장소의 AGENTS.md·CLAUDE.md·.agents/rules를 무시하는 것처럼 보일 때, 어떤 폴더에 어느 규칙이 걸리는지 물을 때, 저장소가 최신 공용 규칙을 반영했는지 물을 때, 어느 저장소가 뒤처졌는지 물을 때, 프로필에 무엇이 담겼는지나 Git 원격과 비교해 어디에 있는지 물을 때 쓴다. Read and diagnose the agent guidance that agctx manages. 프로필을 바꾸거나 배포하려면 agctx-author 스킬을 쓴다. 사용자가 /agctx로 명시적으로 부를 때만 쓴다.
+disable-model-invocation: true
 ---
 
 # agctx
 
 agctx는 저장소마다 하나의 프로필로 에이전트 지침을 맞추고, Codex·Claude Code·Antigravity가 그 지침을 실제로 받았는지 확인한다. 명령은 `agctx`로 실행한다. 설치되어 있지 않으면 같은 인자를 `npx agent-context-manager`에 붙여 실행한다.
+
+이 스킬은 사용자가 `/agctx`로 부를 때만 쓴다. 사용자가 명시적으로 부르지 않았으면 대화 내용이 agctx와 관련 있어 보여도 이 스킬을 시작하지 않고, 필요하면 `/agctx`로 불러 달라고 말한다.
 
 ## Pick the command
 

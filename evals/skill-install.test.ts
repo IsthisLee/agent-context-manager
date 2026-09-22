@@ -1,0 +1,135 @@
+import test, { type TestContext } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { applyInstall, applyUninstall, INSTALL_RECORD, outdatedSkills, planInstall, planUninstall } from '../src/skills/install.ts';
+import { packageVersion } from '../src/shared/runtime.ts';
+
+/**
+ * `agctx install` copies the skills shipped in the package into the user-level skill folder of each agent found on
+ * this machine, with a record that lets it replace only what it wrote. Every case runs in a temporary HOME.
+ */
+
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const read = (file: string) => fs.readFileSync(file, 'utf8');
+
+function home(t: TestContext, folders: string[] = []) {
+  const dir = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-skill-install-')));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const saved = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE, CODEX_HOME: process.env.CODEX_HOME };
+  process.env.HOME = dir;
+  process.env.USERPROFILE = dir;
+  delete process.env.CODEX_HOME;
+  t.after(() => {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  });
+  for (const folder of folders) fs.mkdirSync(path.join(dir, folder), { recursive: true });
+  return dir;
+}
+
+const states = (plan: ReturnType<typeof planInstall>) => plan.items.map(item => `${item.target}:${item.skill}:${item.state}`).sort();
+
+test('install copies both skills into the agents found on this machine and records what it wrote', t => {
+  const dir = home(t, ['.claude', '.codex']);
+
+  const plan = planInstall({});
+
+  assert.deepEqual(states(plan), ['claude:agctx-author:create', 'claude:agctx:create', 'codex:agctx-author:create', 'codex:agctx:create']);
+  assert.deepEqual(plan.skipped.map(target => target.id), ['antigravity', 'antigravity-cli']);
+  applyInstall(plan);
+  assert.equal(read(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md')), read(path.join(repoRoot, 'skills', 'agctx', 'SKILL.md')));
+  assert.ok(fs.existsSync(path.join(dir, '.agents', 'skills', 'agctx-author', 'agents', 'openai.yaml')));
+  const record = JSON.parse(read(path.join(dir, '.claude', 'skills', 'agctx', INSTALL_RECORD)));
+  assert.equal(record.version, packageVersion());
+  assert.match(record.files['SKILL.md'], /^[0-9a-f]{64}$/);
+});
+
+test('install again changes nothing, and replaces a folder whose record is from another version', t => {
+  const dir = home(t, ['.claude']);
+  applyInstall(planInstall({}));
+
+  assert.deepEqual(states(planInstall({})), ['claude:agctx-author:unchanged', 'claude:agctx:unchanged']);
+
+  const recordFile = path.join(dir, '.claude', 'skills', 'agctx', INSTALL_RECORD);
+  fs.writeFileSync(recordFile, JSON.stringify({ ...JSON.parse(read(recordFile)), version: '0.0.1' }));
+  const plan = planInstall({});
+  assert.deepEqual(states(plan), ['claude:agctx-author:unchanged', 'claude:agctx:update']);
+  applyInstall(plan);
+  assert.equal(JSON.parse(read(recordFile)).version, packageVersion());
+});
+
+test('install leaves a skill whose files were edited and stops, unless --force', t => {
+  const dir = home(t, ['.claude']);
+  applyInstall(planInstall({}));
+  fs.appendFileSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md'), '\nmy note\n');
+
+  const plan = planInstall({});
+
+  assert.equal(plan.blocked, true);
+  const item = plan.items.find(entry => entry.skill === 'agctx');
+  assert.equal(item?.state, 'blocked');
+  assert.match(item?.reason ?? '', /SKILL\.md/);
+  assert.equal(planInstall({ force: true }).items.find(entry => entry.skill === 'agctx')?.state, 'update');
+});
+
+test('install leaves a folder it did not write and a symbolic link, unless --force', { skip: process.platform === 'win32' ? 'symbolic links need extra privileges on Windows' : false }, t => {
+  const dir = home(t, ['.claude']);
+  fs.mkdirSync(path.join(dir, '.claude', 'skills', 'agctx'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md'), '# someone else\n');
+  fs.mkdirSync(path.join(dir, 'elsewhere', 'agctx-author'), { recursive: true });
+  fs.symlinkSync(path.join(dir, 'elsewhere', 'agctx-author'), path.join(dir, '.claude', 'skills', 'agctx-author'));
+
+  assert.deepEqual(states(planInstall({})), ['claude:agctx-author:blocked', 'claude:agctx:blocked']);
+
+  const forced = planInstall({ force: true });
+  assert.deepEqual(states(forced), ['claude:agctx-author:update', 'claude:agctx:update']);
+  applyInstall(forced);
+  assert.equal(fs.lstatSync(path.join(dir, '.claude', 'skills', 'agctx-author')).isSymbolicLink(), false);
+  assert.ok(fs.existsSync(path.join(dir, 'elsewhere', 'agctx-author')), 'the folder the link pointed at stays');
+});
+
+test('--agent antigravity installs into both Antigravity folders even when they are missing', t => {
+  home(t);
+
+  const plan = planInstall({ agent: 'antigravity' });
+
+  assert.deepEqual(states(plan), ['antigravity-cli:agctx-author:create', 'antigravity-cli:agctx:create', 'antigravity:agctx-author:create', 'antigravity:agctx:create']);
+  assert.deepEqual(plan.items.map(item => item.dir).filter((dir, index, all) => all.indexOf(dir) === index).map(dir => path.relative(os.homedir(), dir)).sort(),
+    [path.join('.gemini', 'antigravity-cli', 'skills', 'agctx'), path.join('.gemini', 'antigravity-cli', 'skills', 'agctx-author'), path.join('.gemini', 'config', 'skills', 'agctx'), path.join('.gemini', 'config', 'skills', 'agctx-author')].sort());
+});
+
+test('install stops when no agent is found and none is named', t => {
+  home(t);
+
+  assert.throws(() => planInstall({}), { code: 'install.none-found' });
+});
+
+test('uninstall removes the folders install wrote and keeps the others', t => {
+  const dir = home(t, ['.claude', '.codex']);
+  applyInstall(planInstall({}));
+  fs.rmSync(path.join(dir, '.agents', 'skills', 'agctx', INSTALL_RECORD));
+
+  const plan = planUninstall({});
+
+  assert.deepEqual(plan.items.map(item => `${item.target}:${item.skill}:${item.state}`).sort(), ['claude:agctx-author:remove', 'claude:agctx:remove', 'codex:agctx-author:remove', 'codex:agctx:kept']);
+  applyUninstall(plan);
+  assert.equal(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx')), false);
+  assert.ok(fs.existsSync(path.join(dir, '.agents', 'skills', 'agctx', 'SKILL.md')));
+});
+
+test('outdated skills are the installed ones whose record names another version', t => {
+  const dir = home(t, ['.claude']);
+  assert.deepEqual(outdatedSkills(), []);
+  applyInstall(planInstall({}));
+  assert.deepEqual(outdatedSkills(), []);
+
+  const recordFile = path.join(dir, '.claude', 'skills', 'agctx', INSTALL_RECORD);
+  fs.writeFileSync(recordFile, JSON.stringify({ ...JSON.parse(read(recordFile)), version: '0.0.1' }));
+
+  assert.deepEqual(outdatedSkills(), [{ dir: path.join(dir, '.claude', 'skills', 'agctx'), version: '0.0.1' }]);
+});

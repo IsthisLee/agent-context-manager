@@ -9,7 +9,7 @@ import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, p
 import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getBrokenLinks, getProfiles, profileLocation, removeProfile, viewProfile } from '../profile/store.ts';
+import { createProfile, getProfiles, profileLocation, readStore, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -17,6 +17,7 @@ import { reposStatus } from '../repos/status.ts';
 import { applyReposSync, planReposSync, type SyncItem } from '../repos/sync.ts';
 import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
 import { PROFILE_METADATA_FILE, profileHome, saveLocale } from '../shared/home.ts';
+import { shellWord } from '../shared/shell.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
 import { canPrompt, confirmChange, type ParsedArguments } from './options.ts';
 import { isJsonMode, say, warn, type CommandOutcome } from './output.ts';
@@ -27,8 +28,6 @@ const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode:
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
 const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
-/** An argument as it would be typed into a shell: quoted when it holds a space or a character the shell reads. */
-const shellWord = (word: string) => (/^[\w@%+=:,./-]+$/.test(word) ? word : `"${word.replace(/["\\$`]/g, '\\$&')}"`);
 const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(shellWord), '--yes'].join(' ');
 
 /** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
@@ -109,9 +108,10 @@ export const HANDLERS: Record<string, Handler> = {
   },
   'profile.list': async parsed => {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
-    await listProfiles(scope);
+    const store = readStore();
+    await listProfiles(scope, store);
     // A broken link has no scope that can be read, so a scoped list leaves it out, as the text output does.
-    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope), brokenLinks: scope ? [] : getBrokenLinks() });
+    return ok({ profiles: store.profiles.filter(profile => !scope || profile.scope === scope), brokenLinks: scope ? [] : store.brokenLinks });
   },
   'profile.view': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile view <name>');
@@ -192,7 +192,7 @@ export const HANDLERS: Record<string, Handler> = {
           continue;
         }
         say(_('status.link', { path: state.link }));
-        if (flag(parsed, 'refresh')) say(_('status.link.no-refresh', { path: state.link }));
+        if (flag(parsed, 'refresh')) say(_('status.link.no-refresh', { path: shellWord(state.link) }));
         continue;
       }
       if (state.behind) say(_('status.next.pull', { name: state.name }));
@@ -316,7 +316,12 @@ export const HANDLERS: Record<string, Handler> = {
         : '-';
       say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
       if (status.error) say(`  ${status.error.message}`);
-      if (status.state === 'behind') hints.add(status.pinned ? _(linkedProfile(status.profile) ? 'repos.next.pr.linked' : 'repos.next.pr', { profile: status.profile }) : _('repos.next.sync', { profile: status.profile }));
+      for (const warning of status.warnings) say(`  ${warning}`);
+      const linked = linkedFolder(status.profile);
+      if (status.state === 'behind') {
+        // A linked folder's new commits reach teammates only once they are pushed there, so the hint says to push first.
+        hints.add(status.pinned ? (linked ? _('repos.next.pr.linked', { profile: status.profile, path: shellWord(linked) }) : _('repos.next.pr', { profile: status.profile })) : _('repos.next.sync', { profile: status.profile }));
+      }
       if (status.state === 'conflict') hints.add(_('repos.next.resolve', { project: status.path }));
       if (status.state === 'missing') hints.add(_('repos.hint.prune'));
       if (status.error?.hint) hints.add(`${_('output.next')}: ${status.error.hint}`);
@@ -388,9 +393,9 @@ function printLinkPlan(plan: LinkPlan): void {
   say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}${from}`);
 }
 
-/** Whether `name` is a linked profile, for next steps that must not name commands a link refuses. */
-function linkedProfile(name: string): boolean {
-  try { return Boolean(profileLocation(name)?.link); } catch { return false; }
+/** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */
+function linkedFolder(name: string): string | null {
+  try { return profileLocation(name)?.link ?? null; } catch { return null; }
 }
 
 function describeState(state: ReturnType<typeof profileGitState>): string {

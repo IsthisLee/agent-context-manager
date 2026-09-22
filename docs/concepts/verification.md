@@ -1,7 +1,7 @@
 # 전달 확인과 검증의 범위
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 1f46e1e1659d65d48c56b572b0faf6722c14a08a8b96a333f100fa5449d6d80d -->
+<!-- agctx-doc-sources-sha256: 76a20cc928278b1f28b2c37fc7da4455b2d9810e02d3b786a2aff582057e046a -->
 
 agctx가 확인하는 것은 세 층이다. 층마다 증거가 다르므로 필요한 만큼만 쓴다.
 

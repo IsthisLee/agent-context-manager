@@ -6,7 +6,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 7a4504b28f17c54b2fa34a0764f205a7daa3f45fb82b6c9412cdf4ddc042ddef -->
+<!-- agctx-doc-sources-sha256: 99565cbc1a1103db34b29024b720132a2d7b930637c53461380630f9eba0647c -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
 
@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 3123fed8cb1e160047aa39e328eb1e4c8e6b54fabd87fc7eed2cce35387e498a -->
+<!-- agctx-doc-sources-sha256: 1c63a84b9514b1905595f6e649fc3602ae6d3ee5a5ed573fb5c0cf7a17e19d3c -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -29,6 +29,10 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`is linked to …, which has no profile.json`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 없어졌다. `link`가 만든 `profile.json`은 커밋하기 전이라 `git clean`이나 브랜치 전환으로 지워지기 쉽다. 커밋했었다면 그 폴더에서 `git restore profile.json`으로 되살리고, 아니면 `agctx profile link <경로> --name <name>`으로 다시 만든다. `--name`을 빼면 폴더 이름으로 새 프로필이 생기고 원래 프로필은 끊긴 채 남는다.
 - **`which no longer has its rules file`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 가리키는 규칙 파일이 없어졌다. 다른 브랜치로 바꿨거나 파일을 옮긴 경우다. 파일을 되돌려 놓거나, 그 폴더의 `profile.json`에 지금 위치를 적는다.
 - **`The link of profile … cannot be read`**(종료 코드 64): 보관함의 `link.json`이 깨졌다. `agctx profile link <경로> --name <name>`으로 같은 이름에 다시 연결하거나 `agctx profile remove <name> --yes`로 지운다.
+- **`is already linked to`**(종료 코드 64): 같은 이름의 링크가 멀쩡히 다른 폴더를 가리키고 있다. 폴더 이름이 같은 다른 폴더를 연결하면 이렇게 된다. 옮기려면 `agctx profile remove <name> --yes`로 링크를 지운 뒤 다시 연결하고, 둘 다 두려면 `--name`으로 다른 이름을 준다.
+- **`but its profile.json is not for profile`**(종료 코드 64): 연결한 폴더의 `profile.json`에서 `name`이 바뀌었다. 안내에 나온 파일의 `name`을 원래 이름으로 되돌리거나, 링크를 지운 뒤 새 이름으로 다시 연결한다.
+- **`is your home folder, not a rules repository folder`**(종료 코드 64): 홈 폴더에서 인자 없이 `profile link`를 실행했거나 홈 폴더를 줬다. 규칙 저장소 폴더를 준다.
+- **`Stopped looking for AGENTS.md after 1000 folders`**(종료 코드 64): 폴더가 커서 규칙 파일을 다 찾지 못했다. `--instructions <경로>`로 규칙 파일을 준다.
 - **`is inside the Git repository`**(종료 코드 64): `profile link`에 Git 저장소 안의 하위 폴더를 줬다. 안내에 나온 대로 저장소 루트를 연결하고 규칙 파일을 `--instructions <하위 폴더>/AGENTS.md`로 준다.
 - **`is a symbolic link. Pinning and profile clone read the rules file from Git`**(종료 코드 64): `profile link`가 고른 규칙 파일이 심볼릭 링크다. 안내에 나온 대로 링크가 가리키는 파일을 `--instructions`로 준다.
 - **`Invalid profile name`과 `The name comes from the folder name`**(종료 코드 64): `profile link`가 폴더 이름을 프로필 이름으로 쓰려 했는데 대문자나 밑줄처럼 이름 규칙에 맞지 않는 글자가 있다. 안내에 나온 이름이나 원하는 이름을 `--name`으로 준다.

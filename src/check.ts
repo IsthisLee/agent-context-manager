@@ -72,7 +72,8 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   const profile = config.profile ?? null;
   // A linked profile lives in the folder its pointer names; a link that cannot be used counts as a profile this computer lacks.
   const location = profile ? profileLocation(profile) : null;
-  const inStore = Boolean(location && !location.problem);
+  const brokenLink = Boolean(location?.link && location.problem);
+  const inStore = Boolean(location) && !brokenLink;
   const profileDir = inStore && location ? location.dir : null;
   // What a sync would write, when this computer holds the profile. A managed
   // area that already holds it is not a conflict, so `check` and `sync` give
@@ -112,7 +113,7 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
       findings.push({ kind: 'behind', file: null, detail: _('check.profile-newer', { commit: storeCommit.slice(0, 7) }) });
     }
   } else if (profile && !inStore) {
-    if (location?.problem) warnings.push(_('check.warn.link-broken', { profile, path: location.link ?? location.dir, reason: _(`list.broken.${location.problem}`) }));
+    if (brokenLink && location?.link) warnings.push(_('check.warn.link-broken', { profile, path: location.link, reason: _(`list.broken.${location.problem}`) }));
     if (!options.refresh) warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
   }
 

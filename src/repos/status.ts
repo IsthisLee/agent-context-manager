@@ -16,6 +16,8 @@ export interface RepoStatus {
   commit: string | null;
   latestCommit: string | null;
   findings: CheckFinding[];
+  /** What check warned about, such as a profile that is a broken link on this machine. */
+  warnings: string[];
   error: { code: string; message: string; hint: string | null } | null;
 }
 
@@ -35,7 +37,7 @@ export function reposStatus(options: { profile?: string | null; refresh?: boolea
     return heads.get(key) ?? null;
   };
   return selectRepos(options.profile ?? null).map((entry): RepoStatus => {
-    const base = { path: entry.path, profile: entry.profile, pinned: entry.pinned, commit: null, latestCommit: null, findings: [], error: null };
+    const base = { path: entry.path, profile: entry.profile, pinned: entry.pinned, commit: null, latestCommit: null, findings: [], warnings: [], error: null };
     if (!fs.existsSync(entry.path)) return { ...base, state: 'missing', exitCode: EXIT.ok };
     try {
       const report = checkProject(entry.path, { refresh: options.refresh, remoteHead });
@@ -46,6 +48,7 @@ export function reposStatus(options: { profile?: string | null; refresh?: boolea
         commit: report.commit,
         latestCommit: report.latestCommit,
         findings: report.findings,
+        warnings: report.warnings,
         state: STATE_BY_CODE[report.exitCode] ?? 'error',
         exitCode: report.exitCode
       };

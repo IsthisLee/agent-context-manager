@@ -484,3 +484,172 @@ test('profile list --scope leaves broken links out of JSON as it does out of tex
   assert.deepEqual(scoped.brokenLinks, []);
   assert.equal(listed(admin).brokenLinks.length, 1);
 });
+
+test('a store folder that is an operating system link to a moved folder is a broken link, and check does not stop on it', { skip: noLinks }, t => {
+  const { root, admin, folder } = setup(t);
+  const metadata = JSON.stringify({ schemaVersion: 1, name: 'sym', scope: 'team' }) + '\n';
+  const dir = rulesFolder(root, 'sym-rules', { 'profile.json': metadata, 'AGENTS.md': '# Rules\n' }, { git: false });
+  fs.mkdirSync(path.join(admin.home, 'profiles'), { recursive: true });
+  fs.symlinkSync(dir, path.join(admin.home, 'profiles', 'sym'));
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'sym', project, '--yes']);
+  const moved = path.join(root, 'moved');
+  fs.renameSync(dir, moved);
+
+  const check = admin.run(['check', project]);
+  assert.equal(check.status, 0, check.stderr);
+  assert.ok((check.stdout + check.stderr).includes(dir));
+  assert.deepEqual(listed(admin).brokenLinks, [{ name: 'sym', path: dir, reason: 'missing-folder' }]);
+
+  // Linking the folder where it is now turns the operating system link into a pointer.
+  admin.ok(['profile', 'link', moved, '--name', 'sym', '--yes']);
+  assert.deepEqual(listed(admin).profiles.map((profile: { name: string; link?: string }) => [profile.name, profile.link]), [['sym', moved]]);
+
+  admin.ok(['profile', 'remove', 'sym', '--yes']);
+  assert.ok(fs.existsSync(path.join(moved, 'AGENTS.md')), 'removing the link leaves the folder it pointed at');
+  assert.deepEqual(fs.readdirSync(path.join(admin.home, 'profiles')), []);
+});
+
+test('link does not move a working link to another folder of the same name, even with --yes', t => {
+  const { root, admin, folder } = setup(t);
+  const first = rulesFolder(root, 'a/rules', { 'AGENTS.md': '# A rules\n' }, { git: false });
+  const second = rulesFolder(root, 'b/rules', { 'AGENTS.md': '# B rules\n' }, { git: false });
+  admin.ok(['profile', 'link', first, '--yes']);
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'rules', project, '--yes']);
+
+  const refused = admin.run(['profile', 'link', second, '--yes']);
+
+  assert.equal(refused.status, 64);
+  assert.ok(refused.stderr.includes(first), 'the error names the folder the link keeps');
+  assert.match(refused.stderr, /profile remove rules --yes/);
+  assert.equal(json(path.join(admin.home, 'profiles', 'rules', 'link.json')).path, first);
+  assert.ok(!fs.existsSync(path.join(second, 'profile.json')), 'nothing is written in the other folder');
+  admin.ok(['profile', 'sync', project, '--yes']);
+  assert.match(read(path.join(project, 'AGENTS.md')), /A rules/);
+});
+
+test('a link whose profile.json now names another profile says how to fix the name or drop the link', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'rules', { 'AGENTS.md': '# Rules\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--yes']);
+  const metadataFile = path.join(dir, 'profile.json');
+  fs.writeFileSync(metadataFile, JSON.stringify({ ...json(metadataFile), name: 'other' }) + '\n');
+
+  const view = admin.run(['profile', 'view', 'rules']);
+
+  assert.equal(view.status, 64);
+  assert.ok(view.stderr.includes(metadataFile), view.stderr);
+  assert.match(view.stderr, /"name"/);
+  assert.match(view.stderr, /profile remove rules --yes/);
+});
+
+test('repos status shows that a repository uses a broken link', t => {
+  const { root, admin, folder } = setup(t);
+  const dir = rulesFolder(root, 'rules', { 'AGENTS.md': '# Rules\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--yes']);
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'rules', project, '--yes']);
+  fs.renameSync(dir, path.join(root, 'moved'));
+
+  const status = admin.run(['repos', 'status']);
+
+  assert.match(status.stdout + status.stderr, /broken link/);
+  assert.ok((status.stdout + status.stderr).includes(dir));
+  const repos = JSON.parse(admin.run(['repos', 'status', '--json']).stdout).data.repos;
+  assert.ok(repos[0].warnings.some((warning: string) => warning.includes(dir)));
+});
+
+test('repos status tells a pinned project on a linked profile to push in that folder before opening pull requests', t => {
+  const { admin, folder, dir } = linkedBehindRemote(t);
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'team-rules', project, '--pin', '--yes']);
+  gitIn(dir, 'pull', '--quiet');
+
+  const result = admin.run(['repos', 'status']);
+
+  const output = result.stdout + result.stderr;
+  assert.ok(output.includes(`git -C ${dir} push`), output);
+  assert.match(output, /agctx repos pr --profile team-rules/);
+});
+
+test('linking a folder again after its profile.json is lost brings back the scope and rules file it had', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', { 'AGENTS.md': '# For contributors\n', 'templates/AGENTS.md': '# Team rules\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--name', 'company', '--scope', 'company', '--instructions', 'templates/AGENTS.md', '--yes']);
+  fs.rmSync(path.join(dir, 'profile.json'));
+
+  admin.ok(['profile', 'link', dir, '--name', 'company', '--yes']);
+
+  const metadata = json(path.join(dir, 'profile.json'));
+  assert.equal(metadata.scope, 'company');
+  assert.equal(metadata.instructions, 'templates/AGENTS.md');
+});
+
+test('a linked folder whose rules file became a folder is a broken link, not an I/O error', t => {
+  const { root, admin, folder } = setup(t);
+  const dir = rulesFolder(root, 'rules', { 'AGENTS.md': '# Rules\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--yes']);
+  fs.rmSync(path.join(dir, 'AGENTS.md'));
+  fs.mkdirSync(path.join(dir, 'AGENTS.md'));
+
+  assert.deepEqual(listed(admin).brokenLinks, [{ name: 'rules', path: dir, reason: 'missing-rules' }]);
+  const apply = admin.run(['profile', 'apply', 'rules', folder('orders-api'), '--yes']);
+  assert.equal(apply.status, 64, apply.stderr);
+});
+
+test('a symbolic link named AGENTS.md in a subfolder is reported as a link, not as missing', { skip: noLinks }, t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'rules', { 'shared/RULES.md': '# Rules\n', 'sub/.keep': '' }, { git: false });
+  fs.symlinkSync('../shared/RULES.md', path.join(dir, 'sub', 'AGENTS.md'));
+
+  const result = admin.run(['profile', 'link', dir, '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /symbolic link/i);
+  assert.match(result.stderr, /--instructions shared\/RULES\.md/);
+});
+
+test('the hint for a folder inside a Git repository keeps the name and scope given and quotes its paths', t => {
+  const { root, admin } = setup(t);
+  const repo = rulesFolder(root, 'company-configs', { 'Team Rules/AGENTS.md': '# Rules\n' });
+
+  const result = admin.run(['profile', 'link', path.join(repo, 'Team Rules'), '--scope', 'team', '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.ok(result.stderr.includes('--instructions "Team Rules/AGENTS.md"'), result.stderr);
+  assert.match(result.stderr, /--name team-rules/);
+  assert.match(result.stderr, /--scope team/);
+});
+
+test('the hint for a rules file that is a symbolic link quotes a target path with spaces', { skip: noLinks }, t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'rules', { 'real dir/R.md': '# Rules\n' }, { git: false });
+  fs.symlinkSync('real dir/R.md', path.join(dir, 'AGENTS.md'));
+
+  const result = admin.run(['profile', 'link', dir, '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.ok(result.stderr.includes('--instructions "real dir/R.md"'), result.stderr);
+});
+
+test('link refuses the home folder instead of searching all of it', t => {
+  const { root, admin } = setup(t);
+  const home = path.join(root, 'user-home');
+  fs.mkdirSync(path.join(home, 'Documents', 'notes'), { recursive: true });
+
+  const result = admin.run(['profile', 'link', home, '--yes'], { HOME: home, USERPROFILE: home });
+
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /home folder/);
+});
+
+test('a folder that Git does not track is linked even when a repository above it holds other files', t => {
+  const { root, admin } = setup(t);
+  const home = rulesFolder(root, 'user-home', { '.bashrc': '# shell\n' });
+  const dir = path.join(home, 'work', 'rules');
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'AGENTS.md'), '# Rules\n');
+
+  admin.ok(['profile', 'link', dir, '--yes']);
+});

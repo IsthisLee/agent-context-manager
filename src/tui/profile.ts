@@ -9,8 +9,8 @@ import { _, getLocale, guidanceDescriptions, guidanceLabels, levelOptions, scope
 import { isJsonMode, say, type CommandOutcome } from '../commands/output.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { GUIDANCE_KEYS, guidanceDefaults, setupProfile } from '../profile/setup.ts';
-import { createProfile, getBrokenLinks, getProfiles, isInstructionsPath, isProfileName, isScope, profileLocation, readProfile, regularFileInside, removeProfile, SCOPES, selectProfile, type BrokenLink } from '../profile/store.ts';
-import { ruleFileChoices } from '../profile/link.ts';
+import { createProfile, getProfiles, isInstructionsPath, isProfileName, isScope, profileLocation, readProfile, readStore, regularFileInside, removeProfile, SCOPES, selectProfile, type BrokenLink, type BrokenLinkReason, type StoreContents } from '../profile/store.ts';
+import { checkLinkFolder, ruleFileChoices, suggestedName } from '../profile/link.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
@@ -103,7 +103,7 @@ export function linkOutro(outcome: CommandOutcome): 'done' | 'unchanged' | 'decl
  * link again keeps that link's name, so the same profile comes back instead of a new one named after the folder.
  */
 export function linkNameStep(name: string | null, dir: string): { ask: boolean; name: string } {
-  return name ? { ask: false, name } : { ask: true, name: path.basename(dir) };
+  return name ? { ask: false, name } : { ask: true, name: suggestedName(path.basename(dir)) ?? path.basename(dir) };
 }
 
 /**
@@ -114,8 +114,11 @@ export function linkNameStep(name: string | null, dir: string): { ask: boolean; 
 export async function linkProfileTui(options: { name?: string | null } = {}): Promise<void> {
   if (!process.stdin.isTTY) throw usageError('tui.required', _('error.tui.required', { command: 'profile link' }), _('hint.tui.link'));
   intro(_('link.intro'));
-  const dir = await projectPathTui(_('link.path.message'));
-  if (!dir) return cancel(_('link.cancel'));
+  const chosen = await projectPathTui(_('link.path.message'));
+  if (!chosen) return cancel(_('link.cancel'));
+  // The folder is checked before it is searched for rules files, so the home folder or a folder inside a
+  // repository stops with its hint instead of being read.
+  const dir = checkLinkFolder(chosen, { name: options.name ?? null });
   const nameStep = linkNameStep(options.name ?? null, dir);
   const answers: Record<string, string | null> = { name: nameStep.ask ? null : nameStep.name, scope: null, instructions: null };
   if (!fs.existsSync(path.join(dir, PROFILE_METADATA_FILE))) {
@@ -167,30 +170,55 @@ function brokenLabel(link: BrokenLink): string {
  * Which menu a profile picked in the TUI list opens: its actions, or the two things a broken link allows. The list
  * passes the broken links it already read.
  */
-export function menuFor(name: string, broken: readonly BrokenLink[] = getBrokenLinks()): 'profile' | 'broken-link' {
+export function menuFor(name: string, broken: readonly BrokenLink[] = readStore().brokenLinks): 'profile' | 'broken-link' {
   return broken.some(link => link.name === name) ? 'broken-link' : 'profile';
 }
 
-/** A broken link can be linked again where its folder is now, under the same name, or removed. Nothing else works on it. */
+/**
+ * What the TUI offers for a broken link: link it again under the same name, or remove it. A link whose profile.json
+ * names another profile cannot be linked again under this name until that file is fixed, so it offers removal only.
+ */
+export function brokenMenuOptions(reason: BrokenLinkReason): { value: string; label: string; hint: string }[] {
+  return [
+    ...(reason === 'invalid-metadata' ? [] : [{ value: 'link', label: _('broken.menu.link'), hint: _('broken.menu.link.hint') }]),
+    { value: 'remove', label: _('broken.menu.remove'), hint: _('broken.menu.remove.hint') }
+  ];
+}
+
 async function brokenLinkTui(name: string, broken: readonly BrokenLink[]): Promise<void> {
+  const link = broken.find(entry => entry.name === name);
+  if (link?.reason === 'invalid-metadata') note(_('broken.menu.invalid-metadata', { name, file: path.join(link.path, PROFILE_METADATA_FILE) }), _('list.broken.title'));
   const action = await select<string>({
-    message: _('broken.menu.message', { name, path: broken.find(link => link.name === name)?.path ?? '' }),
-    options: [
-      { value: 'link', label: _('broken.menu.link'), hint: _('broken.menu.link.hint') },
-      { value: 'remove', label: _('broken.menu.remove'), hint: _('broken.menu.remove.hint') }
-    ]
+    message: _('broken.menu.message', { name, path: link?.path ?? '' }),
+    options: brokenMenuOptions(link?.reason ?? 'missing-folder')
   });
   if (cancelled(action)) return cancel(_('list.cancel'));
   if (action === 'link') return linkProfileTui({ name });
   return removeProfileTui(name);
 }
 
-/** Every profile the TUI can remove, broken links included, so a link that stopped working can still be cleared. */
+/**
+ * Every store entry the TUI can remove: profiles, broken links, and folders that are not a profile, so a link that
+ * stopped working or a folder left behind can still be cleared.
+ */
 export function removeChoices(): { value: string; label: string; hint: string }[] {
+  const store = readStore();
   return [
-    ...getProfiles().map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') })),
-    ...getBrokenLinks().map(link => ({ value: link.name, label: brokenLabel(link), hint: _('remove.select.hint') }))
+    ...store.profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') })),
+    ...store.brokenLinks.map(link => ({ value: link.name, label: brokenLabel(link), hint: _('remove.select.hint') })),
+    ...store.unreadable.map(name => ({ value: name, label: _('remove.unreadable', { name }), hint: _('remove.select.hint') }))
   ];
+}
+
+/**
+ * What the TUI says before removing `name`: a link leaves the folder it points at, a profile goes with its scope,
+ * and a store folder that is not a profile is named as such.
+ */
+export function removeNote(name: string): string {
+  const location = profileLocation(name);
+  if (location?.link) return _('remove.note.link', { name, path: location.link });
+  if (location?.metadata) return _('remove.note.body', { scope: location.metadata.scope, name });
+  return _('remove.note.unreadable', { name, path: location?.dir ?? name });
 }
 
 /** Whether the TUI asks to fetch before showing a profile's Git status. A linked folder is the person's own and is not fetched. */
@@ -198,11 +226,11 @@ export function statusRefreshPrompt(name: string): { ask: boolean } {
   return { ask: !profileLocation(name)?.link };
 }
 
-export async function listProfiles(scopeFilter: string | null = null): Promise<void> {
+export async function listProfiles(scopeFilter: string | null = null, store: StoreContents = readStore()): Promise<void> {
   if (scopeFilter !== null && !isScope(scopeFilter)) throw usageError('profile.invalid-scope', _('error.profile.invalid-scope', { scope: scopeFilter, scopes: SCOPES.join(', ') }), null);
-  let profiles = getProfiles();
+  let profiles = store.profiles;
   if (scopeFilter) profiles = profiles.filter(profile => profile.scope === scopeFilter);
-  const broken = scopeFilter ? [] : getBrokenLinks();
+  const broken = scopeFilter ? [] : store.brokenLinks;
   const interactive = Boolean(process.stdout.isTTY && process.stdin.isTTY) && !isJsonMode();
   if (!profiles.length && !broken.length && !interactive) {
     say(scopeFilter ? _('list.empty.scope', { scope: scopeFilter }) : _('list.empty'));
@@ -228,7 +256,7 @@ export async function listProfiles(scopeFilter: string | null = null): Promise<v
         ]
       });
       if (cancelled(selectedScope)) return cancel(_('list.cancel'));
-      if (selectedScope !== '__all__') return listProfiles(selectedScope);
+      if (selectedScope !== '__all__') return listProfiles(selectedScope, store);
     }
     for (const [scope, names] of grouped) note(names.join('\n'), scope);
     if (broken.length) note(broken.map(brokenLabel).join('\n'), _('list.broken.title'));
@@ -402,11 +430,8 @@ export async function removeProfileTui(name: string | null = null): Promise<void
     if (cancelled(selected)) return cancel(_('remove.cancel'));
     name = selected;
   }
-  // A linked profile is only a pointer here; say so, since removing it leaves the folder it points at. A pointer
-  // that cannot be read is named by its own file.
-  const linkedTo = profileLocation(name)?.link ?? null;
-  if (linkedTo) note(_('remove.note.link', { name, path: linkedTo }), _('remove.note.title'));
-  else note(_('remove.note.body', { scope: readProfile(name).metadata.scope, name }), _('remove.note.title'));
+  if (!profileLocation(name)) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+  note(removeNote(name), _('remove.note.title'));
   const approved = await confirm({ message: _('remove.confirm'), initialValue: false });
   if (cancelled(approved) || !approved) return cancel(_('remove.cancel'));
   removeProfile(name);

@@ -84,8 +84,8 @@ flowchart LR
 프로필은 사용자 홈의 보관함에 있고 프로젝트 파일과 섞이지 않는다. 테스트와 스모크는 `AGCTX_HOME`으로 보관함을 옮겨 실제 홈을 건드리지 않는다.
 
 - 보관함 경로: `src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->·`profileHome`<!--s:6a22b8ad5c16-->
-- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:386eb9ede09b-->·`readProfile`<!--s:9cd8a4fac338-->·`validateProfileName`<!--s:f4258accd408-->·`isValidProfileMetadata`<!--s:d0109c71d11e-->
-- 연결한 프로필: 보관함 폴더의 `link.json`을 따라간다. 프로필 파일이 있는 폴더와 연결한 프로필을 쓸 수 있는지는 `src/profile/store.ts`의 `profileLocation`<!--s:bee026f1ec9b-->이 한 곳에서 정하고, 위의 읽기 함수와 `src/check.ts`·`src/repos/pr.ts`가 그 결과를 쓴다. 포인터 읽기와 막기는 `src/profile/store.ts`의 `profileLink`<!--s:f18e12457064-->·`getBrokenLinks`<!--s:b4b6d8101494-->·`assertNotLinked`<!--s:9647bb42c564-->, 연결하기는 `src/profile/link.ts`의 `planLink`<!--s:5f3870bbbd63-->·`writeLink`<!--s:b2ee6f19780a-->·`instructionCandidates`<!--s:fc468707cd80-->. 이유는 [ADR 0037](../adr/0037-link-existing-folder-as-profile.md), 평가는 `evals/profile-link.test.ts`와 `evals/tui-link.test.ts`
+- 읽기·검증: `src/profile/store.ts`의 `getProfiles`<!--s:5d1ae329164c-->·`readProfile`<!--s:175eab7c3d28-->·`validateProfileName`<!--s:f4258accd408-->·`isValidProfileMetadata`<!--s:d0109c71d11e-->
+- 연결한 프로필: 보관함 폴더의 `link.json`을 따라간다. 보관함 항목(사본, 포인터, 운영체제 링크)마다 프로필 파일이 있는 폴더와 쓸 수 있는지는 `src/profile/store.ts`의 `profileLocation`<!--s:ccfb210f16ab-->이 한 곳에서 정하고, 보관함 전체는 `src/profile/store.ts`의 `readStore`<!--s:f6dc2cbbbc40-->가 한 번 읽어 나눈다. 위의 읽기 함수와 `src/check.ts`·`src/repos/status.ts`·`src/repos/pr.ts`·TUI가 그 결과를 쓴다. 포인터 읽기와 막기는 `src/profile/store.ts`의 `profileLink`<!--s:a46a7496465a-->·`getBrokenLinks`<!--s:40375c0bdcf7-->·`assertNotLinked`<!--s:3653b0fc728c-->, 연결하기는 `src/profile/link.ts`의 `planLink`<!--s:300b047b8f89-->·`writeLink`<!--s:f92eeb1f9421-->·`instructionCandidates`<!--s:3f7a61585d5a-->·`checkLinkFolder`<!--s:8defac0475f8-->. 이유는 [ADR 0037](../adr/0037-link-existing-folder-as-profile.md), 평가는 `evals/profile-link.test.ts`와 `evals/tui-link.test.ts`
 - 규칙 파일 경로: `profile.json`의 `instructions`, 없으면 `AGENTS.md`. `src/profile/store.ts`의 `instructionsFile`<!--s:c0ded7cce71a-->·`isInstructionsPath`<!--s:77864c748c5b-->·`assertInstructionsPath`<!--s:2450f091bbc7-->, 원격에서 받은 파일의 링크 검사는 `regularFileInside`
 - 이유: [ADR 0007](../adr/0007-profile-home-layout.md), 이름 변경은 [ADR 0013](../adr/0013-rename-agent-context-manager.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/profile-instructions.test.ts`
@@ -158,7 +158,7 @@ flowchart LR
 TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다. 취소는 모든 화면에서 같은 함수로 처리한다.
 
 - 메인 화면: `src/tui/main.ts`의 `mainTui`<!--s:696e75813252-->·`MAIN_MENU_ENTRIES`<!--s:cab1a2d0cefd-->·`MAIN_ACTIONS`<!--s:69274f891e74-->
-- 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:9a3bd1ee3884-->
+- 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:99951a0d5149-->
 - 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:8e00a9f03a32-->·`MENU_ACTIONS`<!--s:4ce0b2031e4c-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:c73f4a905108-->
 - 저장소 화면: `src/tui/repository.ts`의 `REPOS_MENU_COMMANDS`<!--s:f58f2199bf19-->
 - 명령 실행: `src/tui/commands.ts`의 `commandTokens`<!--s:b9863ab66014-->·`runFromTui`<!--s:f460439c5187-->
@@ -221,7 +221,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 저장소가 프로필의 어느 버전을 쓰고 있는지 기록한다. 고정한 저장소는 기록한 버전에 머물고 PR로만 올라간다.
 
-- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:2e0e54a28be9-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
+- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:72d5466fdd4b-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
 - 기록 위치: 프로젝트의 `agctx.project.json`
 - 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), [ADR 0018](../adr/0018-multi-repository-sync.md), [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
@@ -230,7 +230,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 파일을 바꾸지 않고 저장소가 기록한 버전·관리 영역과 맞는지 판정한다.
 
-- 판정: `src/check.ts`의 `checkProject`<!--s:74b1ccae64b1-->·`CheckReport`<!--s:a295dda2a352-->
+- 판정: `src/check.ts`의 `checkProject`<!--s:4f84aa911279-->·`CheckReport`<!--s:a295dda2a352-->
 - 처리기: `src/commands/handlers.ts`의 check 처리기
 - 지키는 평가: `evals/command-contract.test.ts`, `evals/git-profile.test.ts`, `evals/repos.test.ts`
 
@@ -239,7 +239,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 보이지 않는 문자가 지침에 섞여 에이전트에게 다른 내용이 전달되는 것을 막는다. 파일 맨 앞의 BOM은 허용한다.
 
 - 검출과 설명: `src/shared/hidden-chars.ts`의 `findHiddenCharacters`<!--s:5f84af97e1dd-->·`describeHiddenCharacters`<!--s:1c6d888af488-->
-- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:f16188b33a09-->, `src/profile/apply.ts`의 `planFor`<!--s:9ce05669893a-->, `src/check.ts`의 `checkProject`<!--s:74b1ccae64b1-->
+- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:f16188b33a09-->, `src/profile/apply.ts`의 `planFor`<!--s:9ce05669893a-->, `src/check.ts`의 `checkProject`<!--s:4f84aa911279-->
 - 지키는 평가: `evals/hidden-chars.test.ts`, `evals/git-profile.test.ts`
 
 ## 19. 여러 저장소 목록과 repos 명령
@@ -247,7 +247,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 이 컴퓨터에서 프로필을 적용한 저장소들을 한 번에 다룬다. 사용자 폴더와 로컬 브랜치를 건드리지 않고, PR은 임시 작업 트리에서 만든다.
 
 - 목록: `src/repos/registry.ts`의 `recordRepo`<!--s:d0ebe8e035c2-->·`readRepos`<!--s:a6b3d03a8775-->·`pruneRepos`<!--s:bc7f4adae753-->·`repoKey`<!--s:3c27b00aca40-->(`$AGCTX_HOME/repos.json`)
-- 상태: `src/repos/status.ts`의 `reposStatus`<!--s:c359004cb28a-->
+- 상태: `src/repos/status.ts`의 `reposStatus`<!--s:d17e6eeb80ef-->
 - 동기화: `src/repos/sync.ts`의 `planReposSync`<!--s:95de47d0d399-->·`uncommittedManagedFiles`<!--s:c8310a2d869f-->·`applyReposSync`<!--s:088bbe4ba272-->
 - PR: `src/repos/pr.ts`의 `prepareReposPrs`<!--s:ed2658015e6e-->·`openPullRequests`<!--s:bfb408734e13-->·`worktreeFor`<!--s:529e099ce155-->·`cloneFor`<!--s:dd735cad591b-->·`planTarget`<!--s:8a97e0011da0-->·`gh`<!--s:5fb4e93e0e50-->
 - 이유: [ADR 0018](../adr/0018-multi-repository-sync.md)

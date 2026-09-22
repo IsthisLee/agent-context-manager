@@ -44,7 +44,7 @@ agctx profile clone https://git.client-b.example/rules.git
 ## 2. 고객사 저장소에 적용
 
 <!-- agctx-doc-sources: src/repos -->
-<!-- agctx-doc-sources-sha256: 0027319823303ad2f94ea4d69340e75df8907949fb019fd91cd5bc79d9e4e43b -->
+<!-- agctx-doc-sources-sha256: 4e862d4230302631d52de549a1afdb4a58167b1eaef55b8627664cbed477191f -->
 
 ```bash
 agctx profile apply client-a ~/work/client-a-api

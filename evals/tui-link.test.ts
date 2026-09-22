@@ -5,8 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { linkQuestion, planLink } from '../src/profile/link.ts';
-import { linkNameStep, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, statusRefreshPrompt } from '../src/tui/profile.ts';
+import { checkLinkFolder, linkQuestion, MAX_FOLDERS, planLink, ruleFileChoices } from '../src/profile/link.ts';
+import { brokenMenuOptions, linkNameStep, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, removeNote, statusRefreshPrompt } from '../src/tui/profile.ts';
+import { gitIn } from './support/git-workspace.ts';
 
 /**
  * What the TUI decides around `profile link`, checked the way `evals/tui-pin.test.ts` checks the pin
@@ -91,14 +92,16 @@ test('the TUI does not offer to fetch before showing the status of a linked prof
   assert.deepEqual(statusRefreshPrompt('copied'), { ask: true });
 });
 
-test('moving a link that still works asks about replacing it, naming the folder it points at now', t => {
-  const { agctx, folder } = workspace(t);
+test('moving a link that still works is refused, naming the folder it keeps; a broken link asks, naming its old folder', t => {
+  const { agctx, folder, root } = workspace(t);
   const first = folder('a/rules', { 'AGENTS.md': '# First\n' });
   const second = folder('b/rules', { 'AGENTS.md': '# Second\n' });
   agctx('profile', 'link', first, '--yes');
 
-  const plan = planLink(second);
+  assert.throws(() => planLink(second), (error: Error) => error.message.includes(first));
 
+  fs.renameSync(first, path.join(root, 'a', 'moved'));
+  const plan = planLink(second);
   assert.equal(plan.link, 'relink');
   assert.ok(linkQuestion(plan).includes(first), 'the question names the folder being replaced');
   assert.ok(!linkQuestion(planLink(folder('c/fresh', { 'AGENTS.md': '# Fresh\n' }))).includes(first));
@@ -140,4 +143,52 @@ test('the TUI list decides which menu to open from the broken links it already r
 
   assert.equal(menuFor('ghost', [{ name: 'ghost', path: '/nowhere', reason: 'missing-folder' }]), 'broken-link');
   assert.equal(menuFor('ghost', []), 'profile');
+});
+
+test('the rules file search stops after a fixed number of folders and does not guess from a partial search', t => {
+  const { folder } = workspace(t);
+  const files: Record<string, string> = { 'zzz/AGENTS.md': '# Rules\n' };
+  for (let index = 0; index < MAX_FOLDERS; index++) files[`d${String(index).padStart(4, '0')}/.keep`] = '';
+  const dir = folder('huge-rules', files);
+
+  assert.equal(ruleFileChoices(dir).complete, false);
+  assert.throws(() => planLink(dir), { code: 'link.search-limit' });
+});
+
+test('the TUI can remove a store folder that is not a profile, and says what it is', t => {
+  const { root } = workspace(t);
+  fs.mkdirSync(path.join(root, 'home', 'profiles', 'leftover'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'home', 'profiles', 'leftover', 'AGENTS.md'), '# Old\n');
+
+  assert.ok(removeChoices().some(choice => choice.value === 'leftover'));
+  assert.match(removeNote('leftover'), /not a profile/);
+});
+
+test('the TUI offers a name that fits the naming rules when the folder name does not', () => {
+  assert.deepEqual(linkNameStep(null, '/work/Team_Rules'), { ask: true, name: 'team-rules' });
+});
+
+test('a broken link whose profile.json names another profile offers only removal in the TUI', () => {
+  assert.deepEqual(brokenMenuOptions('invalid-metadata').map(option => option.value), ['remove']);
+  assert.deepEqual(brokenMenuOptions('missing-folder').map(option => option.value), ['link', 'remove']);
+});
+
+test('the TUI checks a folder before searching it for rules files', t => {
+  const { root, folder } = workspace(t);
+  const home = path.join(root, 'user-home');
+  fs.mkdirSync(home);
+  const previousHome = process.env.HOME;
+  process.env.HOME = home;
+  t.after(() => {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
+  });
+  const repo = folder('company-configs', { 'agent-rules/AGENTS.md': '# Rules\n' });
+  gitIn(repo, 'init', '--quiet');
+  gitIn(repo, 'add', '-A');
+  gitIn(repo, 'commit', '--quiet', '-m', 'Add rules');
+
+  assert.throws(() => checkLinkFolder(home), { code: 'link.home-folder' });
+  assert.throws(() => checkLinkFolder(path.join(repo, 'agent-rules')), { code: 'link.inside-repository' });
+  checkLinkFolder(repo);
 });

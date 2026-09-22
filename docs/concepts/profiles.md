@@ -13,7 +13,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: 504214efc9cc75cd976277851dbd7213a7a3ef7e04378658bccbcaedf9051abf -->
+<!-- agctx-doc-sources-sha256: e790a88f40e30822e1a233d554d0f68254b796c253e531c1ed4077daa961840a -->
 
 프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
 
@@ -44,7 +44,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 84aa249ea97736bbff822e6815e193c8fc580afd69605527905004aee5113f62 -->
+<!-- agctx-doc-sources-sha256: 9aac7032975ba23fe99dc927ba9dbf124c5cae3b7ce40e5101ee6d3a396899cf -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.

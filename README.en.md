@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 5821ac1ac2471a802436e377725cb5b87639fb5b518897fb7f82c0452242fb67 -->
+<!-- agctx-doc-sources-sha256: d05066255b39c705c04c507832ca2126add9f4d43a6b3d8bb67da3edecf7e6a6 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -116,7 +116,7 @@ Step-by-step installation through the first apply is in the [quick start (Korean
 
 ### Hand it to an agent (optional)
 
-Up to here a person ran the commands. With the agent skills registered by `agctx install` above, you can hand the rest to an agent in plain language, such as "check that this repository's context is up to date": the agent runs `agctx check` and explains the result. The skills make the agent show `--dry-run` output and ask for approval before any write command. The `agctx-author` skill for publishing Profiles and opening PRs is used only when you call it by name.
+Up to here a person ran the commands. With the agent skills registered by `agctx install` above, you can hand the rest to an agent in plain language by calling a skill, such as "/agctx check that this repository's context is up to date": the agent runs `agctx check` and explains the result. Both the diagnostic `/agctx` skill and the `/agctx-author` skill for publishing Profiles and opening PRs work only when you call them by name; the agent does not start them on its own. The skills make the agent show `--dry-run` output and ask for approval before any write command.
 
 The skills ship in the CLI package, and `agctx install` copies them into the skill folders of Claude Code, Codex, and Antigravity found on this machine, so the commands they name always match the installed CLI. After updating the CLI, run `agctx install` again; until then every command says so in one line.
 

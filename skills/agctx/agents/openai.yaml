@@ -1,0 +1,6 @@
+interface:
+  display_name: "agctx"
+  short_description: "agctx가 관리하는 에이전트 지침을 읽고 진단한다"
+
+policy:
+  allow_implicit_invocation: false

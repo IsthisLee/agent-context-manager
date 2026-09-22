@@ -23,10 +23,12 @@
 <!-- agctx-doc-sources: tools/generate-skills.ts -->
 <!-- agctx-doc-sources-sha256: f7e6cdc2e02ea4db87174f5e83f7942392910073a5c49f9dee41988e3506cbe8 -->
 
-| 스킬 | 맡는 일 | 에이전트가 스스로 쓰는가 |
+| 스킬 | 맡는 일 | 쓰이는 때 |
 | --- | --- | --- |
-| `agctx` | **읽기만 한다.** 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 프로필 내용과 원격 상태 보기(`profile list`·`view`·`status`) | 쓴다 |
-| `agctx-author` | **바꾸는 일 전부.** 프로필 만들기와 지침 고르기(`profile create`·`setup`), 프로젝트에 적용(`apply`·`sync`·`resolve`), Git 연결과 게시(`clone`·`connect`·`pull`·`push`), 저장소마다 반영(`repos sync`·`pr`) | 사용자가 이름으로 부를 때만 |
+| `agctx` | **읽기만 한다.** 규칙이 적용되지 않는 원인 찾기(`explain`·`verify`), 최신 여부 확인(`check`·`repos status`), 프로필 내용과 원격 상태 보기(`profile list`·`view`·`status`) | 사용자가 `/agctx`로 부를 때만 |
+| `agctx-author` | **바꾸는 일 전부.** 프로필 만들기와 지침 고르기(`profile create`·`setup`), 프로젝트에 적용(`apply`·`sync`·`resolve`), Git 연결과 게시(`clone`·`connect`·`pull`·`push`), 저장소마다 반영(`repos sync`·`pr`) | 사용자가 `/agctx-author`로 부를 때만 |
+
+두 스킬 모두 에이전트가 대화 내용을 보고 스스로 불러 쓰지 않는다. Claude Code와 Codex는 설정으로 막고, 자동 호출을 끄는 설정이 없는 Antigravity는 스킬 본문의 규칙으로 막는다. 스킬 없이 에이전트가 셸에서 `agctx`를 바로 실행하는 것까지 막지는 않는다([ADR 0047](../adr/0047-agent-skills-explicit-invocation-only.md)).
 
 두 스킬은 한국어로 쓰여 있다. `description`에는 영어 한 줄을 함께 두어 한국어를 쓰지 않는 에이전트도 용도를 알 수 있게 했다([ADR 0030](../adr/0030-korean-skills.md)). CLI 출력의 기본 언어는 영어 그대로다([ADR 0014](../adr/0014-default-locale-english.md)).
 
@@ -37,7 +39,7 @@
 ## 설치하기
 
 <!-- agctx-doc-sources: skills, src/skills/install.ts -->
-<!-- agctx-doc-sources-sha256: ef3db0137ff09f0626353159a6616f7d7b33173b1f4cec3ce0fcba690dec8441 -->
+<!-- agctx-doc-sources-sha256: b21529b614c3955f09a1d46419fae73a2d70f7d41e69c74f5b14ff42f789eb0a -->
 
 1. 아래 명령을 실행한다. 이 컴퓨터의 모든 프로젝트에서 쓰도록 사용자 전역 위치에 두므로 실행 위치는 상관없다.
 
@@ -75,11 +77,13 @@
 
 ```text
 ~/.claude/skills/agctx/SKILL.md
+~/.claude/skills/agctx/agents/openai.yaml
 ~/.claude/skills/agctx/.agctx-install.json
 ~/.claude/skills/agctx-author/SKILL.md
 ~/.claude/skills/agctx-author/agents/openai.yaml
 ~/.claude/skills/agctx-author/.agctx-install.json
 ~/.agents/skills/agctx/SKILL.md
+~/.agents/skills/agctx/agents/openai.yaml
 ~/.agents/skills/agctx/.agctx-install.json
 ~/.agents/skills/agctx-author/SKILL.md
 ~/.agents/skills/agctx-author/agents/openai.yaml
@@ -89,7 +93,7 @@
 - 에이전트마다 같은 파일을 한 벌씩 복사한다. 링크를 쓰지 않으므로 Node 버전을 바꾸거나 운영체제가 달라도 스킬이 깨지지 않는다.
 - `.agctx-install.json`은 agctx가 둔 스킬 폴더라는 표시다. 설치한 CLI 버전과 파일별 해시가 적혀 있고, 형식은 [파일 형식](../reference/file-formats.md#agctx-installjson)에 있다.
 
-그다음 에이전트에게 "이 폴더에서 규칙이 에이전트에 닿는지 확인해 줘"처럼 요청해 본다. 에이전트가 `agctx explain`을 실행해 결과를 설명하면 스킬이 동작하는 것이다.
+그다음 에이전트에게 "/agctx 이 폴더에서 규칙이 에이전트에 닿는지 확인해 줘"처럼 스킬을 불러 요청해 본다. 에이전트가 `agctx explain`을 실행해 결과를 설명하면 스킬이 동작하는 것이다. 스킬을 부르지 않고 같은 말만 하면 에이전트는 이 스킬을 쓰지 않는다. Codex에서는 `/skills`나 `$agctx`로 부른다([근거](../references.md#에이전트-지침-로드와-전달-확인-근거)).
 
 ## 업데이트와 제거
 

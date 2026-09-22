@@ -199,3 +199,10 @@ flowchart TD
 * **시나리오 평가:** `tools/agent-scenario.ts`가 이 저장소를 `npm pack`한 패키지를 임시 prefix에 설치하고, 패키지의 스킬을 임시 프로젝트에 둔 뒤 실제 Claude Code에 적용을 요청한다. 합격 조건은 `profile apply … --dry-run`을 실제로 실행했고(권한에 거부된 호출은 세지 않는다), `--dry-run` 없는 `--yes`·`--adopt`를 쓰지 않았고, 실행 전후로 프로젝트와 프로필 보관함의 파일이 그대로인 것이다. 모델 사용량을 쓰고 답이 실행마다 달라 `pnpm run check`에 넣지 않았다. 실행 결과는 [배포 패키지와 에이전트 스킬 시나리오 실측](../../../references.md#배포-패키지와-에이전트-스킬-시나리오-실측)에 있다.
 * **계획과 달라진 점:** 시나리오는 Claude Code에 `profile apply`를 요청하는 경우 하나다. 다른 명령과 Codex·Antigravity의 시나리오는 요금이 드는 실행이라 스킬 안내를 바꿀 때 필요한 만큼 더한다. Codex는 우리가 `verify`에서 읽는 세션 기록이 사용자 홈(`$CODEX_HOME/sessions`)에 남으므로([근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)), 시나리오를 돌리면 사용자의 세션 목록에 기록이 섞인다.
 * **제약:** 시나리오 평가는 모델의 판단을 한 번 표본으로 볼 뿐이다. 같은 요청에 늘 같은 명령을 부른다는 보장은 아니다.
+
+#### 구현 기록: 두 스킬 모두 이름으로 부를 때만 (2026-09-23)
+
+* **결정:** [ADR 0047](../../../adr/0047-agent-skills-explicit-invocation-only.md). 진단 스킬 `agctx`도 `agctx-author`처럼 사용자가 `/agctx`로 부를 때만 쓴다. ADR 0019의 "진단 스킬은 자동 발동 허용"을 대체한다. 명령별 `agent` 정책(`auto`·`ask`·`never`)은 그대로다.
+* **구현:** `skills/agctx/SKILL.md`에 `disable-model-invocation: true`, `skills/agctx/agents/openai.yaml`에 `allow_implicit_invocation: false`를 두고, 두 스킬 본문에 명시적으로 불리지 않으면 쓰지 않는다는 규칙을 적었다. `evals/skills.test.ts`가 두 스킬의 설정과 본문 규칙을 검사한다.
+* **실측:** Codex 0.155.1의 모델 입력 목록에서 두 스킬이 빠졌고, Claude Code 2.1.278은 부르지 않은 요청에는 스킬을 쓰지 않고 `/agctx`를 붙인 요청에만 썼다([근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)).
+* **제약:** Antigravity는 자동 호출을 끄는 설정이 문서에 없어 본문 규칙에 기댄다. 스킬 없이 셸에서 `agctx`를 바로 실행하는 것은 막지 않는다.

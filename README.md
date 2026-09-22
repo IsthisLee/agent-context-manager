@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: ad4cef7203146c5704f3d9668f20f3055e5ba9de1a79341736cb0aa3fa26deac -->
+<!-- agctx-doc-sources-sha256: cec195a27b98fe8a0e61dd6d6faeccc8e0a1a6415c9d63f3a5dc3729e6e98dc0 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -118,7 +118,7 @@ Applied profile company to /path/to/project
 
 ### 에이전트에게 맡기기 (선택)
 
-여기까지는 사람이 명령으로 실행했습니다. 위의 `agctx install`로 에이전트용 스킬을 등록해 두면 이후 작업은 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
+여기까지는 사람이 명령으로 실행했습니다. 위의 `agctx install`로 에이전트용 스킬을 등록해 두면 이후 작업은 "/agctx 이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 스킬을 불러 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 진단용 `/agctx`와, 프로필을 게시하고 PR을 여는 `/agctx-author` 모두 이렇게 이름으로 부를 때만 동작하고, 에이전트가 스스로 쓰지 않습니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다.
 
 스킬은 CLI 패키지에 들어 있고, `agctx install`이 이 컴퓨터에 설치된 Claude Code·Codex·Antigravity의 스킬 폴더에 복사합니다. 그래서 스킬에 적힌 명령이 설치한 CLI와 항상 같습니다. CLI를 업데이트한 뒤에는 `agctx install`을 다시 실행하고, 그 전까지는 모든 명령이 한 줄로 알려 줍니다.
 

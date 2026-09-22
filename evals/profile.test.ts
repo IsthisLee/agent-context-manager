@@ -688,7 +688,7 @@ test('agctx is the only command and its help names it', () => {
   const result = spawnSync(process.execPath, [cli, 'help'], { cwd: repoRoot, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /^agctx \(Agent Context Manager\)/);
-  assert.match(result.stdout, /  agctx profile create/);
+  assert.match(result.stdout, / {2}agctx profile create/);
   assert.doesNotMatch(result.stdout, /\bagt\b/);
   assert.doesNotMatch(result.stdout, /agentic/i);
 

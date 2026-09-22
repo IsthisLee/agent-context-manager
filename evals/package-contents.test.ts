@@ -57,9 +57,10 @@ test('repository exposes an installed-package smoke test', () => {
   assert.equal(packageJson.scripts.prepublishOnly, 'pnpm run check && pnpm run pack:check');
   assert.equal(packageJson.scripts.format, 'prettier --write .');
   assert.equal(packageJson.scripts['format:check'], 'prettier --check .');
+  assert.equal(packageJson.scripts.lint, 'eslint src evals tools eslint.config.js');
   assert.equal(
     packageJson.scripts.check,
-    'pnpm run typecheck && pnpm run format:check && pnpm run check:docs && pnpm test'
+    'pnpm run typecheck && pnpm run format:check && pnpm run lint && pnpm run check:docs && pnpm test'
   );
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'package-smoke.ts')));
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'build.ts')));

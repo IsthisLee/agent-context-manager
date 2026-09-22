@@ -5,9 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync, type ExecFileSyncOptionsWithStringEncoding } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
 
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const smokeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-package-smoke-'));
 const packDir = path.join(smokeRoot, 'pack');
 const consumerDir = path.join(smokeRoot, 'consumer');

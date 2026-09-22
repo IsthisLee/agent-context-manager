@@ -82,7 +82,7 @@ test('every GitHub workflow disables checkout credential persistence', () => {
   ]) {
     const workflow = read(relative);
     const checkouts = [
-      ...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n      - name:|\n  jobs:|$)/g)
+      ...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n {6}- name:|\n {2}jobs:|$)/g)
     ];
     assert(checkouts.length > 0, `${relative} must use checkout`);
     for (const [, block] of checkouts) assert.match(block, /persist-credentials: false/);

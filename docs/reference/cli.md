@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 4740733bb5889ca54a935840654181da679d284b770a3879dd4f91122b4d885c -->
+<!-- agctx-doc-sources-sha256: 5639bb10d77b3ed648faff06ca9acf500fb94eb7271703ce504d0279bc44e549 -->
 
 ```bash
 npm install --global agent-context-manager

@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 92ba1842fbce63d9f6ccd11f8a78073351e586dddc231cd2d8f055551b6e9fd3 -->
+<!-- agctx-doc-sources-sha256: b59d3abf25302f341a236426a10783a80a178d0a0c7e89ad9a3fe08f8b0a8a67 -->
 
 ```mermaid
 flowchart LR
@@ -59,16 +59,18 @@ flowchart LR
 ## 저장소 파일 구조
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, tsconfig.build.json, templates -->
-<!-- agctx-doc-sources-sha256: 83388567e97bc998091117fd71bb2c6e69a5fb06d03726c7cbc674976d536dfd -->
+<!-- agctx-doc-sources-sha256: 0dbd755111ab7abbabaca66739cfbbd09dd0ba5c1099b9964698180d33e1ced0 -->
 
 ```text
 agent-context-manager/
 ├── .github/                    # CI·배포·Dependabot·커뮤니티 운영 설정
 ├── .editorconfig               # 편집기 공통 형식 규칙
 ├── .gitattributes              # Git 줄바꿈·바이너리 판정 규칙
+├── .git-blame-ignore-revs      # git blame에서 건너뛸 서식 변경 커밋
 ├── .nvmrc                      # 기여자 기본 Node.js 메이저 버전
 ├── .prettierrc.json            # 코드·JSON·YAML 서식 설정
 ├── .prettierignore             # 서식 검사에서 뺄 파일(Markdown, 잠금 파일)
+├── eslint.config.js             # 린트 규칙
 ├── src/                         # TypeScript 소스. 배포할 때 dist/로 컴파일
 │   ├── agctx.ts                 # CLI 진입점: commands/cli.ts의 run() 호출
 │   ├── commands/                # 명령 등록부(registry)·옵션 검사·처리기·stdout/stderr·JSON 출력·도움말
@@ -151,4 +153,4 @@ agent-context-manager/
 
 ## 패키지 내부 검증
 
-이 저장소의 `pnpm run check`는 TypeScript 형식 검사, 서식 검사, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.
+이 저장소의 `pnpm run check`는 TypeScript 형식 검사, 서식 검사, 린트, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.

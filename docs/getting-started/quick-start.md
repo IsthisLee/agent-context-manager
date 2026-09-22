@@ -36,7 +36,7 @@ flowchart LR
 ## 설치
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 460ae721b7ccb26feee3396a3b310635a62097ffbd54c479133ae484e1b4f0ee -->
+<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
 
 agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
 

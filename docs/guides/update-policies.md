@@ -54,7 +54,7 @@ flowchart LR
 ## 두 방식의 차이 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f96658d53566a6ba4540b0b59287fa283be0d5b456fe2878990a6f951fa29f7f -->
+<!-- agctx-doc-sources-sha256: c4081466929e62fff680253d45680dee1173b9cf8d43b8b77aa109f47ead56ea -->
 
 두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 
@@ -163,7 +163,7 @@ jobs:
 ## 고정하거나 풀기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 023714cf31133646043c71ab1d99851d64ca90ef6748ca2e214524c5b4c54bba -->
+<!-- agctx-doc-sources-sha256: 6cad8c95b66de286483b8d3f152efe2e45694e2f3887c9e07591e2cc35e43eb5 -->
 
 - 처음 고정하거나 새 커밋으로 옮기려면 `agctx profile apply <이름> <프로젝트> --pin`을 실행한다. Git에 연결했고 커밋하지 않은 수정이 없는 프로필이어야 한다.
 - 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.

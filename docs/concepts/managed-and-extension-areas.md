@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
 <!-- agctx-doc-sources: src/project -->
-<!-- agctx-doc-sources-sha256: e6eef2521ca4a7f8ff93068878e06e91e3c40271166ef3a99fc6536f60954d4a -->
+<!-- agctx-doc-sources-sha256: fefe5d2ef472884b7a3975dc5e1ba1816fa6c5f6d4d585431fa83de380796264 -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 

@@ -526,9 +526,9 @@ export default {
   'plan.warn.link-no-import':
     '{file} does not import AGENTS.md, so Claude Code never reads {agents}. Add an import of it, such as @AGENTS.md.',
   'plan.warn.agents-lines':
-    'Warning: AGENTS.md is {lines} lines. Claude Code recommends keeping each instruction file under {limit} lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
+    'Warning: AGENTS.md will be {lines} lines after this run. Claude Code recommends keeping each instruction file under {limit} lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
   'plan.warn.agents-bytes':
-    'Warning: AGENTS.md is {size} KiB. By default Codex stops reading instruction files once they add up to 32 KiB (project_doc_max_bytes), so rules near the end can be dropped. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
+    'Warning: AGENTS.md will be {size} KiB after this run, at or above the {threshold} KiB warning threshold. By default Codex stops adding instruction files once their combined size, including ~/.codex/AGENTS.md, reaches 32 KiB (project_doc_max_bytes), so instruction files it reads after this one can be left out. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.',
   'plan.warn.link-dropped': '{file} is no longer managed because {agents} is gone. Delete it if nothing needs it.',
   'hint.project.apm-generated.claude':
     'Move {file} aside and run agctx profile apply again, then check that apm compile does not regenerate CLAUDE.md before you commit.',

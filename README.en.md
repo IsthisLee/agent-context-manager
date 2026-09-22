@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 9310b53bcb0342015fa8262e281a120faf2a801ea38f4054cde74e7bf0e650ca -->
+<!-- agctx-doc-sources-sha256: cd83d0d2e0ac728ea64b8a93bd60b53f6bffe8238f0f91bc79cb9ee93c9e266b -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -123,7 +123,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: fa2991e632b58601a6f685f63b0c530dc204877d6b7ab291e36eacdd5e6051b4 -->
+<!-- agctx-doc-sources-sha256: dd3afbc8772d44b7d6c25f75309def7f29675a52e25cb9891107c2802d5b72b5 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
@@ -144,7 +144,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, formatti
 ## Supported agents
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 2ca244d6dfa55041f7692f30d7588755e84dbe3efd8faa01df593be69af7f9d6 -->
+<!-- agctx-doc-sources-sha256: 24568316e42e31074f3445fadab17f533a66ef3180fc9950b83c45c40fbdbd96 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 

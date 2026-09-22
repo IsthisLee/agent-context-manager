@@ -119,7 +119,7 @@ async function applyOrSync(
   const changed = plan.changes.filter(change => change.status !== 'unchanged');
   if (plan.conflicts.length) {
     if (dryRun) printConflicts(plan.conflicts);
-    throw conflictError(plan.conflicts, targetDir);
+    throw conflictError(plan.conflicts, targetDir, warnings);
   }
   if (dryRun) {
     say(_('plan.dry-run.done'));

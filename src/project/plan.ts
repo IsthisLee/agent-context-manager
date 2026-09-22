@@ -34,26 +34,41 @@ export const POINTER_TEMPLATES: ReadonlyArray<readonly [source: string, target: 
   ['templates/antigravity-rules/agctx.md', '.agents/rules/agctx.md']
 ];
 
-/** Claude Code가 지침 파일마다 권하는 줄 수. 이보다 긴 프로젝트 AGENTS.md는 경고한다(ADR 0024). */
+/** Claude Code가 지침 파일마다 권하는 줄 수. 이보다 긴 프로젝트 AGENTS.md는 경고한다(ADR 0041). */
 export const AGENTS_LINE_WARNING = 200;
-/** Codex 기본 한도 32 KiB(`project_doc_max_bytes`)의 75%. 이 크기 이상이면 경고한다. */
+/** Codex 기본 한도 32 KiB(`project_doc_max_bytes`)의 75%. 이 크기 이상이면 경고한다(ADR 0041). */
 export const AGENTS_BYTE_WARNING = 24 * 1024;
 
-/** 프로젝트 AGENTS.md가 분량 기준을 넘을 때 보여 줄 경고. 파일과 종료 코드는 바꾸지 않는다. */
-export function agentsLengthWarnings(content: string): string[] {
+/**
+ * 프로젝트 AGENTS.md가 분량 기준을 넘을 때 보여 줄 경고. 파일과 종료 코드는 바꾸지 않는다.
+ * @param content - 이번에 쓸 내용. 줄 끝은 LF다.
+ * @param crlf - 디스크에 CRLF로 쓰이는지. 그러면 줄마다 한 바이트씩 더 잰다.
+ */
+export function agentsLengthWarnings(content: string, crlf = false): string[] {
   const breaks = content.split('\n').length - 1;
   const lineCount = content.endsWith('\n') ? breaks : breaks + 1;
-  const bytes = Buffer.byteLength(content);
+  const bytes = Buffer.byteLength(content) + (crlf ? breaks : 0);
   return [
     ...(lineCount > AGENTS_LINE_WARNING
       ? [_('plan.warn.agents-lines', { lines: lineCount, limit: AGENTS_LINE_WARNING })]
       : []),
-    ...(bytes >= AGENTS_BYTE_WARNING ? [_('plan.warn.agents-bytes', { size: (bytes / 1024).toFixed(1) })] : [])
+    ...(bytes >= AGENTS_BYTE_WARNING
+      ? [_('plan.warn.agents-bytes', { size: (bytes / 1024).toFixed(1), threshold: AGENTS_BYTE_WARNING / 1024 })]
+      : [])
   ];
 }
 
 function sha256(text: string): string {
   return createHash('sha256').update(text).digest('hex');
+}
+
+/** writeTextAtomic처럼, 이미 CRLF로 저장된 파일은 CRLF로 다시 쓰인다. */
+function writesCrlf(target: string): boolean {
+  try {
+    return fs.readFileSync(target, 'utf8').includes('\r\n');
+  } catch {
+    return false;
+  }
 }
 
 function readIfExists(target: string): string | null {
@@ -185,7 +200,7 @@ export function planProject(
   }
 
   const agents = files.find(file => file.rel === 'AGENTS.md');
-  if (agents) warnings.push(...agentsLengthWarnings(agents.regenerated));
+  if (agents) warnings.push(...agentsLengthWarnings(agents.regenerated, writesCrlf(agents.target)));
 
   const changes: PlannedChange[] = [];
   const planFile = (relativePath: string, content: string) => {

@@ -273,8 +273,8 @@ $ agctx profile sync /path/to/project
 
 #### 구현 기록: 프로젝트 `AGENTS.md` 분량 경고 (2026-09-22)
 
-- **구현:** 기준 상수는 `src/project/plan.ts`의 `AGENTS_LINE_WARNING`(200)과 `AGENTS_BYTE_WARNING`(24 KiB)이고, 경고 문장을 만드는 것은 같은 파일의 `agentsLengthWarnings`다. `planProject`가 이번 실행으로 쓸 `AGENTS.md` 전체(프로필 영역과 프로젝트 확장 영역)를 재서 계획의 `warnings`에 넣으므로, 연결 파일 경고와 같은 경로로 `apply`·`sync`·`repos sync`·`--dry-run`·`--json`·TUI에 모두 나온다.
-- **계약대로 한 것:** 200줄 초과 또는 24 KiB 이상에서 경고만 한다. 파일 내용과 종료 코드는 바뀌지 않는다. 두 기준을 모두 넘으면 경고가 두 줄 나온다.
-- **제안 예시와 달라진 점:** 기존 고정 해제 경고처럼 문장 앞에 `경고:`·`Warning:`을 붙였다. 연결 파일 경고와 같이 계획 목록보다 먼저 출력된다.
-- **평가:** `evals/agents-length.test.ts` 5개. 기준 경계(200줄·201줄, 24 KiB 직전·24 KiB, 마지막 줄바꿈 없는 파일, 한국어 파일의 바이트 경고), CLI의 `apply`·`--dry-run`·`sync --json`·`repos sync`, 짧은 파일에서 경고가 없는 경우, 한국어 문구, TUI 경로(`runFromTui`)를 검사한다.
+- **결정:** [ADR 0041](../../../adr/0041-warn-on-long-project-agents-md.md). 이 논의의 표에 있던 기준(200줄 초과 또는 24 KiB 이상, 경고만)을 그대로 확정했다.
+- **구현:** 기준 상수는 `src/project/plan.ts`의 `AGENTS_LINE_WARNING`(200)과 `AGENTS_BYTE_WARNING`(24 KiB)이고, 경고 문장을 만드는 것은 같은 파일의 `agentsLengthWarnings`다. `planProject`가 이번 실행으로 쓸 `AGENTS.md` 전체(프로필 영역과 프로젝트 확장 영역)를 재서 계획의 `warnings`에 넣으므로, 연결 파일 경고와 같은 경로로 `apply`·`sync`·`repos sync`·`--dry-run`·`--json`·TUI에 모두 나온다. 이미 CRLF로 저장된 파일은 CRLF로 다시 쓰이므로 줄마다 한 바이트를 더해 잰다. 충돌로 멈춘 `--json` 결과에도 경고가 담기도록 `src/shared/errors.ts`의 `CliError`가 멈추기 전에 보여 준 경고를 들고 가게 했다. 전에는 연결 파일 경고도 이 경우에 빠졌다.
+- **제안 예시와 달라진 점:** 기존 고정 해제 경고처럼 문장 앞에 `경고:`·`Warning:`을 붙였다. 문구는 이미 쓴 파일이 아니라 이번에 쓸 내용을 말한다(`이번에 쓰는 AGENTS.md는 230줄입니다`). `--dry-run`이나 거절한 실행, 충돌한 실행에서는 디스크의 파일과 숫자가 다르기 때문이다. `apply`·`sync`에서는 계획 목록보다 먼저 나오고, `repos sync`에서는 저장소 목록 뒤에 저장소 경로를 붙여 나온다.
+- **평가:** `evals/agents-length.test.ts` 7개. 기준 경계(200줄·201줄, 마지막 줄바꿈이 없는 경우, 24 KiB 직전·24 KiB, CRLF로 쓰일 때의 바이트, 한국어 파일의 바이트 경고), CLI의 `apply`·`--dry-run`·`sync --json`·`repos sync`, 충돌로 멈춘 `--json`, 디스크의 CRLF 파일, 짧은 파일에서 경고가 없는 경우, 한국어 문구, TUI 경로(`runFromTui`)를 검사한다.
 - **비범위:** `check`는 분량을 보지 않는다. CI에서 막는 기준이 아니라 적용할 때의 안내이기 때문이다. 하위 폴더 `AGENTS.md`와 Codex의 합산 한도는 `agctx explain`이 이미 보고한다.

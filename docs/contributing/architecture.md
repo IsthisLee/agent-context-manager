@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 5ba291acd5deab3de8f461215ce1ede3a6739e241e762d51400e1993c17daecc -->
+<!-- agctx-doc-sources-sha256: b7024ccda16fb104a108ee13e607e66c09ebde96f677149800fa62b9d55dabe3 -->
 
 ```mermaid
 flowchart LR

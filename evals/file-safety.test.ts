@@ -19,6 +19,41 @@ test('writeTextAtomic은 임시 파일을 남기지 않고 파일을 바꾼다',
   }
 });
 
+test('writeTextAtomic은 없는 파일을 새로 만든다', t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-create-test-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const target = path.join(directory, 'nested', 'guidance.md');
+
+  writeTextAtomic(target, 'new\n');
+  assert.equal(fs.readFileSync(target, 'utf8'), 'new\n');
+});
+
+test('writeTextAtomic은 CRLF 줄 끝인 파일을 다시 쓸 때 CRLF를 유지한다', t => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-crlf-test-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const target = path.join(directory, 'guidance.md');
+
+  fs.writeFileSync(target, 'before\r\n');
+  writeTextAtomic(target, 'one\ntwo\n');
+  assert.equal(fs.readFileSync(target, 'utf8'), 'one\r\ntwo\r\n');
+});
+
+test(
+  'writeTextAtomic은 기존 파일의 모드를 유지한다',
+  { skip: process.platform === 'win32' ? 'Windows는 POSIX 파일 모드를 저장하지 않는다' : false },
+  t => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-mode-test-'));
+    t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+    const target = path.join(directory, 'run.sh');
+
+    fs.writeFileSync(target, 'before\n');
+    // 0o700은 umask가 022든 077이든 그대로 남아서, 기본 모드(0o644나 0o600)와 구별된다.
+    fs.chmodSync(target, 0o700);
+    writeTextAtomic(target, 'after\n');
+    assert.equal(fs.statSync(target).mode & 0o777, 0o700);
+  }
+);
+
 test('writeTextAtomic은 심볼릭 링크 대상을 바꾸지 않는다', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-symlink-test-'));
   const target = path.join(directory, 'guidance.md');

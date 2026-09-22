@@ -1,7 +1,7 @@
 # 새 에이전트 지원하기
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/project/links.ts, src/explain.ts, src/verify, templates -->
-<!-- agctx-doc-sources-sha256: aecc773a2b21c768c5f101f544a8b5676ed9b9bd2823bfac88b4a31e133ada91 -->
+<!-- agctx-doc-sources-sha256: e82aad3bb8b569782c1cbab82eb06e80722f8c9f64d6b70093bef9bd948feb3a -->
 
 지원 에이전트를 더하거나 빼는 일은 사용자 파일과 평가 범위를 바꾸므로 ADR로 결정한다. 지금 목록은 [ADR 0011](../adr/0011-supported-agents.md)이다. 결정한 뒤에는 아래 순서로 채운다.
 

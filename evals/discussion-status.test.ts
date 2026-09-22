@@ -16,18 +16,18 @@ function rendered(topics: DiscussionTopics): Map<string, string> {
   return new Map(discussionOutputs(topics).map(output => [output.file, output.render(read(output.file))]));
 }
 
-test('generated status lines, discussion indexes and README status lists match topics.json', () => {
+test('생성된 상태 줄, 논의 색인, README 상태 목록은 topics.json과 맞다', () => {
   for (const output of discussionOutputs(readTopics(repoRoot))) {
     const content = read(output.file);
     assert.equal(
       content,
       output.render(content),
-      `${output.file} is out of date; run node tools/generate-discussion-status.ts`
+      `${output.file}이 최신이 아니다. node tools/generate-discussion-status.ts를 실행하라`
     );
   }
 });
 
-test('changing one status in topics.json rewrites the topic, its index row, the stage diagram and both README lists', () => {
+test('topics.json의 상태 하나를 바꾸면 주제, 색인 행, 단계 도표, 두 README 목록이 다시 쓰인다', () => {
   const topics = readTopics(repoRoot);
   const before = rendered(topics);
   const changed: DiscussionTopics = {
@@ -50,32 +50,28 @@ test('changing one status in topics.json rewrites the topic, its index row, the 
       'docs/discussion/architecture/README.md',
       'docs/discussion/architecture/topics/profile-import.md'
     ],
-    'one edit to topics.json reaches every place that shows the status'
+    'topics.json을 한 번 고치면 상태를 보여 주는 모든 곳에 닿는다'
   );
 
   assert.match(after.get('docs/discussion/architecture/topics/profile-import.md')!, /^\*\*상태:\*\* Implementing$/m);
   const index = after.get('docs/discussion/architecture/README.md')!;
   assert.match(index, /\(topics\/profile-import\.md\) \|.*\| Implementing \|$/m);
-  assert.match(index, /^ {2}class [^\n]*\bS14\b[^\n]* doing$/m, 'the stage diagram colours the stage as in progress');
+  assert.match(index, /^ {2}class [^\n]*\bS14\b[^\n]* doing$/m, '단계 도표가 그 단계를 진행 중 색으로 칠한다');
   assert.match(after.get('README.md')!, /^- \*\*구현 중:\*\* .*기존 저장소에서 프로필 만들기/m);
   assert.match(after.get('README.en.md')!, /^- \*\*In progress:\*\* .*creating a Profile from an existing repository/m);
 });
 
-test('the repository area index has no stage columns and README lists only package topics', () => {
+test('저장소 영역 색인에는 단계 열이 없고 README는 패키지 주제만 나열한다', () => {
   const index = read('docs/discussion/repository/README.md');
   assert.match(index, /^\| 주제 \| 중요도 \| 핵심 결과 \| 상태 \|$/m);
   for (const topic of readTopics(repoRoot).repository) {
-    assert.ok(!read('README.md').includes(topic.title), `${topic.file} is about the repository, not a package feature`);
+    assert.ok(!read('README.md').includes(topic.title), `${topic.file}은 패키지 기능이 아니라 저장소에 관한 주제다`);
   }
 });
 
-test('a topic that already has an implementation record cannot stay Proposed', () => {
+test('이미 구현 기록이 있는 주제는 Proposed로 남을 수 없다', () => {
   assert.equal(forbidsImplementationRecord('Proposed'), true);
-  assert.equal(
-    forbidsImplementationRecord('Implementing'),
-    false,
-    'Implementing topics collect a record per implemented scope'
-  );
+  assert.equal(forbidsImplementationRecord('Implementing'), false, 'Implementing 주제는 구현한 범위마다 기록을 모은다');
   assert.equal(forbidsImplementationRecord('Implemented'), false);
 
   const checker = read('tools/check-docs.ts');
@@ -84,13 +80,13 @@ test('a topic that already has an implementation record cannot stay Proposed', (
   assert.ok(fs.existsSync(path.join(repoRoot, TOPICS_FILE)));
 });
 
-test('the importance a topic states in its proposal summary must match topics.json', () => {
+test('주제가 제안 요약에 적은 중요도는 topics.json과 같아야 한다', () => {
   assert.equal(summaryImportance('| 항목 | 내용 |\n| 중요도 | High — 사용자 경계를 정한다. |\n'), 'High');
   assert.equal(summaryImportance('| 중요도 | Medium: 문서 유지 비용을 줄인다. |'), 'Medium');
   assert.equal(
     summaryImportance('| 제안 목표 | 중요도를 적지 않은 문서 |'),
     undefined,
-    'a document without the field states no importance'
+    '그 필드가 없는 문서는 중요도를 밝히지 않은 것이다'
   );
 
   const topics = readTopics(repoRoot);
@@ -100,14 +96,14 @@ test('the importance a topic states in its proposal summary must match topics.js
       assert.equal(
         stated,
         topic.importance,
-        `${area}/${topic.file} states ${stated} but topics.json says ${topic.importance}`
+        `${area}/${topic.file}은 ${stated}라고 적었지만 topics.json은 ${topic.importance}다`
       );
     }
   }
   assert.match(read('tools/check-docs.ts'), /summaryImportance/);
 });
 
-test('a pinned document is hashed without its generated blocks, so regenerating one README does not fail the other', () => {
+test('핀한 문서는 생성 블록을 빼고 해시하므로, README 하나를 다시 만들어도 다른 README가 실패하지 않는다', () => {
   const block = (body: string) =>
     `# 제목\n\n<!-- agctx:generated:discussion-status:start -->\n${body}\n<!-- agctx:generated:discussion-status:end -->\n\n본문\n`;
 
@@ -115,6 +111,6 @@ test('a pinned document is hashed without its generated blocks, so regenerating 
   assert.notEqual(
     withoutGeneratedBlocks(block('- **구현됨:** A')),
     withoutGeneratedBlocks(block('- **구현됨:** A').replace('본문', '바뀐 본문')),
-    'text outside generated blocks is still hashed'
+    '생성 블록 밖의 글은 여전히 해시한다'
   );
 });

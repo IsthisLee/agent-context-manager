@@ -44,7 +44,7 @@ function home(t: TestContext, folders: string[] = []) {
 const states = (plan: ReturnType<typeof planInstall>) =>
   plan.items.map(item => `${item.target}:${item.skill}:${item.state}`).sort();
 
-test('install copies both skills into the agents found on this machine and records what it wrote', t => {
+test('install은 이 컴퓨터에서 찾은 에이전트에 두 스킬을 복사하고 쓴 것을 기록한다', t => {
   const dir = home(t, ['.claude', '.codex']);
 
   const plan = planInstall({});
@@ -70,7 +70,7 @@ test('install copies both skills into the agents found on this machine and recor
   assert.match(record.files['SKILL.md'], /^[0-9a-f]{64}$/);
 });
 
-test('install again changes nothing, and replaces a folder whose record is from another version', t => {
+test('다시 install해도 바뀌는 것이 없고, 기록이 다른 버전인 폴더는 바꾼다', t => {
   const dir = home(t, ['.claude']);
   applyInstall(planInstall({}));
 
@@ -84,7 +84,7 @@ test('install again changes nothing, and replaces a folder whose record is from 
   assert.equal(JSON.parse(read(recordFile)).version, packageVersion());
 });
 
-test('install leaves a skill whose files were edited and stops, unless --force', t => {
+test('install은 파일을 고친 스킬을 남기고 멈춘다. --force면 바꾼다', t => {
   const dir = home(t, ['.claude']);
   applyInstall(planInstall({}));
   fs.appendFileSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md'), '\nmy note\n');
@@ -99,7 +99,7 @@ test('install leaves a skill whose files were edited and stops, unless --force',
 });
 
 test(
-  'install leaves a folder it did not write and a symbolic link, unless --force',
+  'install은 자기가 쓰지 않은 폴더와 심볼릭 링크를 남긴다. --force면 바꾼다',
   { skip: process.platform === 'win32' ? 'symbolic links need extra privileges on Windows' : false },
   t => {
     const dir = home(t, ['.claude']);
@@ -114,11 +114,11 @@ test(
     assert.deepEqual(states(forced), ['claude:agctx-author:update', 'claude:agctx:update']);
     applyInstall(forced);
     assert.equal(fs.lstatSync(path.join(dir, '.claude', 'skills', 'agctx-author')).isSymbolicLink(), false);
-    assert.ok(fs.existsSync(path.join(dir, 'elsewhere', 'agctx-author')), 'the folder the link pointed at stays');
+    assert.ok(fs.existsSync(path.join(dir, 'elsewhere', 'agctx-author')), '링크가 가리키던 폴더는 남는다');
   }
 );
 
-test('--agent antigravity installs into both Antigravity folders even when they are missing', t => {
+test('--agent antigravity는 폴더가 없어도 Antigravity 폴더 두 곳에 모두 설치한다', t => {
   home(t);
 
   const plan = planInstall({ agent: 'antigravity' });
@@ -144,13 +144,13 @@ test('--agent antigravity installs into both Antigravity folders even when they 
   );
 });
 
-test('install stops when no agent is found and none is named', t => {
+test('찾은 에이전트도 지정한 에이전트도 없으면 install이 멈춘다', t => {
   home(t);
 
   assert.throws(() => planInstall({}), { code: 'install.none-found' });
 });
 
-test('uninstall removes the folders install wrote and keeps the others', t => {
+test('uninstall은 install이 쓴 폴더를 지우고 나머지는 남긴다', t => {
   const dir = home(t, ['.claude', '.codex']);
   applyInstall(planInstall({}));
   fs.rmSync(path.join(dir, '.agents', 'skills', 'agctx', INSTALL_RECORD));
@@ -168,7 +168,7 @@ test('uninstall removes the folders install wrote and keeps the others', t => {
   assert.ok(fs.existsSync(path.join(dir, '.agents', 'skills', 'agctx', 'SKILL.md')));
 });
 
-test('outdated skills are the installed ones whose record names another version', t => {
+test('오래된 스킬은 기록이 다른 버전을 가리키는 설치된 스킬이다', t => {
   const dir = home(t, ['.claude']);
   assert.deepEqual(outdatedSkills(), []);
   applyInstall(planInstall({}));
@@ -194,7 +194,7 @@ function agctx(dir: string, args: string[]) {
   return spawnSync(process.execPath, [cli, ...args], { cwd: dir, env, encoding: 'utf8' });
 }
 
-test('agctx install lists each skill folder it writes and each agent it skips', t => {
+test('agctx install은 쓰는 스킬 폴더와 건너뛰는 에이전트를 하나씩 나열한다', t => {
   const dir = home(t, ['.claude']);
 
   const result = agctx(dir, ['install']);
@@ -212,7 +212,7 @@ test('agctx install lists each skill folder it writes and each agent it skips', 
   assert.doesNotMatch(again, /Installed the agctx skills/);
 });
 
-test('agctx install writes nothing and stops when a skill folder was edited, and --force replaces it', t => {
+test('스킬 폴더를 고쳤으면 agctx install은 아무것도 쓰지 않고 멈추고, --force는 그것을 바꾼다', t => {
   const dir = home(t, ['.claude']);
   agctx(dir, ['install']);
   const skill = path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md');
@@ -228,7 +228,7 @@ test('agctx install writes nothing and stops when a skill folder was edited, and
   assert.doesNotMatch(read(skill), /my note/);
 });
 
-test('agctx install --dry-run shows the plan and writes nothing', t => {
+test('agctx install --dry-run은 계획을 보여 주고 아무것도 쓰지 않는다', t => {
   const dir = home(t, ['.claude']);
 
   const result = agctx(dir, ['install', '--dry-run']);
@@ -238,7 +238,7 @@ test('agctx install --dry-run shows the plan and writes nothing', t => {
   assert.equal(fs.existsSync(path.join(dir, '.claude', 'skills')), false);
 });
 
-test('agctx install names the folders it checked when it finds no agent', t => {
+test('에이전트를 찾지 못하면 agctx install이 확인한 폴더를 알려 준다', t => {
   const dir = home(t);
 
   const result = agctx(dir, ['install']);
@@ -248,7 +248,7 @@ test('agctx install names the folders it checked when it finds no agent', t => {
   assert.match(result.stderr, /--agent/);
 });
 
-test('agctx install --json reports every item and skipped target', t => {
+test('agctx install --json은 모든 항목과 건너뛴 대상을 보고한다', t => {
   const dir = home(t, ['.codex']);
 
   const data = JSON.parse(agctx(dir, ['install', '--json']).stdout).data;
@@ -266,7 +266,7 @@ test('agctx install --json reports every item and skipped target', t => {
   assert.equal(data.written, true);
 });
 
-test('agctx uninstall removes the skill folders install wrote and names the ones it keeps', t => {
+test('agctx uninstall은 install이 쓴 스킬 폴더를 지우고 남기는 폴더를 알려 준다', t => {
   const dir = home(t, ['.claude']);
   agctx(dir, ['install']);
   fs.appendFileSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md'), '\nmy note\n');
@@ -288,7 +288,7 @@ function outdated(t: TestContext) {
   return dir;
 }
 
-test('every command says so in one line when the installed skills are from another agctx version', t => {
+test('설치된 스킬이 다른 agctx 버전이면 모든 명령이 그렇다고 한 줄로 알린다', t => {
   const dir = outdated(t);
 
   const list = agctx(dir, ['profile', 'list']);
@@ -307,7 +307,7 @@ test('every command says so in one line when the installed skills are from anoth
   );
 });
 
-test('install and uninstall do not repeat the version notice, and nothing is said without installed skills', t => {
+test('install과 uninstall은 버전 알림을 되풀이하지 않고, 설치된 스킬이 없으면 아무 말도 하지 않는다', t => {
   const dir = outdated(t);
   assert.doesNotMatch(agctx(dir, ['install', '--dry-run']).stderr, /agctx install/);
 
@@ -315,7 +315,7 @@ test('install and uninstall do not repeat the version notice, and nothing is sai
   assert.doesNotMatch(agctx(fresh, ['profile', 'list']).stderr, /agctx install/);
 });
 
-test('the notice names the outdated folder and the two versions', t => {
+test('알림은 오래된 폴더와 두 버전을 알려 준다', t => {
   const dir = home(t, ['.claude']);
   assert.equal(skillNotice(), null);
   applyInstall(planInstall({}));

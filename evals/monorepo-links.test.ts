@@ -29,7 +29,7 @@ function monorepo(t: TestContext) {
   return { repo, file, write, read, agctx, config };
 }
 
-test('apply links each nested AGENTS.md for Claude Code and leaves CLAUDE.md files people wrote alone', t => {
+test('apply는 중첩된 AGENTS.md마다 Claude Code용 연결을 만들고, 사람이 쓴 CLAUDE.md는 건드리지 않는다', t => {
   const { repo, file, write, read, agctx, config } = monorepo(t);
   write('.gitignore', 'build/\n');
   write('services/payments/AGENTS.md', '# Payments\n\n- Use idempotency keys.\n');
@@ -45,11 +45,7 @@ test('apply links each nested AGENTS.md for Claude Code and leaves CLAUDE.md fil
 
   const preview = agctx(['profile', 'apply', 'company', repo, '--dry-run']);
   assert.equal(preview.status, 0, preview.stdout + preview.stderr);
-  assert.match(
-    preview.stdout,
-    /create\s+services\/payments\/CLAUDE\.md/,
-    'an AGENTS.md not yet committed is linked too'
-  );
+  assert.match(preview.stdout, /create\s+services\/payments\/CLAUDE\.md/, '아직 커밋하지 않은 AGENTS.md도 연결한다');
   assert.ok(!fs.existsSync(file('services/payments/CLAUDE.md')));
 
   const applied = agctx(['profile', 'apply', 'company', repo, '--yes']);
@@ -60,11 +56,7 @@ test('apply links each nested AGENTS.md for Claude Code and leaves CLAUDE.md fil
   );
   assert.equal(read('packages/web/CLAUDE.md'), '# Notes a person wrote\n');
   assert.equal(read('packages/api/CLAUDE.md'), 'API notes.\n\n@AGENTS.md\n');
-  assert.match(
-    applied.stderr,
-    /packages\/web\/CLAUDE\.md[^\n]*AGENTS\.md/,
-    'a CLAUDE.md without the import gets a warning'
-  );
+  assert.match(applied.stderr, /packages\/web\/CLAUDE\.md[^\n]*AGENTS\.md/, 'import가 없는 CLAUDE.md는 경고를 받는다');
   assert.doesNotMatch(applied.stderr, /packages\/api\/CLAUDE\.md/);
   for (const skipped of ['node_modules/lib/CLAUDE.md', 'build/CLAUDE.md', 'nested-repo/CLAUDE.md'])
     assert.ok(!fs.existsSync(file(skipped)), skipped);
@@ -81,16 +73,12 @@ test('apply links each nested AGENTS.md for Claude Code and leaves CLAUDE.md fil
   const web = fromRoot.data.agents[0].findings.find(
     (finding: { kind: string; file: string }) => finding.kind === 'missing' && finding.file === 'packages/web/AGENTS.md'
   );
-  assert.match(
-    web?.message ?? '',
-    /packages\/web\/CLAUDE\.md/,
-    'the missing note points at the CLAUDE.md a person wrote'
-  );
-  assert.doesNotMatch(web?.message ?? '', /profile sync/, 'sync would not touch that file, so it is not suggested');
+  assert.match(web?.message ?? '', /packages\/web\/CLAUDE\.md/, 'missing 안내는 사람이 쓴 CLAUDE.md를 가리킨다');
+  assert.doesNotMatch(web?.message ?? '', /profile sync/, 'sync는 그 파일을 건드리지 않으므로 제안하지 않는다');
   assert.equal(agctx(['check', repo]).status, 0);
 });
 
-test('sync links new nested AGENTS.md files, stops on an edited link, and stops managing a link whose AGENTS.md is gone', t => {
+test('sync는 새로 중첩된 AGENTS.md를 연결하고, 고친 연결 파일에서 멈추고, AGENTS.md가 사라진 연결은 관리를 그만둔다', t => {
   const { repo, file, write, read, agctx, config } = monorepo(t);
   write('services/payments/AGENTS.md', '# Payments\n');
   assert.equal(agctx(['profile', 'apply', 'company', repo, '--yes']).status, 0);
@@ -111,12 +99,12 @@ test('sync links new nested AGENTS.md files, stops on an edited link, and stops 
   const dropped = agctx(['profile', 'sync', repo, '--yes']);
   assert.equal(dropped.status, 0, dropped.stdout + dropped.stderr);
   assert.match(dropped.stderr, /services\/orders\/CLAUDE\.md/);
-  assert.ok(fs.existsSync(file('services/orders/CLAUDE.md')), 'agctx never deletes a file');
+  assert.ok(fs.existsSync(file('services/orders/CLAUDE.md')), 'agctx는 파일을 지우지 않는다');
   assert.equal(config().managedHashes['services/orders/CLAUDE.md'], undefined);
   assert.equal(agctx(['check', repo]).status, 0);
 });
 
-test('repos sync treats an uncommitted edit to a link file like one to any managed file', t => {
+test('repos sync는 연결 파일의 커밋하지 않은 수정을 다른 관리 파일과 똑같이 다룬다', t => {
   const { repo, write, read, agctx } = monorepo(t);
   write('services/payments/AGENTS.md', '# Payments\n');
   assert.equal(agctx(['profile', 'apply', 'company', repo, '--yes']).status, 0);

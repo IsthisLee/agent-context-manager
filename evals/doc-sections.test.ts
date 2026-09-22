@@ -19,26 +19,26 @@ const document = [
   ''
 ].join('\n');
 
-test('a document may pin sources once per section, and each marker owns the text below it', () => {
+test('문서는 절마다 소스를 핀할 수 있고, 각 마커는 그 아래 글을 소유한다', () => {
   const sections = docSourceSections(document);
 
   assert.equal(sections.length, 2);
   assert.deepEqual(sections[0].sources, ['package.json']);
   assert.equal(sections[0].digest, 'a'.repeat(64));
-  assert.equal(sections[0].heading, '문서', 'the first marker belongs to the title');
+  assert.equal(sections[0].heading, '문서', '첫 마커는 제목에 속한다');
   assert.deepEqual(sections[1].sources, ['src/check.ts', 'tools/build.ts']);
   assert.equal(sections[1].digest, 'PENDING');
   assert.equal(sections[1].heading, '두 번째 절');
 });
 
-test('a document with no marker has no pinned section', () => {
+test('마커가 없는 문서에는 핀한 절이 없다', () => {
   assert.deepEqual(docSourceSections('# 제목\n\n본문\n'), []);
 });
 
-test('a marker without its hash line is reported as incomplete', () => {
+test('해시 줄이 없는 마커는 불완전하다고 보고한다', () => {
   const broken = '# 제목\n\n<!-- agctx-doc-sources: package.json -->\n\n본문\n';
   const sections = docSourceSections(broken);
 
   assert.equal(sections.length, 1);
-  assert.equal(sections[0].digest, null, 'the checker turns a missing hash line into an error');
+  assert.equal(sections[0].digest, null, '검사기는 빠진 해시 줄을 오류로 바꾼다');
 });

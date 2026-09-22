@@ -11,7 +11,7 @@ import { makeWorkspace } from './support/git-workspace.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
-test('profile create creates a named scoped profile in the user profile directory', () => {
+test('profile create는 사용자 프로필 폴더에 이름과 범위가 있는 프로필을 만든다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-test-'));
 
   try {
@@ -34,7 +34,7 @@ test('profile create creates a named scoped profile in the user profile director
   }
 });
 
-test('profile list reports registered profiles without exposing paths as the identity', () => {
+test('profile list는 경로를 식별자로 드러내지 않고 등록된 프로필을 보고한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-list-test-'));
 
   try {
@@ -55,7 +55,7 @@ test('profile list reports registered profiles without exposing paths as the ide
   }
 });
 
-test('profile list can filter registered profiles by scope', () => {
+test('profile list는 등록된 프로필을 범위로 거를 수 있다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-scope-list-test-'));
 
   try {
@@ -80,7 +80,7 @@ test('profile list can filter registered profiles by scope', () => {
   }
 });
 
-test('profile list ignores malformed metadata instead of presenting an invalid profile', () => {
+test('profile list는 잘못된 메타데이터를 올바르지 않은 프로필로 보여 주지 않고 무시한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-invalid-metadata-test-'));
 
   try {
@@ -102,7 +102,7 @@ test('profile list ignores malformed metadata instead of presenting an invalid p
   }
 });
 
-test('profiles and the language setting live directly under AGCTX_HOME', () => {
+test('프로필과 언어 설정은 AGCTX_HOME 바로 아래에 있다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-home-layout-test-'));
 
   try {
@@ -113,17 +113,13 @@ test('profiles and the language setting live directly under AGCTX_HOME', () => {
     assert.equal(fs.existsSync(path.join(home, 'profiles', 'layout', 'profile.json')), true);
     assert.equal(fs.existsSync(path.join(home, 'profiles', 'layout', 'AGENTS.md')), true);
     assert.deepEqual(JSON.parse(fs.readFileSync(path.join(home, 'config.json'), 'utf8')), { locale: 'en' });
-    assert.equal(
-      fs.existsSync(path.join(home, '.agctx')),
-      false,
-      'AGCTX_HOME is the agctx folder itself, not a home directory'
-    );
+    assert.equal(fs.existsSync(path.join(home, '.agctx')), false, 'AGCTX_HOME은 홈 폴더가 아니라 agctx 폴더 자체다');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('without AGCTX_HOME, agctx uses ~/.agctx and leaves an old ~/.agentic home untouched', () => {
+test('AGCTX_HOME이 없으면 agctx는 ~/.agctx를 쓰고 옛 ~/.agentic 홈은 건드리지 않는다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-default-home-test-'));
 
   try {
@@ -150,7 +146,7 @@ test('without AGCTX_HOME, agctx uses ~/.agctx and leaves an old ~/.agentic home 
   }
 });
 
-test('setup applies selected guidance to the profile and preserves its project-independent boundary', () => {
+test('setup은 고른 지침을 프로필에 적용하고 프로젝트에 매이지 않는 경계를 지킨다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-setup-test-'));
 
   try {
@@ -205,13 +201,13 @@ test('setup applies selected guidance to the profile and preserves its project-i
     assert.match(instructions, /## TDD/);
     assert.doesNotMatch(instructions, /## 변경 검토/);
     assert.doesNotMatch(instructions, /## 지침 파일/);
-    assert.doesNotMatch(instructions, /## 응답 언어/, 'a level of off keeps the item out of the block');
+    assert.doesNotMatch(instructions, /## 응답 언어/, 'off 단계는 항목을 블록에서 뺀다');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('apply applies the selected profile to a project without changing the profile', () => {
+test('apply는 프로필을 바꾸지 않고 고른 프로필을 프로젝트에 적용한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-apply-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -232,18 +228,18 @@ test('apply applies the selected profile to a project without changing the profi
     const selection = JSON.parse(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'));
     assert.equal(selection.schemaVersion, 2);
     assert.equal(selection.profile, 'company');
-    assert.equal(selection.source, undefined, 'a profile that is not a Git repository records no source');
+    assert.equal(selection.source, undefined, 'Git 저장소가 아닌 프로필은 source를 기록하지 않는다');
     assert.deepEqual(
       Object.keys(selection.managedHashes)
         .map(file => file.replaceAll(path.sep, '/'))
         .sort(),
       ['.agents/rules/agctx.md', 'AGENTS.md', 'CLAUDE.md']
     );
-    assert.equal(fs.existsSync(path.join(project, '.cursor')), false, 'Cursor is not a supported agent');
+    assert.equal(fs.existsSync(path.join(project, '.cursor')), false, 'Cursor는 지원하는 에이전트가 아니다');
     assert.equal(
       fs.existsSync(path.join(project, '.github', 'copilot-instructions.md')),
       false,
-      'Copilot is not a supported agent'
+      'Copilot은 지원하는 에이전트가 아니다'
     );
     fs.appendFileSync(path.join(project, 'CLAUDE.md'), '\n## Local Claude guidance\n\nKeep this local workflow.\n');
     execFileSync(process.execPath, [cli, 'profile', 'sync', project, '--yes'], { cwd: repoRoot, env });
@@ -255,7 +251,7 @@ test('apply applies the selected profile to a project without changing the profi
   }
 });
 
-test('apply puts agent rule frontmatter first and sync repairs rule files an earlier version wrapped in the managed block', () => {
+test('apply는 에이전트 규칙 frontmatter를 맨 앞에 두고, sync는 이전 버전이 관리 블록 안에 넣은 규칙 파일을 고친다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-rule-frontmatter-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -272,16 +268,16 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
     const rule = fs.readFileSync(rulePath, 'utf8');
     assert.ok(
       rule.startsWith('---\ntrigger: always_on\n---\n'),
-      'Antigravity reads rule frontmatter only from the first line and loads a workspace rule on every task only with trigger: always_on'
+      'Antigravity는 규칙 frontmatter를 첫 줄에서만 읽고, trigger: always_on일 때만 작업 공간 규칙을 모든 작업에서 불러온다'
     );
     assert.match(
       rule,
       /^---\ntrigger: always_on\n---\n\n<!-- agctx:managed:start -->\n/,
-      'the managed block starts right after the frontmatter'
+      '관리 블록은 frontmatter 바로 뒤에서 시작한다'
     );
 
     const layout = rule.match(/^(---\n[\s\S]*?\n---\n)\n?([\s\S]*)$/);
-    assert.ok(layout, 'the rule file starts with frontmatter');
+    assert.ok(layout, '규칙 파일은 frontmatter로 시작한다');
     const [, frontmatter, rest] = layout;
     const earlierLayout = rest.replace(
       '<!-- agctx:managed:start -->\n',
@@ -299,19 +295,15 @@ test('apply puts agent rule frontmatter first and sync repairs rule files an ear
     assert.ok(repaired.startsWith('---\ntrigger: always_on\n---\n'));
     assert.equal((repaired.match(/trigger: always_on/g) || []).length, 1);
     const repairedMatch = repaired.match(/<!-- agctx:managed:start -->[\s\S]*?<!-- agctx:managed:end -->/);
-    assert.ok(repairedMatch, 'the repaired rule keeps its managed block');
+    assert.ok(repairedMatch, '고친 규칙은 관리 블록을 유지한다');
     const repairedBlock = repairedMatch[0];
-    assert.doesNotMatch(
-      repairedBlock,
-      /^---$/m,
-      'sync moves frontmatter an earlier version wrapped in the managed block out of it'
-    );
+    assert.doesNotMatch(repairedBlock, /^---$/m, 'sync는 이전 버전이 관리 블록 안에 넣은 frontmatter를 밖으로 옮긴다');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('apply requires a profile name', () => {
+test('apply에는 프로필 이름이 필요하다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-apply-no-name-test-'));
 
   try {
@@ -327,7 +319,7 @@ test('apply requires a profile name', () => {
   }
 });
 
-test('apply rejects an unknown profile before changing the target project', () => {
+test('apply는 대상 프로젝트를 바꾸기 전에 모르는 프로필을 거부한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-invalid-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -341,7 +333,7 @@ test('apply rejects an unknown profile before changing the target project', () =
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe']
     });
-    assert.fail(`expected failure, got ${result}`);
+    assert.fail(`실패를 기대했지만 결과는 ${result}`);
   } catch (error) {
     const failure = error as { status: number; stderr: string };
     assert.equal(failure.status, 64);
@@ -352,7 +344,7 @@ test('apply rejects an unknown profile before changing the target project', () =
   fs.rmSync(home, { recursive: true, force: true });
 });
 
-test('apply rejects a file path instead of treating it as a project directory', () => {
+test('apply는 파일 경로를 프로젝트 폴더로 다루지 않고 거부한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-file-target-test-'));
   const target = path.join(home, 'not-a-project-directory');
   fs.writeFileSync(target, 'keep this file\n');
@@ -373,7 +365,7 @@ test('apply rejects a file path instead of treating it as a project directory', 
   }
 });
 
-test('sync refuses to switch the bound profile', () => {
+test('sync는 묶인 프로필을 바꾸지 않는다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-sync-no-switch-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -407,7 +399,7 @@ test('sync refuses to switch the bound profile', () => {
   }
 });
 
-test('sync requires a project that was already applied', () => {
+test('sync는 이미 적용한 프로젝트가 필요하다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-sync-unapplied-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -426,7 +418,7 @@ test('sync requires a project that was already applied', () => {
   }
 });
 
-test('sync reports invalid project metadata without changing the project', () => {
+test('sync는 프로젝트를 바꾸지 않고 잘못된 프로젝트 메타데이터를 보고한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-invalid-project-metadata-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -448,7 +440,7 @@ test('sync reports invalid project metadata without changing the project', () =>
   }
 });
 
-test('apply preserves an existing AGENTS.md that has no extension section', () => {
+test('apply는 확장 영역이 없는 기존 AGENTS.md를 지킨다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-existing-agents-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -473,7 +465,7 @@ test('apply preserves an existing AGENTS.md that has no extension section', () =
   }
 });
 
-test('apply dry-run reports planned files without changing the project', () => {
+test('apply dry-run은 프로젝트를 바꾸지 않고 계획한 파일을 보고한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-dry-run-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -501,7 +493,7 @@ test('apply dry-run reports planned files without changing the project', () => {
   }
 });
 
-test('apply preflights all targets and leaves the project unchanged when an adapter is a symbolic link', () => {
+test('apply는 모든 대상을 미리 검사하고, 어댑터가 심볼릭 링크이면 프로젝트를 그대로 둔다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-preflight-symlink-test-'));
   const project = path.join(home, 'project');
   const outside = path.join(home, 'outside.md');
@@ -532,7 +524,7 @@ test('apply preflights all targets and leaves the project unchanged when an adap
   }
 });
 
-test('apply preflights adapter parent paths and leaves the project unchanged when a parent is a file', () => {
+test('apply는 어댑터의 부모 경로를 미리 검사하고, 부모가 파일이면 프로젝트를 그대로 둔다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-preflight-parent-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -554,7 +546,7 @@ test('apply preflights adapter parent paths and leaves the project unchanged whe
   }
 });
 
-test('sync stops when an agctx-managed block was manually changed', () => {
+test('agctx 관리 블록을 손으로 바꿨으면 sync가 멈춘다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-conflict-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -582,7 +574,7 @@ test('sync stops when an agctx-managed block was manually changed', () => {
   }
 });
 
-test('sync stops when the profile-owned portion of AGENTS.md was manually changed', () => {
+test('AGENTS.md의 프로필 소유 부분을 손으로 바꿨으면 sync가 멈춘다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-agents-conflict-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -616,7 +608,7 @@ test('sync stops when the profile-owned portion of AGENTS.md was manually change
   }
 });
 
-test('profile create and setup support interactive TUI input when options are omitted', () => {
+test('옵션을 빼면 profile create와 setup은 대화형 TUI 입력을 받는다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-test-'));
   const env = { ...process.env, AGCTX_HOME: home };
 
@@ -655,7 +647,7 @@ test('profile create and setup support interactive TUI input when options are om
   }
 });
 
-test('setup without a profile name lets the user choose a scope-grouped profile in the TUI', () => {
+test('프로필 이름 없는 setup은 TUI에서 범위별로 묶은 프로필을 고르게 한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-select-test-'));
   const env = { ...process.env, AGCTX_HOME: home };
 
@@ -684,7 +676,7 @@ test('setup without a profile name lets the user choose a scope-grouped profile 
   }
 });
 
-test('agctx is the only command and its help names it', () => {
+test('agctx가 유일한 명령이고 도움말이 그 이름을 쓴다', () => {
   const result = spawnSync(process.execPath, [cli, 'help'], { cwd: repoRoot, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /^agctx \(Agent Context Manager\)/);
@@ -697,7 +689,7 @@ test('agctx is the only command and its help names it', () => {
   assert.equal(fs.existsSync(path.join(repoRoot, 'src', 'agt.ts')), false);
 });
 
-test('profile remove deletes only the selected profile and preserves an applied project', () => {
+test('profile remove는 고른 프로필만 지우고 적용한 프로젝트는 남긴다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-profile-remove-test-'));
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
@@ -722,7 +714,7 @@ test('profile remove deletes only the selected profile and preserves an applied 
   }
 });
 
-test('profile remove requires a name when confirmation is supplied non-interactively', () => {
+test('확인을 비대화형으로 주면 profile remove에는 이름이 필요하다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-remove-approval-test-'));
 
   try {
@@ -738,7 +730,7 @@ test('profile remove requires a name when confirmation is supplied non-interacti
   }
 });
 
-test('check and sync read a guidance file with CRLF line endings as unchanged, and sync keeps CRLF when it rewrites the file', t => {
+test('check와 sync는 CRLF 줄 끝의 지침 파일을 바뀌지 않은 것으로 읽고, sync는 파일을 다시 쓸 때 CRLF를 유지한다', t => {
   const { person, folder } = makeWorkspace(t, 'agctx-profile-crlf-');
   const me = person('me');
   const project = folder('app');
@@ -750,12 +742,12 @@ test('check and sync read a guidance file with CRLF line endings as unchanged, a
     const file = path.join(project, rel);
     fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replaceAll('\n', '\r\n'));
   }
-  assert.equal(me.run(['check', project]).status, 0, 'CRLF line endings are not an edit to the managed area');
+  assert.equal(me.run(['check', project]).status, 0, 'CRLF 줄 끝은 관리 영역의 수정이 아니다');
 
   fs.appendFileSync(path.join(me.profileDir('personal'), 'AGENTS.md'), '\n- Keep functions small.\n');
   me.ok(['profile', 'sync', project, '--yes']);
   const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
   assert.match(agents, /Keep functions small\./);
-  assert.doesNotMatch(agents, /[^\r]\n/, 'every line still ends with CRLF');
+  assert.doesNotMatch(agents, /[^\r]\n/, '모든 줄이 여전히 CRLF로 끝난다');
   assert.equal(me.run(['check', project]).status, 0);
 });

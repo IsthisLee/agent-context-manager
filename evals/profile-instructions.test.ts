@@ -64,7 +64,7 @@ const repoFiles = {
 
 const read = (file: string) => fs.readFileSync(file, 'utf8');
 
-test('clone takes a rules repository whose profile.json points at a file in a subfolder, and apply uses that file over a root AGENTS.md', t => {
+test('clone은 profile.json이 하위 폴더의 파일을 가리키는 규칙 저장소를 받고, apply는 루트 AGENTS.md 대신 그 파일을 쓴다', t => {
   const { member, folder, source } = setup(t, {
     ...repoFiles,
     'AGENTS.md': '# Rules for working in this repository itself\n'
@@ -85,7 +85,7 @@ test('clone takes a rules repository whose profile.json points at a file in a su
   assert.doesNotMatch(agents, /repository itself/);
 });
 
-test('setup writes the guidance block into the pointed file and leaves the root without an AGENTS.md', t => {
+test('setup은 가리킨 파일에 지침 블록을 쓰고 루트에 AGENTS.md를 만들지 않는다', t => {
   const { member, source } = setup(t, repoFiles);
   member.ok(['profile', 'clone', source.remote]);
 
@@ -101,7 +101,7 @@ test('setup writes the guidance block into the pointed file and leaves the root 
   assert.equal(stored.instructions, 'templates/AGENTS.md');
 });
 
-test('pull checks the pointed file of the incoming commit for hidden characters and follows a commit that moves the rules file', t => {
+test('pull은 들어오는 커밋이 가리키는 파일의 숨은 문자를 검사하고, 규칙 파일을 옮긴 커밋도 따른다', t => {
   const { member, folder, source } = setup(t, repoFiles);
   member.ok(['profile', 'clone', source.remote]);
   const pointed = path.join(member.profileDir('team-rules'), 'templates', 'AGENTS.md');
@@ -126,7 +126,7 @@ test('pull checks the pointed file of the incoming commit for hidden characters 
   assert.match(read(path.join(project, 'AGENTS.md')), /^# Moved rules/);
 });
 
-test('a pinned project keeps the rules file of its recorded commit on sync and check after the source moves that file', t => {
+test('원본이 규칙 파일을 옮긴 뒤에도 고정한 프로젝트는 sync와 check에서 기록한 커밋의 규칙 파일을 유지한다', t => {
   const { member, folder, source } = setup(t, repoFiles);
   member.ok(['profile', 'clone', source.remote]);
   const project = folder('orders-api');
@@ -155,7 +155,7 @@ test('a pinned project keeps the rules file of its recorded commit on sync and c
   );
 });
 
-test('an uncommitted edit to the pointed file is recorded as uncommitted, and apply --pin refuses it', t => {
+test('가리킨 파일의 커밋하지 않은 수정은 uncommitted로 기록하고, apply --pin은 그것을 거부한다', t => {
   const { member, folder, source } = setup(t, repoFiles);
   member.ok(['profile', 'clone', source.remote]);
   fs.appendFileSync(path.join(member.profileDir('team-rules'), 'templates', 'AGENTS.md'), '\n- A local edit.\n');
@@ -188,7 +188,7 @@ const refusedValues: [string, (work: string) => Record<string, unknown>, { skip:
 ];
 
 for (const [label, fields, options] of refusedValues) {
-  test(`clone refuses instructions set to ${label}, and registers nothing`, options ?? {}, t => {
+  test(`clone은 ${label}로 정한 instructions를 거부하고 아무것도 등록하지 않는다`, options ?? {}, t => {
     // Windows에서는 역슬래시가 폴더를 나누므로 `templates\AGENTS.md`라는 이름의 파일은 규칙 파일
     // 그 자체다. 거기서는 null을 넘기지 말고 키를 빼라. null은 규칙 파일을 지워서, 아래의 모든 경우가
     // 이름이 가리키는 검사가 아니라 파일이 없다는 이유로 통과하게 만든다.
@@ -199,7 +199,7 @@ for (const [label, fields, options] of refusedValues) {
     });
     assert.ok(
       fs.existsSync(path.join(source.work, 'templates', 'AGENTS.md')),
-      'the fixture keeps the rules file, so each refusal comes from the check it names'
+      '픽스처가 규칙 파일을 남겨 두므로 각 거부는 이름이 가리키는 검사에서 나온다'
     );
     source.commit({ 'profile.json': metadata(fields(source.work)) }, 'Point instructions');
     // 저장소 밖으로 벗어나는 경로만 이 파일에 닿을 수 있다.
@@ -213,28 +213,24 @@ for (const [label, fields, options] of refusedValues) {
   });
 }
 
-test(
-  'clone refuses instructions that point at a symbolic link or pass through a linked folder',
-  { skip: noLinks },
-  t => {
-    for (const [name, target, instructions] of [
-      ['linked.md', 'templates/AGENTS.md', 'linked.md'],
-      ['linked', 'templates', 'linked/AGENTS.md']
-    ]) {
-      const { member, source } = setup(t, repoFiles);
-      fs.symlinkSync(target, path.join(source.work, name));
-      source.commit({ 'profile.json': metadata({ instructions }) }, `Point at ${name}`);
+test('clone은 심볼릭 링크를 가리키거나 연결된 폴더를 거치는 instructions를 거부한다', { skip: noLinks }, t => {
+  for (const [name, target, instructions] of [
+    ['linked.md', 'templates/AGENTS.md', 'linked.md'],
+    ['linked', 'templates', 'linked/AGENTS.md']
+  ]) {
+    const { member, source } = setup(t, repoFiles);
+    fs.symlinkSync(target, path.join(source.work, name));
+    source.commit({ 'profile.json': metadata({ instructions }) }, `Point at ${name}`);
 
-      const result = member.run(['profile', 'clone', source.remote]);
+    const result = member.run(['profile', 'clone', source.remote]);
 
-      assert.equal(result.status, 64, `${instructions}\n${result.stderr}`);
-      assert.equal(fs.existsSync(member.profileDir('team-rules')), false);
-    }
+    assert.equal(result.status, 64, `${instructions}\n${result.stderr}`);
+    assert.equal(fs.existsSync(member.profileDir('team-rules')), false);
   }
-);
+});
 
 test(
-  'pull refuses an incoming commit that points instructions outside the repository or at a link, and keeps the profile as it was',
+  'pull은 instructions가 저장소 밖이나 링크를 가리키게 하는 커밋을 거부하고 프로필을 그대로 둔다',
   { skip: noLinks },
   t => {
     const { member, source } = setup(t, repoFiles);
@@ -252,7 +248,7 @@ test(
   }
 );
 
-test('a profile whose own profile.json is edited to point outside its folder is refused when read', t => {
+test('자기 profile.json이 폴더 밖을 가리키도록 고쳐진 프로필은 읽을 때 거부한다', t => {
   const { member, source } = setup(t, repoFiles);
   member.ok(['profile', 'clone', source.remote]);
   fs.writeFileSync(path.join(member.home, 'profiles', 'outside.md'), '# Outside the profile\n');
@@ -267,7 +263,7 @@ test('a profile whose own profile.json is edited to point outside its folder is 
   assert.doesNotMatch(result.stdout, /Outside the profile/);
 });
 
-test('clone refusing a repository without profile.json says how to add one, including instructions for a rules file in a subfolder', t => {
+test('profile.json이 없는 저장소를 거부하는 clone은 하위 폴더 규칙 파일용 instructions를 포함해 추가 방법을 알려 준다', t => {
   const { member, source } = setup(t, { 'templates/AGENTS.md': '# Pointed rules\n' });
 
   const result = member.run(['profile', 'clone', source.remote]);

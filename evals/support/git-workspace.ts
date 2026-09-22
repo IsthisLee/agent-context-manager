@@ -28,7 +28,7 @@ export function gitIn(cwd: string, ...args: string[]): string {
     encoding: 'utf8',
     env: { ...process.env, GIT_TERMINAL_PROMPT: '0', ...identity('tester') }
   });
-  assert.equal(result.status, 0, `git ${args.join(' ')} failed\n${result.stderr}`);
+  assert.equal(result.status, 0, `git ${args.join(' ')} 실패\n${result.stderr}`);
   return result.stdout.trim();
 }
 
@@ -50,7 +50,7 @@ export function makeWorkspace(t: TestContext, prefix = 'agctx-workspace-') {
       spawnSync(process.execPath, [cli, ...args], { cwd: root, env: { ...base, ...env }, encoding: 'utf8' });
     const ok = (args: string[], env: Record<string, string> = {}) => {
       const result = run(args, env);
-      assert.equal(result.status, 0, `agctx ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
+      assert.equal(result.status, 0, `agctx ${args.join(' ')} 실패\n${result.stdout}\n${result.stderr}`);
       return result;
     };
     return { home, run, ok, profileDir: name => path.join(home, 'profiles', name) };

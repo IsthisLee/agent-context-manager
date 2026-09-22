@@ -31,7 +31,7 @@ try {
       encoding: 'utf8',
       shell: process.platform === 'win32'
     });
-    assert.equal(result.status, 0, `npx ${SKILLS_CLI} ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
+    assert.equal(result.status, 0, `npx ${SKILLS_CLI} ${args.join(' ')} 실패\n${result.stdout}\n${result.stderr}`);
     return result.stdout + result.stderr;
   };
 
@@ -39,17 +39,17 @@ try {
   assert.match(listed, /agctx-author/);
   assert.match(listed, /agctx\b/);
   // repo-docs는 metadata.internal로 표시돼 있으므로 설치가 그것을 제안하면 안 된다.
-  assert.doesNotMatch(listed, /repo-docs/, 'the contributor skill stays out of a user install');
+  assert.doesNotMatch(listed, /repo-docs/, '기여자 스킬은 사용자 설치에 들어가지 않는다');
 
   run(['add', source, '-a', 'claude-code', '-a', 'codex', '-a', 'antigravity', '-y']);
   for (const name of ['agctx', 'agctx-author']) {
     assert.ok(
       fs.existsSync(path.join(project, '.agents', 'skills', name, 'SKILL.md')),
-      `.agents/skills/${name} is installed for Codex and Antigravity`
+      `.agents/skills/${name}이 Codex와 Antigravity용으로 설치된다`
     );
     assert.ok(
       fs.existsSync(path.join(project, '.claude', 'skills', name, 'SKILL.md')),
-      `.claude/skills/${name} is installed for Claude Code`
+      `.claude/skills/${name}이 Claude Code용으로 설치된다`
     );
   }
   assert.match(
@@ -58,12 +58,9 @@ try {
   );
   assert.ok(
     fs.existsSync(path.join(project, '.agents', 'skills', 'agctx-author', 'agents', 'openai.yaml')),
-    'the Codex invocation policy is installed with the skill'
+    'Codex 호출 정책이 스킬과 함께 설치된다'
   );
-  assert.ok(
-    !fs.existsSync(path.join(project, '.agents', 'skills', 'repo-docs')),
-    'the contributor skill is not installed'
-  );
+  assert.ok(!fs.existsSync(path.join(project, '.agents', 'skills', 'repo-docs')), '기여자 스킬은 설치되지 않는다');
   process.stdout.write(`Skills smoke test passed with ${SKILLS_CLI}.\n`);
 } finally {
   fs.rmSync(scratch, { recursive: true, force: true });

@@ -23,7 +23,7 @@ function apmCompile(file: string, rules: string) {
   const content = fs.readFileSync(file, 'utf8');
   const start = content.indexOf(START);
   const end = content.indexOf(END);
-  assert.ok(start >= 0 && end > start, 'the APM markers are still in place');
+  assert.ok(start >= 0 && end > start, 'APM 마커가 그대로 있다');
   fs.writeFileSync(file, content.slice(0, start) + apmSection(rules) + content.slice(end + END.length));
 }
 
@@ -39,7 +39,7 @@ function setup(t: TestContext) {
   return { me, repo };
 }
 
-test('an APM managed section in AGENTS.md survives agctx sync while both tools keep updating', t => {
+test('두 도구가 계속 갱신해도 AGENTS.md의 APM managed section은 agctx sync 뒤에 남는다', t => {
   const { me, repo } = setup(t);
   const dir = repo('agctx-first');
   me.ok(['profile', 'apply', 'company', dir, '--yes']);
@@ -54,15 +54,12 @@ test('an APM managed section in AGENTS.md survives agctx sync while both tools k
   me.ok(['profile', 'sync', dir, '--yes']);
   const after = fs.readFileSync(agents, 'utf8');
   assert.match(after, /COMPANY-C2/);
-  assert.equal(sectionOf(after), sectionOf(before), 'agctx leaves the APM section byte for byte');
-  assert.ok(
-    after.indexOf('COMPANY-C2') < after.indexOf(START),
-    'the APM section stays in the project part below the profile'
-  );
-  assert.equal(me.run(['check', dir]).status, 0, 'APM updates are outside the agctx managed area');
+  assert.equal(sectionOf(after), sectionOf(before), 'agctx는 APM 절을 한 바이트도 바꾸지 않는다');
+  assert.ok(after.indexOf('COMPANY-C2') < after.indexOf(START), 'APM 절은 프로필 아래 프로젝트 부분에 머문다');
+  assert.equal(me.run(['check', dir]).status, 0, 'APM 갱신은 agctx 관리 영역 밖에 있다');
 });
 
-test('agctx stops before taking over an AGENTS.md or CLAUDE.md that APM regenerates in its default mode', t => {
+test('agctx는 APM이 기본 모드에서 다시 만드는 AGENTS.md나 CLAUDE.md를 넘겨받기 전에 멈춘다', t => {
   const { me, repo } = setup(t);
   const dir = repo('apm-first');
   const generated = `${APM_AGENTS_HEADER}\n<!-- Build ID: 0123456789ab -->\n\n# AGENTS.md\n\n- APM-TEAM-T1: team rule\n`;
@@ -75,7 +72,7 @@ test('agctx stops before taking over an AGENTS.md or CLAUDE.md that APM regenera
   const refused = me.run(['profile', 'apply', 'company', dir, '--yes', '--json']);
   assert.equal(refused.status, 2);
   assert.equal(JSON.parse(refused.stdout).errors[0].code, 'project.apm-generated');
-  assert.equal(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), generated, 'nothing is written');
+  assert.equal(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), generated, '아무것도 쓰지 않는다');
   assert.ok(!fs.existsSync(path.join(dir, 'agctx.project.json')));
 
   // 안내가 설명하는 해결 방법: 생성된 파일을 옆으로 옮기고, 적용한 뒤, managed_section 마커를 더한다.
@@ -91,10 +88,10 @@ test('agctx stops before taking over an AGENTS.md or CLAUDE.md that APM regenera
   const claude = me.run(['profile', 'apply', 'company', claudeDir, '--yes']);
   assert.equal(claude.status, 2, claude.stdout + claude.stderr);
   assert.match(claude.stderr, /CLAUDE\.md/);
-  assert.ok(!fs.existsSync(path.join(claudeDir, 'AGENTS.md')), 'nothing is written');
+  assert.ok(!fs.existsSync(path.join(claudeDir, 'AGENTS.md')), '아무것도 쓰지 않는다');
 });
 
-test('an APM marker further down the file is content, not ownership', t => {
+test('파일 아래쪽의 APM 마커는 소유 표시가 아니라 내용이다', t => {
   const { me, repo } = setup(t);
   const dir = repo('marker-below');
   fs.writeFileSync(

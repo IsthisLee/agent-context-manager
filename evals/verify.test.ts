@@ -85,11 +85,11 @@ function claudeTranscript(claudeHome: string, cwd: string, loaded: string[]) {
 const parse = (stdout: string): VerifyDocument => JSON.parse(stdout);
 const agentOf = (document: VerifyDocument, id: string) => {
   const agent = document.data.agents.find(entry => entry.agent === id);
-  assert.ok(agent, `${id} is verified`);
+  assert.ok(agent, `${id}를 검증한다`);
   return agent;
 };
 
-test('verify reads Codex and Claude Code session logs and exits 4 when an instruction file never arrived', t => {
+test('verify는 Codex와 Claude Code 세션 기록을 읽고, 전달되지 않은 지침 파일이 있으면 4로 끝난다', t => {
   const { repo, payments, codexHome, claudeHome, verify } = project(t);
   const start = fs.realpathSync(payments);
   const root = fs.realpathSync(repo);
@@ -108,12 +108,8 @@ test('verify reads Codex and Claude Code session logs and exits 4 when an instru
   assert.deepEqual(codex.missing, ['services/payments/AGENTS.md']);
   const claude = agentOf(document, 'claude');
   assert.equal(claude.status, 'pass');
-  assert.deepEqual(claude.expected, ['CLAUDE.md'], 'AGENTS.md imported from outside the start folder is conditional');
-  assert.deepEqual(
-    claude.delivered.sort(),
-    ['AGENTS.md', 'CLAUDE.md'],
-    'a conditional file that arrived is still reported'
-  );
+  assert.deepEqual(claude.expected, ['CLAUDE.md'], '시작 폴더 밖에서 import한 AGENTS.md는 조건부다');
+  assert.deepEqual(claude.delivered.sort(), ['AGENTS.md', 'CLAUDE.md'], '전달된 조건부 파일도 여전히 보고한다');
   assert.equal(agentOf(document, 'antigravity').status, 'no-evidence');
 
   const human = verify([payments]);
@@ -124,10 +120,10 @@ test('verify reads Codex and Claude Code session logs and exits 4 when an instru
   assert.doesNotMatch(human.stderr, /start Antigravity/);
 
   codexSession(codexHome, start, `${rootAgents}\n\n${fs.readFileSync(path.join(payments, 'AGENTS.md'), 'utf8')}`);
-  assert.equal(verify([payments, '--agent', 'codex']).status, 0, 'the newest session decides');
+  assert.equal(verify([payments, '--agent', 'codex']).status, 0, '가장 최근 세션이 판단 기준이다');
 });
 
-test('verify does not trust a session that started before an instruction file changed', t => {
+test('verify는 지침 파일이 바뀌기 전에 시작한 세션을 믿지 않는다', t => {
   const { repo, payments, codexHome, verify } = project(t);
   const start = fs.realpathSync(payments);
   const both = `${fs.readFileSync(path.join(repo, 'AGENTS.md'), 'utf8')}\n\n${fs.readFileSync(path.join(payments, 'AGENTS.md'), 'utf8')}`;
@@ -183,17 +179,17 @@ function snapshot(dir: string): Record<string, string> {
   return files;
 }
 
-test('verify --probe asks each agent CLI about marker lines in a scratch copy and leaves the repository untouched', t => {
+test('verify --probe는 임시 사본에서 각 에이전트 CLI에 마커 줄을 묻고 저장소는 건드리지 않는다', t => {
   const { repo, payments, verify } = project(t);
   fs.writeFileSync(path.join(payments, 'CLAUDE.md'), '@AGENTS.md\n');
   const agents = fakeAgents(t);
   const before = snapshot(repo);
 
   const refused = verify([payments, '--probe'], agents.env);
-  assert.equal(refused.status, 64, 'a probe runs agent CLIs, so it needs confirmation');
+  assert.equal(refused.status, 64, 'probe는 에이전트 CLI를 실행하므로 확인이 필요하다');
   assert.match(refused.stderr, /--yes/);
   assert.match(refused.stderr, /plan or API credits/);
-  assert.doesNotMatch(refused.stderr, /--dry-run/, 'verify has no --dry-run');
+  assert.doesNotMatch(refused.stderr, /--dry-run/, 'verify에는 --dry-run이 없다');
   assert.deepEqual(agents.calls(), []);
 
   const passed = verify([payments, '--probe', '--yes', '--json'], agents.env);
@@ -206,7 +202,7 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
   assert.deepEqual(agentOf(document, 'codex').delivered.sort(), ['AGENTS.md', 'services/payments/AGENTS.md']);
   assert.ok(
     !agentOf(document, 'claude').expected.includes('AGENTS.md'),
-    'an import that needs approval is not required from a probe'
+    '승인이 필요한 import는 probe에서 요구하지 않는다'
   );
 
   const calls = agents.calls();
@@ -218,9 +214,9 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
   assert.ok(agyCall?.args.includes('-p') && agyCall.args.includes('--add-dir'), JSON.stringify(agyCall));
   assert.ok(
     calls.every(call => !call.cwd.startsWith(fs.realpathSync(repo))),
-    'agents run in a scratch copy, not the repository'
+    '에이전트는 저장소가 아니라 임시 사본에서 실행한다'
   );
-  assert.deepEqual(snapshot(repo), before, 'markers are added only to the scratch copy');
+  assert.deepEqual(snapshot(repo), before, '마커는 임시 사본에만 더한다');
 
   const failed = verify([payments, '--probe', '--yes', '--agent', 'claude', '--json'], {
     ...agents.env,
@@ -232,7 +228,7 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
   assert.ok(claude.missing.includes('services/payments/AGENTS.md'), JSON.stringify(claude));
 });
 
-test('verify --probe reports an agent CLI that cannot run as unavailable', t => {
+test('verify --probe는 실행할 수 없는 에이전트 CLI를 unavailable로 보고한다', t => {
   const { payments, verify } = project(t);
   const agents = fakeAgents(t);
   const result = verify([payments, '--probe', '--yes', '--agent', 'codex', '--json'], {
@@ -245,7 +241,7 @@ test('verify --probe reports an agent CLI that cannot run as unavailable', t => 
   assert.equal(codex.exitCode, 69);
 });
 
-test('verify judges a long Claude Code session by its latest instruction load, such as the reload after compaction', t => {
+test('verify는 긴 Claude Code 세션을 압축 뒤 다시 불러온 것처럼 가장 최근의 지침 로드로 판단한다', t => {
   const { repo, payments, claudeHome, verify } = project(t);
   const start = fs.realpathSync(payments);
   const root = fs.realpathSync(repo);
@@ -286,7 +282,7 @@ test('verify judges a long Claude Code session by its latest instruction load, s
   ]);
 });
 
-test('verify without session logs gives one next step for Codex and Claude Code and the probe for Antigravity', t => {
+test('세션 기록이 없으면 verify는 Codex와 Claude Code에는 다음 단계 하나를, Antigravity에는 probe를 안내한다', t => {
   const { payments, verify } = project(t);
   const result = verify([payments]);
   assert.equal(result.status, 0);

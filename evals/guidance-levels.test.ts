@@ -22,7 +22,7 @@ function profileHome(): { home: string; env: NodeJS.ProcessEnv } {
   return { home, env };
 }
 
-test('setup takes on and off, and nothing else', () => {
+test('setup은 on과 off만 받는다', () => {
   const { home, env } = profileHome();
   try {
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', 'on', '--review', 'off'], {
@@ -39,15 +39,15 @@ test('setup takes on and off, and nothing else', () => {
         env,
         encoding: 'utf8'
       });
-      assert.equal(result.status, 64, `--tdd ${value} is a usage error now`);
-      assert.match(result.stderr, /on/, 'the error names the value to use instead');
+      assert.equal(result.status, 64, `이제 --tdd ${value}는 사용법 오류다`);
+      assert.match(result.stderr, /on/, '오류가 대신 쓸 값을 알려 준다');
     }
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('a profile saved with an old level is read as on', () => {
+test('옛 단계로 저장한 프로필은 on으로 읽는다', () => {
   const { home, env } = profileHome();
   try {
     const metadataPath = path.join(home, 'profiles', 'team', 'profile.json');
@@ -57,23 +57,23 @@ test('a profile saved with an old level is read as on', () => {
 
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--docs', 'off'], { cwd: repoRoot, env });
     const saved = JSON.parse(fs.readFileSync(metadataPath, 'utf8'));
-    assert.equal(saved.settings.tdd, 'on', 'strict becomes on: both meant the item is deployed');
-    assert.equal(saved.settings.review, 'on', 'recommended becomes on');
+    assert.equal(saved.settings.tdd, 'on', 'strict는 on이 된다. 둘 다 항목을 배포한다는 뜻이었다');
+    assert.equal(saved.settings.review, 'on', 'recommended는 on이 된다');
     assert.equal(saved.settings.docs, 'off');
-    assert.equal(saved.settings.language, 'off', 'off stays off');
+    assert.equal(saved.settings.language, 'off', 'off는 off로 남는다');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }
 });
 
-test('the produced block carries no level line and no legend', () => {
+test('만든 블록에는 단계 줄도 범례도 없다', () => {
   const { home, env } = profileHome();
   try {
     execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', 'on'], { cwd: repoRoot, env });
     const instructions = fs.readFileSync(path.join(home, 'profiles', 'team', 'AGENTS.md'), 'utf8');
-    assert.match(instructions, /## TDD/, 'an item that is on stays in the block');
-    assert.doesNotMatch(instructions, /적용 수준/, 'no level label and no legend title');
-    assert.doesNotMatch(instructions, /^- on$/m, 'no level line under an item');
+    assert.match(instructions, /## TDD/, '켠 항목은 블록에 남는다');
+    assert.doesNotMatch(instructions, /적용 수준/, '단계 라벨도 범례 제목도 없다');
+    assert.doesNotMatch(instructions, /^- on$/m, '항목 아래에 단계 줄이 없다');
   } finally {
     fs.rmSync(home, { recursive: true, force: true });
   }

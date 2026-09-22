@@ -34,26 +34,26 @@ function allOnProfile(locale: string) {
 
 function guidanceBlock(instructions: string) {
   const block = instructions.match(/<!-- agctx:guidance:start -->([\s\S]*?)<!-- agctx:guidance:end -->/);
-  assert.ok(block, 'the profile carries a guidance block');
+  assert.ok(block, '프로필에 지침 블록이 있다');
   return block[1].trim();
 }
 
 for (const locale of SUPPORTED_LOCALES) {
-  test(`the fully on guidance block stays inside its size budget in ${locale}`, () => {
+  test(`모두 켠 지침 블록은 ${locale}에서 분량 예산 안에 든다`, () => {
     const block = guidanceBlock(allOnProfile(locale));
     const lines = block.split('\n').length;
     const bytes = Buffer.byteLength(block);
-    assert.ok(lines <= LINE_BUDGET, `guidance block is ${lines} lines, over the ${LINE_BUDGET} line budget`);
-    assert.ok(bytes <= BYTE_BUDGET, `guidance block is ${bytes} bytes, over the ${BYTE_BUDGET} byte budget`);
+    assert.ok(lines <= LINE_BUDGET, `지침 블록이 ${lines}줄로 예산 ${LINE_BUDGET}줄을 넘는다`);
+    assert.ok(bytes <= BYTE_BUDGET, `지침 블록이 ${bytes}바이트로 예산 ${BYTE_BUDGET}바이트를 넘는다`);
   });
 
-  test(`every guidance item reaches the profile in ${locale}`, () => {
+  test(`모든 지침 항목이 ${locale}에서 프로필에 닿는다`, () => {
     const block = guidanceBlock(allOnProfile(locale));
     const sections = guidanceSections(locale);
     for (const key of GUIDANCE_KEYS) {
       const [title, body] = sections[key];
-      assert.ok(block.includes(`## ${title}`), `${locale} guidance block has the ${key} section`);
-      assert.ok(block.includes(body), `${locale} guidance block carries the ${key} body`);
+      assert.ok(block.includes(`## ${title}`), `${locale} 지침 블록에 ${key} 절이 있다`);
+      assert.ok(block.includes(body), `${locale} 지침 블록에 ${key} 본문이 있다`);
     }
   });
 }

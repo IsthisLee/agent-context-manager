@@ -8,13 +8,13 @@ import { shellWord } from '../src/shared/shell.ts';
  * 역슬래시가 가득하다.
  */
 
-test('a POSIX shell word is left bare when safe and double-quoted with escapes otherwise', () => {
+test('POSIX 셸 단어는 안전하면 그대로 두고, 아니면 이스케이프해서 큰따옴표로 감싼다', () => {
   assert.equal(shellWord('/work/team-rules', 'darwin'), '/work/team-rules');
   assert.equal(shellWord('/work/team rules', 'linux'), '"/work/team rules"');
   assert.equal(shellWord('a"b$c', 'linux'), '"a\\"b\\$c"');
 });
 
-test('a Windows path keeps its backslashes and short-name tildes and is quoted only when it holds a space', () => {
+test('Windows 경로는 역슬래시와 짧은 이름의 물결표를 유지하고 공백이 있을 때만 인용한다', () => {
   assert.equal(
     shellWord('C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules', 'win32'),
     'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules'

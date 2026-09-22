@@ -46,7 +46,7 @@ function asDocPath(output: string, work: string): string {
     .replace(/\/work((?:\\[^\s\\]+)+)/g, (_match, rest: string) => `/work${rest.replaceAll('\\', '/')}`);
 }
 
-test('every command example in the quick start prints what the doc shows', t => {
+test('빠른 시작의 모든 명령 예시는 문서에 적힌 대로 출력한다', t => {
   const { root, folder } = makeWorkspace(t, 'agctx-quick-start-');
   const work = folder('work');
   const userHome = folder('user-home');
@@ -60,7 +60,7 @@ test('every command example in the quick start prints what the doc shows', t => 
   const steps = exampleSteps(fs.readFileSync(path.join(repoRoot, QUICK_START), 'utf8'));
   assert.ok(
     steps.filter(step => step.command.startsWith('agctx ')).length >= 5,
-    'the quick start shows its commands with their output'
+    '빠른 시작은 명령을 출력과 함께 보여 준다'
   );
 
   for (const step of steps) {
@@ -69,7 +69,7 @@ test('every command example in the quick start prints what the doc shows', t => 
     if (program === 'mkdir') {
       fs.mkdirSync(path.join(work, ...args));
     } else {
-      assert.equal(program, 'agctx', `the example runner does not know: ${step.command}`);
+      assert.equal(program, 'agctx', `예시 실행기가 모르는 명령: ${step.command}`);
       const result = spawnSync(process.execPath, [cli, ...args], { cwd: work, env, encoding: 'utf8' });
       output = result.stdout + result.stderr;
     }

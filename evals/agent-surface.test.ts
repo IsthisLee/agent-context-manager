@@ -51,7 +51,11 @@ test('every command declares an agent policy', () => {
 test('a command that changes anything is never left for the agent to start on its own', () => {
   for (const command of COMMANDS) {
     if (command.changes === 'none') continue;
-    assert.notEqual(agentPolicy(command), 'auto', `${command.id} changes ${command.changes}, so the agent must not start it unasked`);
+    assert.notEqual(
+      agentPolicy(command),
+      'auto',
+      `${command.id} changes ${command.changes}, so the agent must not start it unasked`
+    );
   }
 });
 
@@ -83,7 +87,11 @@ test('every command an agent may start has a scenario that leads to it', () => {
     const words = command.words.join(' ');
     if (!scenarios(USER_SKILL).includes(`agctx ${words}`)) missing.push(command.id);
   }
-  assert.deepEqual(missing, [], `these commands have no scenario in ${USER_SKILL}, so an agent has no reason to reach them`);
+  assert.deepEqual(
+    missing,
+    [],
+    `these commands have no scenario in ${USER_SKILL}, so an agent has no reason to reach them`
+  );
 });
 
 test('every command the user may ask for has a scenario in the author skill', () => {
@@ -93,5 +101,9 @@ test('every command the user may ask for has a scenario in the author skill', ()
     const words = command.words.join(' ');
     if (!scenarios(AUTHOR_SKILL).includes(`agctx ${words}`)) missing.push(command.id);
   }
-  assert.deepEqual(missing, [], `these commands have no scenario in ${AUTHOR_SKILL}, so an agent has no reason to reach them`);
+  assert.deepEqual(
+    missing,
+    [],
+    `these commands have no scenario in ${AUTHOR_SKILL}, so an agent has no reason to reach them`
+  );
 });

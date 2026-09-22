@@ -28,7 +28,9 @@
     "build": "node tools/build.ts",
     "prepack": "node tools/build.ts",
     "check:docs": "node tools/check-docs.ts",
-    "check": "pnpm run typecheck && pnpm run check:docs && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "pnpm run typecheck && pnpm run format:check && pnpm run check:docs && pnpm test",
     "check:release": "node tools/check-release.ts",
     "pack:check": "npm pack --dry-run",
     "audit": "pnpm audit --audit-level high",
@@ -61,6 +63,7 @@
   },
   "devDependencies": {
     "@types/node": "22.20.2",
+    "prettier": "3.9.8",
     "typescript": "7.0.2"
   }
 }

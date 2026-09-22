@@ -20,10 +20,16 @@ export function wholeRootPins(sources: readonly string[]): string[] {
  * it: a citation carries the same digest and fails the same way, so the pin
  * would only repeat it. Paths use `/` and are relative to the repository root.
  */
-export function unpinnedSources(sourceFiles: readonly string[], pins: readonly string[], citedFiles: readonly string[] = []): string[] {
+export function unpinnedSources(
+  sourceFiles: readonly string[],
+  pins: readonly string[],
+  citedFiles: readonly string[] = []
+): string[] {
   const covering = pins.map(trimSlash).filter(pin => !SOURCE_ROOTS.includes(pin));
   const cited = new Set(citedFiles);
-  return sourceFiles.filter(file => !cited.has(file) && !covering.some(pin => file === pin || file.startsWith(`${pin}/`)));
+  return sourceFiles.filter(
+    file => !cited.has(file) && !covering.some(pin => file === pin || file.startsWith(`${pin}/`))
+  );
 }
 
 /** The recorded-hash marker line of a document that pins sources. */
@@ -74,11 +80,14 @@ export function docSourceSections(content: string): DocSourceSection[] {
   const markers = [...content.matchAll(SOURCES_LIST)];
   return markers.map((marker, order) => {
     const from = marker.index ?? 0;
-    const to = order + 1 < markers.length ? markers[order + 1].index ?? content.length : content.length;
+    const to = order + 1 < markers.length ? (markers[order + 1].index ?? content.length) : content.length;
     const hash = content.slice(from, to).match(SOURCES_HASH);
     const headings = [...content.slice(0, from).matchAll(/^#{1,6}\s+(.+)$/gm)];
     return {
-      sources: marker[1].split(',').map(source => source.trim()).filter(Boolean),
+      sources: marker[1]
+        .split(',')
+        .map(source => source.trim())
+        .filter(Boolean),
       digest: hash ? hash[1] : null,
       heading: headings.length ? headings[headings.length - 1][1].trim() : '',
       index: from
@@ -91,7 +100,9 @@ const DIGEST_IN_LINE = /(agctx-doc-sources-sha256:\s*)(?:[0-9a-f]{64}|PENDING)|<
 
 /** The same line with every digest blanked, so two lines that differ only in a digest compare equal. */
 function withoutDigests(line: string): string {
-  return line.replace(DIGEST_IN_LINE, (_whole, prefix: string | undefined) => (prefix ? `${prefix}<digest>` : '<digest>'));
+  return line.replace(DIGEST_IN_LINE, (_whole, prefix: string | undefined) =>
+    prefix ? `${prefix}<digest>` : '<digest>'
+  );
 }
 
 /**
@@ -109,9 +120,12 @@ export function restampOnlyDocuments(diff: string): string[] {
   let removed: string[] = [];
   let added: string[] = [];
   const settle = () => {
-    const bare = file !== null && removed.length > 0 && removed.length === added.length
-      && removed.every((line, index) => withoutDigests(line) === withoutDigests(added[index]))
-      && removed.some((line, index) => line !== added[index]);
+    const bare =
+      file !== null &&
+      removed.length > 0 &&
+      removed.length === added.length &&
+      removed.every((line, index) => withoutDigests(line) === withoutDigests(added[index])) &&
+      removed.some((line, index) => line !== added[index]);
     if (bare && file !== null) found.push(file);
     file = null;
     removed = [];

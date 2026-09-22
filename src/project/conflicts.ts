@@ -75,5 +75,7 @@ export function relocateUserEdits(content: string, lines: readonly string[], kin
 }
 
 export function formatDiff(oldName: string, newName: string, oldText: string, newText: string): string {
-  return createTwoFilesPatch(oldName, newName, withTrailingNewline(oldText), withTrailingNewline(newText), '', '', { context: 3 });
+  return createTwoFilesPatch(oldName, newName, withTrailingNewline(oldText), withTrailingNewline(newText), '', '', {
+    context: 3
+  });
 }

@@ -33,7 +33,8 @@ export interface ProfileLink {
  * Why a linked profile cannot be used: the folder is gone, lost its profile.json, holds another profile's, or lost
  * the rules file its profile.json names; or the pointer itself cannot be read.
  */
-export type BrokenLinkReason = 'missing-folder' | 'missing-metadata' | 'invalid-metadata' | 'missing-rules' | 'invalid-link';
+export type BrokenLinkReason =
+  'missing-folder' | 'missing-metadata' | 'invalid-metadata' | 'missing-rules' | 'invalid-link';
 
 export interface BrokenLink {
   name: string;
@@ -55,23 +56,39 @@ export function isPointerFolder(dir: string): boolean {
 }
 
 export function isDirectory(target: string): boolean {
-  try { return fs.statSync(target).isDirectory(); } catch { return false; }
+  try {
+    return fs.statSync(target).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 /** Whether `a` and `b` name the same folder, as the file system sees it, letter case included. */
 export function sameFolder(a: string, b: string): boolean {
   if (path.resolve(a) === path.resolve(b)) return true;
-  try { return fs.realpathSync.native(a) === fs.realpathSync.native(b); } catch { return false; }
+  try {
+    return fs.realpathSync.native(a) === fs.realpathSync.native(b);
+  } catch {
+    return false;
+  }
 }
 
 /** The parsed content of a profile.json, or null when it cannot be read as JSON. */
 export function readMetadataFile(file: string): unknown {
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 /** Whether `target` is a file, following links: the rules file in a person's own folder may be one. */
 function isFile(target: string): boolean {
-  try { return fs.statSync(target).isFile(); } catch { return false; }
+  try {
+    return fs.statSync(target).isFile();
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -90,10 +107,20 @@ export function profileLink(name: string): ProfileLink | null {
   } catch {}
   const target = record?.path;
   if (record?.schemaVersion !== 1 || typeof target !== 'string' || !path.isAbsolute(target)) {
-    throw usageError('profile.link-invalid', _('error.profile.link-invalid', { name, file }), _('hint.profile.link-remove', { name }));
+    throw usageError(
+      'profile.link-invalid',
+      _('error.profile.link-invalid', { name, file }),
+      _('hint.profile.link-remove', { name })
+    );
   }
-  const instructions = typeof record.instructions === 'string' && isInstructionsPath(record.instructions) ? record.instructions : null;
-  return { path: target, broken: !isDirectory(target), scope: isScope(record.scope) ? record.scope : null, instructions };
+  const instructions =
+    typeof record.instructions === 'string' && isInstructionsPath(record.instructions) ? record.instructions : null;
+  return {
+    path: target,
+    broken: !isDirectory(target),
+    scope: isScope(record.scope) ? record.scope : null,
+    instructions
+  };
 }
 
 export interface ProfileLocation {
@@ -121,7 +148,8 @@ function inspectProfileFolder(dir: string, name: string): Pick<ProfileLocation, 
   const metadata = readMetadataFile(metadataPath);
   if (!isValidProfileMetadata(metadata, name)) return { dir, problem: 'invalid-metadata', metadata: null };
   const rules = instructionsFile(metadata);
-  if (!isInstructionsPath(rules) || !isFile(path.join(dir, ...rules.split('/')))) return { dir, problem: 'missing-rules', metadata };
+  if (!isInstructionsPath(rules) || !isFile(path.join(dir, ...rules.split('/'))))
+    return { dir, problem: 'missing-rules', metadata };
   return { dir, problem: null, metadata };
 }
 
@@ -137,17 +165,35 @@ export function profileLocation(name: string): ProfileLocation | null {
   if (osLink && !isDirectory(storeDir)) {
     // An operating system link made by hand before profile link existed, whose folder has since moved.
     let target = storeDir;
-    try { target = path.resolve(path.dirname(storeDir), fs.readlinkSync(storeDir)); } catch {}
+    try {
+      target = path.resolve(path.dirname(storeDir), fs.readlinkSync(storeDir));
+    } catch {}
     return { kind: 'symlink', dir: storeDir, link: target, pointer: null, problem: 'missing-folder', metadata: null };
   }
-  if (!isPointerFolder(storeDir)) return { kind: osLink ? 'symlink' : 'folder', link: null, pointer: null, ...inspectProfileFolder(storeDir, name) };
+  if (!isPointerFolder(storeDir))
+    return { kind: osLink ? 'symlink' : 'folder', link: null, pointer: null, ...inspectProfileFolder(storeDir, name) };
   let pointer: ProfileLink;
   try {
     pointer = profileLink(name) as ProfileLink;
   } catch {
-    return { kind: 'pointer', dir: storeDir, link: path.join(storeDir, LINK_FILE), pointer: null, problem: 'invalid-link', metadata: null };
+    return {
+      kind: 'pointer',
+      dir: storeDir,
+      link: path.join(storeDir, LINK_FILE),
+      pointer: null,
+      problem: 'invalid-link',
+      metadata: null
+    };
   }
-  if (pointer.broken) return { kind: 'pointer', dir: pointer.path, link: pointer.path, pointer, problem: 'missing-folder', metadata: null };
+  if (pointer.broken)
+    return {
+      kind: 'pointer',
+      dir: pointer.path,
+      link: pointer.path,
+      pointer,
+      problem: 'missing-folder',
+      metadata: null
+    };
   return { kind: 'pointer', link: pointer.path, pointer, ...inspectProfileFolder(pointer.path, name) };
 }
 
@@ -167,7 +213,9 @@ export function readStore(): StoreContents {
   for (const name of fs.readdirSync(home).sort()) {
     if (!isProfileName(name)) continue;
     let location: ProfileLocation | null = null;
-    try { location = profileLocation(name); } catch {}
+    try {
+      location = profileLocation(name);
+    } catch {}
     if (!location) continue;
     if (location.link) {
       if (location.problem) contents.brokenLinks.push({ name, path: location.link, reason: location.problem });
@@ -189,7 +237,10 @@ export function readStore(): StoreContents {
  */
 export function relinkCommand(name: string, pointer: ProfileLink | null, folder: string): string {
   return [
-    'agctx profile link', folder, '--name', name,
+    'agctx profile link',
+    folder,
+    '--name',
+    name,
     ...(pointer?.scope ? ['--scope', pointer.scope] : []),
     ...(pointer?.instructions ? ['--instructions', shellWord(pointer.instructions)] : [])
   ].join(' ');
@@ -204,7 +255,9 @@ export function refreshPointerRecord(name: string, pointer: ProfileLink, metadat
   const instructions = instructionsFile(metadata);
   if (pointer.scope === metadata.scope && pointer.instructions === instructions) return;
   const record = { schemaVersion: 1, path: pointer.path, scope: metadata.scope, instructions };
-  try { writeTextAtomic(path.join(profileHome(), name, LINK_FILE), JSON.stringify(record, null, 2) + '\n'); } catch {}
+  try {
+    writeTextAtomic(path.join(profileHome(), name, LINK_FILE), JSON.stringify(record, null, 2) + '\n');
+  } catch {}
 }
 
 /** What to run to bring back the broken link `name`, or null when it can be used. */
@@ -220,7 +273,12 @@ export function brokenLinkHint(name: string): string | null {
 /** Refuse a command that would move Git history or settings in the folder a linked profile points at. */
 export function assertNotLinked(name: string): void {
   const link = profileLink(name);
-  if (link) throw usageError('profile.linked-git', _('error.profile.linked-git', { name, path: link.path }), _('hint.profile.linked-git', { path: shellWord(link.path) }));
+  if (link)
+    throw usageError(
+      'profile.linked-git',
+      _('error.profile.linked-git', { name, path: link.path }),
+      _('hint.profile.linked-git', { path: shellWord(link.path) })
+    );
 }
 
 export function isScope(value: unknown): value is Scope {
@@ -234,23 +292,33 @@ export function isProfileName(name: string): boolean {
 
 export function validateProfileName(name: string | null | undefined): asserts name is string {
   if (!name || !isProfileName(name)) {
-    throw usageError('profile.invalid-name', _('error.profile.invalid-name', { name: name ?? '' }), _('hint.profile.name'));
+    throw usageError(
+      'profile.invalid-name',
+      _('error.profile.invalid-name', { name: name ?? '' }),
+      _('hint.profile.name')
+    );
   }
 }
 
-export function isValidProfileMetadata(metadata: unknown, expectedName: string | null = null): metadata is ProfileMetadata {
+export function isValidProfileMetadata(
+  metadata: unknown,
+  expectedName: string | null = null
+): metadata is ProfileMetadata {
   if (!metadata || typeof metadata !== 'object') return false;
   const record = metadata as Record<string, unknown>;
   // Version 2 is what an agctx that knows `instructions` requires of a profile.json naming one, so an
   // older agctx refuses it instead of silently applying the root AGENTS.md.
-  const version = record.schemaVersion === 1
-    ? record.instructions === undefined
-    : record.schemaVersion === 2 && (record.instructions === undefined || typeof record.instructions === 'string');
-  return version
-    && typeof record.name === 'string'
-    && (!expectedName || record.name === expectedName)
-    && PROFILE_NAME.test(record.name)
-    && isScope(record.scope);
+  const version =
+    record.schemaVersion === 1
+      ? record.instructions === undefined
+      : record.schemaVersion === 2 && (record.instructions === undefined || typeof record.instructions === 'string');
+  return (
+    version &&
+    typeof record.name === 'string' &&
+    (!expectedName || record.name === expectedName) &&
+    PROFILE_NAME.test(record.name) &&
+    isScope(record.scope)
+  );
 }
 
 /** The rules file profile.json names, relative to the profile folder. */
@@ -264,14 +332,22 @@ export function instructionsFile(metadata: ProfileMetadata): string {
  */
 export function isInstructionsPath(file: string): boolean {
   const parts = file.split('/');
-  return !file.includes('\\') && !path.isAbsolute(file) && !/^[a-z]:/i.test(file)
-    && parts.every(part => part !== '' && part !== '.' && part !== '..' && part.toLowerCase() !== '.git')
-    && /\.md$/i.test(file);
+  return (
+    !file.includes('\\') &&
+    !path.isAbsolute(file) &&
+    !/^[a-z]:/i.test(file) &&
+    parts.every(part => part !== '' && part !== '.' && part !== '..' && part.toLowerCase() !== '.git') &&
+    /\.md$/i.test(file)
+  );
 }
 
 export function assertInstructionsPath(file: string, source: string): void {
   if (!isInstructionsPath(file)) {
-    throw usageError('profile.instructions-path', _('error.profile.instructions-path', { source, file }), _('hint.profile.instructions'));
+    throw usageError(
+      'profile.instructions-path',
+      _('error.profile.instructions-path', { source, file }),
+      _('hint.profile.instructions')
+    );
   }
 }
 
@@ -285,7 +361,11 @@ export function regularFileInside(dir: string, file: string): string | null {
   for (const [index, part] of parts.entries()) {
     current = path.join(current, part);
     let stat: fs.Stats;
-    try { stat = fs.lstatSync(current); } catch { return null; }
+    try {
+      stat = fs.lstatSync(current);
+    } catch {
+      return null;
+    }
     if (stat.isSymbolicLink() || (index === parts.length - 1 ? !stat.isFile() : !stat.isDirectory())) return null;
   }
   return current;
@@ -300,15 +380,36 @@ export function readProfile(name: string): Profile {
   // A pointer that cannot be read says so itself, with how to link it again or remove it.
   if (problem === 'invalid-link') profileLink(name);
   if (problem === 'missing-folder') {
-    throw usageError('profile.link-broken', _('error.profile.link-broken', { name, path: link ?? profileDir }), _('hint.profile.link-broken', { name, command: relinkCommand(name, location.pointer, '<new path>') }));
+    throw usageError(
+      'profile.link-broken',
+      _('error.profile.link-broken', { name, path: link ?? profileDir }),
+      _('hint.profile.link-broken', { name, command: relinkCommand(name, location.pointer, '<new path>') })
+    );
   }
   if (problem === 'missing-metadata') {
     if (!link) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
-    throw usageError('profile.link-metadata-missing', _('error.profile.link-metadata-missing', { name, path: profileDir }), _('hint.profile.link-metadata-missing', { name, path: shellWord(profileDir), command: relinkCommand(name, location.pointer, shellWord(profileDir)) }));
+    throw usageError(
+      'profile.link-metadata-missing',
+      _('error.profile.link-metadata-missing', { name, path: profileDir }),
+      _('hint.profile.link-metadata-missing', {
+        name,
+        path: shellWord(profileDir),
+        command: relinkCommand(name, location.pointer, shellWord(profileDir))
+      })
+    );
   }
   if (!metadata) {
-    if (!link) throw usageError('profile.invalid-metadata', _('error.profile.invalid-metadata', { name, file: metadataPath }), null);
-    throw usageError('profile.link-metadata-other', _('error.profile.link-metadata-other', { name, path: profileDir, file: metadataPath }), _('hint.profile.link-metadata-other', { name, file: metadataPath }));
+    if (!link)
+      throw usageError(
+        'profile.invalid-metadata',
+        _('error.profile.invalid-metadata', { name, file: metadataPath }),
+        null
+      );
+    throw usageError(
+      'profile.link-metadata-other',
+      _('error.profile.link-metadata-other', { name, path: profileDir, file: metadataPath }),
+      _('hint.profile.link-metadata-other', { name, file: metadataPath })
+    );
   }
   const instructions = instructionsFile(metadata);
   assertInstructionsPath(instructions, metadataPath);
@@ -316,9 +417,19 @@ export function readProfile(name: string): Profile {
   // remote content is checked for links by clone and pull before it gets here.
   const instructionsPath = path.join(profileDir, ...instructions.split('/'));
   if (problem === 'missing-rules') {
-    if (link) throw usageError('profile.link-rules-missing', _('error.profile.link-rules-missing', { name, path: profileDir, file: instructions }), _('hint.profile.link-rules-missing', { file: metadataPath }));
-    if (metadata.instructions === undefined) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
-    throw usageError('profile.instructions-missing', _('error.profile.instructions-missing', { source: metadataPath, file: instructions }), _('hint.profile.instructions'));
+    if (link)
+      throw usageError(
+        'profile.link-rules-missing',
+        _('error.profile.link-rules-missing', { name, path: profileDir, file: instructions }),
+        _('hint.profile.link-rules-missing', { file: metadataPath })
+      );
+    if (metadata.instructions === undefined)
+      throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+    throw usageError(
+      'profile.instructions-missing',
+      _('error.profile.instructions-missing', { source: metadataPath, file: instructions }),
+      _('hint.profile.instructions')
+    );
   }
   if (location.pointer) refreshPointerRecord(name, location.pointer, metadata);
   return { profileDir, metadataPath, instructions, instructionsPath, metadata, link };
@@ -326,13 +437,22 @@ export function readProfile(name: string): Profile {
 
 export function createProfile(name: string, scope: string = 'personal'): ProfileMetadata {
   validateProfileName(name);
-  if (!isScope(scope)) throw usageError('profile.invalid-scope', _('error.profile.invalid-scope', { scope, scopes: SCOPES.join(', ') }), null);
+  if (!isScope(scope))
+    throw usageError(
+      'profile.invalid-scope',
+      _('error.profile.invalid-scope', { scope, scopes: SCOPES.join(', ') }),
+      null
+    );
   const profileDir = path.join(profileHome(), name);
-  if (fs.existsSync(profileDir)) throw usageError('profile.exists', _('error.profile.exists', { name }), _('hint.profile.view', { name }));
+  if (fs.existsSync(profileDir))
+    throw usageError('profile.exists', _('error.profile.exists', { name }), _('hint.profile.view', { name }));
   fs.mkdirSync(profileDir, { recursive: true });
   const metadata: ProfileMetadata = { schemaVersion: 1, name, scope, createdAt: new Date().toISOString() };
   writeTextAtomic(path.join(profileDir, PROFILE_METADATA_FILE), JSON.stringify(metadata, null, 2) + '\n');
-  const profileTemplate = fs.readFileSync(path.join(PACKAGE_ROOT, getLocale() === 'ko' ? 'templates/profile/AGENTS.ko.md' : 'templates/profile/AGENTS.md'), 'utf8');
+  const profileTemplate = fs.readFileSync(
+    path.join(PACKAGE_ROOT, getLocale() === 'ko' ? 'templates/profile/AGENTS.ko.md' : 'templates/profile/AGENTS.md'),
+    'utf8'
+  );
   writeTextAtomic(path.join(profileDir, DEFAULT_INSTRUCTIONS), profileTemplate.replaceAll('{{PROFILE_NAME}}', name));
   say(_('create.done', { name, scope }));
   return metadata;
@@ -347,7 +467,8 @@ export function removeProfile(name: string): void {
   // Only the store folder goes: for a link that is the pointer, never the folder it points at. A store folder
   // that is not a valid profile is removable too, since link and clone tell people to clear the name this way.
   const storeDir = path.join(profileHome(), name);
-  if (!fs.existsSync(storeDir) && !isSymbolicLink(storeDir)) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+  if (!fs.existsSync(storeDir) && !isSymbolicLink(storeDir))
+    throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
   fs.rmSync(storeDir, { recursive: true, force: true });
   say(_('remove.done', { name }));
 }
@@ -363,9 +484,13 @@ export function viewProfile(name: string): { name: string; scope: Scope; instruc
 export function selectProfile(selection: string | undefined, profiles: ListedProfile[] = getProfiles()): string {
   if (!profiles.length) throw usageError('profile.none', _('error.profile.none'), _('hint.profile.create'));
   const index = Number.parseInt(selection ?? '', 10);
-  const selected = Number.isInteger(index) && index >= 1
-    ? profiles[index - 1]
-    : profiles.find(profile => profile.name === selection);
-  if (!selected) throw usageError('profile.not-found', _('error.profile.not-found', { name: selection ?? '' }), _('hint.profile.list'));
+  const selected =
+    Number.isInteger(index) && index >= 1 ? profiles[index - 1] : profiles.find(profile => profile.name === selection);
+  if (!selected)
+    throw usageError(
+      'profile.not-found',
+      _('error.profile.not-found', { name: selection ?? '' }),
+      _('hint.profile.list')
+    );
   return selected.name;
 }

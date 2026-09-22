@@ -76,35 +76,309 @@ const yes: OptionSpec = { name: 'yes' };
 const profileFilter: OptionSpec = { name: 'profile', value: '<name>' };
 
 export const COMMANDS: readonly CommandSpec[] = [
-  { id: 'profile.create', words: ['profile', 'create'], args: ['[<name>]'], options: [{ name: 'scope', value: '<scope>' }], exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'main.create.label', profileMenu: 'list.create.label' },
-  { id: 'profile.list', words: ['profile', 'list'], args: [], options: [{ name: 'scope', value: '<scope>' }], exitCodes: common, surface: 'profile', changes: 'none', tui: 'main.manage.label', profileMenu: 'list.intro' },
-  { id: 'profile.view', words: ['profile', 'view'], args: ['<name>'], options: [], exitCodes: common, surface: 'profile', changes: 'none', tui: 'actions.view.label', profileMenu: 'actions.view.label' },
-  { id: 'profile.setup', words: ['profile', 'setup'], args: ['[<name>]'], options: ['workflow', 'context', 'tdd', 'review', 'verification', 'instructions', 'docs', 'security', 'untrusted', 'language'].map(name => ({ name, value: '<on|off>' })), exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'main.setup.label', profileMenu: 'actions.setup.label' },
-  { id: 'profile.apply', words: ['profile', 'apply'], args: ['<name>', '[<project>]'], options: [dryRun, { name: 'pin' }, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.apply.label', profileMenu: 'actions.apply.label' },
-  { id: 'profile.sync', words: ['profile', 'sync'], args: ['[<project>]'], options: [dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.sync.label', profileMenu: 'actions.sync.label', misuseHint: 'hint.sync.no-switch' },
-  { id: 'profile.resolve', words: ['profile', 'resolve'], args: ['[<project>]'], options: [dryRun, { name: 'discard' }, { name: 'edit' }, yes], exitCodes: [...common, EXIT.conflict, EXIT.unavailable], surface: 'profile', changes: 'repository', tui: 'actions.resolve.label', profileMenu: 'actions.resolve.label' },
-  { id: 'profile.remove', words: ['profile', 'remove'], args: ['[<name>]'], options: [yes], exitCodes: common, surface: 'profile', changes: 'profile-store', tui: 'actions.remove.label', profileMenu: 'actions.remove.label', agent: 'never' },
-  { id: 'profile.clone', words: ['profile', 'clone'], args: ['<git-url>'], options: [{ name: 'branch', value: '<branch>' }], exitCodes: [...common, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'main.clone.label', profileMenu: 'list.clone.label' },
-  { id: 'profile.link', words: ['profile', 'link'], args: ['[<path>]'], options: [{ name: 'name', value: '<name>' }, { name: 'scope', value: '<scope>' }, { name: 'instructions', value: '<file>' }, dryRun, yes], exitCodes: common, surface: 'profile', changes: 'repository', tui: 'main.link.label', profileMenu: 'list.link.label' },
-  { id: 'profile.status', words: ['profile', 'status'], args: ['[<name>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.unavailable], surface: 'profile', changes: 'none', tui: 'actions.status.label', profileMenu: 'actions.status.label' },
-  { id: 'profile.pull', words: ['profile', 'pull'], args: ['<name>'], options: [dryRun], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.pull.label', profileMenu: 'actions.pull.label' },
-  { id: 'profile.push', words: ['profile', 'push'], args: ['<name>'], options: [dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.unavailable], surface: 'profile', changes: 'remote', tui: 'actions.push.label', profileMenu: 'actions.push.label' },
-  { id: 'profile.connect', words: ['profile', 'connect'], args: ['<name>', '<git-url>'], options: [{ name: 'branch', value: '<branch>' }], exitCodes: [...common, EXIT.unavailable], surface: 'profile', changes: 'profile-store', tui: 'actions.connect.label', profileMenu: 'actions.connect.label' },
-  { id: 'check', words: ['check'], args: ['[<project>]'], options: [{ name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'project.menu.check.label' },
-  { id: 'explain', words: ['explain'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }], exitCodes: [...common, EXIT.deliveryMissing], surface: 'repository', changes: 'none', tui: 'project.menu.explain.label' },
-  { id: 'verify', words: ['verify'], args: ['[<path>]'], options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }, { name: 'probe' }, yes], exitCodes: [...common, EXIT.deliveryMissing, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'project.menu.verify.label' },
-  { id: 'repos.list', words: ['repos', 'list'], args: [], options: [profileFilter, { name: 'prune' }], exitCodes: common, surface: 'repository', changes: 'profile-store', tui: 'repos.menu.list.label' },
-  { id: 'repos.status', words: ['repos', 'status'], args: [], options: [profileFilter, { name: 'refresh' }], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'none', tui: 'repos.menu.status.label' },
-  { id: 'repos.sync', words: ['repos', 'sync'], args: [], options: [profileFilter, dryRun, yes], exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'repository', tui: 'repos.menu.sync.label' },
-  { id: 'repos.pr', words: ['repos', 'pr'], args: [], options: [profileFilter, { name: 'targets', value: '<file>' }, { name: 'base', value: '<branch>' }, { name: 'draft' }, { name: 'message', value: '<text>' }, dryRun, yes], exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable], surface: 'repository', changes: 'remote', tui: 'repos.menu.pr.label' },
-  { id: 'install', words: ['install'], args: [], options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, { name: 'force' }, dryRun], exitCodes: common, surface: 'global', changes: 'agent-skills', tui: 'main.install.label', agent: 'never' },
-  { id: 'uninstall', words: ['uninstall'], args: [], options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, dryRun], exitCodes: common, surface: 'global', changes: 'agent-skills', tui: 'main.uninstall.label', agent: 'never' },
-  { id: 'config.lang', words: ['config', 'lang'], args: ['<en|ko>'], options: [], exitCodes: common, surface: 'global', changes: 'none', tui: 'main.lang.label', agent: 'never' },
-  { id: 'help', words: ['help'], args: ['[<command>]'], options: [], exitCodes: [EXIT.ok, EXIT.usage], surface: 'global', changes: 'none', tui: 'main.help.label', agent: 'never' }
+  {
+    id: 'profile.create',
+    words: ['profile', 'create'],
+    args: ['[<name>]'],
+    options: [{ name: 'scope', value: '<scope>' }],
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'main.create.label',
+    profileMenu: 'list.create.label'
+  },
+  {
+    id: 'profile.list',
+    words: ['profile', 'list'],
+    args: [],
+    options: [{ name: 'scope', value: '<scope>' }],
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'none',
+    tui: 'main.manage.label',
+    profileMenu: 'list.intro'
+  },
+  {
+    id: 'profile.view',
+    words: ['profile', 'view'],
+    args: ['<name>'],
+    options: [],
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'none',
+    tui: 'actions.view.label',
+    profileMenu: 'actions.view.label'
+  },
+  {
+    id: 'profile.setup',
+    words: ['profile', 'setup'],
+    args: ['[<name>]'],
+    options: [
+      'workflow',
+      'context',
+      'tdd',
+      'review',
+      'verification',
+      'instructions',
+      'docs',
+      'security',
+      'untrusted',
+      'language'
+    ].map(name => ({ name, value: '<on|off>' })),
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'main.setup.label',
+    profileMenu: 'actions.setup.label'
+  },
+  {
+    id: 'profile.apply',
+    words: ['profile', 'apply'],
+    args: ['<name>', '[<project>]'],
+    options: [dryRun, { name: 'pin' }, yes],
+    exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'repository',
+    tui: 'actions.apply.label',
+    profileMenu: 'actions.apply.label'
+  },
+  {
+    id: 'profile.sync',
+    words: ['profile', 'sync'],
+    args: ['[<project>]'],
+    options: [dryRun, yes],
+    exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'repository',
+    tui: 'actions.sync.label',
+    profileMenu: 'actions.sync.label',
+    misuseHint: 'hint.sync.no-switch'
+  },
+  {
+    id: 'profile.resolve',
+    words: ['profile', 'resolve'],
+    args: ['[<project>]'],
+    options: [dryRun, { name: 'discard' }, { name: 'edit' }, yes],
+    exitCodes: [...common, EXIT.conflict, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'repository',
+    tui: 'actions.resolve.label',
+    profileMenu: 'actions.resolve.label'
+  },
+  {
+    id: 'profile.remove',
+    words: ['profile', 'remove'],
+    args: ['[<name>]'],
+    options: [yes],
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'actions.remove.label',
+    profileMenu: 'actions.remove.label',
+    agent: 'never'
+  },
+  {
+    id: 'profile.clone',
+    words: ['profile', 'clone'],
+    args: ['<git-url>'],
+    options: [{ name: 'branch', value: '<branch>' }],
+    exitCodes: [...common, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'main.clone.label',
+    profileMenu: 'list.clone.label'
+  },
+  {
+    id: 'profile.link',
+    words: ['profile', 'link'],
+    args: ['[<path>]'],
+    options: [
+      { name: 'name', value: '<name>' },
+      { name: 'scope', value: '<scope>' },
+      { name: 'instructions', value: '<file>' },
+      dryRun,
+      yes
+    ],
+    exitCodes: common,
+    surface: 'profile',
+    changes: 'repository',
+    tui: 'main.link.label',
+    profileMenu: 'list.link.label'
+  },
+  {
+    id: 'profile.status',
+    words: ['profile', 'status'],
+    args: ['[<name>]'],
+    options: [{ name: 'refresh' }],
+    exitCodes: [...common, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'none',
+    tui: 'actions.status.label',
+    profileMenu: 'actions.status.label'
+  },
+  {
+    id: 'profile.pull',
+    words: ['profile', 'pull'],
+    args: ['<name>'],
+    options: [dryRun],
+    exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'actions.pull.label',
+    profileMenu: 'actions.pull.label'
+  },
+  {
+    id: 'profile.push',
+    words: ['profile', 'push'],
+    args: ['<name>'],
+    options: [dryRun, yes],
+    exitCodes: [...common, EXIT.conflict, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'remote',
+    tui: 'actions.push.label',
+    profileMenu: 'actions.push.label'
+  },
+  {
+    id: 'profile.connect',
+    words: ['profile', 'connect'],
+    args: ['<name>', '<git-url>'],
+    options: [{ name: 'branch', value: '<branch>' }],
+    exitCodes: [...common, EXIT.unavailable],
+    surface: 'profile',
+    changes: 'profile-store',
+    tui: 'actions.connect.label',
+    profileMenu: 'actions.connect.label'
+  },
+  {
+    id: 'check',
+    words: ['check'],
+    args: ['[<project>]'],
+    options: [{ name: 'refresh' }],
+    exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'repository',
+    changes: 'none',
+    tui: 'project.menu.check.label'
+  },
+  {
+    id: 'explain',
+    words: ['explain'],
+    args: ['[<path>]'],
+    options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }],
+    exitCodes: [...common, EXIT.deliveryMissing],
+    surface: 'repository',
+    changes: 'none',
+    tui: 'project.menu.explain.label'
+  },
+  {
+    id: 'verify',
+    words: ['verify'],
+    args: ['[<path>]'],
+    options: [{ name: 'agent', value: '<codex|claude|antigravity|all>' }, { name: 'probe' }, yes],
+    exitCodes: [...common, EXIT.deliveryMissing, EXIT.unavailable],
+    surface: 'repository',
+    changes: 'none',
+    tui: 'project.menu.verify.label'
+  },
+  {
+    id: 'repos.list',
+    words: ['repos', 'list'],
+    args: [],
+    options: [profileFilter, { name: 'prune' }],
+    exitCodes: common,
+    surface: 'repository',
+    changes: 'profile-store',
+    tui: 'repos.menu.list.label'
+  },
+  {
+    id: 'repos.status',
+    words: ['repos', 'status'],
+    args: [],
+    options: [profileFilter, { name: 'refresh' }],
+    exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'repository',
+    changes: 'none',
+    tui: 'repos.menu.status.label'
+  },
+  {
+    id: 'repos.sync',
+    words: ['repos', 'sync'],
+    args: [],
+    options: [profileFilter, dryRun, yes],
+    exitCodes: [...common, EXIT.behind, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'repository',
+    changes: 'repository',
+    tui: 'repos.menu.sync.label'
+  },
+  {
+    id: 'repos.pr',
+    words: ['repos', 'pr'],
+    args: [],
+    options: [
+      profileFilter,
+      { name: 'targets', value: '<file>' },
+      { name: 'base', value: '<branch>' },
+      { name: 'draft' },
+      { name: 'message', value: '<text>' },
+      dryRun,
+      yes
+    ],
+    exitCodes: [...common, EXIT.conflict, EXIT.hiddenCharacters, EXIT.unavailable],
+    surface: 'repository',
+    changes: 'remote',
+    tui: 'repos.menu.pr.label'
+  },
+  {
+    id: 'install',
+    words: ['install'],
+    args: [],
+    options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, { name: 'force' }, dryRun],
+    exitCodes: common,
+    surface: 'global',
+    changes: 'agent-skills',
+    tui: 'main.install.label',
+    agent: 'never'
+  },
+  {
+    id: 'uninstall',
+    words: ['uninstall'],
+    args: [],
+    options: [{ name: 'agent', value: '<claude|codex|antigravity|all>' }, dryRun],
+    exitCodes: common,
+    surface: 'global',
+    changes: 'agent-skills',
+    tui: 'main.uninstall.label',
+    agent: 'never'
+  },
+  {
+    id: 'config.lang',
+    words: ['config', 'lang'],
+    args: ['<en|ko>'],
+    options: [],
+    exitCodes: common,
+    surface: 'global',
+    changes: 'none',
+    tui: 'main.lang.label',
+    agent: 'never'
+  },
+  {
+    id: 'help',
+    words: ['help'],
+    args: ['[<command>]'],
+    options: [],
+    exitCodes: [EXIT.ok, EXIT.usage],
+    surface: 'global',
+    changes: 'none',
+    tui: 'main.help.label',
+    agent: 'never'
+  }
 ];
 
 /** Options every command accepts. */
-export const GLOBAL_OPTIONS: readonly OptionSpec[] = [{ name: 'json' }, { name: 'lang', value: '<en|ko>' }, { name: 'help' }];
+export const GLOBAL_OPTIONS: readonly OptionSpec[] = [
+  { name: 'json' },
+  { name: 'lang', value: '<en|ko>' },
+  { name: 'help' }
+];
 
 export function usageLine(command: CommandSpec): string {
   const options = command.options.map(option => `[--${option.name}${option.value ? ` ${option.value}` : ''}]`);
@@ -115,16 +389,22 @@ export function usageLine(command: CommandSpec): string {
 export function findCommand(words: readonly string[]): CommandSpec | null {
   let best: CommandSpec | null = null;
   for (const command of COMMANDS) {
-    if (command.words.every((word, index) => words[index] === word) && (!best || command.words.length > best.words.length)) best = command;
+    if (
+      command.words.every((word, index) => words[index] === word) &&
+      (!best || command.words.length > best.words.length)
+    )
+      best = command;
   }
   return best;
 }
 
 /** Commands whose name is close to what was typed, for "did you mean" hints. */
 export function suggestCommands(words: readonly string[]): CommandSpec[] {
-  const typed = words.filter(word => !word.startsWith('-')).slice(0, 2).join(' ');
-  return COMMANDS
-    .map(command => ({ command, distance: editDistance(typed, command.words.join(' ')) }))
+  const typed = words
+    .filter(word => !word.startsWith('-'))
+    .slice(0, 2)
+    .join(' ');
+  return COMMANDS.map(command => ({ command, distance: editDistance(typed, command.words.join(' ')) }))
     .filter(entry => entry.distance <= Math.max(2, Math.floor(typed.length / 4)))
     .sort((a, b) => a.distance - b.distance)
     .map(entry => entry.command)

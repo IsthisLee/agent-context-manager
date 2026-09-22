@@ -49,8 +49,16 @@ function usedKeys(): Set<string> {
 
 test('every message key the CLI looks up exists in the English and Korean catalogs', () => {
   const used = [...usedKeys()];
-  assert.deepEqual(used.filter(key => !(key in en)), [], 'missing from messages-en.ts');
-  assert.deepEqual(used.filter(key => !(key in ko)), [], 'missing from messages-ko.ts');
+  assert.deepEqual(
+    used.filter(key => !(key in en)),
+    [],
+    'missing from messages-en.ts'
+  );
+  assert.deepEqual(
+    used.filter(key => !(key in ko)),
+    [],
+    'missing from messages-ko.ts'
+  );
 });
 
 test('the English and Korean catalogs define the same keys', () => {

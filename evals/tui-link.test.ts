@@ -6,7 +6,17 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { checkLinkFolder, MAX_FOLDERS, planLink, ruleFileChoices } from '../src/profile/link.ts';
-import { brokenLinkNote, linkNameDefault, linkOutro, linkRuleOptions, menuFor, OTHER_RULES_FILE, removeChoices, removeNote, statusRefreshPrompt } from '../src/tui/profile.ts';
+import {
+  brokenLinkNote,
+  linkNameDefault,
+  linkOutro,
+  linkRuleOptions,
+  menuFor,
+  OTHER_RULES_FILE,
+  removeChoices,
+  removeNote,
+  statusRefreshPrompt
+} from '../src/tui/profile.ts';
 import { gitIn } from './support/git-workspace.ts';
 
 /**
@@ -58,7 +68,11 @@ test('the TUI offers the rules file link would take, the other AGENTS.md files, 
   assert.equal(linkRuleOptions(nested).initial, 'templates/AGENTS.md');
   assert.deepEqual(values(many), ['backend/AGENTS.md', 'frontend/AGENTS.md', OTHER_RULES_FILE]);
   assert.equal(linkRuleOptions(many).initial, undefined, 'several candidates leave the choice to the person');
-  assert.deepEqual(values(none), [OTHER_RULES_FILE], 'a folder without AGENTS.md still gets a way to name its rules file');
+  assert.deepEqual(
+    values(none),
+    [OTHER_RULES_FILE],
+    'a folder without AGENTS.md still gets a way to name its rules file'
+  );
 });
 
 test('the TUI ends a link with what happened: linked, already linked, declined, or failed', () => {
@@ -80,7 +94,12 @@ test('a broken link picked in the TUI list opens its own menu, and removal lists
   assert.equal(menuFor('healthy-rules'), 'profile');
   assert.equal(menuFor('moved-rules'), 'broken-link');
   assert.equal(menuFor('emptied-rules'), 'broken-link');
-  assert.deepEqual(removeChoices().map(choice => choice.value).sort(), ['emptied-rules', 'healthy-rules', 'moved-rules']);
+  assert.deepEqual(
+    removeChoices()
+      .map(choice => choice.value)
+      .sort(),
+    ['emptied-rules', 'healthy-rules', 'moved-rules']
+  );
 });
 
 test('the TUI does not offer to fetch before showing the status of a linked profile', t => {
@@ -98,10 +117,16 @@ test('link never moves a link to another folder, working or broken, and names ho
   const second = folder('b/rules', { 'AGENTS.md': '# Second\n' });
   agctx('profile', 'link', first, '--yes');
 
-  assert.throws(() => planLink(second), (error: Error) => error.message.includes(first));
+  assert.throws(
+    () => planLink(second),
+    (error: Error) => error.message.includes(first)
+  );
 
   fs.renameSync(first, path.join(root, 'a', 'moved'));
-  assert.throws(() => planLink(second), (error: { hint?: string }) => Boolean(error.hint?.includes('profile remove rules --yes')));
+  assert.throws(
+    () => planLink(second),
+    (error: { hint?: string }) => Boolean(error.hint?.includes('profile remove rules --yes'))
+  );
 });
 
 test('the TUI rules file list leaves out hidden, dependency, and build folders and very deep files', t => {
@@ -114,7 +139,10 @@ test('the TUI rules file list leaves out hidden, dependency, and build folders a
     'a/b/c/d/e/AGENTS.md': '# Deep\n'
   });
 
-  assert.deepEqual(linkRuleOptions(dir).options.map(option => option.value), ['templates/AGENTS.md', OTHER_RULES_FILE]);
+  assert.deepEqual(
+    linkRuleOptions(dir).options.map(option => option.value),
+    ['templates/AGENTS.md', OTHER_RULES_FILE]
+  );
 });
 
 test('a link whose pointer cannot be read is removed before its name is linked again', t => {
@@ -123,7 +151,11 @@ test('a link whose pointer cannot be read is removed before its name is linked a
   agctx('profile', 'link', dir, '--name', 'company', '--yes');
   fs.writeFileSync(path.join(root, 'home', 'profiles', 'company', 'link.json'), 'not json\n');
 
-  assert.throws(() => planLink(dir, { name: 'company' }), (error: { code?: string; hint?: string }) => error.code === 'link.broken-exists' && Boolean(error.hint?.includes('profile remove company --yes')));
+  assert.throws(
+    () => planLink(dir, { name: 'company' }),
+    (error: { code?: string; hint?: string }) =>
+      error.code === 'link.broken-exists' && Boolean(error.hint?.includes('profile remove company --yes'))
+  );
 });
 
 test('the TUI shows a broken link with the commands that bring it back', t => {
@@ -201,10 +233,16 @@ test('the TUI checks a folder before searching it for rules files', t => {
 
 test('the TUI rules file list leaves out an AGENTS.md that agctx wrote when it applied a profile', t => {
   const { folder } = workspace(t);
-  const dir = folder('applied-rules', { 'AGENTS.md': '# Project\n<!-- agctx:managed:end -->\n', 'templates/AGENTS.md': '# Rules\n' });
+  const dir = folder('applied-rules', {
+    'AGENTS.md': '# Project\n<!-- agctx:managed:end -->\n',
+    'templates/AGENTS.md': '# Rules\n'
+  });
 
   const rules = linkRuleOptions(dir);
 
-  assert.deepEqual(rules.options.map(option => option.value), ['templates/AGENTS.md', OTHER_RULES_FILE]);
+  assert.deepEqual(
+    rules.options.map(option => option.value),
+    ['templates/AGENTS.md', OTHER_RULES_FILE]
+  );
   assert.equal(rules.initial, 'templates/AGENTS.md');
 });

@@ -27,7 +27,10 @@ function runCommand(command: string, args: string[], options: RunOptions = {}): 
   if (!isWindows) return execFileSync(command, args, { ...options, encoding: 'utf8' });
   const commandToken = command.includes(' ') ? quoteWindowsArg(command) : command;
   const commandLine = [commandToken, ...args.map(quoteWindowsArg)].join(' ');
-  return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], { ...options, encoding: 'utf8' });
+  return execFileSync(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', commandLine], {
+    ...options,
+    encoding: 'utf8'
+  });
 }
 
 try {
@@ -57,7 +60,9 @@ try {
   runCommand(agctx, ['install'], { env: { ...env, HOME: userHome, USERPROFILE: userHome }, stdio: 'ignore' });
   assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx', 'SKILL.md')));
   assert(fs.existsSync(path.join(userHome, '.claude', 'skills', 'agctx-author', '.agctx-install.json')));
-  console.log('Installed package smoke test passed (help, profile setup, project apply, sync, and agent skill install).');
+  console.log(
+    'Installed package smoke test passed (help, profile setup, project apply, sync, and agent skill install).'
+  );
 } finally {
   fs.rmSync(smokeRoot, { recursive: true, force: true });
 }

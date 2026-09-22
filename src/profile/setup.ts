@@ -41,12 +41,16 @@ function storedLevel(value: unknown): GuidanceLevel | null {
   return isGuidanceLevel(value) ? value : null;
 }
 
-export function setupProfile(name: string, values: readonly string[]): { profile: string; settings: Record<GuidanceKey, GuidanceLevel> } {
+export function setupProfile(
+  name: string,
+  values: readonly string[]
+): { profile: string; settings: Record<GuidanceKey, GuidanceLevel> } {
   const profile = readProfile(name);
   const settings = {} as Record<GuidanceKey, GuidanceLevel>;
   for (const key of GUIDANCE_KEYS) {
     const value = parseFlag(values, key, storedLevel(profile.metadata.settings?.[key]) || guidanceDefaults[key]);
-    if (!isGuidanceLevel(value)) throw usageError('setup.invalid-level', _('error.setup.invalid-level', { option: `--${key}` }), null);
+    if (!isGuidanceLevel(value))
+      throw usageError('setup.invalid-level', _('error.setup.invalid-level', { option: `--${key}` }), null);
     settings[key] = value;
   }
   const sections = guidanceSections(getLocale());
@@ -60,8 +64,14 @@ export function setupProfile(name: string, values: readonly string[]): { profile
   const block = `${start}\n\n${body}\n\n${end}`;
   const current = toLf(fs.readFileSync(profile.instructionsPath, 'utf8'));
   const pattern = new RegExp(`${start}[\\s\\S]*?${end}`, 'm');
-  writeTextAtomic(profile.instructionsPath, (pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`));
-  writeTextAtomic(profile.metadataPath, JSON.stringify({ ...profile.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n');
+  writeTextAtomic(
+    profile.instructionsPath,
+    pattern.test(current) ? current.replace(pattern, block) : `${current.trimEnd()}\n\n${block}\n`
+  );
+  writeTextAtomic(
+    profile.metadataPath,
+    JSON.stringify({ ...profile.metadata, settings, updatedAt: new Date().toISOString() }, null, 2) + '\n'
+  );
   say(_('setup.done', { name }));
   return { profile: name, settings };
 }

@@ -6,7 +6,12 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { extractAgentsManagedDocument, formatterNormalized, formatterUnstableLines, hashAgentsManagedDocument } from '../src/project/analyzer.ts';
+import {
+  extractAgentsManagedDocument,
+  formatterNormalized,
+  formatterUnstableLines,
+  hashAgentsManagedDocument
+} from '../src/project/analyzer.ts';
 import { renderProfileAgents } from '../src/profile/apply.ts';
 import { SUPPORTED_LOCALES, setLocale, t } from '../src/i18n/index.ts';
 
@@ -35,9 +40,19 @@ test('formatterUnstableLines names what a Markdown formatter would rewrite', () 
 });
 
 test('every template agctx writes survives a formatter unchanged', () => {
-  const templates = ['templates/CLAUDE.md', 'templates/CLAUDE.link.md', 'templates/antigravity-rules/agctx.md', 'templates/profile/AGENTS.md', 'templates/profile/AGENTS.ko.md'];
+  const templates = [
+    'templates/CLAUDE.md',
+    'templates/CLAUDE.link.md',
+    'templates/antigravity-rules/agctx.md',
+    'templates/profile/AGENTS.md',
+    'templates/profile/AGENTS.ko.md'
+  ];
   for (const template of templates) {
-    assert.deepEqual(reasons(read(template)), [], `${template} would be rewritten on save, which turns into a conflict`);
+    assert.deepEqual(
+      reasons(read(template)),
+      [],
+      `${template} would be rewritten on save, which turns into a conflict`
+    );
   }
 });
 
@@ -46,7 +61,11 @@ test('the project context agctx appends to AGENTS.md survives a formatter unchan
     setLocale(locale);
     const rendered = renderProfileAgents('# 프로필 지침\n\n- 규칙 하나.\n', 'isthis', 'my-app');
     assert.deepEqual(reasons(rendered), [], `the ${locale} rendering would be rewritten on save`);
-    assert.deepEqual(reasons(t(locale, 'scaffold.extBody')), [], `the ${locale} extension body would be rewritten on save`);
+    assert.deepEqual(
+      reasons(t(locale, 'scaffold.extBody')),
+      [],
+      `the ${locale} extension body would be rewritten on save`
+    );
   }
 });
 
@@ -56,11 +75,12 @@ function applied(t: TestContext) {
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   t.after(() => fs.rmSync(home, { recursive: true, force: true }));
-  const run = (args: string[]) => spawnSync(process.execPath, [path.join(repoRoot, 'src', 'agctx.ts'), ...args], {
-    cwd: repoRoot,
-    env: { ...process.env, AGCTX_HOME: home },
-    encoding: 'utf8'
-  });
+  const run = (args: string[]) =>
+    spawnSync(process.execPath, [path.join(repoRoot, 'src', 'agctx.ts'), ...args], {
+      cwd: repoRoot,
+      env: { ...process.env, AGCTX_HOME: home },
+      encoding: 'utf8'
+    });
   const ok = (args: string[]) => {
     const result = run(args);
     assert.equal(result.status, 0, `${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
@@ -83,11 +103,17 @@ test('a managed area that already holds what agctx would write is not a conflict
   assert.ok(region.includes('- **Project:**'), 'the applied managed area carries the project line');
 
   const config = JSON.parse(fixture.read('agctx.project.json'));
-  config.managedHashes['AGENTS.md'] = createHash('sha256').update(region.replace('- **Project:**', '* **Project:**')).digest('hex');
+  config.managedHashes['AGENTS.md'] = createHash('sha256')
+    .update(region.replace('- **Project:**', '* **Project:**'))
+    .digest('hex');
   fixture.write('agctx.project.json', `${JSON.stringify(config, null, 2)}\n`);
 
   const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
-  assert.equal(result.status, 0, `sync stopped on a managed area it was about to write anyway\n${result.stdout}\n${result.stderr}`);
+  assert.equal(
+    result.status,
+    0,
+    `sync stopped on a managed area it was about to write anyway\n${result.stdout}\n${result.stderr}`
+  );
   assert.doesNotMatch(result.stdout, /conflict/);
 });
 
@@ -100,11 +126,20 @@ test('a managed area holding something else is still a conflict', t => {
 });
 
 test('a formatter changing one bullet marker in the managed area changes its hash', () => {
-  const document = '# 지침\n\n## Project context\n\n- **Project:** my-app\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- 내 규칙.\n';
+  const document =
+    '# 지침\n\n## Project context\n\n- **Project:** my-app\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- 내 규칙.\n';
   const formatted = document.replace('- **Project:**', '* **Project:**');
 
-  assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument(formatted), 'one byte inside the managed area is enough to report a conflict');
-  assert.deepEqual(reasons(formatted), [{ line: 5, reason: 'bullet marker is not -' }].map(found => `line ${found.line}: ${found.reason}`), 'so the check names the line before it ever reaches a project');
+  assert.notEqual(
+    hashAgentsManagedDocument(document),
+    hashAgentsManagedDocument(formatted),
+    'one byte inside the managed area is enough to report a conflict'
+  );
+  assert.deepEqual(
+    reasons(formatted),
+    [{ line: 5, reason: 'bullet marker is not -' }].map(found => `line ${found.line}: ${found.reason}`),
+    'so the check names the line before it ever reaches a project'
+  );
 });
 
 test('an area only a formatter touched is not a conflict, even when agctx would write something else', t => {
@@ -113,7 +148,10 @@ test('an area only a formatter touched is not a conflict, even when agctx would 
   // the area for other reasons still has nothing to lose.
   const fixture = applied(t);
   const before = fixture.read('AGENTS.md');
-  fixture.write('AGENTS.md', before.replace('- **Project:**', '* **Project:**').replace(/\n## Project context\n/, '\n## Project context  \n'));
+  fixture.write(
+    'AGENTS.md',
+    before.replace('- **Project:**', '* **Project:**').replace(/\n## Project context\n/, '\n## Project context  \n')
+  );
 
   const result = fixture.run(['profile', 'sync', '--dry-run', fixture.project]);
   assert.equal(result.status, 0, `a reformatted managed area stopped the sync\n${result.stdout}\n${result.stderr}`);
@@ -131,22 +169,54 @@ test('a word changed inside the managed area is still a conflict', t => {
 test('formatterNormalized flattens what a formatter changes and nothing else', () => {
   assert.equal(formatterNormalized('* 하나\n+ 둘\n'), '- 하나\n- 둘');
   assert.equal(formatterNormalized('본문   \n'), '본문');
-  assert.equal(formatterNormalized('가\n\n\n\n나\n'), '가\n나', 'blank lines between blocks are the formatter\'s business');
+  assert.equal(
+    formatterNormalized('가\n\n\n\n나\n'),
+    '가\n나',
+    "blank lines between blocks are the formatter's business"
+  );
   assert.equal(formatterNormalized('## 가\r\n\r\n나\r\n'), '## 가\n나');
   assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('- 둘'), 'words are never touched');
-  assert.notEqual(formatterNormalized('- 하나'), formatterNormalized('하나'), 'a bullet is not the same as a paragraph');
+  assert.notEqual(
+    formatterNormalized('- 하나'),
+    formatterNormalized('하나'),
+    'a bullet is not the same as a paragraph'
+  );
 });
 
 test('formatterNormalized joins a paragraph a formatter rewrapped, because Markdown reads it the same', () => {
   assert.equal(formatterNormalized('한 문단이\n두 줄로 접혔다\n'), formatterNormalized('한 문단이 두 줄로 접혔다\n'));
   assert.equal(formatterNormalized('- 목록 항목이\n  접혔다\n'), formatterNormalized('- 목록 항목이 접혔다\n'));
 
-  assert.notEqual(formatterNormalized('가\n나\n'), formatterNormalized('가\n\n나\n'), 'a blank line still separates two blocks');
-  assert.notEqual(formatterNormalized('- 가\n- 나\n'), formatterNormalized('- 가 - 나\n'), 'two list items are not one');
-  assert.notEqual(formatterNormalized('## 제목\n본문\n'), formatterNormalized('## 제목 본문\n'), 'a heading is its own block');
-  assert.notEqual(formatterNormalized('| 가 |\n| 나 |\n'), formatterNormalized('| 가 | | 나 |\n'), 'table rows stay rows');
-  assert.notEqual(formatterNormalized('문단에 낱말을 더했다\n'), formatterNormalized('문단에 낱말을 크게 더했다\n'), 'words are never touched');
-  assert.equal(formatterNormalized('```sh\necho 하나\necho 둘\n```\n'), '```sh\necho 하나\necho 둘\n```', 'fenced code keeps its line breaks');
+  assert.notEqual(
+    formatterNormalized('가\n나\n'),
+    formatterNormalized('가\n\n나\n'),
+    'a blank line still separates two blocks'
+  );
+  assert.notEqual(
+    formatterNormalized('- 가\n- 나\n'),
+    formatterNormalized('- 가 - 나\n'),
+    'two list items are not one'
+  );
+  assert.notEqual(
+    formatterNormalized('## 제목\n본문\n'),
+    formatterNormalized('## 제목 본문\n'),
+    'a heading is its own block'
+  );
+  assert.notEqual(
+    formatterNormalized('| 가 |\n| 나 |\n'),
+    formatterNormalized('| 가 | | 나 |\n'),
+    'table rows stay rows'
+  );
+  assert.notEqual(
+    formatterNormalized('문단에 낱말을 더했다\n'),
+    formatterNormalized('문단에 낱말을 크게 더했다\n'),
+    'words are never touched'
+  );
+  assert.equal(
+    formatterNormalized('```sh\necho 하나\necho 둘\n```\n'),
+    '```sh\necho 하나\necho 둘\n```',
+    'fenced code keeps its line breaks'
+  );
 });
 
 test('a managed area a formatter rewrapped is not a conflict', t => {
@@ -155,7 +225,12 @@ test('a managed area a formatter rewrapped is not a conflict', t => {
   // would copy the whole area into the extension section as "added lines".
   const fixture = applied(t);
   const before = fixture.read('AGENTS.md');
-  const rewrapped = before.split('\n').map(line => (line.length > 40 && !line.startsWith('#') && !line.startsWith('<') ? line.replace(/(.{1,40}) /g, '$1\n') : line)).join('\n');
+  const rewrapped = before
+    .split('\n')
+    .map(line =>
+      line.length > 40 && !line.startsWith('#') && !line.startsWith('<') ? line.replace(/(.{1,40}) /g, '$1\n') : line
+    )
+    .join('\n');
   assert.notEqual(rewrapped, before, 'the fixture actually rewrapped something');
   fixture.write('AGENTS.md', rewrapped);
 

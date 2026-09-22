@@ -26,7 +26,12 @@ try {
   fs.mkdirSync(project);
   const env = { ...process.env, HOME: scratch, USERPROFILE: scratch, DISABLE_TELEMETRY: '1', DO_NOT_TRACK: '1' };
   const run = (args: string[]) => {
-    const result = spawnSync(npx, ['-y', SKILLS_CLI, ...args], { cwd: project, env, encoding: 'utf8', shell: process.platform === 'win32' });
+    const result = spawnSync(npx, ['-y', SKILLS_CLI, ...args], {
+      cwd: project,
+      env,
+      encoding: 'utf8',
+      shell: process.platform === 'win32'
+    });
     assert.equal(result.status, 0, `npx ${SKILLS_CLI} ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
     return result.stdout + result.stderr;
   };
@@ -39,12 +44,27 @@ try {
 
   run(['add', source, '-a', 'claude-code', '-a', 'codex', '-a', 'antigravity', '-y']);
   for (const name of ['agctx', 'agctx-author']) {
-    assert.ok(fs.existsSync(path.join(project, '.agents', 'skills', name, 'SKILL.md')), `.agents/skills/${name} is installed for Codex and Antigravity`);
-    assert.ok(fs.existsSync(path.join(project, '.claude', 'skills', name, 'SKILL.md')), `.claude/skills/${name} is installed for Claude Code`);
+    assert.ok(
+      fs.existsSync(path.join(project, '.agents', 'skills', name, 'SKILL.md')),
+      `.agents/skills/${name} is installed for Codex and Antigravity`
+    );
+    assert.ok(
+      fs.existsSync(path.join(project, '.claude', 'skills', name, 'SKILL.md')),
+      `.claude/skills/${name} is installed for Claude Code`
+    );
   }
-  assert.match(fs.readFileSync(path.join(project, '.agents', 'skills', 'agctx-author', 'SKILL.md'), 'utf8'), /disable-model-invocation: true/);
-  assert.ok(fs.existsSync(path.join(project, '.agents', 'skills', 'agctx-author', 'agents', 'openai.yaml')), 'the Codex invocation policy is installed with the skill');
-  assert.ok(!fs.existsSync(path.join(project, '.agents', 'skills', 'repo-docs')), 'the contributor skill is not installed');
+  assert.match(
+    fs.readFileSync(path.join(project, '.agents', 'skills', 'agctx-author', 'SKILL.md'), 'utf8'),
+    /disable-model-invocation: true/
+  );
+  assert.ok(
+    fs.existsSync(path.join(project, '.agents', 'skills', 'agctx-author', 'agents', 'openai.yaml')),
+    'the Codex invocation policy is installed with the skill'
+  );
+  assert.ok(
+    !fs.existsSync(path.join(project, '.agents', 'skills', 'repo-docs')),
+    'the contributor skill is not installed'
+  );
   process.stdout.write(`Skills smoke test passed with ${SKILLS_CLI}.\n`);
 } finally {
   fs.rmSync(scratch, { recursive: true, force: true });

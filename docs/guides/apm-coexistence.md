@@ -20,7 +20,7 @@ Microsoft APM으로 지침 패키지를 설치하는 저장소에서도 agctx를
 ## 두 도구가 나눠 쓰는 영역
 
 <!-- agctx-doc-sources: src/project/apm.ts -->
-<!-- agctx-doc-sources-sha256: 7aaf1248319c5b090a300074e7c24fea812bd7cb057edb86f9294d5b12de11b6 -->
+<!-- agctx-doc-sources-sha256: dcbaadd93b1608f08a21c494a0a40e301d1402d851895ee2b35207eecbfc4967 -->
 
 ```mermaid
 flowchart TB
@@ -80,7 +80,7 @@ Next: Set compilation.agents_md.mode: managed_section in apm.yml, move AGENTS.md
 ## 같은 규칙이 두 번 들어가는지 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5730cd71f4dd514c49c2f245edbaf19b51303e406870be00620237591df20671 -->
+<!-- agctx-doc-sources-sha256: 49c1615f6969b17cb74c2f2e54ef51c084056c8dabe581723fda432ed16a820e -->
 
 `apm install`은 같은 규칙을 `.claude/rules/`에도 넣으므로 Claude Code에는 두 경로로 들어간다. 에이전트마다 읽는 지침 파일을 보여 주는 `agctx explain`이 이런 중복을 경고한다. 아래는 APM 지침 파일에 규칙 세 줄을 두고 `apm install`과 `apm compile`을 실행한 저장소에서 실제로 실행한 결과다.
 

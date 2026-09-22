@@ -12,7 +12,11 @@ const read = (file: string) => fs.readFileSync(path.join(repoRoot, file), 'utf8'
 test('skill command lists match the command registry', () => {
   for (const skill of SKILLS) {
     const content = read(skill.file);
-    assert.equal(content, renderSkill(content, skill.policies), `${skill.file} is out of date; run node tools/generate-skills.ts`);
+    assert.equal(
+      content,
+      renderSkill(content, skill.policies),
+      `${skill.file} is out of date; run node tools/generate-skills.ts`
+    );
   }
 });
 // Which command belongs in which skill is the agent surface contract, checked
@@ -23,8 +27,16 @@ test('skill command lists match the command registry', () => {
 test('the diagnosing skill may start on its own, and the publishing skill only when called by name', () => {
   assert.match(read('skills/agctx/SKILL.md'), /^---\nname: agctx\ndescription: .+\n---\n/);
   assert.doesNotMatch(read('skills/agctx/SKILL.md'), /disable-model-invocation/);
-  assert.match(read('skills/agctx-author/SKILL.md'), /^---\nname: agctx-author\ndescription: .+\ndisable-model-invocation: true\n---\n/, 'Claude Code does not start it on its own');
-  assert.match(read('skills/agctx-author/agents/openai.yaml'), /^policy:\n {2}allow_implicit_invocation: false$/m, 'Codex does not start it on its own');
+  assert.match(
+    read('skills/agctx-author/SKILL.md'),
+    /^---\nname: agctx-author\ndescription: .+\ndisable-model-invocation: true\n---\n/,
+    'Claude Code does not start it on its own'
+  );
+  assert.match(
+    read('skills/agctx-author/agents/openai.yaml'),
+    /^policy:\n {2}allow_implicit_invocation: false$/m,
+    'Codex does not start it on its own'
+  );
 });
 
 test('the publishing skill tells agents to show a dry run and wait for approval before --yes', () => {
@@ -40,9 +52,16 @@ test('the diagnosing skill offers nothing that writes', () => {
   const user = read('skills/agctx/SKILL.md');
   for (const command of COMMANDS.filter(entry => entry.changes !== 'none')) {
     const usage = `\`agctx ${command.words.join(' ')}`;
-    assert.ok(!user.includes(usage), `${command.id} changes ${command.changes} and must not sit in a skill the model can start`);
+    assert.ok(
+      !user.includes(usage),
+      `${command.id} changes ${command.changes} and must not sit in a skill the model can start`
+    );
   }
-  assert.doesNotMatch(user.split('<!-- agctx:commands:start -->')[0], /--dry-run/, 'the prose never sends the agent to a writing command');
+  assert.doesNotMatch(
+    user.split('<!-- agctx:commands:start -->')[0],
+    /--dry-run/,
+    'the prose never sends the agent to a writing command'
+  );
 });
 // `verify --probe --yes` stays: the probe only reads, and the flag is there so
 // the run does not start without the user paying for agent CLI calls.

@@ -33,11 +33,17 @@ export function readRepos(): RepoEntry[] {
     throw usageError('repos.invalid', _('error.repos.invalid', { file }), _('hint.repos.invalid', { file }));
   }
   const repos = parsed && typeof parsed === 'object' ? (parsed as { repos?: unknown }).repos : null;
-  if (!Array.isArray(repos)) throw usageError('repos.invalid', _('error.repos.invalid', { file }), _('hint.repos.invalid', { file }));
+  if (!Array.isArray(repos))
+    throw usageError('repos.invalid', _('error.repos.invalid', { file }), _('hint.repos.invalid', { file }));
   return repos
     .filter((entry): entry is Record<string, unknown> => Boolean(entry) && typeof entry === 'object')
     .filter(entry => typeof entry.path === 'string' && typeof entry.profile === 'string')
-    .map(entry => ({ path: entry.path as string, profile: entry.profile as string, pinned: entry.pinned === true, updatedAt: typeof entry.updatedAt === 'string' ? entry.updatedAt : '' }));
+    .map(entry => ({
+      path: entry.path as string,
+      profile: entry.profile as string,
+      pinned: entry.pinned === true,
+      updatedAt: typeof entry.updatedAt === 'string' ? entry.updatedAt : ''
+    }));
 }
 
 function writeRepos(repos: readonly RepoEntry[]): void {

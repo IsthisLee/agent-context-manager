@@ -74,5 +74,9 @@ export function writeTextAtomic(target: string, content: string): void {
 
 /** Whether `target` is itself a symbolic link, without following it. */
 export function isSymbolicLink(target: string): boolean {
-  try { return fs.lstatSync(target).isSymbolicLink(); } catch { return false; }
+  try {
+    return fs.lstatSync(target).isSymbolicLink();
+  } catch {
+    return false;
+  }
 }

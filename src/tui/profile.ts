@@ -9,7 +9,24 @@ import { _, getLocale, guidanceDescriptions, guidanceLabels, levelOptions, scope
 import { isJsonMode, say, type CommandOutcome } from '../commands/output.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { GUIDANCE_KEYS, guidanceDefaults, setupProfile } from '../profile/setup.ts';
-import { brokenLinkHint, createProfile, getProfiles, isInstructionsPath, isProfileName, isScope, profileLocation, readProfile, readStore, regularFileInside, removeProfile, SCOPES, selectProfile, validateProfileName, type BrokenLink, type StoreContents } from '../profile/store.ts';
+import {
+  brokenLinkHint,
+  createProfile,
+  getProfiles,
+  isInstructionsPath,
+  isProfileName,
+  isScope,
+  profileLocation,
+  readProfile,
+  readStore,
+  regularFileInside,
+  removeProfile,
+  SCOPES,
+  selectProfile,
+  validateProfileName,
+  type BrokenLink,
+  type StoreContents
+} from '../profile/store.ts';
 import { checkLinkFolder, ruleFileChoices, suggestedName } from '../profile/link.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
@@ -30,12 +47,25 @@ export async function runTuiStep(step: () => Promise<void>): Promise<void> {
  * Actions on one selected profile, in registry order. A profile command that
  * has a profile-menu entry appears here, so the menu cannot miss a command.
  */
-export const PROFILE_MENU_COMMANDS = COMMANDS.filter(command => command.surface === 'profile' && command.profileMenu && !['profile.create', 'profile.list', 'profile.clone', 'profile.link'].includes(command.id));
+export const PROFILE_MENU_COMMANDS = COMMANDS.filter(
+  command =>
+    command.surface === 'profile' &&
+    command.profileMenu &&
+    !['profile.create', 'profile.list', 'profile.clone', 'profile.link'].includes(command.id)
+);
 
 export async function createProfileTui(): Promise<void> {
   if (!process.stdin.isTTY) {
-    const [name, scope = 'personal'] = fs.readFileSync(0, 'utf8').split(/\r?\n/).map(value => value.trim());
-    if (!name) throw usageError('argument.missing', _('error.argument.missing', { usage: 'agctx profile create <name> [--scope <scope>]' }), _('hint.command.options', { command: 'profile create' }));
+    const [name, scope = 'personal'] = fs
+      .readFileSync(0, 'utf8')
+      .split(/\r?\n/)
+      .map(value => value.trim());
+    if (!name)
+      throw usageError(
+        'argument.missing',
+        _('error.argument.missing', { usage: 'agctx profile create <name> [--scope <scope>]' }),
+        _('hint.command.options', { command: 'profile create' })
+      );
     createProfile(name, scope || 'personal');
     return;
   }
@@ -63,9 +93,14 @@ export async function createProfileTui(): Promise<void> {
 }
 
 export async function cloneProfileTui(): Promise<void> {
-  if (!process.stdin.isTTY) throw usageError('tui.required', _('error.tui.required', { command: 'profile clone' }), _('hint.tui.clone'));
+  if (!process.stdin.isTTY)
+    throw usageError('tui.required', _('error.tui.required', { command: 'profile clone' }), _('hint.tui.clone'));
   intro(_('clone.intro'));
-  const url = await text({ message: _('clone.url.message'), placeholder: 'git@github.com:acme/agent-profile.git', validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid')) });
+  const url = await text({
+    message: _('clone.url.message'),
+    placeholder: 'git@github.com:acme/agent-profile.git',
+    validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid'))
+  });
   if (cancelled(url)) return cancel(_('clone.cancel'));
   const branch = await text({ message: _('clone.branch.message') });
   if (cancelled(branch)) return cancel(_('clone.cancel'));
@@ -85,7 +120,10 @@ export function linkRuleOptions(dir: string): { options: { value: string; label:
   const { detected, candidates } = ruleFileChoices(dir);
   const ordered = detected ? [detected, ...candidates.filter(file => file !== detected)] : candidates;
   return {
-    options: [...ordered.map(file => ({ value: file, label: file })), { value: OTHER_RULES_FILE, label: _('link.rules.other') }],
+    options: [
+      ...ordered.map(file => ({ value: file, label: file })),
+      { value: OTHER_RULES_FILE, label: _('link.rules.other') }
+    ],
     ...(detected ? { initial: detected } : {})
   };
 }
@@ -109,7 +147,8 @@ export function linkNameDefault(dir: string): string {
  * before writing, and the TUI ends with what actually happened.
  */
 export async function linkProfileTui(): Promise<void> {
-  if (!process.stdin.isTTY) throw usageError('tui.required', _('error.tui.required', { command: 'profile link' }), _('hint.tui.link'));
+  if (!process.stdin.isTTY)
+    throw usageError('tui.required', _('error.tui.required', { command: 'profile link' }), _('hint.tui.link'));
   intro(_('link.intro'));
   const chosen = await projectPathTui(_('link.path.message'));
   if (!chosen) return cancel(_('link.cancel'));
@@ -121,7 +160,11 @@ export async function linkProfileTui(): Promise<void> {
     const rules = linkRuleOptions(dir);
     let instructions: string | symbol = OTHER_RULES_FILE;
     if (rules.options.length > 1) {
-      instructions = await select<string>({ message: _('link.rules.message'), options: rules.options, ...(rules.initial ? { initialValue: rules.initial } : {}) });
+      instructions = await select<string>({
+        message: _('link.rules.message'),
+        options: rules.options,
+        ...(rules.initial ? { initialValue: rules.initial } : {})
+      });
       if (cancelled(instructions)) return cancel(_('link.cancel'));
     }
     if (instructions === OTHER_RULES_FILE) {
@@ -164,7 +207,10 @@ function brokenLabel(link: BrokenLink): string {
  * Which menu a profile picked in the TUI list opens: its actions, or the removal a broken link allows. The list
  * passes the broken links it already read.
  */
-export function menuFor(name: string, broken: readonly BrokenLink[] = readStore().brokenLinks): 'profile' | 'broken-link' {
+export function menuFor(
+  name: string,
+  broken: readonly BrokenLink[] = readStore().brokenLinks
+): 'profile' | 'broken-link' {
   return broken.some(link => link.name === name) ? 'broken-link' : 'profile';
 }
 
@@ -191,9 +237,17 @@ async function brokenLinkTui(name: string): Promise<void> {
 export function removeChoices(): { value: string; label: string; hint: string }[] {
   const store = readStore();
   return [
-    ...store.profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('remove.select.hint') })),
+    ...store.profiles.map(profile => ({
+      value: profile.name,
+      label: `${profile.scope} · ${profile.name}`,
+      hint: _('remove.select.hint')
+    })),
     ...store.brokenLinks.map(link => ({ value: link.name, label: brokenLabel(link), hint: _('remove.select.hint') })),
-    ...store.unreadable.map(name => ({ value: name, label: _('remove.unreadable', { name }), hint: _('remove.select.hint') }))
+    ...store.unreadable.map(name => ({
+      value: name,
+      label: _('remove.unreadable', { name }),
+      hint: _('remove.select.hint')
+    }))
   ];
 }
 
@@ -215,8 +269,16 @@ export function statusRefreshPrompt(name: string): { ask: boolean } {
   return { ask: !profileLocation(name)?.link };
 }
 
-export async function listProfiles(scopeFilter: string | null = null, store: StoreContents = readStore()): Promise<void> {
-  if (scopeFilter !== null && !isScope(scopeFilter)) throw usageError('profile.invalid-scope', _('error.profile.invalid-scope', { scope: scopeFilter, scopes: SCOPES.join(', ') }), null);
+export async function listProfiles(
+  scopeFilter: string | null = null,
+  store: StoreContents = readStore()
+): Promise<void> {
+  if (scopeFilter !== null && !isScope(scopeFilter))
+    throw usageError(
+      'profile.invalid-scope',
+      _('error.profile.invalid-scope', { scope: scopeFilter, scopes: SCOPES.join(', ') }),
+      null
+    );
   let profiles = store.profiles;
   if (scopeFilter) profiles = profiles.filter(profile => profile.scope === scopeFilter);
   const broken = scopeFilter ? [] : store.brokenLinks;
@@ -238,10 +300,15 @@ export async function listProfiles(scopeFilter: string | null = null, store: Sto
         message: _('list.scope.message'),
         options: [
           { value: '__all__', label: _('list.scope.all'), hint: _('list.scope.allHint', { n: profiles.length }) },
-          ...scopeOptions(getLocale()).filter(option => profiles.some(profile => profile.scope === option.value)).map(option => ({
-            ...option,
-            hint: _('list.scope.hint', { n: profiles.filter(profile => profile.scope === option.value).length, hint: option.hint })
-          }))
+          ...scopeOptions(getLocale())
+            .filter(option => profiles.some(profile => profile.scope === option.value))
+            .map(option => ({
+              ...option,
+              hint: _('list.scope.hint', {
+                n: profiles.filter(profile => profile.scope === option.value).length,
+                hint: option.hint
+              })
+            }))
         ]
       });
       if (cancelled(selectedScope)) return cancel(_('list.cancel'));
@@ -354,7 +421,11 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
     await runFromTui('profile.push', [name], {});
   },
   'profile.connect': async name => {
-    const url = await text({ message: _('connect.url.message'), placeholder: 'git@github.com:acme/agent-profile.git', validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid')) });
+    const url = await text({
+      message: _('connect.url.message'),
+      placeholder: 'git@github.com:acme/agent-profile.git',
+      validate: value => ((value ?? '').trim() ? undefined : _('clone.url.invalid'))
+    });
     if (cancelled(url)) return cancel(_('actions.project.cancel'));
     const branch = await text({ message: _('connect.branch.message') });
     if (cancelled(branch)) return cancel(_('actions.project.cancel'));
@@ -365,7 +436,11 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
 export async function profileActions(name: string): Promise<void> {
   const action = await select<string>({
     message: _('actions.message', { name }),
-    options: PROFILE_MENU_COMMANDS.map(command => ({ value: command.id, label: _(command.profileMenu as string), hint: _(`${(command.profileMenu as string).replace(/\.label$/, '')}.hint`) }))
+    options: PROFILE_MENU_COMMANDS.map(command => ({
+      value: command.id,
+      label: _(command.profileMenu as string),
+      hint: _(`${(command.profileMenu as string).replace(/\.label$/, '')}.hint`)
+    }))
   });
   if (cancelled(action)) return cancel(_('list.cancel'));
   await runTuiStep(() => MENU_ACTIONS[action](name));
@@ -386,7 +461,7 @@ async function withConflictRecovery(target: string, step: () => Promise<unknown>
 
 /** Preview the conflicts of a project, then resolve them the way the user picks. */
 export async function resolveProjectTui(target: string | null = null): Promise<void> {
-  const project = target || await projectPathTui(_('resolve.path'));
+  const project = target || (await projectPathTui(_('resolve.path')));
   if (!project) return cancel(_('actions.project.cancel'));
   let preview: { conflicts: number } | null = null;
   try {
@@ -405,12 +480,21 @@ export async function resolveProjectTui(target: string | null = null): Promise<v
     ]
   });
   if (cancelled(mode)) return cancel(_('actions.project.cancel'));
-  await resolveProject(project, { dryRun: false, discard: mode === 'discard', edit: mode === 'edit' }, async () => true);
+  await resolveProject(
+    project,
+    { dryRun: false, discard: mode === 'discard', edit: mode === 'edit' },
+    async () => true
+  );
   outro(_('resolve.outro'));
 }
 
 export async function removeProfileTui(name: string | null = null): Promise<void> {
-  if (!canPrompt()) throw usageError('confirm.required', _('error.confirm.required'), _('hint.confirm.yes', { command: `agctx profile remove ${name ?? '<name>'} --yes` }));
+  if (!canPrompt())
+    throw usageError(
+      'confirm.required',
+      _('error.confirm.required'),
+      _('hint.confirm.yes', { command: `agctx profile remove ${name ?? '<name>'} --yes` })
+    );
   intro(_('remove.intro'));
   if (!name) {
     const choices = removeChoices();
@@ -419,7 +503,8 @@ export async function removeProfileTui(name: string | null = null): Promise<void
     if (cancelled(selected)) return cancel(_('remove.cancel'));
     name = selected;
   }
-  if (!profileLocation(name)) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
+  if (!profileLocation(name))
+    throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
   note(removeNote(name), _('remove.note.title'));
   const approved = await confirm({ message: _('remove.confirm'), initialValue: false });
   if (cancelled(approved) || !approved) return cancel(_('remove.cancel'));
@@ -429,7 +514,10 @@ export async function removeProfileTui(name: string | null = null): Promise<void
 
 export async function setupProfileTui(name: string | null = null): Promise<void> {
   if (!process.stdin.isTTY) {
-    const answers = fs.readFileSync(0, 'utf8').split(/\r?\n/).map(value => value.trim());
+    const answers = fs
+      .readFileSync(0, 'utf8')
+      .split(/\r?\n/)
+      .map(value => value.trim());
     if (!name) name = selectProfile(answers.shift());
     const profile = readProfile(name);
     const values: string[] = [];
@@ -448,7 +536,11 @@ export async function setupProfileTui(name: string | null = null): Promise<void>
     if (!profiles.length) throw usageError('profile.none', _('error.profile.none'), _('hint.profile.create'));
     const selected = await select<string>({
       message: _('setup.select'),
-      options: profiles.map(profile => ({ value: profile.name, label: `${profile.scope} · ${profile.name}`, hint: _('setup.select.hint') }))
+      options: profiles.map(profile => ({
+        value: profile.name,
+        label: `${profile.scope} · ${profile.name}`,
+        hint: _('setup.select.hint')
+      }))
     });
     if (cancelled(selected)) return cancel(_('setup.cancel'));
     name = selected;
@@ -465,9 +557,7 @@ export async function setupProfileTui(name: string | null = null): Promise<void>
     if (cancelled(value)) return cancel(_('setup.cancel'));
     values.push(`--${key}`, value);
   }
-  const summary = GUIDANCE_KEYS
-    .map(key => `${labels[key]}: ${values[values.indexOf(`--${key}`) + 1]}`)
-    .join('\n');
+  const summary = GUIDANCE_KEYS.map(key => `${labels[key]}: ${values[values.indexOf(`--${key}`) + 1]}`).join('\n');
   note(summary, _('setup.note.title', { name }));
   const approved = await confirm({ message: _('setup.confirm'), initialValue: true });
   if (cancelled(approved) || !approved) return cancel(_('setup.cancel'));

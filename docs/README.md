@@ -133,6 +133,7 @@
   - [ADR 0036: profile.json이 프로필의 규칙 파일을 가리킨다](adr/0036-profile-json-names-rules-file.md)
   - [ADR 0037: 이미 있는 규칙 저장소 폴더를 포인터로 보관함에 잇는다](adr/0037-link-existing-folder-as-profile.md)
   - [ADR 0038: 에이전트 스킬을 CLI 패키지에 넣고 agctx install로 설치](adr/0038-install-agent-skills-from-cli-package.md)
+  - [ADR 0039: 코드·JSON·YAML의 서식을 Prettier로 맞추고 Markdown은 뺀다](adr/0039-format-code-with-prettier.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

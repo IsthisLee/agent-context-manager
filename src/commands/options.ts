@@ -31,13 +31,24 @@ export function checkArguments(command: CommandSpec, tokens: readonly string[]):
     const spec = known.get(name);
     if (!spec) {
       const close = [...known.keys()].filter(candidate => candidate.startsWith(name.slice(0, 3)));
-      throw usageError('option.unknown', _('error.option.unknown', { option: token, command: `agctx ${command.words.join(' ')}` }),
-        command.misuseHint ? _(command.misuseHint) : close.length ? _('hint.option.suggest', { options: close.map(option => `--${option}`).join(', ') }) : _('hint.command.options', { command: command.words.join(' ') }));
+      throw usageError(
+        'option.unknown',
+        _('error.option.unknown', { option: token, command: `agctx ${command.words.join(' ')}` }),
+        command.misuseHint
+          ? _(command.misuseHint)
+          : close.length
+            ? _('hint.option.suggest', { options: close.map(option => `--${option}`).join(', ') })
+            : _('hint.command.options', { command: command.words.join(' ') })
+      );
     }
     if (spec.value) {
       const value = inlineValue ?? tokens[index + 1];
       if (value === undefined || (inlineValue === undefined && value.startsWith('--'))) {
-        throw usageError('option.missing-value', _('error.option.missing-value', { option: `--${name}`, value: spec.value }), _('hint.command.options', { command: command.words.join(' ') }));
+        throw usageError(
+          'option.missing-value',
+          _('error.option.missing-value', { option: `--${name}`, value: spec.value }),
+          _('hint.command.options', { command: command.words.join(' ') })
+        );
       }
       options[name] = value;
       if (inlineValue === undefined) index += 1;
@@ -46,7 +57,14 @@ export function checkArguments(command: CommandSpec, tokens: readonly string[]):
     }
   }
   if (positional.length > command.args.length) {
-    throw usageError('argument.extra', _('error.argument.extra', { values: positional.slice(command.args.length).join(' '), command: `agctx ${command.words.join(' ')}` }), command.misuseHint ? _(command.misuseHint) : _('hint.command.options', { command: command.words.join(' ') }));
+    throw usageError(
+      'argument.extra',
+      _('error.argument.extra', {
+        values: positional.slice(command.args.length).join(' '),
+        command: `agctx ${command.words.join(' ')}`
+      }),
+      command.misuseHint ? _(command.misuseHint) : _('hint.command.options', { command: command.words.join(' ') })
+    );
   }
   return { positional, options, raw: [...tokens] };
 }

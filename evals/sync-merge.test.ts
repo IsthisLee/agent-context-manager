@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { extractAgentsManagedDocument, extractManagedDocument, hashAgentsManagedDocument, mergeAgentsMd, mergeManagedDocument } from '../src/project/analyzer.ts';
+import {
+  extractAgentsManagedDocument,
+  extractManagedDocument,
+  hashAgentsManagedDocument,
+  mergeAgentsMd,
+  mergeManagedDocument
+} from '../src/project/analyzer.ts';
 import { MANAGED_END } from '../src/project/conflicts.ts';
 import { renderProfileAgents } from '../src/profile/apply.ts';
 import { _ } from '../src/i18n/index.ts';
@@ -90,17 +96,24 @@ test('AGENTS managed hash excludes the project extension and detects Core-area e
   const document = `# Core guidance\n\n- Run checks.\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Keep the domain rule.`;
   const managed = extractAgentsManagedDocument(document);
   assert.equal(managed, '# Core guidance\n\n- Run checks.');
-  assert.equal(hashAgentsManagedDocument(document), hashAgentsManagedDocument(`${managed}\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Changed domain rule.`));
+  assert.equal(
+    hashAgentsManagedDocument(document),
+    hashAgentsManagedDocument(`${managed}\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- Changed domain rule.`)
+  );
   assert.notEqual(hashAgentsManagedDocument(document), hashAgentsManagedDocument('# Changed Core guidance'));
 });
 
 test('the English extension header bounds the managed AGENTS.md region like the Korean one', () => {
   const header = '## 4. Project rule extensions (SSOT)';
-  const boilerplate = 'Add domain rules specific to this project below this section. They are not synced back to the profile.';
+  const boilerplate =
+    'Add domain rules specific to this project below this section. They are not synced back to the profile.';
   const document = `# Core guidance\n\n- Run checks.\n\n${header}\n\n${boilerplate}\n\n- Keep the domain rule.`;
 
   assert.equal(extractAgentsManagedDocument(document), '# Core guidance\n\n- Run checks.');
-  assert.equal(hashAgentsManagedDocument(document), hashAgentsManagedDocument(`# Core guidance\n\n- Run checks.\n\n${header}\n\n${boilerplate}\n`));
+  assert.equal(
+    hashAgentsManagedDocument(document),
+    hashAgentsManagedDocument(`# Core guidance\n\n- Run checks.\n\n${header}\n\n${boilerplate}\n`)
+  );
 
   const merged = mergeAgentsMd(`# Core guidance v2\n\n${header}\n\n${boilerplate}\n`, document);
   assert.match(merged, /Core guidance v2/);
@@ -127,7 +140,10 @@ const frontmatterTemplate = '---\nalwaysApply: true\n---\n\n# Generated rules v1
 test('mergeManagedDocument keeps template frontmatter at the top of a new file, outside the managed block', () => {
   const created = mergeManagedDocument(frontmatterTemplate, null);
 
-  assert.ok(created.startsWith('---\nalwaysApply: true\n---\n'), 'frontmatter must be the first lines so the agent parses it');
+  assert.ok(
+    created.startsWith('---\nalwaysApply: true\n---\n'),
+    'frontmatter must be the first lines so the agent parses it'
+  );
   const block = extractManagedDocument(created);
   assert.ok(block, 'the new file has a managed block');
   assert.doesNotMatch(block, /alwaysApply/);
@@ -135,7 +151,8 @@ test('mergeManagedDocument keeps template frontmatter at the top of a new file, 
 });
 
 test('mergeManagedDocument moves frontmatter out of a managed block written by an earlier version', () => {
-  const earlier = '<!-- agctx:managed:start -->\n---\nalwaysApply: true\n---\n\n# Generated rules v1\n<!-- agctx:managed:end -->\n';
+  const earlier =
+    '<!-- agctx:managed:start -->\n---\nalwaysApply: true\n---\n\n# Generated rules v1\n<!-- agctx:managed:end -->\n';
   const merged = mergeManagedDocument(frontmatterTemplate.replace('v1', 'v2'), earlier);
 
   assert.ok(merged.startsWith('---\nalwaysApply: true\n---\n'));
@@ -184,34 +201,57 @@ test('the extension boundary is found even when the heading lost its number, dot
   for (const heading of variants) {
     const content = `${managed}\n${heading}\n\n- 우리 팀 규칙\n`;
     assert.equal(extractAgentsManagedDocument(content), managed.trimEnd(), `boundary: ${heading}`);
-    assert.equal(hashAgentsManagedDocument(content), hashAgentsManagedDocument(`${managed}\n${heading}\n\n- 다른 규칙\n`), `the project side does not change the managed hash: ${heading}`);
+    assert.equal(
+      hashAgentsManagedDocument(content),
+      hashAgentsManagedDocument(`${managed}\n${heading}\n\n- 다른 규칙\n`),
+      `the project side does not change the managed hash: ${heading}`
+    );
   }
 });
 
 test('a document with no extension heading is managed as a whole, which the caller reports as a missing boundary', () => {
   const content = '# Profile: demo\n\n지침 본문\n\n- 사람이 더한 줄\n';
 
-  assert.equal(extractAgentsManagedDocument(content), content.trimEnd(), 'without a boundary the whole document is managed');
+  assert.equal(
+    extractAgentsManagedDocument(content),
+    content.trimEnd(),
+    'without a boundary the whole document is managed'
+  );
 });
 
-test('the managed end marker bounds AGENTS.md, so the extension heading is the person\'s to rename', () => {
+test("the managed end marker bounds AGENTS.md, so the extension heading is the person's to rename", () => {
   const managed = `# Profile: demo\n\n지침 본문\n\n${MANAGED_END}`;
   for (const heading of ['## 4. 프로젝트 규칙 확장 (SSOT)', '## 우리 팀 규칙', '### 규칙', '']) {
     const content = `${managed}\n\n${heading}\n\n- 우리 팀 규칙\n`;
-    assert.equal(extractAgentsManagedDocument(content), managed, `the marker bounds the area whatever follows it: ${heading || '(제목 없음)'}`);
-    assert.equal(hashAgentsManagedDocument(content), hashAgentsManagedDocument(`${managed}\n\n${heading}\n\n- 다른 규칙\n`), `editing below the marker leaves the hash alone: ${heading || '(제목 없음)'}`);
+    assert.equal(
+      extractAgentsManagedDocument(content),
+      managed,
+      `the marker bounds the area whatever follows it: ${heading || '(제목 없음)'}`
+    );
+    assert.equal(
+      hashAgentsManagedDocument(content),
+      hashAgentsManagedDocument(`${managed}\n\n${heading}\n\n- 다른 규칙\n`),
+      `editing below the marker leaves the hash alone: ${heading || '(제목 없음)'}`
+    );
   }
 });
 
 test('the marker wins over an extension heading that appears above it', () => {
   // A profile whose own guidance mentions the heading must not cut the area short.
   const content = `# Profile: demo\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n프로필이 쓴 안내\n\n${MANAGED_END}\n\n- 내 규칙\n`;
-  assert.equal(extractAgentsManagedDocument(content), content.slice(0, content.indexOf(MANAGED_END) + MANAGED_END.length));
+  assert.equal(
+    extractAgentsManagedDocument(content),
+    content.slice(0, content.indexOf(MANAGED_END) + MANAGED_END.length)
+  );
 });
 
 test('a file written before the marker existed is still bounded by its extension heading', () => {
   const content = '# Profile: demo\n\n지침 본문\n\n## 4. 프로젝트 규칙 확장 (SSOT)\n\n- 내 규칙\n';
-  assert.equal(extractAgentsManagedDocument(content), '# Profile: demo\n\n지침 본문', 'the heading keeps working until sync writes the marker');
+  assert.equal(
+    extractAgentsManagedDocument(content),
+    '# Profile: demo\n\n지침 본문',
+    'the heading keeps working until sync writes the marker'
+  );
 });
 
 test('merging keeps everything below the marker, including a renamed heading', () => {
@@ -228,13 +268,20 @@ test('merging keeps everything below the marker, including a renamed heading', (
 });
 
 test('a rendered project AGENTS.md carries the managed end marker and drops the profile-only guidance markers', () => {
-  const profileBody = '# Profile: demo\n\n<!-- agctx:guidance:start -->\n\n## 작업 흐름\n\n본문\n\n<!-- agctx:guidance:end -->\n';
+  const profileBody =
+    '# Profile: demo\n\n<!-- agctx:guidance:start -->\n\n## 작업 흐름\n\n본문\n\n<!-- agctx:guidance:end -->\n';
   const rendered = renderProfileAgents(profileBody, 'demo', 'my-app');
 
   assert.match(rendered, /## 작업 흐름/, 'the guidance text itself stays');
   assert.doesNotMatch(rendered, /agctx:guidance/, 'the profile-only markers would read as a second boundary');
   assert.equal(rendered.split(MANAGED_END).length - 1, 1);
   const heading = _('scaffold.extHeading');
-  assert.ok(rendered.includes(heading) && rendered.indexOf(MANAGED_END) < rendered.indexOf(heading), 'the marker sits above the extension heading');
-  assert.equal(extractAgentsManagedDocument(rendered), rendered.slice(0, rendered.indexOf(MANAGED_END) + MANAGED_END.length));
+  assert.ok(
+    rendered.includes(heading) && rendered.indexOf(MANAGED_END) < rendered.indexOf(heading),
+    'the marker sits above the extension heading'
+  );
+  assert.equal(
+    extractAgentsManagedDocument(rendered),
+    rendered.slice(0, rendered.indexOf(MANAGED_END) + MANAGED_END.length)
+  );
 });

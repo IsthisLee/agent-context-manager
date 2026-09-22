@@ -25,8 +25,17 @@ function makeTeam(t: TestContext) {
   const person = (who: string) => {
     const home = path.join(root, who);
     fs.mkdirSync(home);
-    const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'en', GIT_AUTHOR_NAME: who, GIT_AUTHOR_EMAIL: `${who}@example.com`, GIT_COMMITTER_NAME: who, GIT_COMMITTER_EMAIL: `${who}@example.com` };
-    const run = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { cwd: root, env, encoding: 'utf8' });
+    const env = {
+      ...process.env,
+      AGCTX_HOME: home,
+      AGCTX_LANG: 'en',
+      GIT_AUTHOR_NAME: who,
+      GIT_AUTHOR_EMAIL: `${who}@example.com`,
+      GIT_COMMITTER_NAME: who,
+      GIT_COMMITTER_EMAIL: `${who}@example.com`
+    };
+    const run = (...args: string[]) =>
+      spawnSync(process.execPath, [cli, ...args], { cwd: root, env, encoding: 'utf8' });
     const ok = (...args: string[]) => {
       const result = run(...args);
       assert.equal(result.status, 0, `agctx ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
@@ -102,12 +111,23 @@ test('pull fast-forwards a clean profile, stops on local edits, and apply record
 
   assert.equal(team.member.run('check', project, '--refresh').status, 1);
   team.member.ok('profile', 'pull', 'team-backend');
-  assert.match(fs.readFileSync(path.join(team.member.profileDir('team-backend'), 'AGENTS.md'), 'utf8'), /New team rule/);
+  assert.match(
+    fs.readFileSync(path.join(team.member.profileDir('team-backend'), 'AGENTS.md'), 'utf8'),
+    /New team rule/
+  );
   const pinnedConfig = fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8');
   const pinnedSync = team.member.ok('profile', 'sync', project, '--yes');
   assert.match(pinnedSync.stdout, /up to date/);
-  assert.equal(fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'), pinnedConfig, 'a sync with nothing new rewrites nothing');
-  assert.doesNotMatch(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /New team rule/, 'a pinned project keeps its recorded commit on sync');
+  assert.equal(
+    fs.readFileSync(path.join(project, 'agctx.project.json'), 'utf8'),
+    pinnedConfig,
+    'a sync with nothing new rewrites nothing'
+  );
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'),
+    /New team rule/,
+    'a pinned project keeps its recorded commit on sync'
+  );
   team.member.ok('profile', 'apply', 'team-backend', project, '--pin', '--yes');
   assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /New team rule/);
   assert.equal(team.member.run('check', project, '--refresh').status, 0);
@@ -154,12 +174,14 @@ test('connect and clone read a local remote path relative to the current folder,
 
   // The workspace runs agctx from its root, so this path is relative to the current folder.
   admin.ok(['profile', 'connect', 'team-backend', path.join('remotes', 'team-backend.git')]);
-  assert.equal(fs.realpathSync(gitIn(dir, 'remote', 'get-url', 'origin')), fs.realpathSync(path.join(root, 'remotes', 'team-backend.git')));
+  assert.equal(
+    fs.realpathSync(gitIn(dir, 'remote', 'get-url', 'origin')),
+    fs.realpathSync(path.join(root, 'remotes', 'team-backend.git'))
+  );
   admin.ok(['profile', 'push', 'team-backend', '--yes']);
   member.ok(['profile', 'clone', path.join('remotes', 'team-backend.git')]);
   assert.ok(fs.existsSync(path.join(member.profileDir('team-backend'), 'AGENTS.md')));
 });
-
 
 test('connect and push see a profile repository through a home folder spelled with another letter case', t => {
   const team = makeTeam(t);
@@ -175,7 +197,12 @@ test('connect and push see a profile repository through a home folder spelled wi
   gitIn(dir, 'init', '--initial-branch=main');
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'add', '-A');
   gitIn(dir, '-c', 'user.name=admin', '-c', 'user.email=admin@example.com', 'commit', '-m', 'Add profile');
-  const runRespelled = (...args: string[]) => spawnSync(process.execPath, [cli, ...args], { cwd: team.root, env: { ...admin.env, AGCTX_HOME: respelled }, encoding: 'utf8' });
+  const runRespelled = (...args: string[]) =>
+    spawnSync(process.execPath, [cli, ...args], {
+      cwd: team.root,
+      env: { ...admin.env, AGCTX_HOME: respelled },
+      encoding: 'utf8'
+    });
 
   const connected = runRespelled('profile', 'connect', 'team-backend', remote);
   assert.equal(connected.status, 0, `${connected.stdout}\n${connected.stderr}`);
@@ -202,7 +229,8 @@ test('connect --branch makes the current branch track that remote branch, and pu
   const heads = gitIn(team.root, 'ls-remote', '--heads', remote);
   assert.match(heads, /refs\/heads\/main/);
   assert.doesNotMatch(heads, /refs\/heads\/master/);
-  const status = JSON.parse(admin.ok('profile', 'status', 'team-backend', '--refresh', '--json').stdout).data.profiles[0];
+  const status = JSON.parse(admin.ok('profile', 'status', 'team-backend', '--refresh', '--json').stdout).data
+    .profiles[0];
   assert.deepEqual([status.ahead, status.behind], [0, 0]);
 
   member.ok('profile', 'clone', remote);
@@ -218,38 +246,56 @@ test('a credential helper that cannot answer reads as a sign-in failure, not an 
   const { isRemoteFailure } = await import('../src/shared/git.ts');
 
   assert.equal(isRemoteFailure('fatal: unable to get password from user\n'), true, 'a helper that cannot answer');
-  assert.equal(isRemoteFailure("remote: Invalid username or password.\nfatal: Authentication failed for 'https://example.com/team.git'\n"), true);
-  assert.equal(isRemoteFailure("fatal: could not read Username for 'https://example.com': terminal prompts disabled\n"), true);
-  assert.equal(isRemoteFailure('error: failed to push some refs\nhint: Updates were rejected because the tip is behind\n'), false, 'a rejected push is not a sign-in failure');
+  assert.equal(
+    isRemoteFailure(
+      "remote: Invalid username or password.\nfatal: Authentication failed for 'https://example.com/team.git'\n"
+    ),
+    true
+  );
+  assert.equal(
+    isRemoteFailure("fatal: could not read Username for 'https://example.com': terminal prompts disabled\n"),
+    true
+  );
+  assert.equal(
+    isRemoteFailure('error: failed to push some refs\nhint: Updates were rejected because the tip is behind\n'),
+    false,
+    'a rejected push is not a sign-in failure'
+  );
   assert.equal(isRemoteFailure('fatal: bad object HEAD\n'), false);
 });
 
 // The fake git below sits on PATH as a .cmd shim on Windows, and `git()` starts git without a
 // shell on purpose (src/shared/git.ts), so Windows runs the real git instead of the fake and the
 // run succeeds. The classification itself is covered on every platform by the test above.
-test('a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error', { skip: process.platform === 'win32' ? 'a PATH shim cannot replace git without a shell on Windows' : false }, t => {
-  const { root, person, folder } = makeWorkspace(t, 'agctx-git-credentials-');
-  const admin = person('admin');
-  const member = person('member');
-  const { remote } = publishSharedProfile(root, admin, 'team-backend');
-  member.ok(['profile', 'clone', remote]);
-  const project = folder('orders-api');
-  member.ok(['profile', 'apply', 'team-backend', project, '--yes']);
+test(
+  'a credential helper that cannot answer is reported as a Git sign-in failure, not an unknown error',
+  { skip: process.platform === 'win32' ? 'a PATH shim cannot replace git without a shell on Windows' : false },
+  t => {
+    const { root, person, folder } = makeWorkspace(t, 'agctx-git-credentials-');
+    const admin = person('admin');
+    const member = person('member');
+    const { remote } = publishSharedProfile(root, admin, 'team-backend');
+    member.ok(['profile', 'clone', remote]);
+    const project = folder('orders-api');
+    member.ok(['profile', 'apply', 'team-backend', project, '--yes']);
 
-  // git prints this when a credential helper or askpass exists but cannot answer. That is a sign-in
-  // failure like a rejected password, so it must carry the Git credentials next step, not exit 70.
-  const realGit = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['git'], { encoding: 'utf8' }).stdout.split('\n')[0].trim();
-  const fake = fakeCommands(t, {
-    git: `import { spawnSync } from 'node:child_process';
+    // git prints this when a credential helper or askpass exists but cannot answer. That is a sign-in
+    // failure like a rejected password, so it must carry the Git credentials next step, not exit 70.
+    const realGit = spawnSync(process.platform === 'win32' ? 'where' : 'which', ['git'], { encoding: 'utf8' })
+      .stdout.split('\n')[0]
+      .trim();
+    const fake = fakeCommands(t, {
+      git: `import { spawnSync } from 'node:child_process';
 if (args[0] === 'ls-remote') {
   process.stderr.write('fatal: unable to get password from user\\n');
   process.exit(128);
 }
 const passed = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
 process.exit(passed.status ?? 1);`
-  });
+    });
 
-  const result = member.run(['check', project, '--refresh'], fake.env);
-  assert.equal(result.status, 69, `${result.stdout}\n${result.stderr}`);
-  assert.match(result.stderr, /git ls-remote/);
-});
+    const result = member.run(['check', project, '--refresh'], fake.env);
+    assert.equal(result.status, 69, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stderr, /git ls-remote/);
+  }
+);

@@ -13,7 +13,12 @@ import { mainTui, promptLocale } from '../tui/main.ts';
 import { skillNotice } from '../skills/install.ts';
 
 async function resolveActiveLocale(langFlag: string | null | undefined): Promise<void> {
-  let locale = resolveLocale({ flag: langFlag ?? null, env: process.env.AGCTX_LANG || null, saved: getSavedLocale(), isTTY: Boolean(process.stdin.isTTY) && !isJsonMode() });
+  let locale = resolveLocale({
+    flag: langFlag ?? null,
+    env: process.env.AGCTX_LANG || null,
+    saved: getSavedLocale(),
+    isTTY: Boolean(process.stdin.isTTY) && !isJsonMode()
+  });
   if (locale === null) {
     const chosen = await promptLocale();
     locale = chosen ? saveLocale(chosen) : DEFAULT_LOCALE;
@@ -23,8 +28,11 @@ async function resolveActiveLocale(langFlag: string | null | undefined): Promise
 
 function unknownCommand(args: readonly string[]): CliError {
   const suggestions = suggestCommands(args).map(command => `agctx ${command.words.join(' ')}`);
-  return usageError('command.unknown', _('error.command.unknown', { input: args.join(' ') }),
-    suggestions.length ? _('hint.command.suggest', { commands: suggestions.join(', ') }) : _('hint.command.help'));
+  return usageError(
+    'command.unknown',
+    _('error.command.unknown', { input: args.join(' ') }),
+    suggestions.length ? _('hint.command.suggest', { commands: suggestions.join(', ') }) : _('hint.command.help')
+  );
 }
 
 export interface Invocation {
@@ -86,8 +94,12 @@ export async function run(argv: readonly string[] = process.argv): Promise<void>
     else for (const warning of warnings) warn(warning);
     process.exitCode = outcome.exitCode;
   } catch (error) {
-    const cliError = error instanceof CliError ? error : new CliError('internal', error instanceof Error ? error.message : String(error));
-    if (!commandName) commandName = findCommand(argv.slice(2).filter(value => !value.startsWith('--')))?.words.join(' ') ?? '';
+    const cliError =
+      error instanceof CliError
+        ? error
+        : new CliError('internal', error instanceof Error ? error.message : String(error));
+    if (!commandName)
+      commandName = findCommand(argv.slice(2).filter(value => !value.startsWith('--')))?.words.join(' ') ?? '';
     const warnings = noticeFor(argv);
     if (isJsonMode()) {
       writeJson(envelope(commandName, { exitCode: cliError.exitCode, warnings }, cliError));

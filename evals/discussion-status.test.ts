@@ -19,7 +19,11 @@ function rendered(topics: DiscussionTopics): Map<string, string> {
 test('generated status lines, discussion indexes and README status lists match topics.json', () => {
   for (const output of discussionOutputs(readTopics(repoRoot))) {
     const content = read(output.file);
-    assert.equal(content, output.render(content), `${output.file} is out of date; run node tools/generate-discussion-status.ts`);
+    assert.equal(
+      content,
+      output.render(content),
+      `${output.file} is out of date; run node tools/generate-discussion-status.ts`
+    );
   }
 });
 
@@ -28,17 +32,26 @@ test('changing one status in topics.json rewrites the topic, its index row, the 
   const before = rendered(topics);
   const changed: DiscussionTopics = {
     ...topics,
-    architecture: topics.architecture.map(topic => topic.file === 'profile-import.md' ? { ...topic, status: 'Implementing' } : topic)
+    architecture: topics.architecture.map(topic =>
+      topic.file === 'profile-import.md' ? { ...topic, status: 'Implementing' } : topic
+    )
   };
   const after = rendered(changed);
 
-  const rewritten = [...after].filter(([file, content]) => before.get(file) !== content).map(([file]) => file).sort();
-  assert.deepEqual(rewritten, [
-    'README.en.md',
-    'README.md',
-    'docs/discussion/architecture/README.md',
-    'docs/discussion/architecture/topics/profile-import.md'
-  ], 'one edit to topics.json reaches every place that shows the status');
+  const rewritten = [...after]
+    .filter(([file, content]) => before.get(file) !== content)
+    .map(([file]) => file)
+    .sort();
+  assert.deepEqual(
+    rewritten,
+    [
+      'README.en.md',
+      'README.md',
+      'docs/discussion/architecture/README.md',
+      'docs/discussion/architecture/topics/profile-import.md'
+    ],
+    'one edit to topics.json reaches every place that shows the status'
+  );
 
   assert.match(after.get('docs/discussion/architecture/topics/profile-import.md')!, /^\*\*상태:\*\* Implementing$/m);
   const index = after.get('docs/discussion/architecture/README.md')!;
@@ -58,7 +71,11 @@ test('the repository area index has no stage columns and README lists only packa
 
 test('a topic that already has an implementation record cannot stay Proposed', () => {
   assert.equal(forbidsImplementationRecord('Proposed'), true);
-  assert.equal(forbidsImplementationRecord('Implementing'), false, 'Implementing topics collect a record per implemented scope');
+  assert.equal(
+    forbidsImplementationRecord('Implementing'),
+    false,
+    'Implementing topics collect a record per implemented scope'
+  );
   assert.equal(forbidsImplementationRecord('Implemented'), false);
 
   const checker = read('tools/check-docs.ts');
@@ -70,20 +87,29 @@ test('a topic that already has an implementation record cannot stay Proposed', (
 test('the importance a topic states in its proposal summary must match topics.json', () => {
   assert.equal(summaryImportance('| 항목 | 내용 |\n| 중요도 | High — 사용자 경계를 정한다. |\n'), 'High');
   assert.equal(summaryImportance('| 중요도 | Medium: 문서 유지 비용을 줄인다. |'), 'Medium');
-  assert.equal(summaryImportance('| 제안 목표 | 중요도를 적지 않은 문서 |'), undefined, 'a document without the field states no importance');
+  assert.equal(
+    summaryImportance('| 제안 목표 | 중요도를 적지 않은 문서 |'),
+    undefined,
+    'a document without the field states no importance'
+  );
 
   const topics = readTopics(repoRoot);
   for (const [area, list] of Object.entries(topics)) {
     for (const topic of list) {
       const stated = summaryImportance(read(`docs/discussion/${area}/topics/${topic.file}`));
-      assert.equal(stated, topic.importance, `${area}/${topic.file} states ${stated} but topics.json says ${topic.importance}`);
+      assert.equal(
+        stated,
+        topic.importance,
+        `${area}/${topic.file} states ${stated} but topics.json says ${topic.importance}`
+      );
     }
   }
   assert.match(read('tools/check-docs.ts'), /summaryImportance/);
 });
 
 test('a pinned document is hashed without its generated blocks, so regenerating one README does not fail the other', () => {
-  const block = (body: string) => `# 제목\n\n<!-- agctx:generated:discussion-status:start -->\n${body}\n<!-- agctx:generated:discussion-status:end -->\n\n본문\n`;
+  const block = (body: string) =>
+    `# 제목\n\n<!-- agctx:generated:discussion-status:start -->\n${body}\n<!-- agctx:generated:discussion-status:end -->\n\n본문\n`;
 
   assert.equal(withoutGeneratedBlocks(block('- **구현됨:** A')), withoutGeneratedBlocks(block('- **구현됨:** A, B')));
   assert.notEqual(

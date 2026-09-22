@@ -15,8 +15,26 @@ export function citationExempt(relativePath: string): boolean {
 }
 
 /** Folders and root files this repository owns; other paths belong to another tool or to a user project. */
-const REPO_FOLDERS: readonly string[] = ['src/', 'tools/', 'evals/', 'templates/', 'skills/', '.agents/', '.github/', 'docs/'];
-const REPO_FILES: readonly string[] = ['package.json', 'tsconfig.json', 'tsconfig.build.json', 'AGENTS.md', 'README.md', 'README.en.md', 'SECURITY.md', 'CHANGELOG.md'];
+const REPO_FOLDERS: readonly string[] = [
+  'src/',
+  'tools/',
+  'evals/',
+  'templates/',
+  'skills/',
+  '.agents/',
+  '.github/',
+  'docs/'
+];
+const REPO_FILES: readonly string[] = [
+  'package.json',
+  'tsconfig.json',
+  'tsconfig.build.json',
+  'AGENTS.md',
+  'README.md',
+  'README.en.md',
+  'SECURITY.md',
+  'CHANGELOG.md'
+];
 
 export function repoFile(citedPath: string): boolean {
   return REPO_FOLDERS.some(folder => citedPath.startsWith(folder)) || REPO_FILES.includes(citedPath);
@@ -37,13 +55,16 @@ export interface NamedCitation {
 }
 
 /** `path/to/file.ts`의 `name`, with more names joined by `·`, `,`, `와` or `과`, each carrying its digest marker. */
-const NAMED_CITATION = /`([\w./-]+\.[A-Za-z0-9]+)`의((?:\s*`[A-Za-z_$][\w$]*`(?:<!--\s*s:[0-9a-f]{12}\s*-->)?\s*[·,]?\s*(?:와|과)?)+)/g;
+const NAMED_CITATION =
+  /`([\w./-]+\.[A-Za-z0-9]+)`의((?:\s*`[A-Za-z_$][\w$]*`(?:<!--\s*s:[0-9a-f]{12}\s*-->)?\s*[·,]?\s*(?:와|과)?)+)/g;
 const NAME = /`([A-Za-z_$][\w$]*)`(?:<!--\s*s:([0-9a-f]{12})\s*-->)?/g;
 
 export function namedCitations(text: string): NamedCitation[] {
   return [...text.matchAll(NAMED_CITATION)]
     .filter(match => repoFile(match[1]))
-    .flatMap(match => [...match[2].matchAll(NAME)].map(name => ({ file: match[1], name: name[1], digest: name[2] ?? null })));
+    .flatMap(match =>
+      [...match[2].matchAll(NAME)].map(name => ({ file: match[1], name: name[1], digest: name[2] ?? null }))
+    );
 }
 
 /** The digest of what a citation points at, or null when that kind of target carries no digest. */
@@ -60,10 +81,13 @@ function rewriteNames(names: string, file: string, digestFor: DigestLookup): str
 export function applyCitationMarkers(text: string, digestFor: DigestLookup): string {
   return text
     .split(/(```[\s\S]*?```)/g)
-    .map(part => part.startsWith('```')
-      ? part
-      : part.replace(NAMED_CITATION, (whole, file: string, names: string) =>
-        repoFile(file) ? `\`${file}\`의${rewriteNames(names, file, digestFor)}` : whole))
+    .map(part =>
+      part.startsWith('```')
+        ? part
+        : part.replace(NAMED_CITATION, (whole, file: string, names: string) =>
+            repoFile(file) ? `\`${file}\`의${rewriteNames(names, file, digestFor)}` : whole
+          )
+    )
     .join('');
 }
 

@@ -5,14 +5,42 @@ import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { docSourceHashPath } from './doc-source-path.ts';
-import { forbidsImplementationRecord, hasImplementationRecord, requiresImplementationRecord } from './discussion-record.ts';
-import { readTopics, STATUSES, summaryImportance, TOPICS_FILE, topicFieldErrors, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
-import { applyCitationMarkers, citationExempt, citationMarkerProblems, lineNumberCitations, namedCitations } from './doc-citations.ts';
+import {
+  forbidsImplementationRecord,
+  hasImplementationRecord,
+  requiresImplementationRecord
+} from './discussion-record.ts';
+import {
+  readTopics,
+  STATUSES,
+  summaryImportance,
+  TOPICS_FILE,
+  topicFieldErrors,
+  type DiscussionTopic,
+  type DiscussionTopics
+} from './discussion-topics.ts';
+import {
+  applyCitationMarkers,
+  citationExempt,
+  citationMarkerProblems,
+  lineNumberCitations,
+  namedCitations
+} from './doc-citations.ts';
 import { citedText, symbolDigest } from './symbol-source.ts';
 import { adrEvidenceError, undatedReferenceLinkLines } from './doc-evidence.ts';
 import { discussionRoots } from './discussion-roots.ts';
 import { execFileSync } from 'node:child_process';
-import { docSourceSections, restampOnlyDocuments, SOURCE_ROOTS, sourcesToReread, stampTargets, unpinnedSources, wholeRootPins, withoutGeneratedBlocks, withoutRecordedHash } from './doc-sources.ts';
+import {
+  docSourceSections,
+  restampOnlyDocuments,
+  SOURCE_ROOTS,
+  sourcesToReread,
+  stampTargets,
+  unpinnedSources,
+  wholeRootPins,
+  withoutGeneratedBlocks,
+  withoutRecordedHash
+} from './doc-sources.ts';
 import { GUIDANCE_KEYS } from '../src/profile/setup.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -79,7 +107,9 @@ function checkCitations(markdownFile: string) {
   }
 
   for (const problem of citationMarkerProblems(content, citationDigest)) {
-    errors.push(`${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp ${relative}\``);
+    errors.push(
+      `${relative}: ${problem}. Re-read the document, then run \`node tools/check-docs.ts --stamp ${relative}\``
+    );
   }
 }
 
@@ -93,13 +123,12 @@ function checkInternalAnchors(markdownFile: string) {
 
     const [target, rawFragment] = rawTarget.split('#', 2);
     if (!rawFragment) continue;
-    const targetFile = target
-      ? path.resolve(path.dirname(markdownFile), target)
-      : markdownFile;
+    const targetFile = target ? path.resolve(path.dirname(markdownFile), target) : markdownFile;
     if (!fs.existsSync(targetFile) || path.extname(targetFile) !== '.md') continue;
 
-    const headings = [...fs.readFileSync(targetFile, 'utf8').matchAll(/^#{1,6}\s+(.+)$/gm)]
-      .map(match => markdownHeadingSlug(match[1]));
+    const headings = [...fs.readFileSync(targetFile, 'utf8').matchAll(/^#{1,6}\s+(.+)$/gm)].map(match =>
+      markdownHeadingSlug(match[1])
+    );
     const fragment = markdownHeadingSlug(decodeURIComponent(rawFragment));
     if (!headings.includes(fragment)) {
       errors.push(`${path.relative(root, markdownFile)}: missing Markdown heading anchor ${rawTarget}`);
@@ -126,7 +155,10 @@ function checkAdrs() {
     errors.push('docs/adr: directory must exist');
     return;
   }
-  const adrFiles = fs.readdirSync(adrDir).filter(name => /^\d{4}-[a-z0-9-]+\.md$/.test(name)).sort();
+  const adrFiles = fs
+    .readdirSync(adrDir)
+    .filter(name => /^\d{4}-[a-z0-9-]+\.md$/.test(name))
+    .sort();
   for (const adrFile of adrFiles) {
     const content = fs.readFileSync(path.join(adrDir, adrFile), 'utf8');
     for (const section of ['배경|Context', '대안|Options', '결정|Decision', '결과|Consequences']) {
@@ -182,9 +214,23 @@ function checkDiscussionStatuses() {
 function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined) {
   const discussionDir = path.join(root, 'docs', 'discussion', area);
   const topicsDir = path.join(discussionDir, 'topics');
-  const proposalSummaryFields = ['대상 계층', '제안 목표', '제안 이유', '결정할 것', '중요도', '선행 작업', '선행 제안', '후속 제안', '연관 제안', '후속 작업', '권장 다음 작업'];
+  const proposalSummaryFields = [
+    '대상 계층',
+    '제안 목표',
+    '제안 이유',
+    '결정할 것',
+    '중요도',
+    '선행 작업',
+    '선행 제안',
+    '후속 제안',
+    '연관 제안',
+    '후속 작업',
+    '권장 다음 작업'
+  ];
   if (!fs.existsSync(path.join(discussionDir, 'README.md'))) {
-    errors.push(`docs/discussion/${area}/README.md: a discussion area needs an index listing its topics and their status`);
+    errors.push(
+      `docs/discussion/${area}/README.md: a discussion area needs an index listing its topics and their status`
+    );
     return;
   }
   if (!Array.isArray(listed)) {
@@ -200,7 +246,10 @@ function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined
     for (const problem of topicFieldErrors(topic)) errors.push(`${TOPICS_FILE}: ${area}/${topic.file}: ${problem}`);
   }
 
-  const topicFiles = fs.readdirSync(topicsDir).filter(name => name.endsWith('.md')).sort();
+  const topicFiles = fs
+    .readdirSync(topicsDir)
+    .filter(name => name.endsWith('.md'))
+    .sort();
   for (const name of topicFiles) {
     const entries = listed.filter(topic => topic.file === name);
     if (entries.length !== 1) {
@@ -216,14 +265,20 @@ function checkDiscussionArea(area: string, listed: DiscussionTopic[] | undefined
     const document = `docs/discussion/${area}/topics/${name}`;
     const content = fs.readFileSync(path.join(topicsDir, name), 'utf8');
     if (requiresImplementationRecord(status) && !hasImplementationRecord(content)) {
-      errors.push(`${document}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`);
+      errors.push(
+        `${document}: Implemented topic must include an implementation record heading (#### 구현 기록: <범위>)`
+      );
     }
     if (forbidsImplementationRecord(status) && hasImplementationRecord(content)) {
-      errors.push(`${document}: a topic with an implementation record is at least Implementing; update its status in ${TOPICS_FILE}`);
+      errors.push(
+        `${document}: a topic with an implementation record is at least Implementing; update its status in ${TOPICS_FILE}`
+      );
     }
     const stated = summaryImportance(content);
     if (stated !== entries[0].importance) {
-      errors.push(`${document}: 중요도 in the proposal summary (${stated ?? 'none'}) must match importance in ${TOPICS_FILE} (${entries[0].importance ?? 'none'})`);
+      errors.push(
+        `${document}: 중요도 in the proposal summary (${stated ?? 'none'}) must match importance in ${TOPICS_FILE} (${entries[0].importance ?? 'none'})`
+      );
     }
 
     if (['Proposed', 'Implementing'].includes(status)) {
@@ -271,7 +326,9 @@ function checkDocumentationGovernance() {
 
   const formatContent = fs.readFileSync(proposalFormat, 'utf8');
   if (!formatContent.includes('## 구현 단계 계약')) {
-    errors.push('docs/discussion/architecture/topics/implementation-contracts.md: must define the implementation contract');
+    errors.push(
+      'docs/discussion/architecture/topics/implementation-contracts.md: must define the implementation contract'
+    );
   }
 
   for (const file of requiredReferences) {
@@ -306,11 +363,14 @@ function checkGuidanceCatalog() {
   const content = fs.readFileSync(catalog, 'utf8');
   const rows = content.split('\n').filter(line => line.startsWith('| `--'));
   if (rows.length !== GUIDANCE_KEYS.length) {
-    errors.push(`docs/reference/guidance-catalog.md: expected one row per guidance option (${GUIDANCE_KEYS.length}), found ${rows.length}`);
+    errors.push(
+      `docs/reference/guidance-catalog.md: expected one row per guidance option (${GUIDANCE_KEYS.length}), found ${rows.length}`
+    );
     return;
   }
   for (const key of GUIDANCE_KEYS) {
-    if (!rows.some(row => row.startsWith(`| \`--${key}\``))) errors.push(`docs/reference/guidance-catalog.md: no row for --${key}`);
+    if (!rows.some(row => row.startsWith(`| \`--${key}\``)))
+      errors.push(`docs/reference/guidance-catalog.md: no row for --${key}`);
   }
   for (const row of rows) {
     const option = row.split('|')[1].trim();
@@ -355,14 +415,14 @@ function computeDocSourcesHash(sources: string[]) {
     if (!fs.existsSync(sourcePath)) {
       return { error: `doc-source not found: ${source}` };
     }
-    const files = fs.statSync(sourcePath).isDirectory()
-      ? walkFiles(sourcePath).sort()
-      : [sourcePath];
+    const files = fs.statSync(sourcePath).isDirectory() ? walkFiles(sourcePath).sort() : [sourcePath];
     for (const filePath of files) {
       hash.update(docSourceHashPath(root, filePath));
       hash.update('\0');
       const bytes = fs.readFileSync(filePath);
-      hash.update(filePath.endsWith('.md') ? withoutGeneratedBlocks(withoutRecordedHash(bytes.toString('utf8'))) : bytes);
+      hash.update(
+        filePath.endsWith('.md') ? withoutGeneratedBlocks(withoutRecordedHash(bytes.toString('utf8'))) : bytes
+      );
       hash.update('\0');
     }
   }
@@ -410,7 +470,9 @@ function reportRestamped(base: string): number {
   }
   console.log(`Documents that changed only their recorded hash between ${base} and HEAD:`);
   for (const document of documents) console.log(`- ${document}`);
-  console.log('Re-read each one against the sources it pins. A hash moves when the code moves, and the gate passes either way.');
+  console.log(
+    'Re-read each one against the sources it pins. A hash moves when the code moves, and the gate passes either way.'
+  );
   return 0;
 }
 
@@ -435,7 +497,9 @@ function checkDocSources() {
         continue;
       }
       for (const pin of wholeRootPins(section.sources)) {
-        errors.push(`${place}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`);
+        errors.push(
+          `${place}: pin the modules inside ${pin.replace(/\/+$/, '')}/ instead of the whole folder, so one change does not fail every document at once`
+        );
       }
       pins.push(...section.sources);
       const computed = computeDocSourcesHash(section.sources);
@@ -444,23 +508,28 @@ function checkDocSources() {
         continue;
       }
       if (section.digest === 'PENDING') {
-        errors.push(`${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp ${relative}\`.`);
+        errors.push(
+          `${place}: doc-source hash is PENDING. Verify this part against ${section.sources.join(', ')}, then run \`node tools/check-docs.ts --stamp ${relative}\`.`
+        );
         continue;
       }
       if (section.digest !== computed.digest) {
         const changed = changedPinnedSources(relative, section.digest, section.sources);
         const what = changed.length ? changed.join(', ') : section.sources.join(', ');
-        errors.push(`${place}: doc sources changed since last verified. Re-read this part against ${what}, fix any drift, then run \`node tools/check-docs.ts --stamp ${relative}\`.`);
+        errors.push(
+          `${place}: doc sources changed since last verified. Re-read this part against ${what}, fix any drift, then run \`node tools/check-docs.ts --stamp ${relative}\`.`
+        );
       }
     }
   }
-  const sourceFiles = SOURCE_ROOTS
-    .filter(sourceRoot => fs.existsSync(path.join(root, sourceRoot)))
+  const sourceFiles = SOURCE_ROOTS.filter(sourceRoot => fs.existsSync(path.join(root, sourceRoot)))
     .flatMap(sourceRoot => walkFiles(path.join(root, sourceRoot)))
     .map(file => docSourceHashPath(root, file))
     .sort();
   for (const file of unpinnedSources(sourceFiles, pins, [...cited])) {
-    errors.push(`${file}: no document pins or cites this source; add it to the agctx-doc-sources marker of the section that describes it, or cite a name inside it`);
+    errors.push(
+      `${file}: no document pins or cites this source; add it to the agctx-doc-sources marker of the section that describes it, or cite a name inside it`
+    );
   }
 }
 
@@ -485,7 +554,9 @@ function stampDocSources(wanted: Set<string> | null) {
   for (const markdownFile of walkMarkdown(root)) {
     if (wanted && !wanted.has(docSourceHashPath(root, markdownFile, path))) continue;
     const content = fs.readFileSync(markdownFile, 'utf8');
-    const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
+    const sections = docSourceSections(content).filter(
+      section => section.sources.length && !section.sources.some(source => /[<>]/.test(source))
+    );
     if (!sections.length) continue;
     let next = content;
     let changed = false;
@@ -521,7 +592,9 @@ function driftedDocuments(): string[] {
   const drifted: string[] = [];
   for (const markdownFile of walkMarkdown(root)) {
     const content = fs.readFileSync(markdownFile, 'utf8');
-    const sections = docSourceSections(content).filter(section => section.sources.length && !section.sources.some(source => /[<>]/.test(source)));
+    const sections = docSourceSections(content).filter(
+      section => section.sources.length && !section.sources.some(source => /[<>]/.test(source))
+    );
     const off = sections.some(section => {
       if (section.digest === null) return false;
       if (section.digest === 'PENDING') return true;

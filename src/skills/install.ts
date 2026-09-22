@@ -58,25 +58,47 @@ interface InstallRecord {
 const AGENTS: readonly SkillAgent[] = ['claude', 'codex', 'antigravity'];
 
 function isDirectory(target: string): boolean {
-  try { return fs.statSync(target).isDirectory(); } catch { return false; }
+  try {
+    return fs.statSync(target).isDirectory();
+  } catch {
+    return false;
+  }
 }
 
 /** The four places skills go, with whether each agent is found. Reads HOME and CODEX_HOME when called. */
 export function skillTargets(): SkillTarget[] {
   const home = os.homedir();
-  const target = (id: SkillTargetId, agent: SkillAgent, dir: string, marker: string): SkillTarget => ({ id, agent, dir, marker, found: isDirectory(marker) });
+  const target = (id: SkillTargetId, agent: SkillAgent, dir: string, marker: string): SkillTarget => ({
+    id,
+    agent,
+    dir,
+    marker,
+    found: isDirectory(marker)
+  });
   return [
     target('claude', 'claude', path.join(home, '.claude', 'skills'), path.join(home, '.claude')),
     target('codex', 'codex', path.join(home, '.agents', 'skills'), process.env.CODEX_HOME || path.join(home, '.codex')),
-    target('antigravity', 'antigravity', path.join(home, '.gemini', 'config', 'skills'), path.join(home, '.gemini', 'config')),
-    target('antigravity-cli', 'antigravity', path.join(home, '.gemini', 'antigravity-cli', 'skills'), path.join(home, '.gemini', 'antigravity-cli'))
+    target(
+      'antigravity',
+      'antigravity',
+      path.join(home, '.gemini', 'config', 'skills'),
+      path.join(home, '.gemini', 'config')
+    ),
+    target(
+      'antigravity-cli',
+      'antigravity',
+      path.join(home, '.gemini', 'antigravity-cli', 'skills'),
+      path.join(home, '.gemini', 'antigravity-cli')
+    )
   ];
 }
 
 /** Every file under `dir` as `/`-separated paths, leaving out the install record. */
 function filesIn(dir: string, rel = ''): string[] {
   const files: string[] = [];
-  for (const entry of fs.readdirSync(path.join(dir, rel), { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+  for (const entry of fs
+    .readdirSync(path.join(dir, rel), { withFileTypes: true })
+    .sort((a, b) => a.name.localeCompare(b.name))) {
     const child = rel ? `${rel}/${entry.name}` : entry.name;
     if (entry.isDirectory()) files.push(...filesIn(dir, child));
     else if (child !== INSTALL_RECORD) files.push(child);
@@ -93,13 +115,22 @@ function hashes(dir: string): Record<string, string> {
 /** The skills this package ships, by folder name. */
 export function packagedSkills(): string[] {
   const root = path.join(PACKAGE_ROOT, 'skills');
-  return fs.readdirSync(root, { withFileTypes: true }).filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
+  return fs
+    .readdirSync(root, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => entry.name)
+    .sort();
 }
 
 function readRecord(dir: string): InstallRecord | null {
   try {
     const record = JSON.parse(fs.readFileSync(path.join(dir, INSTALL_RECORD), 'utf8')) as Partial<InstallRecord>;
-    return record.schemaVersion === 1 && typeof record.version === 'string' && record.files && typeof record.files === 'object' ? record as InstallRecord : null;
+    return record.schemaVersion === 1 &&
+      typeof record.version === 'string' &&
+      record.files &&
+      typeof record.files === 'object'
+      ? (record as InstallRecord)
+      : null;
   } catch {
     return null;
   }
@@ -110,7 +141,9 @@ const sameFiles = (a: Record<string, string>, b: Record<string, string>) =>
 
 /** Files that differ between what a folder holds and what its record says it held. */
 function changedFiles(current: Record<string, string>, recorded: Record<string, string>): string[] {
-  return [...new Set([...Object.keys(current), ...Object.keys(recorded)])].filter(rel => current[rel] !== recorded[rel]).sort();
+  return [...new Set([...Object.keys(current), ...Object.keys(recorded)])]
+    .filter(rel => current[rel] !== recorded[rel])
+    .sort();
 }
 
 /**
@@ -127,20 +160,33 @@ function notOurs(dest: string): string | null {
 }
 
 /** The targets a command acts on: those named by --agent, or those whose agent is found. */
-function chosenTargets(agent: string | null | undefined, found: boolean): { chosen: SkillTarget[]; skipped: SkillTarget[] } {
+function chosenTargets(
+  agent: string | null | undefined,
+  found: boolean
+): { chosen: SkillTarget[]; skipped: SkillTarget[] } {
   const targets = skillTargets();
   if (agent && agent !== 'all' && !(AGENTS as readonly string[]).includes(agent)) {
     throw usageError('install.invalid-agent', _('error.install.invalid-agent', { agent }), _('hint.install.agent'));
   }
   if (agent) return { chosen: targets.filter(target => agent === 'all' || target.agent === agent), skipped: [] };
-  return found ? { chosen: targets.filter(target => target.found), skipped: targets.filter(target => !target.found) } : { chosen: targets, skipped: [] };
+  return found
+    ? { chosen: targets.filter(target => target.found), skipped: targets.filter(target => !target.found) }
+    : { chosen: targets, skipped: [] };
 }
 
 /** What `agctx install` would do. Nothing is written. */
 export function planInstall(options: { agent?: string | null; force?: boolean }): SkillPlan {
   const { chosen, skipped } = chosenTargets(options.agent, true);
   if (!chosen.length) {
-    throw usageError('install.none-found', _('error.install.none-found', { folders: skillTargets().map(target => target.marker).join(', ') }), _('hint.install.agent'));
+    throw usageError(
+      'install.none-found',
+      _('error.install.none-found', {
+        folders: skillTargets()
+          .map(target => target.marker)
+          .join(', ')
+      }),
+      _('hint.install.agent')
+    );
   }
   const version = packageVersion();
   const items: SkillItem[] = [];
@@ -149,7 +195,11 @@ export function planInstall(options: { agent?: string | null; force?: boolean })
       const dir = path.join(target.dir, skill);
       const packaged = hashes(path.join(PACKAGE_ROOT, 'skills', skill));
       let exists = true;
-      try { fs.lstatSync(dir); } catch { exists = false; }
+      try {
+        fs.lstatSync(dir);
+      } catch {
+        exists = false;
+      }
       if (!exists) {
         items.push({ target: target.id, skill, dir, state: 'create', reason: null });
         continue;
@@ -192,7 +242,11 @@ export function planUninstall(options: { agent?: string | null }): SkillPlan {
   for (const target of chosen) {
     for (const skill of packagedSkills()) {
       const dir = path.join(target.dir, skill);
-      try { fs.lstatSync(dir); } catch { continue; }
+      try {
+        fs.lstatSync(dir);
+      } catch {
+        continue;
+      }
       const reason = notOurs(dir);
       items.push({ target: target.id, skill, dir, state: reason ? 'kept' : 'remove', reason });
     }

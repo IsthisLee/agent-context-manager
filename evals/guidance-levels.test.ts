@@ -26,13 +26,20 @@ function profileHome(): { home: string; env: NodeJS.ProcessEnv } {
 test('setup takes on and off, and nothing else', () => {
   const { home, env } = profileHome();
   try {
-    execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', 'on', '--review', 'off'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', 'on', '--review', 'off'], {
+      cwd: repoRoot,
+      env
+    });
     const metadata = JSON.parse(fs.readFileSync(path.join(home, 'profiles', 'team', 'profile.json'), 'utf8'));
     assert.equal(metadata.settings.tdd, 'on');
     assert.equal(metadata.settings.review, 'off');
 
     for (const value of ['recommended', 'strict']) {
-      const result = spawnSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', value], { cwd: repoRoot, env, encoding: 'utf8' });
+      const result = spawnSync(process.execPath, [cli, 'profile', 'setup', 'team', '--tdd', value], {
+        cwd: repoRoot,
+        env,
+        encoding: 'utf8'
+      });
       assert.equal(result.status, 64, `--tdd ${value} is a usage error now`);
       assert.match(result.stderr, /on/, 'the error names the value to use instead');
     }

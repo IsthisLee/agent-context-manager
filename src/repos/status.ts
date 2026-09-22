@@ -37,7 +37,16 @@ export function reposStatus(options: { profile?: string | null; refresh?: boolea
     return heads.get(key) ?? null;
   };
   return selectRepos(options.profile ?? null).map((entry): RepoStatus => {
-    const base = { path: entry.path, profile: entry.profile, pinned: entry.pinned, commit: null, latestCommit: null, findings: [], warnings: [], error: null };
+    const base = {
+      path: entry.path,
+      profile: entry.profile,
+      pinned: entry.pinned,
+      commit: null,
+      latestCommit: null,
+      findings: [],
+      warnings: [],
+      error: null
+    };
     if (!fs.existsSync(entry.path)) return { ...base, state: 'missing', exitCode: EXIT.ok };
     try {
       const report = checkProject(entry.path, { refresh: options.refresh, remoteHead });
@@ -54,7 +63,12 @@ export function reposStatus(options: { profile?: string | null; refresh?: boolea
       };
     } catch (error) {
       const cliError = toCliError(error);
-      return { ...base, state: 'error', exitCode: cliError.exitCode, error: { code: cliError.code, message: cliError.message, hint: cliError.hint } };
+      return {
+        ...base,
+        state: 'error',
+        exitCode: cliError.exitCode,
+        error: { code: cliError.code, message: cliError.message, hint: cliError.hint }
+      };
     }
   });
 }

@@ -19,7 +19,17 @@ import { namedFiles } from './sync.ts';
  * working copy and local branches are never touched.
  */
 
-export type PrState = 'would-open' | 'opened' | 'pushed' | 'up-to-date' | 'pr-exists' | 'branch-exists' | 'skipped' | 'conflict' | 'missing' | 'error';
+export type PrState =
+  | 'would-open'
+  | 'opened'
+  | 'pushed'
+  | 'up-to-date'
+  | 'pr-exists'
+  | 'branch-exists'
+  | 'skipped'
+  | 'conflict'
+  | 'missing'
+  | 'error';
 
 export interface PrItem {
   target: string;
@@ -74,20 +84,31 @@ function assertBranchName(name: string): void {
 }
 
 function targetsFrom(options: PrOptions): Target[] {
-  if (!options.targets) return selectRepos(options.profile).map(entry => ({ label: entry.path, location: entry.path, clone: false }));
+  if (!options.targets)
+    return selectRepos(options.profile).map(entry => ({ label: entry.path, location: entry.path, clone: false }));
   const file = path.resolve(options.targets);
   let text: string;
   try {
     text = fs.readFileSync(file, 'utf8');
   } catch {
-    throw usageError('repos.targets-unreadable', _('error.repos.targets-unreadable', { file }), _('hint.repos.targets'));
+    throw usageError(
+      'repos.targets-unreadable',
+      _('error.repos.targets-unreadable', { file }),
+      _('hint.repos.targets')
+    );
   }
-  return text.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')).map(line => {
-    // A working copy is used in place; anything else (URL, bare repository) is cloned.
-    const local = path.resolve(path.dirname(file), line);
-    if (fs.existsSync(path.join(local, '.git'))) return { label: local, location: local, clone: false };
-    return fs.existsSync(local) ? { label: local, location: local, clone: true } : { label: sanitizeRemoteUrl(line), location: line, clone: true };
-  });
+  return text
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line && !line.startsWith('#'))
+    .map(line => {
+      // A working copy is used in place; anything else (URL, bare repository) is cloned.
+      const local = path.resolve(path.dirname(file), line);
+      if (fs.existsSync(path.join(local, '.git'))) return { label: local, location: local, clone: false };
+      return fs.existsSync(local)
+        ? { label: local, location: local, clone: true }
+        : { label: sanitizeRemoteUrl(line), location: line, clone: true };
+    });
 }
 
 function temporaryHolder(): string {
@@ -95,7 +116,10 @@ function temporaryHolder(): string {
 }
 
 function defaultBase(top: string): string {
-  const remoteHead = git(['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'], { cwd: top, allowFailure: true }).stdout.trim();
+  const remoteHead = git(['symbolic-ref', '--quiet', '--short', 'refs/remotes/origin/HEAD'], {
+    cwd: top,
+    allowFailure: true
+  }).stdout.trim();
   if (remoteHead.startsWith('origin/')) return remoteHead.slice('origin/'.length);
   const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: top, allowFailure: true }).stdout.trim();
   const merge = branch ? git(['config', `branch.${branch}.merge`], { cwd: top, allowFailure: true }).stdout.trim() : '';
@@ -108,12 +132,17 @@ function defaultBase(top: string): string {
 function worktreeFor(projectDir: string, requestedBase: string | null): Workspace {
   if (!fs.existsSync(projectDir)) throw usageError('repos.missing', _('repos.sync.missing'), null);
   const top = git(['rev-parse', '--show-toplevel', '--show-prefix'], { cwd: projectDir, allowFailure: true });
-  if (top.status !== 0) throw usageError('repos.not-git', _('error.repos.not-git', { project: projectDir }), _('hint.repos.targets'));
+  if (top.status !== 0)
+    throw usageError('repos.not-git', _('error.repos.not-git', { project: projectDir }), _('hint.repos.targets'));
   // git reports the top and the folder's place under it, so a Windows short name or another letter case cannot misplace the project.
   const [topDir, prefix = ''] = top.stdout.split(/\r?\n/);
   const relative = prefix.replace(/\/$/, '');
   if (git(['remote', 'get-url', 'origin'], { cwd: topDir, allowFailure: true }).status !== 0) {
-    throw usageError('repos.no-remote', _('error.repos.no-remote', { project: projectDir }), _('hint.repos.no-remote', { project: projectDir }));
+    throw usageError(
+      'repos.no-remote',
+      _('error.repos.no-remote', { project: projectDir }),
+      _('hint.repos.no-remote', { project: projectDir })
+    );
   }
   const base = requestedBase ?? defaultBase(topDir);
   assertBranchName(base);
@@ -145,7 +174,15 @@ function cloneFor(url: string, requestedBase: string | null): Workspace {
   const root = path.join(holder, 'work');
   const cleanup = () => fs.rmSync(holder, { recursive: true, force: true });
   try {
-    git(['clone', '--quiet', '--no-recurse-submodules', ...(requestedBase ? [`--branch=${requestedBase}`] : []), '--', url, root]);
+    git([
+      'clone',
+      '--quiet',
+      '--no-recurse-submodules',
+      ...(requestedBase ? [`--branch=${requestedBase}`] : []),
+      '--',
+      url,
+      root
+    ]);
     const base = requestedBase ?? git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: root }).stdout.trim();
     return { root, project: root, base, cleanup };
   } catch (error) {
@@ -163,9 +200,14 @@ interface GhResult {
 /** Run gh without prompts. A missing gh is reported as a failed call, not an error. */
 function gh(args: readonly string[], cwd: string): GhResult {
   const env = { ...process.env, GH_PROMPT_DISABLED: '1' };
-  const result = process.platform === 'win32'
-    ? spawnSync('gh', args.map(arg => `"${arg.replaceAll('"', '\\"')}"`), { cwd, env, encoding: 'utf8', shell: true })
-    : spawnSync('gh', [...args], { cwd, env, encoding: 'utf8' });
+  const result =
+    process.platform === 'win32'
+      ? spawnSync(
+          'gh',
+          args.map(arg => `"${arg.replaceAll('"', '\\"')}"`),
+          { cwd, env, encoding: 'utf8', shell: true }
+        )
+      : spawnSync('gh', [...args], { cwd, env, encoding: 'utf8' });
   if (result.error) return { ok: false, stdout: '', stderr: ghFailureReason(result.error) };
   return { ok: result.status === 0, stdout: result.stdout ?? '', stderr: result.stderr ?? '' };
 }
@@ -192,35 +234,77 @@ function compareUrl(root: string, base: string, branch: string): string | null {
   return match ? `https://github.com/${match[1]}/${match[2]}/compare/${base}...${branch}?expand=1` : null;
 }
 
-function planTarget(item: PrItem, workspace: Workspace, options: PrOptions, dryRun: boolean): { item: PrItem; candidate: Candidate | null } {
+function planTarget(
+  item: PrItem,
+  workspace: Workspace,
+  options: PrOptions,
+  dryRun: boolean
+): { item: PrItem; candidate: Candidate | null } {
   const config = readProjectConfig(path.join(workspace.project, PROJECT_CONFIG_FILE));
   const profile = config.profile ?? null;
   const planned: PrItem = { ...item, profile, base: workspace.base };
   if (!profile) return { item: { ...planned, exitCode: EXIT.usage, detail: _('repos.not-applied') }, candidate: null };
   if (options.profile && profile !== options.profile) {
-    return { item: { ...planned, state: 'skipped', exitCode: EXIT.ok, detail: _('repos.pr.skipped', { profile }) }, candidate: null };
+    return {
+      item: { ...planned, state: 'skipped', exitCode: EXIT.ok, detail: _('repos.pr.skipped', { profile }) },
+      candidate: null
+    };
   }
   // A pinned repository is pinned again to the profile's current commit; others follow the store.
   const plan = planFor(profile, workspace.project, config.pin === true ? true : 'keep');
   if (plan.plan.conflicts.length) {
     const files = plan.plan.conflicts.map(file => file.rel);
-    return { item: { ...planned, state: 'conflict', exitCode: EXIT.conflict, files, detail: _('repos.pr.conflict', { files: files.join(', ') }) }, candidate: null };
+    return {
+      item: {
+        ...planned,
+        state: 'conflict',
+        exitCode: EXIT.conflict,
+        files,
+        detail: _('repos.pr.conflict', { files: files.join(', ') })
+      },
+      candidate: null
+    };
   }
   if (!plan.plan.changes.some(change => change.status !== 'unchanged')) {
-    return { item: { ...planned, state: 'up-to-date', exitCode: EXIT.ok, detail: _('repos.sync.up-to-date') }, candidate: null };
+    return {
+      item: { ...planned, state: 'up-to-date', exitCode: EXIT.ok, detail: _('repos.sync.up-to-date') },
+      candidate: null
+    };
   }
   const commit = plan.version.source?.commit;
-  const version = commit ? commit.slice(0, 7) : `local-${createHash('sha256').update(plan.version.content).digest('hex').slice(0, 8)}`;
+  const version = commit
+    ? commit.slice(0, 7)
+    : `local-${createHash('sha256').update(plan.version.content).digest('hex').slice(0, 8)}`;
   const branch = `agctx/${profile}-${version}`;
   const withBranch: PrItem = { ...planned, branch, files: namedFiles(plan) };
   const url = existingPullRequest(workspace.root, branch);
-  if (url) return { item: { ...withBranch, state: 'pr-exists', exitCode: EXIT.ok, url, detail: _('repos.pr.pr-exists', { url }) }, candidate: null };
+  if (url)
+    return {
+      item: { ...withBranch, state: 'pr-exists', exitCode: EXIT.ok, url, detail: _('repos.pr.pr-exists', { url }) },
+      candidate: null
+    };
   if (remoteBranchExists(workspace.root, branch)) {
-    return { item: { ...withBranch, state: 'branch-exists', exitCode: EXIT.ok, detail: _('repos.pr.branch-exists', { branch }) }, candidate: null };
+    return {
+      item: {
+        ...withBranch,
+        state: 'branch-exists',
+        exitCode: EXIT.ok,
+        detail: _('repos.pr.branch-exists', { branch })
+      },
+      candidate: null
+    };
   }
-  const next: PrItem = { ...withBranch, state: 'would-open', exitCode: EXIT.ok, detail: _('repos.pr.would-open', { branch, base: workspace.base, count: withBranch.files.length }) };
+  const next: PrItem = {
+    ...withBranch,
+    state: 'would-open',
+    exitCode: EXIT.ok,
+    detail: _('repos.pr.would-open', { branch, base: workspace.base, count: withBranch.files.length })
+  };
   const title = options.message ?? `chore(agctx): update ${profile} profile to ${version}`;
-  return { item: next, candidate: dryRun ? null : { item: next, workspace, plan, fromCommit: config.source?.commit ?? null, title } };
+  return {
+    item: next,
+    candidate: dryRun ? null : { item: next, workspace, plan, fromCommit: config.source?.commit ?? null, title }
+  };
 }
 
 export interface PreparedPrs {
@@ -237,7 +321,17 @@ export function prepareReposPrs(options: PrOptions, dryRun: boolean): PreparedPr
   const candidates: Candidate[] = [];
   try {
     for (const target of targetsFrom(options)) {
-      const item: PrItem = { target: target.label, profile: null, state: 'error', exitCode: EXIT.software, base: null, branch: null, url: null, files: [], detail: '' };
+      const item: PrItem = {
+        target: target.label,
+        profile: null,
+        state: 'error',
+        exitCode: EXIT.software,
+        base: null,
+        branch: null,
+        url: null,
+        files: [],
+        detail: ''
+      };
       if (!target.clone && !fs.existsSync(target.location)) {
         items.push({ ...item, state: 'missing', exitCode: EXIT.ok, detail: _('repos.sync.missing') });
         continue;
@@ -256,7 +350,11 @@ export function prepareReposPrs(options: PrOptions, dryRun: boolean): PreparedPr
       } catch (error) {
         workspace?.cleanup();
         const cliError = toCliError(error);
-        items.push({ ...item, exitCode: cliError.exitCode, detail: cliError.hint ? `${cliError.message} ${cliError.hint}` : cliError.message });
+        items.push({
+          ...item,
+          exitCode: cliError.exitCode,
+          detail: cliError.hint ? `${cliError.message} ${cliError.hint}` : cliError.message
+        });
       }
     }
   } catch (error) {
@@ -282,7 +380,9 @@ function pullRequestBody(candidate: Candidate): string {
   const lines = [_('repos.pr.body.intro'), '', `- ${_('repos.pr.body.profile', { profile: item.profile ?? '' })}`];
   if (source?.git) lines.push(`- ${_('repos.pr.body.source', { source: `${source.git} (${source.branch ?? '-'})` })}`);
   lines.push(`- ${_('repos.pr.body.version', { from: short(fromCommit), to: short(source?.commit) })}`);
-  lines.push(`- ${_('repos.pr.body.pinned', { pinned: plan.version.pin ? _('repos.pr.body.yes') : _('repos.pr.body.no') })}`);
+  lines.push(
+    `- ${_('repos.pr.body.pinned', { pinned: plan.version.pin ? _('repos.pr.body.yes') : _('repos.pr.body.no') })}`
+  );
   const commits = profileCommits(item.profile ?? '', fromCommit, source?.commit ?? null);
   if (commits.length) lines.push('', _('repos.pr.body.commits'), ...commits.map(commit => `- ${commit}`));
   lines.push('', _('repos.pr.body.files'), ...item.files.map(file => `- \`${file}\``), '', _('repos.pr.body.check'));
@@ -296,18 +396,39 @@ export function openPullRequests(candidates: readonly Candidate[], options: PrOp
     const branch = item.branch as string;
     try {
       writePlan(plan.plan.changes, workspace.project);
-      const changed = plan.plan.changes.filter(change => change.status !== 'unchanged').map(change => path.relative(workspace.root, change.target));
+      const changed = plan.plan.changes
+        .filter(change => change.status !== 'unchanged')
+        .map(change => path.relative(workspace.root, change.target));
       git(['add', '--', ...changed], { cwd: workspace.root });
       git(['commit', '--quiet', '-m', title], { cwd: workspace.root });
       git(['push', '--quiet', 'origin', `HEAD:refs/heads/${branch}`], { cwd: workspace.root });
       const bodyFile = path.join(path.dirname(workspace.root), 'pull-request.md');
       fs.writeFileSync(bodyFile, pullRequestBody(candidate));
-      const created = gh(['pr', 'create', '--base', workspace.base, '--head', branch, '--title', title, '--body-file', bodyFile, ...(options.draft ? ['--draft'] : [])], workspace.root);
+      const created = gh(
+        [
+          'pr',
+          'create',
+          '--base',
+          workspace.base,
+          '--head',
+          branch,
+          '--title',
+          title,
+          '--body-file',
+          bodyFile,
+          ...(options.draft ? ['--draft'] : [])
+        ],
+        workspace.root
+      );
       const url = created.ok ? created.stdout.trim().split('\n').pop()?.trim() || null : null;
       if (url) return { ...item, state: 'opened' as const, url, detail: _('repos.pr.opened', { branch, url }) };
       const compare = compareUrl(workspace.root, workspace.base, branch);
       const reason = created.stderr.trim().split('\n').pop() ?? '';
-      return { ...item, state: 'pushed' as const, detail: _('repos.pr.pushed', { branch, base: workspace.base, link: compare ? ` ${compare}` : '', reason }) };
+      return {
+        ...item,
+        state: 'pushed' as const,
+        detail: _('repos.pr.pushed', { branch, base: workspace.base, link: compare ? ` ${compare}` : '', reason })
+      };
     } catch (error) {
       const cliError = toCliError(error);
       return { ...item, state: 'error' as const, exitCode: cliError.exitCode, detail: cliError.message };

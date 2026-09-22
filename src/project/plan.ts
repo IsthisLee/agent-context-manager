@@ -1,14 +1,28 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
-import { extractAgentsManagedDocument, extractManagedDocument, formatterNormalized, mergeAgentsMd, mergeManagedDocument } from './analyzer.ts';
+import {
+  extractAgentsManagedDocument,
+  extractManagedDocument,
+  formatterNormalized,
+  mergeAgentsMd,
+  mergeManagedDocument
+} from './analyzer.ts';
 import { apmRegenerates } from './apm.ts';
 import { AGCTX_GITIGNORE, baseFilePath, parseBase, serializeBase } from './conflicts.ts';
 import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
 import { _ } from '../i18n/index.ts';
 import { CliError, EXIT } from '../shared/errors.ts';
 import { assertSafeTextTarget, toLf, writeTextAtomic } from '../shared/fs-utils.ts';
-import type { ConflictedFile, ManagedKind, PlannedChange, PlannedFile, ProjectConfig, ProjectPlan, VersionRecord } from '../shared/types.ts';
+import type {
+  ConflictedFile,
+  ManagedKind,
+  PlannedChange,
+  PlannedFile,
+  ProjectConfig,
+  ProjectPlan,
+  VersionRecord
+} from '../shared/types.ts';
 
 /**
  * Plan what `profile apply`/`sync`/`resolve` would write to a project.
@@ -46,7 +60,12 @@ function recordedHashFor(projectConfig: ProjectConfig, relativePath: string): st
  * The managed area as agctx last wrote it, when it can be known: a base file
  * matching the recorded hash, or a regenerated area that still hashes the same.
  */
-function knownBase(targetDir: string, relativePath: string, recordedHash: string, nextRegion: string | null): string | null {
+function knownBase(
+  targetDir: string,
+  relativePath: string,
+  recordedHash: string,
+  nextRegion: string | null
+): string | null {
   const stored = readIfExists(path.join(targetDir, baseFilePath(relativePath)));
   if (stored !== null && sha256(parseBase(stored)) === recordedHash) return parseBase(stored);
   if (nextRegion && sha256(nextRegion) === recordedHash) return nextRegion;
@@ -69,14 +88,23 @@ export interface PlanInput {
 /**
  * @param overrides - resolved contents to plan from instead of the files on disk
  */
-export function planProject({ packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig, record }: PlanInput, overrides: Map<string, string | null> = new Map()): ProjectPlan {
+export function planProject(
+  { packageRoot, targetDir, projectName, profileName, renderedAgents, projectConfig, record }: PlanInput,
+  overrides: Map<string, string | null> = new Map()
+): ProjectPlan {
   const files: PlannedFile[] = [];
   const describe = (relativePath: string, kind: ManagedKind, regenerate: (existing: string | null) => string) => {
     const overridden = overrides.has(relativePath);
-    const existing = overridden ? overrides.get(relativePath) ?? null : readIfExists(path.join(targetDir, relativePath));
+    const existing = overridden
+      ? (overrides.get(relativePath) ?? null)
+      : readIfExists(path.join(targetDir, relativePath));
     if (apmRegenerates(relativePath, existing)) {
-      const hint = relativePath === 'AGENTS.md' ? 'hint.project.apm-generated.agents' : 'hint.project.apm-generated.claude';
-      throw new CliError('project.apm-generated', _('error.project.apm-generated', { file: relativePath }), { exitCode: EXIT.conflict, hint: _(hint, { file: relativePath }) });
+      const hint =
+        relativePath === 'AGENTS.md' ? 'hint.project.apm-generated.agents' : 'hint.project.apm-generated.claude';
+      throw new CliError('project.apm-generated', _('error.project.apm-generated', { file: relativePath }), {
+        exitCode: EXIT.conflict,
+        hint: _(hint, { file: relativePath })
+      });
     }
     const regenerated = regenerate(existing);
     const currentRegion = managedRegion(kind, existing);
@@ -87,16 +115,32 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     // hold what this run would write, or it may differ from what agctx last
     // wrote only in ways a formatter produces. Neither has anything to lose.
     const base = recordedHash ? knownBase(targetDir, relativePath, recordedHash, nextRegion) : null;
-    const settled = currentRegion !== null && (currentRegion === nextRegion || (base !== null && formatterNormalized(base) === formatterNormalized(currentRegion)));
-    const conflict = recordedHash && !settled && regionHash(currentRegion) !== recordedHash
-      ? { kind: existing === null ? 'missing' as const : 'edited' as const, base }
-      : null;
-    files.push({ rel: relativePath, kind, target: path.join(targetDir, relativePath), existing, regenerated, currentRegion, nextRegion, conflict });
+    const settled =
+      currentRegion !== null &&
+      (currentRegion === nextRegion ||
+        (base !== null && formatterNormalized(base) === formatterNormalized(currentRegion)));
+    const conflict =
+      recordedHash && !settled && regionHash(currentRegion) !== recordedHash
+        ? { kind: existing === null ? ('missing' as const) : ('edited' as const), base }
+        : null;
+    files.push({
+      rel: relativePath,
+      kind,
+      target: path.join(targetDir, relativePath),
+      existing,
+      regenerated,
+      currentRegion,
+      nextRegion,
+      conflict
+    });
   };
 
   describe('AGENTS.md', 'agents', existing => mergeAgentsMd(renderedAgents, existing));
   for (const [source, relativePath] of POINTER_TEMPLATES) {
-    const template = toLf(fs.readFileSync(path.join(packageRoot, source), 'utf8')).replaceAll('{{PROJECT_NAME}}', projectName);
+    const template = toLf(fs.readFileSync(path.join(packageRoot, source), 'utf8')).replaceAll(
+      '{{PROJECT_NAME}}',
+      projectName
+    );
     describe(relativePath, 'pointer', existing => mergeManagedDocument(template, existing));
   }
 
@@ -118,7 +162,9 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   }
   for (const rel of Object.keys(projectConfig.managedHashes ?? {})) {
     if (rel.endsWith('/CLAUDE.md') && !linked.has(rel)) {
-      warnings.push(_('plan.warn.link-dropped', { file: rel, agents: `${rel.slice(0, -'CLAUDE.md'.length)}AGENTS.md` }));
+      warnings.push(
+        _('plan.warn.link-dropped', { file: rel, agents: `${rel.slice(0, -'CLAUDE.md'.length)}AGENTS.md` })
+      );
     }
   }
 
@@ -126,7 +172,12 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
   const planFile = (relativePath: string, content: string) => {
     const target = path.join(targetDir, relativePath);
     const existing = readIfExists(target);
-    changes.push({ target, relativePath, content, status: existing === null ? 'create' : existing === content ? 'unchanged' : 'update' });
+    changes.push({
+      target,
+      relativePath,
+      content,
+      status: existing === null ? 'create' : existing === content ? 'unchanged' : 'update'
+    });
   };
   const managedHashes: Record<string, string> = {};
   for (const file of files) {
@@ -137,15 +188,36 @@ export function planProject({ packageRoot, targetDir, projectName, profileName, 
     if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
   }
   planFile(AGCTX_GITIGNORE, 'backups/\n');
-  const { schemaVersion: _schemaVersion, profile: _profile, projectName: _projectName, source: _source, pin: _pin, uncommitted: _uncommitted, managedHashes: _managedHashes, ...kept } = projectConfig;
+  const {
+    schemaVersion: _schemaVersion,
+    profile: _profile,
+    projectName: _projectName,
+    source: _source,
+    pin: _pin,
+    uncommitted: _uncommitted,
+    managedHashes: _managedHashes,
+    ...kept
+  } = projectConfig;
   const version = {
     ...(record.source ? { source: record.source } : {}),
     ...(record.pin ? { pin: true } : {}),
     ...(record.uncommitted ? { uncommitted: true } : {})
   };
-  planFile('agctx.project.json', JSON.stringify({ ...kept, schemaVersion: 2, profile: profileName, projectName, ...version, managedHashes }, null, 2) + '\n');
+  planFile(
+    'agctx.project.json',
+    JSON.stringify(
+      { ...kept, schemaVersion: 2, profile: profileName, projectName, ...version, managedHashes },
+      null,
+      2
+    ) + '\n'
+  );
 
-  return { files, conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null), changes, warnings };
+  return {
+    files,
+    conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null),
+    changes,
+    warnings
+  };
 }
 
 /** Write every changed file, refusing unsafe targets before anything is written. */

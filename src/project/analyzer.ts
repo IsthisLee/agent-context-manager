@@ -35,7 +35,10 @@ export function mergeAgentsMd(profileContent: string, existingContent?: string |
   // carried over as written instead of being rebuilt from the scaffold text.
   const marker = existingContent.indexOf(MANAGED_END);
   if (marker !== -1) {
-    const kept = existingContent.slice(marker + MANAGED_END.length).replace(/^\n+/, '').trimEnd();
+    const kept = existingContent
+      .slice(marker + MANAGED_END.length)
+      .replace(/^\n+/, '')
+      .trimEnd();
     const head = managedHead(profileContent);
     return kept ? `${head}\n\n${kept}\n` : `${head}\n`;
   }
@@ -49,9 +52,7 @@ export function mergeAgentsMd(profileContent: string, existingContent?: string |
   if (!contentAfterHeader) return profileContent;
 
   const boilerplate = EXTENSION_BOILERPLATES.find(text => contentAfterHeader.startsWith(text));
-  const customRules = boilerplate
-    ? contentAfterHeader.slice(boilerplate.length).trim()
-    : contentAfterHeader;
+  const customRules = boilerplate ? contentAfterHeader.slice(boilerplate.length).trim() : contentAfterHeader;
   if (!customRules) return profileContent;
 
   return `${profileContent.trimEnd()}\n\n${customRules}\n`;
@@ -135,7 +136,10 @@ const BLOCK_CLOSES = /^\s*(?:#{1,6}[ \t]|\||<|-{3,}\s*$|\*{3,}\s*$|(?:```|~~~))/
  * left alone, where a newline does mean something.
  */
 export function formatterNormalized(text: string): string {
-  const lines = text.replaceAll('\r\n', '\n').split('\n').map(line => line.replace(/[ \t]+$/, '').replace(/^(\s*)[*+]([ \t]+)/, '$1-$2'));
+  const lines = text
+    .replaceAll('\r\n', '\n')
+    .split('\n')
+    .map(line => line.replace(/[ \t]+$/, '').replace(/^(\s*)[*+]([ \t]+)/, '$1-$2'));
   const out: Array<{ text: string; fenced: boolean }> = [];
   let fenced = false;
   for (const line of lines) {
@@ -143,7 +147,13 @@ export function formatterNormalized(text: string): string {
     const inFence = fenced || opensFence;
     const joinable = !inFence && line.trim() !== '' && !BLOCK_START.test(line);
     const previous = out.at(-1);
-    if (joinable && previous !== undefined && !previous.fenced && previous.text.trim() !== '' && !BLOCK_CLOSES.test(previous.text)) {
+    if (
+      joinable &&
+      previous !== undefined &&
+      !previous.fenced &&
+      previous.text.trim() !== '' &&
+      !BLOCK_CLOSES.test(previous.text)
+    ) {
       previous.text = `${previous.text} ${line.trim()}`;
     } else {
       out.push({ text: line, fenced: inFence });
@@ -152,7 +162,11 @@ export function formatterNormalized(text: string): string {
   }
   // Blank lines go last, after they have done their job of ending a paragraph.
   // How many sit between two blocks is the formatter's business, not a rule.
-  return out.filter(entry => entry.fenced || entry.text.trim() !== '').map(entry => entry.text).join('\n').trimEnd();
+  return out
+    .filter(entry => entry.fenced || entry.text.trim() !== '')
+    .map(entry => entry.text)
+    .join('\n')
+    .trimEnd();
 }
 
 export interface UnstableLine {
@@ -182,8 +196,10 @@ export function formatterUnstableLines(text: string): UnstableLine[] {
     const next = lines[index + 1];
     if (/^\s*[*+][ \t]+\S/.test(line)) found.push({ line: at, reason: 'bullet marker is not -' });
     if (/[ \t]$/.test(line)) found.push({ line: at, reason: 'trailing whitespace' });
-    if (/^#{1,6}[ \t]/.test(line) && next !== undefined && next.trim() !== '') found.push({ line: at, reason: 'no blank line after heading' });
-    if (line === '' && index > 0 && lines[index - 1] === '') found.push({ line: at, reason: 'consecutive blank lines' });
+    if (/^#{1,6}[ \t]/.test(line) && next !== undefined && next.trim() !== '')
+      found.push({ line: at, reason: 'no blank line after heading' });
+    if (line === '' && index > 0 && lines[index - 1] === '')
+      found.push({ line: at, reason: 'consecutive blank lines' });
   });
   return found;
 }

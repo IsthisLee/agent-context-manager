@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: e736e01f7413ab51ec5c12791e233a870c4f7b002966999362d84316435f73be -->
+<!-- agctx-doc-sources-sha256: 023919e01749f04ca62cdbe536e8d9a24fc7956a368f39aebcc7411afe08890c -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -48,17 +48,17 @@ flowchart TD
 - 문서도 소스로 핀할 수 있다. 핀한 문서의 `agctx-doc-sources-sha256` 줄과 생성 블록의 내용은 해싱에서 빼므로(`withoutRecordedHash`·`withoutGeneratedBlocks`, `tools/doc-sources.ts`), 그 문서를 다시 stamp하거나 생성 블록을 다시 생성해도 핀한 쪽은 실패하지 않고 사람이 쓴 본문이 바뀔 때만 실패한다. 생성 블록은 평가가 원본 데이터와 대조하므로 해시로 다시 지키지 않는다. `README.md`와 `README.en.md`는 이 방식으로 서로를 핀한다. 한 언어의 README를 고치면 다른 언어 README가 실패하므로, 두 파일을 같은 내용으로 맞춘 뒤 stamp한다.
 - **실패 메시지는 바뀐 소스를 지목한다.** 지문은 핀한 소스 전체를 합쳐 만들기 때문에 검사기 혼자서는 어느 파일이 움직였는지 모른다. 그래서 그 지문을 기록한 커밋을 git에서 찾고 그 뒤에 바뀐 파일만 추려 보여 준다(`tools/check-docs.ts`의 `changedPinnedSources`<!--s:96c386caee18-->). git으로 답할 수 없으면 지금까지처럼 핀 목록을 그대로 적는다.
 - 인용하는 소스가 늘거나 줄면 마커의 목록도 같은 변경에서 갱신한다. 다만 디렉터리로 고정한 범위 안에서 파일이 늘거나 줄면 목록 갱신 없이 자동 반영된다.
-- **지문만 다시 찍은 문서는 `--restamped`가 찾아낸다.** `node tools/check-docs.ts --restamped [기준]`은 기준(기본값 `main`)부터 `HEAD`까지의 커밋을 훑어, 바뀐 줄이 기록 해시와 인용 지문뿐인 Markdown 문서의 이름을 출력한다. 판정은 diff만 보고 하며 `tools/doc-sources.ts`의 `restampOnlyDocuments`<!--s:32ad3ed3d35d-->가 한다. 다시 읽는 것이 옳은 경우도 있으므로 **경고로만 알리고 0으로 끝낸다.** 소스에 주석 한 줄이 늘어 지문만 움직인 경우가 그렇다. 사람이 읽을 목록을 남기는 것이 목적이다. 문서 내용까지 대조하는 리뷰 계획은 [문서 정확성 자동 리뷰 논의](../discussion/repository/topics/doc-accuracy-review.md)에 있다.
+- **지문만 다시 찍은 문서는 `--restamped`가 찾아낸다.** `node tools/check-docs.ts --restamped [기준]`은 기준(기본값 `main`)부터 `HEAD`까지의 커밋을 훑어, 바뀐 줄이 기록 해시와 인용 지문뿐인 Markdown 문서의 이름을 출력한다. 판정은 diff만 보고 하며 `tools/doc-sources.ts`의 `restampOnlyDocuments`<!--s:3810017921b1-->가 한다. 다시 읽는 것이 옳은 경우도 있으므로 **경고로만 알리고 0으로 끝낸다.** 소스에 주석 한 줄이 늘어 지문만 움직인 경우가 그렇다. 사람이 읽을 목록을 남기는 것이 목적이다. 문서 내용까지 대조하는 리뷰 계획은 [문서 정확성 자동 리뷰 논의](../discussion/repository/topics/doc-accuracy-review.md)에 있다.
 
 ### 핀 범위와 예시 검사
 
 - 소스는 모듈 단위로 핀한다. `src` 폴더 전체를 핀하면 파일 하나만 바꿔도 모든 문서가 한꺼번에 실패해 다시 읽지 않고 stamp하게 되므로, `check:docs`가 이를 오류로 막는다. `src/commands`처럼 모듈 폴더나 파일을 나열한다.
-- `src` 아래의 모든 파일은 어느 문서든 **핀하거나 인용해야** 한다. 인용은 같은 지문을 같은 방식으로 지키므로 핀을 따로 두지 않아도 된다. 둘 다 없는 파일은 `check:docs`가 알린다. 규칙은 `tools/doc-sources.ts`의 `unpinnedSources`<!--s:d88deed8a300-->에 있다.
+- `src` 아래의 모든 파일은 어느 문서든 **핀하거나 인용해야** 한다. 인용은 같은 지문을 같은 방식으로 지키므로 핀을 따로 두지 않아도 된다. 둘 다 없는 파일은 `check:docs`가 알린다. 규칙은 `tools/doc-sources.ts`의 `unpinnedSources`<!--s:0ecdd96038b4-->에 있다.
 - 빠른 시작의 명령 예시는 `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 줄마다 대조한다. 해시 게이트는 다시 읽으라고 알릴 뿐이지만, 이 검사는 예시가 실제 출력과 달라진 순간을 잡는다. 예시에 쓸 수 있는 명령은 `agctx`와 `mkdir`이다.
 
 ## 문서 근거 게이트
 
-외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정과 배포 지침이 근거를 밝히도록 `check:docs`가 세 가지를 검사한다. 확인일과 ADR 근거의 검사 로직은 `tools/doc-evidence.ts`에, 지침 카탈로그 검사는 `tools/check-docs.ts`의 `checkGuidanceCatalog`<!--s:c45ef0207675-->에 있다.
+외부 사실의 출처가 언제 확인됐는지 남기고, 새 결정과 배포 지침이 근거를 밝히도록 `check:docs`가 세 가지를 검사한다. 확인일과 ADR 근거의 검사 로직은 `tools/doc-evidence.ts`에, 지침 카탈로그 검사는 `tools/check-docs.ts`의 `checkGuidanceCatalog`<!--s:e6194c1c6b95-->에 있다.
 
 - **확인일:** `docs/references.md`에서 코드 블록 밖의 외부 링크(`http`·`https`)가 들어 있는 줄은 같은 줄에 `확인일: YYYY-MM-DD`가 있어야 한다. 목록 항목은 줄 끝에, 표 행은 마지막 칸 안에 붙인다.
 - **ADR 근거:** 번호가 0009 이상인 ADR은 머리말에 `* **근거:**`(또는 `* **Evidence:**`)가 있어야 한다. 값에는 링크를 두거나, 외부 사실에 기대지 않는 결정이면 `외부 근거 없음: <이유>`(또는 `No external evidence: <reason>`)를 적는다. 0008 이전 ADR은 검사하지 않는다.
@@ -97,7 +97,7 @@ Documentation check failed:
 - 지문은 가리킨 대상을 파일에서 잘라 내 계산한다. TypeScript는 선언 한 덩어리, JSON은 그 키의 값, YAML은 그 키의 블록이다(`tools/symbol-source.ts`의 `citedText`<!--s:3c693c78b09f-->).
 - 줄바꿈을 LF로 맞춘 뒤 계산하므로 CRLF로 체크아웃한 컴퓨터에서도 같은 값이 나온다. 공백과 주석은 빼지 않는다. 이 저장소는 코드 옆 주석을 이유의 정본으로 삼으므로, 주석이 바뀌면 문서를 다시 읽는 편이 맞다.
 - 잘라 내는 일은 얕은 파서가 한다. 이 저장소가 최상위 선언만 인용하고, TypeScript 7이 JavaScript 파서 API를 제공하지 않기 때문이다. 인용한 이름을 모두 잘라 낼 수 있는지는 `evals/symbol-source.test.ts`가 검사한다.
-- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:5d3c250ef9b9-->에 있다.
+- 형식 규칙은 `tools/doc-citations.ts`에, 검사는 `tools/check-docs.ts`의 `checkCitations`<!--s:6778b9c431ef-->에 있다.
 - 결정과 측정은 [문서가 코드를 인용하는 방식](../discussion/repository/topics/code-citation-style.md)에 있다.
 
 ## 생성하는 레퍼런스
@@ -137,4 +137,4 @@ Documentation check failed:
 - 최상위 키는 논의 영역 이름이고, 배열 순서가 색인 표의 행 순서다. `stage`·`titleEn`·`importance`·`prerequisites`는 필요한 주제에만 둔다. 영어 README에 나오는 주제에 `titleEn`이 없으면 생성기가 실패한다.
 - mermaid 안에서는 HTML 주석을 쓸 수 없으므로 단계 그림의 표지는 `%% agctx:generated:stage-classes:start`와 `%% agctx:generated:stage-classes:end`다. 그림의 노드·화살표와 그림 아래 설명은 사람이 쓴다. 새 단계를 더하면 그림에 `S<단계>` 노드를 먼저 만든다.
 - `evals/discussion-status.test.ts`가 생성 결과와 파일 내용이 같은지 검사하므로, `topics.json`을 고치고 다시 생성하지 않으면 `pnpm run check`가 실패한다.
-- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES`<!--s:f0f4dd050848--> 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. 주제 문서의 제안 요약에 적은 `중요도`의 첫 단어(`High — 이유`의 `High`)는 `importance`와 같아야 한다. 이유는 주제 문서에, 수준은 `topics.json`에 둔다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.
+- `check:docs`는 `topics.json`을 읽어 다음을 검사한다. 영역의 `topics/` 폴더에 있는 문서는 목록에 정확히 한 번 있어야 하고, 목록에 있는 문서는 실제로 있어야 한다. 상태는 `tools/discussion-topics.ts`의 `STATUSES`<!--s:918b6682b9f7--> 가운데 하나여야 한다. `Implemented` 주제에는 구현 기록 제목이 있어야 하고, 구현 기록이 있는 주제는 `Proposed`일 수 없다. 주제 문서의 제안 요약에 적은 `중요도`의 첫 단어(`High — 이유`의 `High`)는 `importance`와 같아야 한다. 이유는 주제 문서에, 수준은 `topics.json`에 둔다. `Proposed`·`Implementing` 주제에는 제안 요약 항목이 모두 있어야 한다.

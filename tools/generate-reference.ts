@@ -28,14 +28,18 @@ const CHANGES: Record<CommandSpec['changes'], string> = {
 };
 
 /** Where a command runs: always the CLI, plus the TUI and the profile management menu when the registry names an entry there. */
-const interfaces = (command: CommandSpec) => ['CLI', ...(command.tui ? ['TUI'] : []), ...(command.profileMenu ? ['프로필 메뉴'] : [])].join(' · ');
+const interfaces = (command: CommandSpec) =>
+  ['CLI', ...(command.tui ? ['TUI'] : []), ...(command.profileMenu ? ['프로필 메뉴'] : [])].join(' · ');
 
 export const documentedCommands = (): CommandSpec[] => COMMANDS.filter(command => command.id !== 'help');
 
 const heading = (command: CommandSpec) => command.words.join(' ');
 const anchor = (command: CommandSpec) => command.words.join('-');
 const sortedCodes = (command: CommandSpec) => [...command.exitCodes].sort((a, b) => a - b);
-const codes = (command: CommandSpec) => sortedCodes(command).map(code => `\`${code}\` ${messages[`exit.${code}`]}`).join(' · ');
+const codes = (command: CommandSpec) =>
+  sortedCodes(command)
+    .map(code => `\`${code}\` ${messages[`exit.${code}`]}`)
+    .join(' · ');
 
 export function markerPair(name: string): [start: string, end: string] {
   return [`<!-- agctx:generated:${name}:start -->`, `<!-- agctx:generated:${name}:end -->`];
@@ -53,7 +57,10 @@ export function commandTable(): string {
   return [
     '| 명령 | 하는 일 | 바꾸는 것 | 쓸 수 있는 곳 |',
     '| --- | --- | --- | --- |',
-    ...documentedCommands().map(command => `| [\`${heading(command)}\`](#${anchor(command)}) | ${messages[`command.${command.id}.summary`]} | ${CHANGES[command.changes]} | ${interfaces(command)} |`)
+    ...documentedCommands().map(
+      command =>
+        `| [\`${heading(command)}\`](#${anchor(command)}) | ${messages[`command.${command.id}.summary`]} | ${CHANGES[command.changes]} | ${interfaces(command)} |`
+    )
   ].join('\n');
 }
 
@@ -71,7 +78,12 @@ export function exitCodeTable(): string {
   return [
     '| 명령 | 돌려줄 수 있는 종료 코드 |',
     '| --- | --- |',
-    ...documentedCommands().map(command => `| \`agctx ${heading(command)}\` | ${sortedCodes(command).map(code => `\`${code}\``).join(' · ')} |`)
+    ...documentedCommands().map(
+      command =>
+        `| \`agctx ${heading(command)}\` | ${sortedCodes(command)
+          .map(code => `\`${code}\``)
+          .join(' · ')} |`
+    )
   ].join('\n');
 }
 
@@ -96,9 +108,12 @@ function main(argv: readonly string[]): void {
     else fs.writeFileSync(file, next);
   }
   if (stale.length) {
-    process.stderr.write(`Generated reference blocks are out of date: ${stale.join(', ')}. Run node tools/generate-reference.ts.\n`);
+    process.stderr.write(
+      `Generated reference blocks are out of date: ${stale.join(', ')}. Run node tools/generate-reference.ts.\n`
+    );
     process.exitCode = 1;
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main(process.argv.slice(2));
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)
+  main(process.argv.slice(2));

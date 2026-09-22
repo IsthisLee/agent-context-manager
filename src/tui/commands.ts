@@ -39,7 +39,10 @@ export async function runFromTui(id: string, positional: readonly string[], answ
   const outcome = await HANDLERS[id](checkArguments(commandById(id), commandTokens(id, positional, answers)));
   for (const warning of outcome.warnings ?? []) say(warning);
   if (outcome.exitCode !== EXIT.ok) {
-    note(_('tui.result.body', { meaning: _(`exit.${outcome.exitCode}`), code: outcome.exitCode }), _('tui.result.title'));
+    note(
+      _('tui.result.body', { meaning: _(`exit.${outcome.exitCode}`), code: outcome.exitCode }),
+      _('tui.result.title')
+    );
   }
   return outcome;
 }
@@ -53,9 +56,11 @@ export async function helpTui(): Promise<void> {
   const selected = await select<string>({
     message: _('help.select.message'),
     maxItems: 12,
-    options: helpChoices().map(id => (id === null
-      ? { value: '__all__', label: _('help.select.all') }
-      : { value: id, label: `agctx ${commandById(id).words.join(' ')}`, hint: _(`command.${id}.summary`) }))
+    options: helpChoices().map(id =>
+      id === null
+        ? { value: '__all__', label: _('help.select.all') }
+        : { value: id, label: `agctx ${commandById(id).words.join(' ')}`, hint: _(`command.${id}.summary`) }
+    )
   });
   if (cancelled(selected)) return;
   if (selected === '__all__') help();

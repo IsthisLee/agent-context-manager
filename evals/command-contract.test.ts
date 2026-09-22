@@ -22,7 +22,11 @@ function sandbox(t: TestContext) {
   fs.mkdirSync(home);
   fs.mkdirSync(project);
   const run = (args: string[], env: Record<string, string> = {}) =>
-    spawnSync(process.execPath, [cli, ...args], { cwd: root, env: { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'en', ...env }, encoding: 'utf8' });
+    spawnSync(process.execPath, [cli, ...args], {
+      cwd: root,
+      env: { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'en', ...env },
+      encoding: 'utf8'
+    });
   const ok = (args: string[], env: Record<string, string> = {}) => {
     const result = run(args, env);
     assert.equal(result.status, 0, `agctx ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
@@ -34,7 +38,15 @@ function sandbox(t: TestContext) {
 function jsonDocument(stdout: string) {
   const document = JSON.parse(stdout);
   assert.equal(document.schemaVersion, 1);
-  assert.deepEqual(Object.keys(document).sort(), ['command', 'data', 'errors', 'exitCode', 'ok', 'schemaVersion', 'warnings']);
+  assert.deepEqual(Object.keys(document).sort(), [
+    'command',
+    'data',
+    'errors',
+    'exitCode',
+    'ok',
+    'schemaVersion',
+    'warnings'
+  ]);
   return document;
 }
 
@@ -64,7 +76,10 @@ test('with --json, stdout holds one result document and messages move to stderr'
   assert.equal(document.exitCode, 0);
   assert.equal(document.ok, true);
   assert.deepEqual(document.errors, []);
-  assert.deepEqual(document.data.profiles.map((profile: { name: string }) => profile.name), ['demo']);
+  assert.deepEqual(
+    document.data.profiles.map((profile: { name: string }) => profile.name),
+    ['demo']
+  );
   assert.match(result.stderr, /demo/, 'the human listing still reaches the terminal on stderr');
 });
 
@@ -122,7 +137,10 @@ test('<command> --help prints the usage and exit codes without running the comma
   const { project, ok } = sandbox(t);
   const result = ok(['profile', 'apply', '--help']);
   assert.match(result.stdout, /Usage: agctx profile apply \[--dry-run\] \[--pin\] \[--yes\] <name> \[<project>\]/);
-  assert.match(result.stdout, /Exit codes: 0 success, 64 usage error, 70 other error, 2 conflict, 3 hidden characters, 69 external tool or network unavailable/);
+  assert.match(
+    result.stdout,
+    /Exit codes: 0 success, 64 usage error, 70 other error, 2 conflict, 3 hidden characters, 69 external tool or network unavailable/
+  );
   assert.deepEqual(fs.readdirSync(project), []);
 });
 
@@ -138,7 +156,10 @@ test('check runs in CI without a profile store and reports the most severe findi
 
   const claudePath = path.join(project, 'CLAUDE.md');
   const claude = fs.readFileSync(claudePath, 'utf8');
-  fs.writeFileSync(claudePath, claude.replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
+  fs.writeFileSync(
+    claudePath,
+    claude.replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n')
+  );
   const conflict = run(['check', project], ci);
   assert.equal(conflict.status, 2);
   assert.match(conflict.stdout, /conflict\s+CLAUDE\.md/);
@@ -149,8 +170,13 @@ test('check runs in CI without a profile store and reports the most severe findi
   assert.equal(hidden.status, 3, 'hidden characters outrank the conflict');
   const document = jsonDocument(hidden.stdout);
   assert.equal(document.command, 'check');
-  assert.deepEqual([...new Set(document.data.findings.map((finding: { kind: string }) => finding.kind))].sort(), ['conflict', 'hidden-characters']);
-  assert.ok(document.data.findings.some((finding: { detail: string }) => /AGENTS\.md:\d+:\d+ U\+202E/.test(finding.detail)));
+  assert.deepEqual([...new Set(document.data.findings.map((finding: { kind: string }) => finding.kind))].sort(), [
+    'conflict',
+    'hidden-characters'
+  ]);
+  assert.ok(
+    document.data.findings.some((finding: { detail: string }) => /AGENTS\.md:\d+:\d+ U\+202E/.test(finding.detail))
+  );
 
   fs.writeFileSync(claudePath, claude);
 });
@@ -203,4 +229,3 @@ test('a copy in a folder with another name keeps the recorded project name, so c
   assert.match(ok(['profile', 'sync', copy, '--yes']).stdout, /already up to date/);
   assert.match(fs.readFileSync(path.join(copy, 'AGENTS.md'), 'utf8'), /\*\*Project:\*\* project/);
 });
-

@@ -47,7 +47,8 @@ test('public repository health and dependency automation files are present', () 
     '.github/PULL_REQUEST_TEMPLATE.md',
     '.editorconfig',
     '.gitattributes'
-  ]) assert(fs.existsSync(path.join(repoRoot, relative)), `${relative} must exist`);
+  ])
+    assert(fs.existsSync(path.join(repoRoot, relative)), `${relative} must exist`);
   // Dropped with ADR 0031: a code of conduct and issue templates need more than
   // one person, and CODEOWNERS needs more than one owner.
   for (const relative of ['CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', '.github/CODEOWNERS', '.github/ISSUE_TEMPLATE']) {
@@ -59,7 +60,12 @@ test('public repository health and dependency automation files are present', () 
 });
 
 test('GitHub Actions references are pinned to immutable commits', () => {
-  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml']) {
+  for (const relative of [
+    '.github/workflows/ci.yml',
+    '.github/workflows/codeql.yml',
+    '.github/workflows/dependency-review.yml',
+    '.github/workflows/publish.yml'
+  ]) {
     const workflow = read(relative);
     for (const match of workflow.matchAll(/uses:\s+([^\s#]+)@([^\s#]+)/g)) {
       assert.match(match[2], /^[0-9a-f]{40}$/, `${relative}: ${match[1]} must use a 40-character commit SHA`);
@@ -68,9 +74,16 @@ test('GitHub Actions references are pinned to immutable commits', () => {
 });
 
 test('every GitHub workflow disables checkout credential persistence', () => {
-  for (const relative of ['.github/workflows/ci.yml', '.github/workflows/codeql.yml', '.github/workflows/dependency-review.yml', '.github/workflows/publish.yml']) {
+  for (const relative of [
+    '.github/workflows/ci.yml',
+    '.github/workflows/codeql.yml',
+    '.github/workflows/dependency-review.yml',
+    '.github/workflows/publish.yml'
+  ]) {
     const workflow = read(relative);
-    const checkouts = [...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n      - name:|\n  jobs:|$)/g)];
+    const checkouts = [
+      ...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n      - name:|\n  jobs:|$)/g)
+    ];
     assert(checkouts.length > 0, `${relative} must use checkout`);
     for (const [, block] of checkouts) assert.match(block, /persist-credentials: false/);
   }

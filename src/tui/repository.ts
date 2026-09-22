@@ -40,7 +40,10 @@ async function profileFilterAnswer(profiles: readonly string[]): Promise<string 
   if (profiles.length < 2) return null;
   const selected = await select<string>({
     message: _('repos.profile.message'),
-    options: [{ value: '__all__', label: _('repos.profile.all') }, ...profiles.map(profile => ({ value: profile, label: profile }))]
+    options: [
+      { value: '__all__', label: _('repos.profile.all') },
+      ...profiles.map(profile => ({ value: profile, label: profile }))
+    ]
   });
   if (cancelled(selected)) return undefined;
   return selected === '__all__' ? null : selected;
@@ -132,7 +135,13 @@ export const REPOSITORY_ACTIONS: Record<string, () => Promise<void>> = {
       if (cancelled(file)) return cancelRepos();
       targets = path.resolve(file.trim());
     }
-    const profile = await profileFilterAnswer(source === 'list' ? listedProfiles() : getProfiles().map(entry => entry.name).sort());
+    const profile = await profileFilterAnswer(
+      source === 'list'
+        ? listedProfiles()
+        : getProfiles()
+            .map(entry => entry.name)
+            .sort()
+    );
     if (profile === undefined) return cancelRepos();
     const base = await optionalText(_('repos.pr.base.message'));
     if (base === undefined) return cancelRepos();
@@ -144,11 +153,20 @@ export const REPOSITORY_ACTIONS: Record<string, () => Promise<void>> = {
   }
 };
 
-async function menu(title: string, message: string, commands: typeof PROJECT_MENU_COMMANDS, onCancel: () => void): Promise<void> {
+async function menu(
+  title: string,
+  message: string,
+  commands: typeof PROJECT_MENU_COMMANDS,
+  onCancel: () => void
+): Promise<void> {
   intro(title);
   const action = await select<string>({
     message,
-    options: commands.map(command => ({ value: command.id, label: _(command.tui as string), hint: _((command.tui as string).replace(/\.label$/, '.hint')) }))
+    options: commands.map(command => ({
+      value: command.id,
+      label: _(command.tui as string),
+      hint: _((command.tui as string).replace(/\.label$/, '.hint'))
+    }))
   });
   if (cancelled(action)) return onCancel();
   await runTuiStep(() => REPOSITORY_ACTIONS[action]());

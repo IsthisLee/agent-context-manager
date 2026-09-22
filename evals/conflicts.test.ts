@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { baseFilePath, collectUserEdits, formatDiff, parseBase, relocateUserEdits, serializeBase } from '../src/project/conflicts.ts';
+import {
+  baseFilePath,
+  collectUserEdits,
+  formatDiff,
+  parseBase,
+  relocateUserEdits,
+  serializeBase
+} from '../src/project/conflicts.ts';
 
 const START = '<!-- agctx:managed:start -->';
 const END = '<!-- agctx:managed:end -->';

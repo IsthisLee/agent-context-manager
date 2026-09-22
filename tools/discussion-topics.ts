@@ -9,7 +9,14 @@ import path from 'node:path';
  */
 export const TOPICS_FILE = 'docs/discussion/topics.json';
 
-export const STATUSES: readonly string[] = ['Proposed', 'Implementing', 'Implemented', 'Superseded', 'Active reference', 'Active process'];
+export const STATUSES: readonly string[] = [
+  'Proposed',
+  'Implementing',
+  'Implemented',
+  'Superseded',
+  'Active reference',
+  'Active process'
+];
 
 export interface DiscussionTopic {
   /** Stage number in the package implementation plan; only the architecture area has stages. */
@@ -49,7 +56,10 @@ export function topicFieldErrors(topic: DiscussionTopic): string[] {
     if (typeof topic[field] !== 'string' || !topic[field]) errors.push(`${field} must be a non-empty string`);
   }
   if (topic.stage !== undefined && !Number.isInteger(topic.stage)) errors.push('stage must be an integer');
-  if (topic.prerequisites !== undefined && !(Array.isArray(topic.prerequisites) && topic.prerequisites.every(Number.isInteger))) {
+  if (
+    topic.prerequisites !== undefined &&
+    !(Array.isArray(topic.prerequisites) && topic.prerequisites.every(Number.isInteger))
+  ) {
     errors.push('prerequisites must be a list of stage numbers');
   }
   return errors;

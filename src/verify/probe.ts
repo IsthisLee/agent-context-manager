@@ -26,7 +26,11 @@ export interface ProbeResult {
 }
 
 function commandFor(agent: AgentId, scratchRoot: string, scratchStart: string): { command: string; args: string[] } {
-  if (agent === 'codex') return { command: 'codex', args: ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '-C', scratchStart, PROMPT] };
+  if (agent === 'codex')
+    return {
+      command: 'codex',
+      args: ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '-C', scratchStart, PROMPT]
+    };
   if (agent === 'claude') return { command: 'claude', args: ['-p', PROMPT, '--tools', '', '--no-session-persistence'] };
   return { command: 'agy', args: ['-p', PROMPT, '--add-dir', scratchRoot] };
 }
@@ -34,7 +38,11 @@ function commandFor(agent: AgentId, scratchRoot: string, scratchStart: string): 
 function run(command: string, args: string[], cwd: string) {
   // Agent CLIs installed with npm are .cmd shims on Windows, which only a shell can start.
   return process.platform === 'win32'
-    ? spawnSync(command, args.map(arg => `"${arg.replaceAll('"', '\\"')}"`), { cwd, encoding: 'utf8', timeout: TIMEOUT_MS, shell: true })
+    ? spawnSync(
+        command,
+        args.map(arg => `"${arg.replaceAll('"', '\\"')}"`),
+        { cwd, encoding: 'utf8', timeout: TIMEOUT_MS, shell: true }
+      )
     : spawnSync(command, args, { cwd, encoding: 'utf8', timeout: TIMEOUT_MS });
 }
 
@@ -46,24 +54,32 @@ export function probeAgent(explanation: AgentExplanation, root: string, startDir
     git(['init', '--quiet', scratchRoot]);
     const markers = new Map<string, string>();
     const token = randomUUID().slice(0, 8);
-    explanation.files.filter(file => file.scope === 'project').forEach((file, index) => {
-      const copy = path.join(scratchRoot, path.relative(root, file.absolutePath));
-      fs.mkdirSync(path.dirname(copy), { recursive: true });
-      const marker = `AGCTX-PROBE-${token}-${index + 1}`;
-      markers.set(marker, file.path);
-      fs.writeFileSync(copy, `${fs.readFileSync(file.absolutePath, 'utf8').trimEnd()}\n\n${MARKER} ${marker}\n`);
-    });
+    explanation.files
+      .filter(file => file.scope === 'project')
+      .forEach((file, index) => {
+        const copy = path.join(scratchRoot, path.relative(root, file.absolutePath));
+        fs.mkdirSync(path.dirname(copy), { recursive: true });
+        const marker = `AGCTX-PROBE-${token}-${index + 1}`;
+        markers.set(marker, file.path);
+        fs.writeFileSync(copy, `${fs.readFileSync(file.absolutePath, 'utf8').trimEnd()}\n\n${MARKER} ${marker}\n`);
+      });
     const scratchStart = path.join(scratchRoot, path.relative(root, startDir));
     fs.mkdirSync(scratchStart, { recursive: true });
 
     const { command, args } = commandFor(explanation.agent, scratchRoot, scratchStart);
     const result = run(command, args, scratchStart);
     if (result.error && (result.error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new CliError('verify.agent-missing', _('error.verify.agent-missing', { command }), { exitCode: EXIT.unavailable, hint: _('hint.verify.agent-missing', { command }) });
+      throw new CliError('verify.agent-missing', _('error.verify.agent-missing', { command }), {
+        exitCode: EXIT.unavailable,
+        hint: _('hint.verify.agent-missing', { command })
+      });
     }
     if (result.error || result.status !== 0) {
       const detail = (result.stderr || result.error?.message || '').trim().split('\n').slice(-2).join(' ');
-      throw new CliError('verify.agent-failed', _('error.verify.agent-failed', { command, detail }), { exitCode: EXIT.unavailable, hint: _('hint.verify.agent-failed', { command }) });
+      throw new CliError('verify.agent-failed', _('error.verify.agent-failed', { command, detail }), {
+        exitCode: EXIT.unavailable,
+        hint: _('hint.verify.agent-failed', { command })
+      });
     }
     const received = new Set<string>();
     for (const [marker, file] of markers) {

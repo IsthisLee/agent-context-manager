@@ -35,7 +35,11 @@ export interface CheckReport {
   exitCode: number;
 }
 
-const CODE: Record<FindingKind, number> = { 'hidden-characters': EXIT.hiddenCharacters, conflict: EXIT.conflict, behind: EXIT.behind };
+const CODE: Record<FindingKind, number> = {
+  'hidden-characters': EXIT.hiddenCharacters,
+  conflict: EXIT.conflict,
+  behind: EXIT.behind
+};
 
 const COMMIT = /^[0-9a-f]{7,64}$/i;
 
@@ -50,7 +54,9 @@ function newerStoreCommit(profileDir: string, recorded: string | null): string |
   if (!recorded || !COMMIT.test(recorded) || !isGitRoot(profileDir)) return null;
   const head = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: profileDir, allowFailure: true }).stdout.trim();
   if (!head || head === recorded) return null;
-  return git(['merge-base', '--is-ancestor', recorded, head], { cwd: profileDir, allowFailure: true }).status === 0 ? head : null;
+  return git(['merge-base', '--is-ancestor', recorded, head], { cwd: profileDir, allowFailure: true }).status === 0
+    ? head
+    : null;
 }
 
 export interface CheckOptions {
@@ -63,7 +69,11 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   assertProjectDirectory(targetDir);
   const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
   if (!fs.existsSync(configPath)) {
-    throw usageError('check.not-applied', _('error.check.not-applied', { project: targetDir }), _('hint.apply', { project: targetDir }));
+    throw usageError(
+      'check.not-applied',
+      _('error.check.not-applied', { project: targetDir }),
+      _('hint.apply', { project: targetDir })
+    );
   }
   const config = readProjectConfig(configPath);
   const findings: CheckFinding[] = [];
@@ -105,22 +115,35 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   let latestCommit: string | null = null;
   if (plan && profileDir && !hasConflict) {
     for (const file of plan.files) {
-      if (file.existing !== file.regenerated) findings.push({ kind: 'behind', file: file.rel, detail: _('check.profile-changed') });
+      if (file.existing !== file.regenerated)
+        findings.push({ kind: 'behind', file: file.rel, detail: _('check.profile-changed') });
     }
     const storeCommit = config.pin ? newerStoreCommit(profileDir, source?.commit ?? null) : null;
     if (storeCommit) {
       latestCommit = storeCommit;
-      findings.push({ kind: 'behind', file: null, detail: _('check.profile-newer', { commit: storeCommit.slice(0, 7) }) });
+      findings.push({
+        kind: 'behind',
+        file: null,
+        detail: _('check.profile-newer', { commit: storeCommit.slice(0, 7) })
+      });
     }
   } else if (profile && !inStore) {
-    if (brokenLink && location?.link) warnings.push(_('check.warn.link-broken', { profile, path: location.link, reason: _(`list.broken.${location.problem}`) }));
-    if (!options.refresh) warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
+    if (brokenLink && location?.link)
+      warnings.push(
+        _('check.warn.link-broken', { profile, path: location.link, reason: _(`list.broken.${location.problem}`) })
+      );
+    if (!options.refresh)
+      warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
   }
 
   if (options.refresh && source?.git && source.branch) {
     latestCommit = (options.remoteHead ?? remoteHeadCommit)(source.git, source.branch);
     if (latestCommit && latestCommit !== source.commit) {
-      findings.push({ kind: 'behind', file: null, detail: _('check.remote-newer', { commit: latestCommit.slice(0, 7) }) });
+      findings.push({
+        kind: 'behind',
+        file: null,
+        detail: _('check.remote-newer', { commit: latestCommit.slice(0, 7) })
+      });
     }
   }
 

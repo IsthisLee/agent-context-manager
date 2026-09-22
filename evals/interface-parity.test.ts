@@ -18,7 +18,18 @@ test('every profile command is reachable from the CLI, the TUI, and the profile 
 test('the profile management menu implements an action for every per-profile command', () => {
   assert.deepEqual(
     PROFILE_MENU_COMMANDS.map(command => command.id),
-    ['profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect']
+    [
+      'profile.view',
+      'profile.setup',
+      'profile.apply',
+      'profile.sync',
+      'profile.resolve',
+      'profile.remove',
+      'profile.status',
+      'profile.pull',
+      'profile.push',
+      'profile.connect'
+    ]
   );
   assert.deepEqual(Object.keys(MENU_ACTIONS).sort(), PROFILE_MENU_COMMANDS.map(command => command.id).sort());
 });
@@ -37,12 +48,20 @@ test('every command names a TUI entry that a TUI menu shows', () => {
 });
 
 test('every main menu entry except exit runs an action', () => {
-  assert.deepEqual(Object.keys(MAIN_ACTIONS).sort(), MAIN_MENU_ENTRIES.map(entry => entry.value).filter(value => value !== 'exit').sort());
+  assert.deepEqual(
+    Object.keys(MAIN_ACTIONS).sort(),
+    MAIN_MENU_ENTRIES.map(entry => entry.value)
+      .filter(value => value !== 'exit')
+      .sort()
+  );
 });
 
 test('repository commands declare the exit codes they return and stay out of the profile menu', () => {
   const repositoryCommands = COMMANDS.filter(command => command.surface === 'repository');
-  assert.deepEqual(repositoryCommands.map(command => command.id), ['check', 'explain', 'verify', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr']);
+  assert.deepEqual(
+    repositoryCommands.map(command => command.id),
+    ['check', 'explain', 'verify', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr']
+  );
   for (const command of repositoryCommands) {
     assert.ok(command.exitCodes.includes(0), `${command.id} must declare success`);
     assert.equal(command.profileMenu, undefined, `${command.id} is not a profile menu action`);
@@ -52,6 +71,32 @@ test('repository commands declare the exit codes they return and stay out of the
 test('the registry covers the complete command set', () => {
   assert.deepEqual(
     COMMANDS.map(command => command.id),
-    ['profile.create', 'profile.list', 'profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.clone', 'profile.link', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect', 'check', 'explain', 'verify', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr', 'install', 'uninstall', 'config.lang', 'help']
+    [
+      'profile.create',
+      'profile.list',
+      'profile.view',
+      'profile.setup',
+      'profile.apply',
+      'profile.sync',
+      'profile.resolve',
+      'profile.remove',
+      'profile.clone',
+      'profile.link',
+      'profile.status',
+      'profile.pull',
+      'profile.push',
+      'profile.connect',
+      'check',
+      'explain',
+      'verify',
+      'repos.list',
+      'repos.status',
+      'repos.sync',
+      'repos.pr',
+      'install',
+      'uninstall',
+      'config.lang',
+      'help'
+    ]
   );
 });

@@ -24,16 +24,17 @@ test('reference lines with an external link must carry a 확인일, outside code
   assert.deepEqual(undatedReferenceLinkLines(content), [2, 4, 10]);
 });
 
-const adr = (evidenceField: string) => [
-  '# 0000. Title',
-  '',
-  '* **상태:** 채택됨 (Accepted)',
-  '* **결정자:** 개발자',
-  ...(evidenceField ? [evidenceField] : []),
-  '',
-  '## 배경 (Context)',
-  ''
-].join('\n');
+const adr = (evidenceField: string) =>
+  [
+    '# 0000. Title',
+    '',
+    '* **상태:** 채택됨 (Accepted)',
+    '* **결정자:** 개발자',
+    ...(evidenceField ? [evidenceField] : []),
+    '',
+    '## 배경 (Context)',
+    ''
+  ].join('\n');
 
 test('ADRs before 0009 do not need the evidence header field', () => {
   assert.equal(adrEvidenceError('0008-earlier-decision.md', adr('')), null);
@@ -44,10 +45,25 @@ test('ADRs from 0009 need an evidence header field', () => {
 });
 
 test('an ADR evidence field accepts a references link, an external link, or a stated no-external-evidence reason', () => {
-  assert.equal(adrEvidenceError('0009-new-decision.md', adr('* **근거:** [외부 참고 문헌](../references.md#section)')), null);
-  assert.equal(adrEvidenceError('0010-new-decision.md', adr('* **근거:** [Official docs](https://example.com/docs)')), null);
-  assert.equal(adrEvidenceError('0010-new-decision.md', adr('* **근거:** 외부 근거 없음: 저장소 내부 설계만 바꾸는 결정이다.')), null);
-  assert.equal(adrEvidenceError('0010-new-decision.md', adr('* **Evidence:** No external evidence: internal refactoring decision.')), null);
+  assert.equal(
+    adrEvidenceError('0009-new-decision.md', adr('* **근거:** [외부 참고 문헌](../references.md#section)')),
+    null
+  );
+  assert.equal(
+    adrEvidenceError('0010-new-decision.md', adr('* **근거:** [Official docs](https://example.com/docs)')),
+    null
+  );
+  assert.equal(
+    adrEvidenceError('0010-new-decision.md', adr('* **근거:** 외부 근거 없음: 저장소 내부 설계만 바꾸는 결정이다.')),
+    null
+  );
+  assert.equal(
+    adrEvidenceError(
+      '0010-new-decision.md',
+      adr('* **Evidence:** No external evidence: internal refactoring decision.')
+    ),
+    null
+  );
 });
 
 test('an ADR evidence field without a link or a reason is rejected', () => {

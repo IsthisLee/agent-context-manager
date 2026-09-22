@@ -29,7 +29,8 @@ test('writeTextAtomic refuses to replace a symbolic-link target', () => {
     try {
       fs.symlinkSync(actual, target);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EPERM' || (error as NodeJS.ErrnoException).code === 'EACCES') return;
+      if ((error as NodeJS.ErrnoException).code === 'EPERM' || (error as NodeJS.ErrnoException).code === 'EACCES')
+        return;
       throw error;
     }
     assert.throws(() => writeTextAtomic(target, 'replace\n'), /symbolic link/);
@@ -49,7 +50,8 @@ test('assertSafeTextTarget detects a symbolic link before a write plan starts', 
     try {
       fs.symlinkSync(actual, target);
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'EPERM' || (error as NodeJS.ErrnoException).code === 'EACCES') return;
+      if ((error as NodeJS.ErrnoException).code === 'EPERM' || (error as NodeJS.ErrnoException).code === 'EACCES')
+        return;
       throw error;
     }
     assert.throws(() => assertSafeTextTarget(target), /symbolic link/);

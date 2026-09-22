@@ -16,7 +16,9 @@ const escaped = (name: string) => name.replaceAll('$', '\\$');
 
 /** `export async function name`, `const name`, `export interface name` and the like. */
 function declares(line: string, name: string): boolean {
-  return new RegExp(`^(?:export\\s+)?(?:default\\s+)?(?:async\\s+)?(?:declare\\s+)?(?:${KEYWORDS.join('|')})\\s+${escaped(name)}\\b`).test(line);
+  return new RegExp(
+    `^(?:export\\s+)?(?:default\\s+)?(?:async\\s+)?(?:declare\\s+)?(?:${KEYWORDS.join('|')})\\s+${escaped(name)}\\b`
+  ).test(line);
 }
 
 /** A line that starts another top-level declaration or its doc comment. */

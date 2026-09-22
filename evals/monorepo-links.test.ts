@@ -9,7 +9,12 @@ function monorepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-links-');
   const me = person('me');
   const userHome = folder('user-home');
-  const env = { HOME: userHome, USERPROFILE: userHome, CODEX_HOME: path.join(userHome, '.codex'), CLAUDE_CONFIG_DIR: path.join(userHome, '.claude') };
+  const env = {
+    HOME: userHome,
+    USERPROFILE: userHome,
+    CODEX_HOME: path.join(userHome, '.codex'),
+    CLAUDE_CONFIG_DIR: path.join(userHome, '.claude')
+  };
   me.ok(['profile', 'create', 'company', '--scope', 'company'], env);
   const repo = folder('mono');
   gitIn(repo, 'init', '--quiet', '--initial-branch=main');
@@ -40,25 +45,47 @@ test('apply links each nested AGENTS.md for Claude Code and leaves CLAUDE.md fil
 
   const preview = agctx(['profile', 'apply', 'company', repo, '--dry-run']);
   assert.equal(preview.status, 0, preview.stdout + preview.stderr);
-  assert.match(preview.stdout, /create\s+services\/payments\/CLAUDE\.md/, 'an AGENTS.md not yet committed is linked too');
+  assert.match(
+    preview.stdout,
+    /create\s+services\/payments\/CLAUDE\.md/,
+    'an AGENTS.md not yet committed is linked too'
+  );
   assert.ok(!fs.existsSync(file('services/payments/CLAUDE.md')));
 
   const applied = agctx(['profile', 'apply', 'company', repo, '--yes']);
   assert.equal(applied.status, 0, applied.stdout + applied.stderr);
-  assert.match(read('services/payments/CLAUDE.md'), /<!-- agctx:managed:start -->[\s\S]*@AGENTS\.md[\s\S]*<!-- agctx:managed:end -->/);
+  assert.match(
+    read('services/payments/CLAUDE.md'),
+    /<!-- agctx:managed:start -->[\s\S]*@AGENTS\.md[\s\S]*<!-- agctx:managed:end -->/
+  );
   assert.equal(read('packages/web/CLAUDE.md'), '# Notes a person wrote\n');
   assert.equal(read('packages/api/CLAUDE.md'), 'API notes.\n\n@AGENTS.md\n');
-  assert.match(applied.stderr, /packages\/web\/CLAUDE\.md[^\n]*AGENTS\.md/, 'a CLAUDE.md without the import gets a warning');
+  assert.match(
+    applied.stderr,
+    /packages\/web\/CLAUDE\.md[^\n]*AGENTS\.md/,
+    'a CLAUDE.md without the import gets a warning'
+  );
   assert.doesNotMatch(applied.stderr, /packages\/api\/CLAUDE\.md/);
-  for (const skipped of ['node_modules/lib/CLAUDE.md', 'build/CLAUDE.md', 'nested-repo/CLAUDE.md']) assert.ok(!fs.existsSync(file(skipped)), skipped);
+  for (const skipped of ['node_modules/lib/CLAUDE.md', 'build/CLAUDE.md', 'nested-repo/CLAUDE.md'])
+    assert.ok(!fs.existsSync(file(skipped)), skipped);
   assert.ok(config().managedHashes['services/payments/CLAUDE.md']);
   assert.equal(config().managedHashes['packages/web/CLAUDE.md'], undefined);
 
   const explained = JSON.parse(agctx(['explain', file('services/payments'), '--agent', 'claude', '--json']).stdout);
-  assert.equal(explained.data.agents[0].files.find((entry: { path: string }) => entry.path === 'services/payments/AGENTS.md')?.status, 'read');
+  assert.equal(
+    explained.data.agents[0].files.find((entry: { path: string }) => entry.path === 'services/payments/AGENTS.md')
+      ?.status,
+    'read'
+  );
   const fromRoot = JSON.parse(agctx(['explain', repo, '--agent', 'claude', '--json']).stdout);
-  const web = fromRoot.data.agents[0].findings.find((finding: { kind: string; file: string }) => finding.kind === 'missing' && finding.file === 'packages/web/AGENTS.md');
-  assert.match(web?.message ?? '', /packages\/web\/CLAUDE\.md/, 'the missing note points at the CLAUDE.md a person wrote');
+  const web = fromRoot.data.agents[0].findings.find(
+    (finding: { kind: string; file: string }) => finding.kind === 'missing' && finding.file === 'packages/web/AGENTS.md'
+  );
+  assert.match(
+    web?.message ?? '',
+    /packages\/web\/CLAUDE\.md/,
+    'the missing note points at the CLAUDE.md a person wrote'
+  );
   assert.doesNotMatch(web?.message ?? '', /profile sync/, 'sync would not touch that file, so it is not suggested');
   assert.equal(agctx(['check', repo]).status, 0);
 });

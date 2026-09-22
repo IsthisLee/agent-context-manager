@@ -32,7 +32,7 @@ flowchart LR
 ## 1. 고객사 프로필 받기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: b4275167f188203eef86df8979f32eee973f226b1bdabef215290a8eb5ea3da1 -->
+<!-- agctx-doc-sources-sha256: 2f03d50df627c7cd636112b63410ccd73e45e98a97d05765ceeca11eb2b51684 -->
 
 ```bash
 agctx profile clone https://git.client-a.example/rules.git
@@ -44,7 +44,7 @@ agctx profile clone https://git.client-b.example/rules.git
 ## 2. 고객사 저장소에 적용
 
 <!-- agctx-doc-sources: src/repos -->
-<!-- agctx-doc-sources-sha256: 4e862d4230302631d52de549a1afdb4a58167b1eaef55b8627664cbed477191f -->
+<!-- agctx-doc-sources-sha256: 25c26a7244037e2f0e16cbec6bd5ea42b616f967b8fef3ef600b4c593220c6d3 -->
 
 ```bash
 agctx profile apply client-a ~/work/client-a-api

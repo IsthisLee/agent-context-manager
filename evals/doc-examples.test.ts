@@ -41,16 +41,28 @@ function exampleSteps(markdown: string): Step[] {
 
 /** Output with the scratch folder written as the doc's `/work`, using `/` on every platform. */
 function asDocPath(output: string, work: string): string {
-  return output.split(work).join('/work').replace(/\/work((?:\\[^\s\\]+)+)/g, (_match, rest: string) => `/work${rest.replaceAll('\\', '/')}`);
+  return output
+    .split(work)
+    .join('/work')
+    .replace(/\/work((?:\\[^\s\\]+)+)/g, (_match, rest: string) => `/work${rest.replaceAll('\\', '/')}`);
 }
 
 test('every command example in the quick start prints what the doc shows', t => {
   const { root, folder } = makeWorkspace(t, 'agctx-quick-start-');
   const work = folder('work');
   const userHome = folder('user-home');
-  const env = { ...process.env, AGCTX_HOME: path.join(root, 'home'), AGCTX_LANG: 'en', HOME: userHome, USERPROFILE: userHome };
+  const env = {
+    ...process.env,
+    AGCTX_HOME: path.join(root, 'home'),
+    AGCTX_LANG: 'en',
+    HOME: userHome,
+    USERPROFILE: userHome
+  };
   const steps = exampleSteps(fs.readFileSync(path.join(repoRoot, QUICK_START), 'utf8'));
-  assert.ok(steps.filter(step => step.command.startsWith('agctx ')).length >= 5, 'the quick start shows its commands with their output');
+  assert.ok(
+    steps.filter(step => step.command.startsWith('agctx ')).length >= 5,
+    'the quick start shows its commands with their output'
+  );
 
   for (const step of steps) {
     const [program, ...args] = step.command.split(' ');

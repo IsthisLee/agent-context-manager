@@ -46,9 +46,15 @@ export function getProjectName(targetDir: string, recorded: string | null = null
 
 export function assertProjectDirectory(targetDir: string): void {
   let isDirectory = false;
-  try { isDirectory = fs.statSync(targetDir).isDirectory(); } catch {}
+  try {
+    isDirectory = fs.statSync(targetDir).isDirectory();
+  } catch {}
   if (!isDirectory) {
-    throw usageError('project.not-directory', _('error.project.not-directory', { project: targetDir }), _('hint.project.path'));
+    throw usageError(
+      'project.not-directory',
+      _('error.project.not-directory', { project: targetDir }),
+      _('hint.project.path')
+    );
   }
 }
 
@@ -59,18 +65,27 @@ export function readProjectConfig(configPath: string): ProjectConfig {
     if (!config || typeof config !== 'object' || Array.isArray(config)) throw new Error('not an object');
     return config as ProjectConfig;
   } catch {
-    throw usageError('project.invalid-config', _('error.project.invalid-config', { file: configPath }), _('hint.project.invalid-config', { file: configPath }));
+    throw usageError(
+      'project.invalid-config',
+      _('error.project.invalid-config', { file: configPath }),
+      _('hint.project.invalid-config', { file: configPath })
+    );
   }
 }
 
-export const CONFLICT_GUIDE = 'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때';
+export const CONFLICT_GUIDE =
+  'https://github.com/IsthisLee/agent-context-manager/blob/main/docs/concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때';
 
 export function conflictError(conflicts: readonly ConflictedFile[], targetDir: string): CliError {
-  return new CliError('project.conflict', _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }), {
-    exitCode: EXIT.conflict,
-    hint: _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
-    details: conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind }))
-  });
+  return new CliError(
+    'project.conflict',
+    _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }),
+    {
+      exitCode: EXIT.conflict,
+      hint: _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
+      details: conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind }))
+    }
+  );
 }
 
 /** Which profile content a project gets, and the version record written with it. */
@@ -93,31 +108,73 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   const pinned = pin === true || (pin === 'keep' && projectConfig.pin === true);
   if (pinned && !connected) {
     // A linked folder is connected with git in that folder, not with profile connect, which refuses links.
-    throw usageError('pin.not-git', _('error.pin.not-git', { name }), profile.link ? _('hint.pin.link-not-git', { path: profile.link }) : _('hint.profile.connect', { name }));
+    throw usageError(
+      'pin.not-git',
+      _('error.pin.not-git', { name }),
+      profile.link ? _('hint.pin.link-not-git', { path: profile.link }) : _('hint.profile.connect', { name })
+    );
   }
-  if (!connected) return { content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')), source: null, uncommitted: false, pin: false };
+  if (!connected)
+    return {
+      content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
+      source: null,
+      uncommitted: false,
+      pin: false
+    };
 
-  const branch = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
-  const remoteName = branch ? git(['config', `branch.${branch}.remote`], { cwd: dir, allowFailure: true }).stdout.trim() || 'origin' : 'origin';
+  const branch =
+    git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
+  const remoteName = branch
+    ? git(['config', `branch.${branch}.remote`], { cwd: dir, allowFailure: true }).stdout.trim() || 'origin'
+    : 'origin';
   const remoteUrl = git(['remote', 'get-url', remoteName], { cwd: dir, allowFailure: true }).stdout.trim();
   const remote = remoteUrl ? sanitizeRemoteUrl(remoteUrl) : null;
 
   if (pin === 'keep' && projectConfig.pin === true) {
     const commit = projectConfig.source?.commit;
     // The recorded commit's own profile.json names its rules file, which may have moved since.
-    const shown = commit && /^[0-9a-f]{7,64}$/i.test(commit) ? committedProfile(dir, commit, name)?.content ?? null : null;
+    const shown =
+      commit && /^[0-9a-f]{7,64}$/i.test(commit) ? (committedProfile(dir, commit, name)?.content ?? null) : null;
     if (!commit || shown === null) {
-      throw new CliError('pin.commit-missing', _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }), { exitCode: EXIT.unavailable, hint: profile.link ? _('hint.pin.link-commit-missing', { path: shellWord(profile.link) }) : _('hint.profile.pull', { name }) });
+      throw new CliError(
+        'pin.commit-missing',
+        _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }),
+        {
+          exitCode: EXIT.unavailable,
+          hint: profile.link
+            ? _('hint.pin.link-commit-missing', { path: shellWord(profile.link) })
+            : _('hint.profile.pull', { name })
+        }
+      );
     }
-    return { content: shown, source: { ...projectConfig.source, git: remote ?? projectConfig.source?.git ?? null, branch: projectConfig.source?.branch ?? branch, commit }, uncommitted: false, pin: true };
+    return {
+      content: shown,
+      source: {
+        ...projectConfig.source,
+        git: remote ?? projectConfig.source?.git ?? null,
+        branch: projectConfig.source?.branch ?? branch,
+        commit
+      },
+      uncommitted: false,
+      pin: true
+    };
   }
 
-  const commit = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
-  const edited = git(['--literal-pathspecs', 'status', '--porcelain', '--', profile.instructions, PROFILE_METADATA_FILE], { cwd: dir }).stdout.trim() !== '';
+  const commit =
+    git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
+  const edited =
+    git(['--literal-pathspecs', 'status', '--porcelain', '--', profile.instructions, PROFILE_METADATA_FILE], {
+      cwd: dir
+    }).stdout.trim() !== '';
   if (pin === true && (edited || !commit)) {
     throw usageError('pin.uncommitted', _('error.pin.uncommitted', { name }), _('hint.git.commit', { dir }));
   }
-  return { content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')), source: { git: remote, branch, commit }, uncommitted: edited, pin: pin === true };
+  return {
+    content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
+    source: { git: remote, branch, commit },
+    uncommitted: edited,
+    pin: pin === true
+  };
 }
 
 export interface ApplyPlan {
@@ -129,22 +186,33 @@ export interface ApplyPlan {
   previousPin: boolean;
 }
 
-export function planFor(name: string, targetDir: string, pin: boolean | 'keep', overrides?: Map<string, string | null>): ApplyPlan {
+export function planFor(
+  name: string,
+  targetDir: string,
+  pin: boolean | 'keep',
+  overrides?: Map<string, string | null>
+): ApplyPlan {
   const profile = readProfile(name);
   assertProjectDirectory(targetDir);
   const projectConfig = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE));
   const version = profileVersion(profile, projectConfig, pin);
   assertNoHiddenCharacters([{ file: `${name}/${profile.instructions}`, content: version.content }]);
-  const projectName = getProjectName(targetDir, typeof projectConfig.projectName === 'string' ? projectConfig.projectName : null);
-  const plan = planProject({
-    packageRoot: PACKAGE_ROOT,
+  const projectName = getProjectName(
     targetDir,
-    projectName,
-    profileName: name,
-    renderedAgents: renderProfileAgents(version.content, name, projectName),
-    projectConfig,
-    record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted }
-  }, overrides);
+    typeof projectConfig.projectName === 'string' ? projectConfig.projectName : null
+  );
+  const plan = planProject(
+    {
+      packageRoot: PACKAGE_ROOT,
+      targetDir,
+      projectName,
+      profileName: name,
+      renderedAgents: renderProfileAgents(version.content, name, projectName),
+      projectConfig,
+      record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted }
+    },
+    overrides
+  );
   return { name, targetDir, version, plan, previousPin: projectConfig.pin === true };
 }
 
@@ -180,6 +248,11 @@ export function printConflicts(conflicts: readonly ConflictedFile[]): void {
 /** The profile a project is bound to, or a usage error pointing at `profile apply`. */
 export function boundProfile(targetDir: string, command: string): string {
   const name = readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).profile;
-  if (!name) throw usageError('project.not-applied', _('error.project.not-applied', { command, project: targetDir }), _('hint.apply', { project: targetDir }));
+  if (!name)
+    throw usageError(
+      'project.not-applied',
+      _('error.project.not-applied', { command, project: targetDir }),
+      _('hint.apply', { project: targetDir })
+    );
   return name;
 }

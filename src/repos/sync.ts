@@ -28,7 +28,12 @@ export interface SyncItem {
 const MANAGED_FILES = ['AGENTS.md', 'CLAUDE.md', '.agents/rules/agctx.md', PROJECT_CONFIG_FILE];
 
 function managedFiles(dir: string): string[] {
-  return [...new Set([...MANAGED_FILES, ...Object.keys(readProjectConfig(path.join(dir, PROJECT_CONFIG_FILE)).managedHashes ?? {})])];
+  return [
+    ...new Set([
+      ...MANAGED_FILES,
+      ...Object.keys(readProjectConfig(path.join(dir, PROJECT_CONFIG_FILE)).managedHashes ?? {})
+    ])
+  ];
 }
 
 function insideGitWorkTree(dir: string): boolean {
@@ -41,47 +46,97 @@ function insideGitWorkTree(dir: string): boolean {
 /** Tracked managed files with uncommitted changes. Untracked files never block a sync. */
 function uncommittedManagedFiles(dir: string): string[] {
   if (!insideGitWorkTree(dir)) return [];
-  const result = git(['status', '--porcelain', '--untracked-files=no', '--', ...managedFiles(dir)], { cwd: dir, allowFailure: true });
+  const result = git(['status', '--porcelain', '--untracked-files=no', '--', ...managedFiles(dir)], {
+    cwd: dir,
+    allowFailure: true
+  });
   if (result.status !== 0) return [];
-  return result.stdout.split('\n').filter(Boolean).map(line => line.slice(3).trim());
+  return result.stdout
+    .split('\n')
+    .filter(Boolean)
+    .map(line => line.slice(3).trim());
 }
 
 /** Files worth naming in a summary: the base copies under `.agctx/` follow the managed files. */
 export function namedFiles(plan: ApplyPlan): string[] {
-  return plan.plan.changes.filter(change => change.status !== 'unchanged' && !change.relativePath.startsWith('.agctx/')).map(change => change.relativePath);
+  return plan.plan.changes
+    .filter(change => change.status !== 'unchanged' && !change.relativePath.startsWith('.agctx/'))
+    .map(change => change.relativePath);
 }
 
 function failed(item: SyncItem, error: unknown): SyncItem {
   const cliError = toCliError(error);
-  return { ...item, state: 'error', exitCode: cliError.exitCode, detail: cliError.hint ? `${cliError.message} ${cliError.hint}` : cliError.message };
+  return {
+    ...item,
+    state: 'error',
+    exitCode: cliError.exitCode,
+    detail: cliError.hint ? `${cliError.message} ${cliError.hint}` : cliError.message
+  };
 }
 
 export function planReposSync(profileFilter: string | null): SyncItem[] {
   return selectRepos(profileFilter).map((entry): SyncItem => {
-    const item: SyncItem = { path: entry.path, profile: entry.profile, state: 'error', exitCode: EXIT.software, files: [], detail: '', plan: null };
-    if (!fs.existsSync(entry.path)) return { ...item, state: 'missing', exitCode: EXIT.ok, detail: _('repos.sync.missing') };
+    const item: SyncItem = {
+      path: entry.path,
+      profile: entry.profile,
+      state: 'error',
+      exitCode: EXIT.software,
+      files: [],
+      detail: '',
+      plan: null
+    };
+    if (!fs.existsSync(entry.path))
+      return { ...item, state: 'missing', exitCode: EXIT.ok, detail: _('repos.sync.missing') };
     try {
       const config = readProjectConfig(path.join(entry.path, PROJECT_CONFIG_FILE));
       if (!config.profile) return { ...item, exitCode: EXIT.usage, detail: _('repos.not-applied') };
       const profile = config.profile;
       if (config.pin) {
-        return { ...item, profile, state: 'pinned', exitCode: EXIT.ok, detail: _('repos.sync.pinned', { commit: (config.source?.commit ?? '').slice(0, 7), profile }) };
+        return {
+          ...item,
+          profile,
+          state: 'pinned',
+          exitCode: EXIT.ok,
+          detail: _('repos.sync.pinned', { commit: (config.source?.commit ?? '').slice(0, 7), profile })
+        };
       }
       const dirty = uncommittedManagedFiles(entry.path);
       if (dirty.length) {
         // Still behind: report it, but leave the user's edits alone.
-        return { ...item, profile, state: 'dirty', exitCode: EXIT.behind, files: dirty, detail: _('repos.sync.dirty', { files: dirty.join(', ') }) };
+        return {
+          ...item,
+          profile,
+          state: 'dirty',
+          exitCode: EXIT.behind,
+          files: dirty,
+          detail: _('repos.sync.dirty', { files: dirty.join(', ') })
+        };
       }
       const plan = planFor(profile, entry.path, 'keep');
       if (plan.plan.conflicts.length) {
         const files = plan.plan.conflicts.map(file => file.rel);
-        return { ...item, profile, state: 'conflict', exitCode: EXIT.conflict, files, detail: _('repos.sync.conflict', { files: files.join(', '), project: entry.path }) };
+        return {
+          ...item,
+          profile,
+          state: 'conflict',
+          exitCode: EXIT.conflict,
+          files,
+          detail: _('repos.sync.conflict', { files: files.join(', '), project: entry.path })
+        };
       }
       if (!plan.plan.changes.some(change => change.status !== 'unchanged')) {
         return { ...item, profile, state: 'up-to-date', exitCode: EXIT.ok, detail: _('repos.sync.up-to-date'), plan };
       }
       const files = namedFiles(plan);
-      return { ...item, profile, state: 'update', exitCode: EXIT.ok, files, detail: _('repos.sync.update', { count: files.length, files: files.join(', ') }), plan };
+      return {
+        ...item,
+        profile,
+        state: 'update',
+        exitCode: EXIT.ok,
+        files,
+        detail: _('repos.sync.update', { count: files.length, files: files.join(', ') }),
+        plan
+      };
     } catch (error) {
       return failed(item, error);
     }
@@ -95,7 +150,11 @@ export function applyReposSync(items: readonly SyncItem[]): SyncItem[] {
     try {
       writePlan(item.plan.plan.changes, item.path);
       recordRepo(item.path, item.profile, false);
-      return { ...item, state: 'updated', detail: _('repos.sync.updated', { count: item.files.length, files: item.files.join(', ') }) };
+      return {
+        ...item,
+        state: 'updated',
+        detail: _('repos.sync.updated', { count: item.files.length, files: item.files.join(', ') })
+      };
     } catch (error) {
       return failed(item, error);
     }

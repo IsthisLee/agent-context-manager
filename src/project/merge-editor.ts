@@ -44,12 +44,20 @@ export function mergeInVsCode({ name, current, incoming, base, result }: MergeIn
   fs.writeFileSync(paths.result, result);
 
   const args = ['--wait', '--merge', paths.current, paths.incoming, paths.base, paths.result];
-  const outcome = process.platform === 'win32'
-    ? spawnSync('code.cmd', args.map(arg => `"${arg}"`), { stdio: 'inherit', shell: true })
-    : spawnSync('code', args, { stdio: 'inherit' });
+  const outcome =
+    process.platform === 'win32'
+      ? spawnSync(
+          'code.cmd',
+          args.map(arg => `"${arg}"`),
+          { stdio: 'inherit', shell: true }
+        )
+      : spawnSync('code', args, { stdio: 'inherit' });
   if (outcome.error || outcome.status !== 0) {
     fs.rmSync(dir, { recursive: true, force: true });
-    throw new CliError('vscode.unavailable', _('error.vscode.unavailable'), { exitCode: EXIT.unavailable, hint: _('hint.vscode.install') });
+    throw new CliError('vscode.unavailable', _('error.vscode.unavailable'), {
+      exitCode: EXIT.unavailable,
+      hint: _('hint.vscode.install')
+    });
   }
   return {
     content: toLf(fs.readFileSync(paths.result, 'utf8')),

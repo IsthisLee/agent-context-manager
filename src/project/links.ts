@@ -17,8 +17,13 @@ const toPosix = (rel: string) => rel.split(path.sep).join('/');
 function gitListed(dir: string): string[] | null {
   if (!fs.existsSync(path.join(dir, '.git'))) return null;
   try {
-    const result = git(['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*AGENTS.md'], { cwd: dir, allowFailure: true });
-    return result.status === 0 ? result.stdout.split('\0').filter(rel => rel && fs.existsSync(path.join(dir, rel))) : null;
+    const result = git(['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*AGENTS.md'], {
+      cwd: dir,
+      allowFailure: true
+    });
+    return result.status === 0
+      ? result.stdout.split('\0').filter(rel => rel && fs.existsSync(path.join(dir, rel)))
+      : null;
   } catch {
     return null;
   }
@@ -26,9 +31,17 @@ function gitListed(dir: string): string[] | null {
 
 /** Project-relative `/` paths of AGENTS.md files below the project root, outside dependency and build folders. */
 export function nestedAgentsFiles(targetDir: string): string[] {
-  const listed = gitListed(targetDir) ?? filesBelow(targetDir, ['AGENTS.md']).map(file => toPosix(path.relative(targetDir, file)));
+  const listed =
+    gitListed(targetDir) ?? filesBelow(targetDir, ['AGENTS.md']).map(file => toPosix(path.relative(targetDir, file)));
   return listed
-    .filter(rel => rel.endsWith('/AGENTS.md') && !rel.split('/').slice(0, -1).some(part => SKIPPED_FOLDERS.has(part)))
+    .filter(
+      rel =>
+        rel.endsWith('/AGENTS.md') &&
+        !rel
+          .split('/')
+          .slice(0, -1)
+          .some(part => SKIPPED_FOLDERS.has(part))
+    )
     .sort();
 }
 
@@ -48,6 +61,11 @@ export function personLink(targetDir: string, folder: string): string | null {
 /** Whether a CLAUDE.md reaches `agentsFile`: a symbolic link to it, or an `@` import outside code. */
 export function linksTo(claudeFile: string, agentsFile: string): boolean {
   if (fs.lstatSync(claudeFile).isSymbolicLink()) return true;
-  const text = fs.readFileSync(claudeFile, 'utf8').replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
-  return [...text.matchAll(/(?:^|\s)@([^\s@`)\]]+)/gm)].some(match => path.resolve(path.dirname(claudeFile), match[1]) === agentsFile);
+  const text = fs
+    .readFileSync(claudeFile, 'utf8')
+    .replace(/```[\s\S]*?```/g, '')
+    .replace(/`[^`\n]*`/g, '');
+  return [...text.matchAll(/(?:^|\s)@([^\s@`)\]]+)/gm)].some(
+    match => path.resolve(path.dirname(claudeFile), match[1]) === agentsFile
+  );
 }

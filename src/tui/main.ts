@@ -4,7 +4,14 @@ import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
 import { helpTui, runFromTui } from './commands.ts';
-import { cloneProfileTui, createProfileTui, linkProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
+import {
+  cloneProfileTui,
+  createProfileTui,
+  linkProfileTui,
+  listProfiles,
+  runTuiStep,
+  setupProfileTui
+} from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
 import { skillNotice } from '../skills/install.ts';
 
@@ -36,8 +43,14 @@ export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
   clone: () => runTuiStep(() => cloneProfileTui()),
   link: () => runTuiStep(() => linkProfileTui()),
   setup: () => runTuiStep(() => setupProfileTui()),
-  install: () => runTuiStep(async () => { await runFromTui('install', [], {}); }),
-  uninstall: () => runTuiStep(async () => { await runFromTui('uninstall', [], {}); }),
+  install: () =>
+    runTuiStep(async () => {
+      await runFromTui('install', [], {});
+    }),
+  uninstall: () =>
+    runTuiStep(async () => {
+      await runFromTui('uninstall', [], {});
+    }),
   lang: () => changeLocaleTui(),
   help: () => helpTui()
 };
@@ -49,7 +62,11 @@ export async function mainTui(): Promise<void> {
   while (true) {
     const action = await select({
       message: _('main.message'),
-      options: MAIN_MENU_ENTRIES.map(entry => ({ value: entry.value, label: _(entry.label), ...(entry.hint ? { hint: _(entry.hint) } : {}) }))
+      options: MAIN_MENU_ENTRIES.map(entry => ({
+        value: entry.value,
+        label: _(entry.label),
+        ...(entry.hint ? { hint: _(entry.hint) } : {})
+      }))
     });
     if (cancelled(action) || action === 'exit') break;
     await MAIN_ACTIONS[action]();

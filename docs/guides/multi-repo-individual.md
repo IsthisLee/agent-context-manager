@@ -48,7 +48,7 @@ agctx profile apply company ~/work/api-server
 ## 여러 저장소를 한 번에 맞추기
 
 <!-- agctx-doc-sources: src/repos, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 701cceac7ccc9388adc987ae497b4c7daed2da6bde08a7d8a67cbe3e041b78d7 -->
+<!-- agctx-doc-sources-sha256: e92b59a1467788a4cb3e0b3920229763752fc5dd6b4dcfd9de18122e435c2569 -->
 
 프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
 
@@ -99,7 +99,7 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 ## 다른 컴퓨터에서 같은 프로필 쓰기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: b4275167f188203eef86df8979f32eee973f226b1bdabef215290a8eb5ea3da1 -->
+<!-- agctx-doc-sources-sha256: 2f03d50df627c7cd636112b63410ccd73e45e98a97d05765ceeca11eb2b51684 -->
 
 프로필 보관함은 어떤 저장소에도 커밋되지 않는다. 컴퓨터를 옮겨도 같은 개인 프로필을 쓰려면 프로필 자체를 내 Git 저장소에 올린다.
 

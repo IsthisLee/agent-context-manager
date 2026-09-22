@@ -21,7 +21,10 @@ const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'
 const README_AREA = 'architecture';
 
 /** Mermaid has no HTML comments, so the stage diagram marks its generated lines with `%%` comments. */
-const DIAGRAM_MARKERS: readonly [string, string] = ['%% agctx:generated:stage-classes:start', '%% agctx:generated:stage-classes:end'];
+const DIAGRAM_MARKERS: readonly [string, string] = [
+  '%% agctx:generated:stage-classes:start',
+  '%% agctx:generated:stage-classes:end'
+];
 
 /** Node class of a stage in the diagram, in the order the class lines are written. */
 const DIAGRAM_CLASSES: ReadonlyArray<[status: string, className: string]> = [
@@ -41,7 +44,11 @@ const README_LISTS: readonly ReadmeList[] = [
   {
     file: 'README.md',
     title: topic => topic.title,
-    labels: [['Implemented', '구현됨'], ['Implementing', '구현 중'], ['Proposed', '제안 단계']],
+    labels: [
+      ['Implemented', '구현됨'],
+      ['Implementing', '구현 중'],
+      ['Proposed', '제안 단계']
+    ],
     proposedNote: '아직 현재 동작이 아니므로 보장하지 않습니다.'
   },
   {
@@ -50,7 +57,11 @@ const README_LISTS: readonly ReadmeList[] = [
       if (!topic.titleEn) throw new Error(`${TOPICS_FILE}: ${topic.file} needs titleEn for README.en.md`);
       return topic.titleEn;
     },
-    labels: [['Implemented', 'Implemented'], ['Implementing', 'In progress'], ['Proposed', 'Proposed']],
+    labels: [
+      ['Implemented', 'Implemented'],
+      ['Implementing', 'In progress'],
+      ['Proposed', 'Proposed']
+    ],
     proposedNote: 'These are not current behavior yet.'
   }
 ];
@@ -69,11 +80,20 @@ const isStaged = (topics: readonly DiscussionTopic[]) => topics.some(topic => to
 
 export function topicTable(topics: readonly DiscussionTopic[]): string {
   const staged = isStaged(topics);
-  const header = staged ? ['단계', '주제', '중요도', '선행 단계', '핵심 결과', '상태'] : ['주제', '중요도', '핵심 결과', '상태'];
+  const header = staged
+    ? ['단계', '주제', '중요도', '선행 단계', '핵심 결과', '상태']
+    : ['주제', '중요도', '핵심 결과', '상태'];
   const row = (topic: DiscussionTopic) => {
     const link = `[${topic.title}](topics/${topic.file})`;
     const cells = staged
-      ? [orDash(topic.stage?.toString()), link, orDash(topic.importance), orDash(topic.prerequisites?.join('·')), topic.outcome, topic.status]
+      ? [
+          orDash(topic.stage?.toString()),
+          link,
+          orDash(topic.importance),
+          orDash(topic.prerequisites?.join('·')),
+          topic.outcome,
+          topic.status
+        ]
       : [link, orDash(topic.importance), topic.outcome, topic.status];
     return `| ${cells.join(' | ')} |`;
   };
@@ -83,17 +103,21 @@ export function topicTable(topics: readonly DiscussionTopic[]): string {
 /** Diagram nodes are named `S<stage>`; each status gets one `class` line, left out when no stage has it. */
 export function stageClasses(topics: readonly DiscussionTopic[]): string {
   return DIAGRAM_CLASSES.flatMap(([status, className]) => {
-    const stages = topics.flatMap(topic => (topic.status === status && topic.stage !== undefined ? [topic.stage] : [])).sort((a, b) => a - b);
+    const stages = topics
+      .flatMap(topic => (topic.status === status && topic.stage !== undefined ? [topic.stage] : []))
+      .sort((a, b) => a - b);
     return stages.length ? [`  class ${stages.map(stage => `S${stage}`).join(',')} ${className}`] : [];
   }).join('\n');
 }
 
 export function statusList(topics: readonly DiscussionTopic[], readme: ReadmeList): string {
-  return readme.labels.flatMap(([status, label]) => {
-    const names = topics.filter(topic => topic.status === status).map(readme.title);
-    if (!names.length) return [];
-    return [`- **${label}:** ${names.join(', ')}${status === 'Proposed' ? `. ${readme.proposedNote}` : ''}`];
-  }).join('\n');
+  return readme.labels
+    .flatMap(([status, label]) => {
+      const names = topics.filter(topic => topic.status === status).map(readme.title);
+      if (!names.length) return [];
+      return [`- **${label}:** ${names.join(', ')}${status === 'Proposed' ? `. ${readme.proposedNote}` : ''}`];
+    })
+    .join('\n');
 }
 
 function renderIndex(content: string, topics: readonly DiscussionTopic[]): string {
@@ -116,7 +140,8 @@ export function discussionOutputs(topics: DiscussionTopics): GeneratedFile[] {
   ]);
   const readmeFiles = README_LISTS.map(readme => ({
     file: readme.file,
-    render: (content: string) => replaceBetween(content, markerPair('discussion-status'), statusList(topics[README_AREA] ?? [], readme))
+    render: (content: string) =>
+      replaceBetween(content, markerPair('discussion-status'), statusList(topics[README_AREA] ?? [], readme))
   }));
   return [...areaFiles, ...readmeFiles];
 }
@@ -133,9 +158,12 @@ function main(argv: readonly string[]): void {
     else fs.writeFileSync(file, next);
   }
   if (stale.length) {
-    process.stderr.write(`Generated discussion status is out of date: ${stale.join(', ')}. Run node tools/generate-discussion-status.ts.\n`);
+    process.stderr.write(
+      `Generated discussion status is out of date: ${stale.join(', ')}. Run node tools/generate-discussion-status.ts.\n`
+    );
     process.exitCode = 1;
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main(process.argv.slice(2));
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)
+  main(process.argv.slice(2));

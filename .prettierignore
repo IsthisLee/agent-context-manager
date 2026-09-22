@@ -1,0 +1,5 @@
+# Markdown은 check:docs에 맡긴다. 제안 요약 파서와 생성 블록이 지금의 목록 모양에 기댄다(ADR 0039).
+*.md
+
+# pnpm이 쓰는 파일이다.
+pnpm-lock.yaml

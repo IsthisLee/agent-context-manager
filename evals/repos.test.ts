@@ -2,7 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { commitAndPush, fakeGh, gitIn, makeWorkspace, optionValue, publishProfile, serviceRepo } from './support/git-workspace.ts';
+import {
+  commitAndPush,
+  fakeGh,
+  gitIn,
+  makeWorkspace,
+  optionValue,
+  publishProfile,
+  serviceRepo
+} from './support/git-workspace.ts';
 import { ghFailureReason } from '../src/repos/pr.ts';
 
 interface ListedRepo {
@@ -15,7 +23,8 @@ interface ListedRepo {
 const names = (repos: { path: string }[]) => repos.map(repo => path.basename(repo.path)).sort();
 
 /** The row `repos pr` prints for a result state: `<state> <target>  <detail>`. */
-const resultRow = (stdout: string, state: string) => stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
+const resultRow = (stdout: string, state: string) =>
+  stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
 
 test('apply records repositories; repos list marks a moved one missing and --prune forgets it', t => {
   const { root, person, folder } = makeWorkspace(t, 'agctx-repos-list-');
@@ -31,11 +40,17 @@ test('apply records repositories; repos list marks a moved one missing and --pru
   me.ok(['profile', 'apply', 'personal', preview, '--dry-run']);
 
   const listed: ListedRepo[] = JSON.parse(me.ok(['repos', 'list', '--json']).stdout).data.repos;
-  assert.deepEqual(listed.map(repo => [path.basename(repo.path), repo.profile, repo.pinned, repo.missing]).sort(), [
-    ['blog', 'personal', false, false],
-    ['client-a-api', 'client-a', false, false]
-  ], 'apply and sync register a repository once; a dry run registers nothing');
-  assert.deepEqual(names(JSON.parse(me.ok(['repos', 'list', '--profile', 'client-a', '--json']).stdout).data.repos), ['client-a-api']);
+  assert.deepEqual(
+    listed.map(repo => [path.basename(repo.path), repo.profile, repo.pinned, repo.missing]).sort(),
+    [
+      ['blog', 'personal', false, false],
+      ['client-a-api', 'client-a', false, false]
+    ],
+    'apply and sync register a repository once; a dry run registers nothing'
+  );
+  assert.deepEqual(names(JSON.parse(me.ok(['repos', 'list', '--profile', 'client-a', '--json']).stdout).data.repos), [
+    'client-a-api'
+  ]);
 
   fs.renameSync(api, path.join(root, 'moved-api'));
   const human = me.ok(['repos', 'list']);
@@ -61,7 +76,12 @@ test('repos status checks every listed repository and exits with the most severe
 
   me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claude = path.join(api, 'CLAUDE.md');
-  fs.writeFileSync(claude, fs.readFileSync(claude, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
+  fs.writeFileSync(
+    claude,
+    fs
+      .readFileSync(claude, 'utf8')
+      .replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n')
+  );
 
   const all = me.run(['repos', 'status']);
   assert.equal(all.status, 2, 'a conflict outranks repositories that are behind');
@@ -75,7 +95,13 @@ test('repos status checks every listed repository and exits with the most severe
   assert.equal(personal.status, 1);
   const document = JSON.parse(personal.stdout);
   assert.equal(document.command, 'repos status');
-  assert.deepEqual(document.data.repos.map((repo: { state: string; exitCode: number }) => [repo.state, repo.exitCode]), [['behind', 1], ['behind', 1]]);
+  assert.deepEqual(
+    document.data.repos.map((repo: { state: string; exitCode: number }) => [repo.state, repo.exitCode]),
+    [
+      ['behind', 1],
+      ['behind', 1]
+    ]
+  );
 });
 
 test('repos sync previews every repository, asks once, and skips conflicted and dirty ones while updating the rest', t => {
@@ -92,7 +118,12 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
 
   me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claudeTwo = path.join(two, 'CLAUDE.md');
-  fs.writeFileSync(claudeTwo, fs.readFileSync(claudeTwo, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
+  fs.writeFileSync(
+    claudeTwo,
+    fs
+      .readFileSync(claudeTwo, 'utf8')
+      .replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n')
+  );
   fs.appendFileSync(path.join(three, 'AGENTS.md'), '\n- A note not committed yet.\n');
   const read = (project: string) => fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
   const before = [read(one), read(two), read(three)];
@@ -117,11 +148,14 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
   assert.equal(read(three), before[2]);
 
   const again = JSON.parse(me.run(['repos', 'sync', '--profile', 'personal', '--yes', '--json']).stdout);
-  assert.deepEqual(again.data.repos.map((repo: { path: string; state: string }) => [path.basename(repo.path), repo.state]).sort(), [
-    ['sync-one', 'up-to-date'],
-    ['sync-three', 'dirty'],
-    ['sync-two', 'conflict']
-  ]);
+  assert.deepEqual(
+    again.data.repos.map((repo: { path: string; state: string }) => [path.basename(repo.path), repo.state]).sort(),
+    [
+      ['sync-one', 'up-to-date'],
+      ['sync-three', 'dirty'],
+      ['sync-two', 'conflict']
+    ]
+  );
 });
 
 test('repos pr opens a pull request from a separate worktree only when the profile moved', t => {
@@ -151,7 +185,11 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   member.ok(['profile', 'pull', 'team-backend']);
   const newCommit = gitIn(member.profileDir('team-backend'), 'rev-parse', 'HEAD');
   const branch = `agctx/team-backend-${newCommit.slice(0, 7)}`;
-  assert.equal(member.run(['check', service.work]).status, 1, 'a pinned repository is behind once the profile store has a newer commit');
+  assert.equal(
+    member.run(['check', service.work]).status,
+    1,
+    'a pinned repository is behind once the profile store has a newer commit'
+  );
 
   const preview = member.ok(['repos', 'pr', '--profile', 'team-backend', '--dry-run'], gh.env);
   assert.match(preview.stdout, new RegExp(`would-open\\s+\\S*orders-api\\s+.*${branch}`));
@@ -172,13 +210,22 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   assert.equal(recorded.source.commit, newCommit);
   assert.equal(recorded.pin, true, 'a pinned repository is pinned again to the new commit');
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Always add a migration test/);
-  assert.equal(gitIn(service.work, 'log', '-1', '--format=%s', 'FETCH_HEAD'), `chore(agctx): update team-backend profile to ${newCommit.slice(0, 7)}`);
+  assert.equal(
+    gitIn(service.work, 'log', '-1', '--format=%s', 'FETCH_HEAD'),
+    `chore(agctx): update team-backend profile to ${newCommit.slice(0, 7)}`
+  );
 
   assert.equal(gitIn(service.work, 'status', '--porcelain'), '', 'the working copy stays clean');
   assert.equal(gitIn(service.work, 'rev-parse', '--abbrev-ref', 'HEAD'), 'main');
   assert.doesNotMatch(fs.readFileSync(path.join(service.work, 'AGENTS.md'), 'utf8'), /Always add a migration test/);
   assert.equal(gitIn(service.work, 'branch', '--list', 'agctx/*'), '', 'no local branch is left behind');
-  assert.equal(gitIn(service.work, 'worktree', 'list', '--porcelain').split('\n').filter(line => line.startsWith('worktree ')).length, 1, 'the temporary worktree is removed');
+  assert.equal(
+    gitIn(service.work, 'worktree', 'list', '--porcelain')
+      .split('\n')
+      .filter(line => line.startsWith('worktree ')).length,
+    1,
+    'the temporary worktree is removed'
+  );
 
   const [create] = creates();
   assert.equal(optionValue(create.args, '--base'), 'main');
@@ -228,7 +275,11 @@ test('repos pr --targets lets a scheduled bot work from clone URLs and pushes wi
   assert.equal(recorded.source.commit, newCommit);
   assert.equal(recorded.pin, undefined, 'a repository that was not pinned stays unpinned');
 
-  assert.deepEqual(JSON.parse(bot.ok(['repos', 'list', '--json']).stdout).data.repos, [], 'temporary clones are never registered');
+  assert.deepEqual(
+    JSON.parse(bot.ok(['repos', 'list', '--json']).stdout).data.repos,
+    [],
+    'temporary clones are never registered'
+  );
 });
 
 test('repos pr applies inside the worktree when a target folder is spelled with another letter case', t => {
@@ -284,8 +335,15 @@ test('repos pr updates a project that lives in a repository subfolder', t => {
   const result = bot.run(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
-  assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'), /Document every public endpoint/);
-  assert.equal(gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'), '', 'nothing is written at the repository top');
+  assert.match(
+    gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'),
+    /Document every public endpoint/
+  );
+  assert.equal(
+    gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'),
+    '',
+    'nothing is written at the repository top'
+  );
 });
 
 /** Git as Git for Windows installs it: files are checked out with CRLF line endings (core.autocrlf). */
@@ -300,12 +358,20 @@ test('check and repos pr read files git checks out with CRLF line endings as the
   const service = serviceRepo(root, 'orders-api');
   bot.ok(['profile', 'apply', 'team-backend', service.work, '--pin', '--yes'], CRLF_CHECKOUT);
   commitAndPush(service.work, 'Apply team-backend profile');
-  assert.equal(bot.run(['check', service.work], CRLF_CHECKOUT).status, 0, 'a profile cloned with CRLF line endings renders what the pinned commit holds');
+  assert.equal(
+    bot.run(['check', service.work], CRLF_CHECKOUT).status,
+    0,
+    'a profile cloned with CRLF line endings renders what the pinned commit holds'
+  );
   const gh = fakeGh(t);
   gh.setMode('not-github');
 
   const quiet = bot.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], { ...gh.env, ...CRLF_CHECKOUT });
-  assert.match(quiet.stdout, /up-to-date\s+\S*orders-api/, 'a worktree checked out with CRLF line endings has no edited managed area');
+  assert.match(
+    quiet.stdout,
+    /up-to-date\s+\S*orders-api/,
+    'a worktree checked out with CRLF line endings has no edited managed area'
+  );
 
   fs.appendFileSync(path.join(profile.dir, 'AGENTS.md'), '\n- Document every public endpoint.\n');
   gitIn(profile.dir, 'commit', '--quiet', '-am', 'Document endpoints');
@@ -320,7 +386,10 @@ test('check and repos pr read files git checks out with CRLF line endings as the
 
 test('repos pr explains a missing GitHub CLI in words instead of the spawn error', () => {
   const missing = Object.assign(new Error('spawnSync gh ENOENT'), { code: 'ENOENT' });
-  assert.equal(ghFailureReason(missing), 'GitHub CLI (gh) is not installed; install it to open pull requests automatically.');
+  assert.equal(
+    ghFailureReason(missing),
+    'GitHub CLI (gh) is not installed; install it to open pull requests automatically.'
+  );
   const other = Object.assign(new Error('spawnSync gh EACCES'), { code: 'EACCES' });
   assert.equal(ghFailureReason(other), 'spawnSync gh EACCES');
 });

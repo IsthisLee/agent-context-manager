@@ -34,8 +34,17 @@ test('npm package contains only runtime assets and the package README', () => {
   assert.doesNotMatch(readme, /actions\/workflows\/ci\.yml\/badge\.svg/);
   assert.doesNotMatch(readme, /\]\((?:docs\/|CONTRIBUTING\.md|SECURITY\.md|CODE_OF_CONDUCT\.md)/);
   const links = [...readme.matchAll(/\]\((https:\/\/[^)\s]+)\)/g)].map(match => new URL(match[1]));
-  assert.ok(links.some(link => link.hostname === 'img.shields.io' && link.pathname.startsWith('/badge/Node.js-22')), 'README shows the Node.js 22 badge');
-  assert.ok(links.some(link => link.hostname === 'github.com' && link.pathname.startsWith('/IsthisLee/agent-context-manager/blob/main/docs/')), 'README links documents by absolute GitHub URL');
+  assert.ok(
+    links.some(link => link.hostname === 'img.shields.io' && link.pathname.startsWith('/badge/Node.js-22')),
+    'README shows the Node.js 22 badge'
+  );
+  assert.ok(
+    links.some(
+      link =>
+        link.hostname === 'github.com' && link.pathname.startsWith('/IsthisLee/agent-context-manager/blob/main/docs/')
+    ),
+    'README links documents by absolute GitHub URL'
+  );
 });
 
 test('repository exposes an installed-package smoke test', () => {
@@ -46,7 +55,12 @@ test('repository exposes an installed-package smoke test', () => {
   assert.equal(packageJson.scripts['check:release'], 'node tools/check-release.ts');
   assert.equal(packageJson.scripts['package:smoke'], 'node tools/package-smoke.ts');
   assert.equal(packageJson.scripts.prepublishOnly, 'pnpm run check && pnpm run pack:check');
-  assert.equal(packageJson.scripts.check, 'pnpm run typecheck && pnpm run check:docs && pnpm test');
+  assert.equal(packageJson.scripts.format, 'prettier --write .');
+  assert.equal(packageJson.scripts['format:check'], 'prettier --check .');
+  assert.equal(
+    packageJson.scripts.check,
+    'pnpm run typecheck && pnpm run format:check && pnpm run check:docs && pnpm test'
+  );
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'package-smoke.ts')));
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'build.ts')));
   assert(fs.existsSync(path.join(repoRoot, 'tools', 'check-release.ts')));

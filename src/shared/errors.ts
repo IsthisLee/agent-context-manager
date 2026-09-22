@@ -15,7 +15,7 @@ export type ExitCode = (typeof EXIT)[keyof typeof EXIT];
 /** The worst of several outcome codes, following 3 > 2 > 1 > 0. */
 export function worstExitCode(codes: readonly number[]): number {
   const order = [EXIT.hiddenCharacters, EXIT.conflict, EXIT.behind];
-  return order.find(code => codes.includes(code)) ?? (codes.find(code => code !== EXIT.ok) ?? EXIT.ok);
+  return order.find(code => codes.includes(code)) ?? codes.find(code => code !== EXIT.ok) ?? EXIT.ok;
 }
 
 /**
@@ -28,7 +28,11 @@ export class CliError extends Error {
   readonly hint: string | null;
   readonly details: unknown;
 
-  constructor(code: string, message: string, options: { exitCode?: number; hint?: string | null; details?: unknown } = {}) {
+  constructor(
+    code: string,
+    message: string,
+    options: { exitCode?: number; hint?: string | null; details?: unknown } = {}
+  ) {
     super(message);
     this.code = code;
     this.exitCode = options.exitCode ?? EXIT.software;
@@ -39,7 +43,9 @@ export class CliError extends Error {
 
 /** Any thrown value as a CliError; unexpected errors become exit code 70. */
 export function toCliError(error: unknown): CliError {
-  return error instanceof CliError ? error : new CliError('internal', error instanceof Error ? error.message : String(error));
+  return error instanceof CliError
+    ? error
+    : new CliError('internal', error instanceof Error ? error.message : String(error));
 }
 
 export function usageError(code: string, message: string, hint: string | null = null): CliError {

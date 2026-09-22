@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 14e5aa71591ea770d1995112ad64cf9947f55b810cf5b0713f3381bf13ad9bfe -->
+<!-- agctx-doc-sources-sha256: 3de3fa7430e5a7f40c87cbfefd3503f7b91e44b2a850f575d820dfba72e3c037 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -76,7 +76,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 ## 시작하기
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 22cacd1cc34af4647a947aef09322aa9d0117a76b460594f0ceb0bf8d8cb2c79 -->
+<!-- agctx-doc-sources-sha256: 460ae721b7ccb26feee3396a3b310635a62097ffbd54c479133ae484e1b4f0ee -->
 
 > 실행 환경: Node.js 22 LTS 이상
 
@@ -125,7 +125,7 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 26a0b245f7adade33d643fa292d1cedb175a8dccf17675b6e9d33e8c63cbe0b7 -->
+<!-- agctx-doc-sources-sha256: f39dc53e122f944791a3b55c9dedb121c34a17a5b6132492a0c5ce8e4875a6d2 -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -141,12 +141,12 @@ Applied profile company to /path/to/project
 
 ### 검증의 범위
 
-저장소를 개발하는 사람은 `pnpm run check`로 agctx 자체의 형식 검사, 문서 계약, CLI 평가를 실행합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하지 않고, 에이전트가 쓴 코드의 품질도 보증하지 않습니다. 대상 프로젝트의 검증은 그 프로젝트가 제공하는 명령으로 에이전트가 실행합니다. 프로필에는 그 검증을 요구하는 지침만 골라 담을 수 있습니다.
+저장소를 개발하는 사람은 `pnpm run check`로 agctx 자체의 형식 검사, 서식 검사, 문서 계약, CLI 평가를 실행합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하지 않고, 에이전트가 쓴 코드의 품질도 보증하지 않습니다. 대상 프로젝트의 검증은 그 프로젝트가 제공하는 명령으로 에이전트가 실행합니다. 프로필에는 그 검증을 요구하는 지침만 골라 담을 수 있습니다.
 
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 3c6265720e35c65ee2a634d928f858a6d9bf87d6027f1f3a7e9fd1710d0bf5bf -->
+<!-- agctx-doc-sources-sha256: d33f661555509cb367b181c727e995ac903711e9f05cec03a648b9f582c8d83e -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 

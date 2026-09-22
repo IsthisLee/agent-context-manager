@@ -41,8 +41,7 @@ export const SKILLS: readonly SkillSpec[] = [
 const summaries = ko as Record<string, string>;
 
 export function commandList(policies: readonly AgentPolicy[]): string {
-  return COMMANDS
-    .filter(command => policies.includes(agentPolicy(command)))
+  return COMMANDS.filter(command => policies.includes(agentPolicy(command)))
     .map(command => `- \`${usageLine(command)}\`: ${summaries[`command.${command.id}.summary`]}`)
     .join('\n');
 }
@@ -66,9 +65,12 @@ function main(argv: readonly string[]): void {
     else fs.writeFileSync(file, next);
   }
   if (stale.length) {
-    process.stderr.write(`Skill command lists are out of date: ${stale.join(', ')}. Run node tools/generate-skills.ts.\n`);
+    process.stderr.write(
+      `Skill command lists are out of date: ${stale.join(', ')}. Run node tools/generate-skills.ts.\n`
+    );
     process.exitCode = 1;
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main(process.argv.slice(2));
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href)
+  main(process.argv.slice(2));

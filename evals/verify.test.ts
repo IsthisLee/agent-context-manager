@@ -36,7 +36,8 @@ function project(t: TestContext) {
   const payments = path.join(repo, 'services', 'payments');
   fs.mkdirSync(payments, { recursive: true });
   fs.writeFileSync(path.join(payments, 'AGENTS.md'), '# Payments\n\n- Use idempotency keys.\n');
-  const verify = (args: string[], extra: Record<string, string> = {}) => me.run(['verify', ...args], { ...env, ...extra });
+  const verify = (args: string[], extra: Record<string, string> = {}) =>
+    me.run(['verify', ...args], { ...env, ...extra });
   return { repo, payments, codexHome, claudeHome, verify };
 }
 
@@ -48,7 +49,11 @@ function codexSession(codexHome: string, cwd: string, instructions: string) {
   const file = path.join(dir, `rollout-2026-09-15T10-00-00-${Math.random().toString(16).slice(2)}.jsonl`);
   const records = [
     { timestamp, type: 'session_meta', payload: { id: 'session-1', timestamp, cwd, cli_version: '0.154.0' } },
-    { timestamp, type: 'world_state', payload: { full: true, state: { agents_md: { directory: cwd, text: instructions } } } },
+    {
+      timestamp,
+      type: 'world_state',
+      payload: { full: true, state: { agents_md: { directory: cwd, text: instructions } } }
+    },
     { timestamp, type: 'turn_context', payload: { cwd } }
   ];
   fs.writeFileSync(file, records.map(record => JSON.stringify(record)).join('\n') + '\n');
@@ -63,7 +68,13 @@ function claudeTranscript(claudeHome: string, cwd: string, loaded: string[]) {
   fs.mkdirSync(dir, { recursive: true });
   const timestamp = new Date(Date.now() + 5000).toISOString();
   const records = [
-    { type: 'attachment', cwd, sessionId: 'session-1', timestamp, attachment: { type: 'instructions', files: loaded.map(file => ({ path: file, type: 'Project', content: '' })) } },
+    {
+      type: 'attachment',
+      cwd,
+      sessionId: 'session-1',
+      timestamp,
+      attachment: { type: 'instructions', files: loaded.map(file => ({ path: file, type: 'Project', content: '' })) }
+    },
     { type: 'user', cwd, sessionId: 'session-1', timestamp, message: { role: 'user', content: 'hello' } }
   ];
   const file = path.join(dir, 'session-1.jsonl');
@@ -98,7 +109,11 @@ test('verify reads Codex and Claude Code session logs and exits 4 when an instru
   const claude = agentOf(document, 'claude');
   assert.equal(claude.status, 'pass');
   assert.deepEqual(claude.expected, ['CLAUDE.md'], 'AGENTS.md imported from outside the start folder is conditional');
-  assert.deepEqual(claude.delivered.sort(), ['AGENTS.md', 'CLAUDE.md'], 'a conditional file that arrived is still reported');
+  assert.deepEqual(
+    claude.delivered.sort(),
+    ['AGENTS.md', 'CLAUDE.md'],
+    'a conditional file that arrived is still reported'
+  );
   assert.equal(agentOf(document, 'antigravity').status, 'no-evidence');
 
   const human = verify([payments]);
@@ -189,7 +204,10 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
     assert.equal(agent.status, 'pass', `${agent.agent}: ${JSON.stringify(agent)}`);
   }
   assert.deepEqual(agentOf(document, 'codex').delivered.sort(), ['AGENTS.md', 'services/payments/AGENTS.md']);
-  assert.ok(!agentOf(document, 'claude').expected.includes('AGENTS.md'), 'an import that needs approval is not required from a probe');
+  assert.ok(
+    !agentOf(document, 'claude').expected.includes('AGENTS.md'),
+    'an import that needs approval is not required from a probe'
+  );
 
   const calls = agents.calls();
   const codexCall = calls.find(call => call.command === 'codex');
@@ -198,10 +216,16 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
   assert.ok(claudeCall?.args.includes('-p') && claudeCall.args.includes('--tools'), JSON.stringify(claudeCall));
   const agyCall = calls.find(call => call.command === 'agy');
   assert.ok(agyCall?.args.includes('-p') && agyCall.args.includes('--add-dir'), JSON.stringify(agyCall));
-  assert.ok(calls.every(call => !call.cwd.startsWith(fs.realpathSync(repo))), 'agents run in a scratch copy, not the repository');
+  assert.ok(
+    calls.every(call => !call.cwd.startsWith(fs.realpathSync(repo))),
+    'agents run in a scratch copy, not the repository'
+  );
   assert.deepEqual(snapshot(repo), before, 'markers are added only to the scratch copy');
 
-  const failed = verify([payments, '--probe', '--yes', '--agent', 'claude', '--json'], { ...agents.env, FAKE_CLAUDE_NO_IMPORTS: '1' });
+  const failed = verify([payments, '--probe', '--yes', '--agent', 'claude', '--json'], {
+    ...agents.env,
+    FAKE_CLAUDE_NO_IMPORTS: '1'
+  });
   assert.equal(failed.status, 4);
   const claude = agentOf(parse(failed.stdout), 'claude');
   assert.equal(claude.status, 'fail');
@@ -211,7 +235,10 @@ test('verify --probe asks each agent CLI about marker lines in a scratch copy an
 test('verify --probe reports an agent CLI that cannot run as unavailable', t => {
   const { payments, verify } = project(t);
   const agents = fakeAgents(t);
-  const result = verify([payments, '--probe', '--yes', '--agent', 'codex', '--json'], { ...agents.env, FAKE_AGENT_FAIL: 'codex' });
+  const result = verify([payments, '--probe', '--yes', '--agent', 'codex', '--json'], {
+    ...agents.env,
+    FAKE_AGENT_FAIL: 'codex'
+  });
   assert.equal(result.status, 69);
   const codex = agentOf(parse(result.stdout), 'codex');
   assert.equal(codex.status, 'error');
@@ -223,19 +250,40 @@ test('verify judges a long Claude Code session by its latest instruction load, s
   const start = fs.realpathSync(payments);
   const root = fs.realpathSync(repo);
   fs.writeFileSync(path.join(payments, 'CLAUDE.md'), '@AGENTS.md\n');
-  const expected = [path.join(root, 'CLAUDE.md'), path.join(root, 'AGENTS.md'), path.join(start, 'CLAUDE.md'), path.join(start, 'AGENTS.md')];
+  const expected = [
+    path.join(root, 'CLAUDE.md'),
+    path.join(root, 'AGENTS.md'),
+    path.join(start, 'CLAUDE.md'),
+    path.join(start, 'AGENTS.md')
+  ];
   const dir = path.join(claudeHome, 'projects', start.replace(/[^A-Za-z0-9]/g, '-'));
   fs.mkdirSync(dir, { recursive: true });
   const earlier = new Date(Date.now() - 3_600_000).toISOString();
   const now = new Date(Date.now() + 5000).toISOString();
-  const instructions = (timestamp: string, files: string[]) => ({ type: 'attachment', cwd: start, sessionId: 'long', timestamp, attachment: { type: 'instructions', files: files.map(file => ({ path: file, type: 'Project', content: '' })) } });
-  fs.writeFileSync(path.join(dir, 'long.jsonl'), [instructions(earlier, expected.slice(0, 2)), instructions(now, expected)].map(record => JSON.stringify(record)).join('\n') + '\n');
+  const instructions = (timestamp: string, files: string[]) => ({
+    type: 'attachment',
+    cwd: start,
+    sessionId: 'long',
+    timestamp,
+    attachment: { type: 'instructions', files: files.map(file => ({ path: file, type: 'Project', content: '' })) }
+  });
+  fs.writeFileSync(
+    path.join(dir, 'long.jsonl'),
+    [instructions(earlier, expected.slice(0, 2)), instructions(now, expected)]
+      .map(record => JSON.stringify(record))
+      .join('\n') + '\n'
+  );
 
   const result = verify([payments, '--agent', 'claude', '--json']);
   assert.equal(result.status, 0, result.stdout);
   const claude = agentOf(parse(result.stdout), 'claude');
   assert.equal(claude.status, 'pass');
-  assert.deepEqual(claude.delivered.sort(), ['AGENTS.md', 'CLAUDE.md', 'services/payments/AGENTS.md', 'services/payments/CLAUDE.md']);
+  assert.deepEqual(claude.delivered.sort(), [
+    'AGENTS.md',
+    'CLAUDE.md',
+    'services/payments/AGENTS.md',
+    'services/payments/CLAUDE.md'
+  ]);
 });
 
 test('verify without session logs gives one next step for Codex and Claude Code and the probe for Antigravity', t => {
@@ -248,4 +296,3 @@ test('verify without session logs gives one next step for Codex and Claude Code 
   assert.match(next[0], /^Next: start an agent \(Codex, Claude Code\) in this folder once/);
   assert.match(next[1], /--probe.*Antigravity/);
 });
-

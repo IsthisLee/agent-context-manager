@@ -36,7 +36,7 @@ flowchart LR
 ## 설치
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 22cacd1cc34af4647a947aef09322aa9d0117a76b460594f0ceb0bf8d8cb2c79 -->
+<!-- agctx-doc-sources-sha256: 460ae721b7ccb26feee3396a3b310635a62097ffbd54c479133ae484e1b4f0ee -->
 
 agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
 
@@ -56,7 +56,7 @@ agctx install
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 09685a0bd4e666150955d3a0c1253b245b03a51621a1b04c30d5c4edb68d537c -->
+<!-- agctx-doc-sources-sha256: dee78610defc6316ac61ba8cf9a801cd7e94c8e6281e5827558a04cd2e2085d4 -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -72,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: fc62f2a53031c31dd52ab7c408a54a08b69a59025c1af7a2b4b3f51a1e3fee33 -->
+<!-- agctx-doc-sources-sha256: 2cc9f3da0603450d92f4029d5f5ddcc480b8745b0d46148dc626ceedb1abfbe1 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -91,7 +91,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: b47950a7815409d3705e37c3f22aef16d65fca5923e56a58dfadad6ddcf1364c -->
+<!-- agctx-doc-sources-sha256: 07a0781f8386258358f955d317da3bb75d1ed4e4aaae758a15751a9afd3ea54c -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -134,7 +134,7 @@ Applied profile team-backend to /work/shop
 ## 4. 저장소 확인하기
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 76a20cc928278b1f28b2c37fc7da4455b2d9810e02d3b786a2aff582057e046a -->
+<!-- agctx-doc-sources-sha256: 80b2486e816e59a2439be8819dd6f1da2cd0683aab94c2335763129f41df50f2 -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

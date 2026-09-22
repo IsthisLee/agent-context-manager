@@ -24,7 +24,7 @@ test('documentation checker validates architecture discussion topics beneath the
   assert.match(checker, /path\.join\(discussionDir, 'topics'\)/);
 });
 
-test('every discussion area with a topics folder is checked, so repository topics are not exempt', async (t) => {
+test('every discussion area with a topics folder is checked, so repository topics are not exempt', async t => {
   const { discussionRoots } = await import('../tools/discussion-roots.ts');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-discussion-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -34,14 +34,23 @@ test('every discussion area with a topics folder is checked, so repository topic
   fs.mkdirSync(path.join(dir, 'notes'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'README.md'), '# 논의\n');
 
-  assert.deepEqual(discussionRoots(dir), ['architecture', 'repository'], 'a folder without topics/ is not a discussion area');
+  assert.deepEqual(
+    discussionRoots(dir),
+    ['architecture', 'repository'],
+    'a folder without topics/ is not a discussion area'
+  );
   assert.deepEqual(discussionRoots(path.join(dir, 'missing')), []);
 
-  const areas = fs.readdirSync(path.join(repoRoot, 'docs/discussion'), { withFileTypes: true })
+  const areas = fs
+    .readdirSync(path.join(repoRoot, 'docs/discussion'), { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => entry.name)
     .sort();
-  assert.deepEqual(discussionRoots(path.join(repoRoot, 'docs/discussion')), areas, 'every discussion folder in this repository is an area the checker walks');
+  assert.deepEqual(
+    discussionRoots(path.join(repoRoot, 'docs/discussion')),
+    areas,
+    'every discussion folder in this repository is an area the checker walks'
+  );
 
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
   assert.match(checker, /discussionRoots/);
@@ -80,7 +89,10 @@ test('doc-source hash paths are POSIX on every platform so a stamp from one OS v
   const { docSourceHashPath } = await import('../tools/doc-source-path.ts');
 
   assert.equal(docSourceHashPath('D:\\a\\repo', 'D:\\a\\repo\\src\\agctx.ts', path.win32), 'src/agctx.ts');
-  assert.equal(docSourceHashPath('D:\\a\\repo', 'D:\\a\\repo\\.github\\workflows\\ci.yml', path.win32), '.github/workflows/ci.yml');
+  assert.equal(
+    docSourceHashPath('D:\\a\\repo', 'D:\\a\\repo\\.github\\workflows\\ci.yml', path.win32),
+    '.github/workflows/ci.yml'
+  );
   assert.equal(docSourceHashPath('/repo', '/repo/src/agctx.ts', path.posix), 'src/agctx.ts');
 });
 
@@ -148,7 +160,14 @@ test('documents pin source modules rather than the whole src folder, and every s
 
   assert.deepEqual(wholeRootPins(['src', 'src/commands', 'package.json']), ['src']);
   assert.deepEqual(wholeRootPins(['src/', 'templates']), ['src/']);
-  assert.deepEqual(unpinnedSources(['src/agctx.ts', 'src/commands/cli.ts', 'src/repos/pr.ts', 'src/repos-extra.ts'], ['src/commands', 'src/repos', 'src/agctx.ts']), ['src/repos-extra.ts'], 'a folder pin covers only files inside that folder');
+  assert.deepEqual(
+    unpinnedSources(
+      ['src/agctx.ts', 'src/commands/cli.ts', 'src/repos/pr.ts', 'src/repos-extra.ts'],
+      ['src/commands', 'src/repos', 'src/agctx.ts']
+    ),
+    ['src/repos-extra.ts'],
+    'a folder pin covers only files inside that folder'
+  );
   assert.deepEqual(unpinnedSources(['src/check.ts'], ['src']), ['src/check.ts'], 'a whole-src pin covers nothing');
 
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');
@@ -159,19 +178,43 @@ test('documents pin source modules rather than the whole src folder, and every s
 test('a source a document cites by name counts as covered, so the pin can move to the section that needs it', async () => {
   const { unpinnedSources } = await import('../tools/doc-sources.ts');
 
-  assert.deepEqual(unpinnedSources(['src/check.ts', 'src/explain.ts'], ['src/explain.ts'], ['src/check.ts']), [], 'a cited file needs no pin');
-  assert.deepEqual(unpinnedSources(['src/check.ts'], [], []), ['src/check.ts'], 'a file that is neither pinned nor cited is reported');
+  assert.deepEqual(
+    unpinnedSources(['src/check.ts', 'src/explain.ts'], ['src/explain.ts'], ['src/check.ts']),
+    [],
+    'a cited file needs no pin'
+  );
+  assert.deepEqual(
+    unpinnedSources(['src/check.ts'], [], []),
+    ['src/check.ts'],
+    'a file that is neither pinned nor cited is reported'
+  );
 });
 
 test('a document pinned as a source is hashed without its recorded hash, so the two READMEs can pin each other', async () => {
   const { withoutRecordedHash } = await import('../tools/doc-sources.ts');
-  const doc = (hash: string, body: string) => `# Title\n\n<!-- agctx-doc-sources: README.en.md -->\n<!-- agctx-doc-sources-sha256: ${hash} -->\n\n${body}\n`;
-  assert.equal(withoutRecordedHash(doc('a'.repeat(64), 'body')), withoutRecordedHash(doc('b'.repeat(64), 'body')), 'restamping a pinned document does not change what pins it');
-  assert.notEqual(withoutRecordedHash(doc('a'.repeat(64), 'body')), withoutRecordedHash(doc('a'.repeat(64), 'edited body')), 'editing a pinned document still trips the gate');
+  const doc = (hash: string, body: string) =>
+    `# Title\n\n<!-- agctx-doc-sources: README.en.md -->\n<!-- agctx-doc-sources-sha256: ${hash} -->\n\n${body}\n`;
+  assert.equal(
+    withoutRecordedHash(doc('a'.repeat(64), 'body')),
+    withoutRecordedHash(doc('b'.repeat(64), 'body')),
+    'restamping a pinned document does not change what pins it'
+  );
+  assert.notEqual(
+    withoutRecordedHash(doc('a'.repeat(64), 'body')),
+    withoutRecordedHash(doc('a'.repeat(64), 'edited body')),
+    'editing a pinned document still trips the gate'
+  );
 
-  for (const [readme, translation] of [['README.md', 'README.en.md'], ['README.en.md', 'README.md']]) {
+  for (const [readme, translation] of [
+    ['README.md', 'README.en.md'],
+    ['README.en.md', 'README.md']
+  ]) {
     const content = fs.readFileSync(path.join(repoRoot, readme), 'utf8');
-    const pins = content.match(/<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/)?.[1].split(',').map(value => value.trim()) ?? [];
+    const pins =
+      content
+        .match(/<!--\s*agctx-doc-sources:\s*([^\n]+?)\s*-->/)?.[1]
+        .split(',')
+        .map(value => value.trim()) ?? [];
     assert.ok(pins.includes(translation), `${readme} pins ${translation}, so changing one language asks for the other`);
   }
   const checker = fs.readFileSync(path.join(repoRoot, 'tools/check-docs.ts'), 'utf8');

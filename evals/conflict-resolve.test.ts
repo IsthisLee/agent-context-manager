@@ -36,11 +36,12 @@ function makeFixture(t: TestContext) {
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   t.after(() => fs.rmSync(home, { recursive: true, force: true }));
-  const run = (args: string[], env: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath, [cli, ...args], {
-    cwd: repoRoot,
-    env: { ...process.env, AGCTX_HOME: home, ...env },
-    encoding: 'utf8'
-  });
+  const run = (args: string[], env: NodeJS.ProcessEnv = {}) =>
+    spawnSync(process.execPath, [cli, ...args], {
+      cwd: repoRoot,
+      env: { ...process.env, AGCTX_HOME: home, ...env },
+      encoding: 'utf8'
+    });
   const ok = (args: string[], env: NodeJS.ProcessEnv = {}) => {
     const result = run(args, env);
     assert.equal(result.status, 0, `${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
@@ -53,7 +54,6 @@ function makeFixture(t: TestContext) {
   const write = (rel: string, content: string) => fs.writeFileSync(file(rel), content);
   return { project, run, ok, file, read, write };
 }
-
 
 type Fixture = ReturnType<typeof makeFixture>;
 
@@ -74,7 +74,9 @@ function assertCleanSync(fixture: Fixture) {
 function fakeCode(t: TestContext, mode: string) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-fake-code-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  fs.writeFileSync(path.join(dir, 'fake-code.mjs'), `import fs from 'node:fs';
+  fs.writeFileSync(
+    path.join(dir, 'fake-code.mjs'),
+    `import fs from 'node:fs';
 const args = process.argv.slice(2);
 const at = args.indexOf('--merge');
 const [current, incoming, , result] = args.slice(at + 1, at + 5);
@@ -87,11 +89,15 @@ else if (mode === 'formatted') fs.writeFileSync(result, mine.replace('## Command
 else if (mode === 'nomarkers') fs.writeFileSync(result, mine.replace(START, '').replace(END, ''));
 else if (mode === 'untouched') {}
 else fs.writeFileSync(result, fs.readFileSync(incoming, 'utf8') + '\\n## Kept by merge\\n');
-`);
+`
+  );
   if (process.platform === 'win32') {
     fs.writeFileSync(path.join(dir, 'code.cmd'), `@"${process.execPath}" "%~dp0fake-code.mjs" %*\r\n`);
   } else {
-    fs.writeFileSync(path.join(dir, 'code'), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-code.mjs" "$@"\n`);
+    fs.writeFileSync(
+      path.join(dir, 'code'),
+      `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-code.mjs" "$@"\n`
+    );
     fs.chmodSync(path.join(dir, 'code'), 0o755);
   }
   return { [PATH_KEY]: `${dir}${path.delimiter}${process.env[PATH_KEY]}` };
@@ -292,7 +298,10 @@ test('resolve --edit starts the merge result from the automatic resolution', t =
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
 
-  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], { ...fakeCode(t, 'untouched'), AGCTX_LANG: 'ko' });
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], {
+    ...fakeCode(t, 'untouched'),
+    AGCTX_LANG: 'ko'
+  });
 
   assert.match(result.stdout, /CLAUDE\.md: VS Code 병합 편집기를 엽니다/);
   assert.match(result.stdout, /`current-CLAUDE\.md` 창/);
@@ -323,7 +332,10 @@ test('resolve --edit regenerates the managed area and reports edits left inside 
   const original = fixture.read('CLAUDE.md');
   editPointerBlock(fixture);
 
-  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], { ...fakeCode(t, 'current'), AGCTX_LANG: 'en' });
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], {
+    ...fakeCode(t, 'current'),
+    AGCTX_LANG: 'en'
+  });
 
   assert.match(result.stdout, /CLAUDE\.md: opening the VS Code merge editor/);
   assert.match(result.stdout, /'Close with Conflicts'/);

@@ -14,7 +14,10 @@ test('a POSIX shell word is left bare when safe and double-quoted with escapes o
 });
 
 test('a Windows path keeps its backslashes and short-name tildes and is quoted only when it holds a space', () => {
-  assert.equal(shellWord('C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules', 'win32'), 'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules');
+  assert.equal(
+    shellWord('C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules', 'win32'),
+    'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\rules'
+  );
   assert.equal(shellWord('C:\\Users\\me\\team rules', 'win32'), '"C:\\Users\\me\\team rules"');
   assert.equal(shellWord('say "hi"', 'win32'), '"say ""hi"""');
 });

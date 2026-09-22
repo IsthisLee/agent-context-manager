@@ -9,7 +9,25 @@ import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { shellWord } from '../shared/shell.ts';
 import { MANAGED_END } from '../project/conflicts.ts';
 import type { ProfileMetadata, Scope } from '../shared/types.ts';
-import { assertInstructionsPath, brokenLinkHint, DEFAULT_INSTRUCTIONS, instructionsFile, isDirectory, isInstructionsPath, isProfileName, isScope, isValidProfileMetadata, LINK_FILE, profileLocation, readMetadataFile, readStore, regularFileInside, sameFolder, SCOPES, validateProfileName } from './store.ts';
+import {
+  assertInstructionsPath,
+  brokenLinkHint,
+  DEFAULT_INSTRUCTIONS,
+  instructionsFile,
+  isDirectory,
+  isInstructionsPath,
+  isProfileName,
+  isScope,
+  isValidProfileMetadata,
+  LINK_FILE,
+  profileLocation,
+  readMetadataFile,
+  readStore,
+  regularFileInside,
+  sameFolder,
+  SCOPES,
+  validateProfileName
+} from './store.ts';
 
 /**
  * `profile link` makes a rules repository folder that already exists on this machine a profile. It writes
@@ -61,7 +79,11 @@ export function instructionCandidates(dir: string): { files: string[]; complete:
     }
     read++;
     let entries: fs.Dirent[];
-    try { entries = fs.readdirSync(path.join(dir, rel), { withFileTypes: true }); } catch { return; }
+    try {
+      entries = fs.readdirSync(path.join(dir, rel), { withFileTypes: true });
+    } catch {
+      return;
+    }
     for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
       const child = rel ? `${rel}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
@@ -88,7 +110,11 @@ function readExistingMetadata(dir: string): ProfileMetadata | null {
  * output of that other profile, not rules of this folder's own, so it is never taken without being named.
  */
 function writtenByAgctx(dir: string, rel: string): boolean {
-  try { return fs.readFileSync(path.join(dir, ...rel.split('/')), 'utf8').includes(MANAGED_END); } catch { return false; }
+  try {
+    return fs.readFileSync(path.join(dir, ...rel.split('/')), 'utf8').includes(MANAGED_END);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -96,30 +122,53 @@ function writtenByAgctx(dir: string, rel: string): boolean {
  * it takes without being told, which is the root AGENTS.md, or else the only AGENTS.md. With several and none at
  * the root it takes none, and after a search that stopped early it takes only the root one, since there may be more.
  */
-export function ruleFileChoices(dir: string): { detected: string | null; candidates: string[]; complete: boolean; written: string[] } {
+export function ruleFileChoices(dir: string): {
+  detected: string | null;
+  candidates: string[];
+  complete: boolean;
+  written: string[];
+} {
   const { files, complete } = instructionCandidates(dir);
   const written = files.filter(file => writtenByAgctx(dir, file));
   const candidates = files.filter(file => !written.includes(file));
-  const detected = candidates.includes(DEFAULT_INSTRUCTIONS) && regularFileInside(dir, DEFAULT_INSTRUCTIONS) ? DEFAULT_INSTRUCTIONS : complete && candidates.length === 1 ? candidates[0] : null;
+  const detected =
+    candidates.includes(DEFAULT_INSTRUCTIONS) && regularFileInside(dir, DEFAULT_INSTRUCTIONS)
+      ? DEFAULT_INSTRUCTIONS
+      : complete && candidates.length === 1
+        ? candidates[0]
+        : null;
   return { detected, candidates, complete, written };
 }
 
 function chooseInstructions(dir: string): string {
   // A root AGENTS.md of the folder's own decides without searching; one that is a symbolic link is reported by planLink.
   const root = path.join(dir, DEFAULT_INSTRUCTIONS);
-  if ((regularFileInside(dir, DEFAULT_INSTRUCTIONS) && !writtenByAgctx(dir, DEFAULT_INSTRUCTIONS)) || isSymbolicLink(root)) return DEFAULT_INSTRUCTIONS;
+  if (
+    (regularFileInside(dir, DEFAULT_INSTRUCTIONS) && !writtenByAgctx(dir, DEFAULT_INSTRUCTIONS)) ||
+    isSymbolicLink(root)
+  )
+    return DEFAULT_INSTRUCTIONS;
   const { detected, candidates, complete, written } = ruleFileChoices(dir);
   if (detected) return detected;
   if (!candidates.length && written.length && complete) {
-    throw usageError('link.rules-written', _('error.link.rules-written', { dir, files: written.join(', ') }), _('hint.link.instructions'));
+    throw usageError(
+      'link.rules-written',
+      _('error.link.rules-written', { dir, files: written.join(', ') }),
+      _('hint.link.instructions')
+    );
   }
   const files = candidates.join('\n  ');
   if (!complete) {
-    throw usageError('link.search-limit', candidates.length
-      ? _('error.link.search-limit-found', { dir, count: MAX_FOLDERS, files })
-      : _('error.link.search-limit', { dir, count: MAX_FOLDERS }), _('hint.link.instructions'));
+    throw usageError(
+      'link.search-limit',
+      candidates.length
+        ? _('error.link.search-limit-found', { dir, count: MAX_FOLDERS, files })
+        : _('error.link.search-limit', { dir, count: MAX_FOLDERS }),
+      _('hint.link.instructions')
+    );
   }
-  if (!candidates.length) throw usageError('link.no-rules', _('error.link.no-rules', { dir }), _('hint.link.instructions'));
+  if (!candidates.length)
+    throw usageError('link.no-rules', _('error.link.no-rules', { dir }), _('hint.link.instructions'));
   throw usageError('link.many-rules', _('error.link.many-rules', { dir, files }), _('hint.link.instructions'));
 }
 
@@ -138,7 +187,11 @@ function enclosingRepository(dir: string): { root: string; prefix: string } | nu
     const real = fs.realpathSync.native(dir);
     if (sameFolder(root, real) || sameFolder(root, os.homedir())) return null;
     const committed = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).status === 0;
-    if (committed && git(['rev-parse', '--verify', '--quiet', 'HEAD:./'], { cwd: dir, allowFailure: true }).status !== 0) return null;
+    if (
+      committed &&
+      git(['rev-parse', '--verify', '--quiet', 'HEAD:./'], { cwd: dir, allowFailure: true }).status !== 0
+    )
+      return null;
     return { root, prefix: path.relative(fs.realpathSync.native(root), real).split(path.sep).join('/') };
   } catch {
     return null;
@@ -148,7 +201,12 @@ function enclosingRepository(dir: string): { root: string; prefix: string } | nu
 /** The profile name `profile link` offers for a folder: the folder name, or the closest name that fits the rules. */
 export function suggestedName(folder: string): string | null {
   if (isProfileName(folder)) return folder;
-  const name = folder.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+/, '').slice(0, 64).replace(/-+$/, '');
+  const name = folder
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/^-+/, '')
+    .slice(0, 64)
+    .replace(/-+$/, '');
   return isProfileName(name) ? name : null;
 }
 
@@ -158,9 +216,17 @@ export function suggestedName(folder: string): string | null {
  */
 function symbolicLinkHint(dir: string, file: string): string {
   let target: string | null = null;
-  try { target = path.relative(dir, path.resolve(path.dirname(file), fs.readlinkSync(file))).split(path.sep).join('/'); } catch {}
-  if (target && isInstructionsPath(target) && regularFileInside(dir, target)) return _('hint.link.rules-symlink-target', { file: shellWord(target) });
-  return target && (target === '..' || target.startsWith('../') || path.isAbsolute(target)) ? _('hint.link.rules-symlink-outside') : _('hint.link.instructions');
+  try {
+    target = path
+      .relative(dir, path.resolve(path.dirname(file), fs.readlinkSync(file)))
+      .split(path.sep)
+      .join('/');
+  } catch {}
+  if (target && isInstructionsPath(target) && regularFileInside(dir, target))
+    return _('hint.link.rules-symlink-target', { file: shellWord(target) });
+  return target && (target === '..' || target.startsWith('../') || path.isAbsolute(target))
+    ? _('hint.link.rules-symlink-outside')
+    : _('hint.link.instructions');
 }
 
 /**
@@ -170,23 +236,32 @@ function symbolicLinkHint(dir: string, file: string): string {
 export function checkLinkFolder(dirInput: string, request: LinkRequest = {}): string {
   const dir = path.resolve(dirInput);
   if (!isDirectory(dir)) throw usageError('link.not-directory', _('error.link.not-directory', { dir }), null);
-  if (sameFolder(dir, os.homedir())) throw usageError('link.home-folder', _('error.link.home-folder', { dir }), _('hint.link.home-folder'));
+  if (sameFolder(dir, os.homedir()))
+    throw usageError('link.home-folder', _('error.link.home-folder', { dir }), _('hint.link.home-folder'));
   // Pinning, status, and clone work on a repository root, so a folder inside a repository is linked through its root.
   const repository = enclosingRepository(dir);
   if (repository) {
     let existing: ProfileMetadata | null = null;
-    try { existing = readExistingMetadata(dir); } catch {}
+    try {
+      existing = readExistingMetadata(dir);
+    } catch {}
     const { root, prefix } = repository;
     const inner = request.instructions || (existing ? instructionsFile(existing) : ruleFileChoices(dir).detected);
     const name = request.name || existing?.name || suggestedName(path.basename(dir));
     const scope = request.scope || existing?.scope;
     const command = [
-      'agctx profile link', shellWord(root),
-      '--instructions', inner ? shellWord(path.posix.join(prefix, inner)) : `${shellWord(prefix)}/<file>`,
+      'agctx profile link',
+      shellWord(root),
+      '--instructions',
+      inner ? shellWord(path.posix.join(prefix, inner)) : `${shellWord(prefix)}/<file>`,
       ...(name ? ['--name', shellWord(name)] : []),
       ...(scope ? ['--scope', shellWord(scope)] : [])
     ].join(' ');
-    throw usageError('link.inside-repository', _('error.link.inside-repository', { dir, root }), _('hint.link.inside-repository', { command }));
+    throw usageError(
+      'link.inside-repository',
+      _('error.link.inside-repository', { dir, root }),
+      _('hint.link.inside-repository', { command })
+    );
   }
   return dir;
 }
@@ -205,7 +280,11 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     ];
     for (const [field, value, recorded] of given) {
       if (value && value !== recorded) {
-        throw usageError('link.mismatch', _('error.link.mismatch', { field, value, recorded, file: metadataFile }), _('hint.link.mismatch'));
+        throw usageError(
+          'link.mismatch',
+          _('error.link.mismatch', { field, value, recorded, file: metadataFile }),
+          _('hint.link.mismatch')
+        );
       }
     }
     name = existing.name;
@@ -213,7 +292,11 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     name = request.name || path.basename(dir);
     if (!request.name && !isProfileName(name)) {
       const suggestion = suggestedName(name);
-      throw usageError('profile.invalid-name', _('error.profile.invalid-name', { name }), suggestion ? _('hint.link.name', { name: suggestion }) : _('hint.profile.name'));
+      throw usageError(
+        'profile.invalid-name',
+        _('error.profile.invalid-name', { name }),
+        suggestion ? _('hint.link.name', { name: suggestion }) : _('hint.profile.name')
+      );
     }
     validateProfileName(name);
   }
@@ -221,7 +304,12 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   // One folder is one link. A working link's name is the one in the folder's profile.json, so only a broken link
   // can hold this folder under another name; linking it again would split the profile in two.
   const linkedAs = readStore().brokenLinks.find(link => link.name !== name && sameFolder(link.path, dir));
-  if (linkedAs) throw usageError('link.folder-linked', _('error.link.folder-linked', { dir, name: linkedAs.name }), brokenLinkHint(linkedAs.name));
+  if (linkedAs)
+    throw usageError(
+      'link.folder-linked',
+      _('error.link.folder-linked', { dir, name: linkedAs.name }),
+      brokenLinkHint(linkedAs.name)
+    );
 
   // A name already in the store is never pointed at another folder, broken or not: a folder of the same name
   // elsewhere would otherwise take its place without a question. Bringing a broken link back is remove, then link.
@@ -229,12 +317,31 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   let linked = false;
   if (location) {
     if (location.kind === 'symlink' && !location.link) {
-      throw usageError('link.exists', _('error.link.exists-symlink', { name, path: location.dir }), _('hint.link.exists-symlink', { name }));
+      throw usageError(
+        'link.exists',
+        _('error.link.exists-symlink', { name, path: location.dir }),
+        _('hint.link.exists-symlink', { name })
+      );
     }
     // The name comes from profile.json when the folder has one, so --name cannot get around the clash.
-    if (!location.link) throw usageError('link.exists', _('error.link.exists', { name }), existing ? _('hint.link.exists-metadata', { name, file: metadataFile }) : _('hint.link.exists', { name }));
-    if (location.problem) throw usageError('link.broken-exists', _('error.link.broken-exists', { name, path: location.link, reason: _(`list.broken.${location.problem}`) }), brokenLinkHint(name));
-    if (!sameFolder(location.link, dir)) throw usageError('link.linked-elsewhere', _('error.link.linked-elsewhere', { name, from: location.link }), _('hint.link.linked-elsewhere', { name, path: dir }));
+    if (!location.link)
+      throw usageError(
+        'link.exists',
+        _('error.link.exists', { name }),
+        existing ? _('hint.link.exists-metadata', { name, file: metadataFile }) : _('hint.link.exists', { name })
+      );
+    if (location.problem)
+      throw usageError(
+        'link.broken-exists',
+        _('error.link.broken-exists', { name, path: location.link, reason: _(`list.broken.${location.problem}`) }),
+        brokenLinkHint(name)
+      );
+    if (!sameFolder(location.link, dir))
+      throw usageError(
+        'link.linked-elsewhere',
+        _('error.link.linked-elsewhere', { name, from: location.link }),
+        _('hint.link.linked-elsewhere', { name, path: dir })
+      );
     linked = true;
   }
 
@@ -245,22 +352,42 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     instructions = instructionsFile(existing);
   } else {
     const requestedScope = request.scope || 'personal';
-    if (!isScope(requestedScope)) throw usageError('profile.invalid-scope', _('error.profile.invalid-scope', { scope: requestedScope, scopes: SCOPES.join(', ') }), null);
+    if (!isScope(requestedScope))
+      throw usageError(
+        'profile.invalid-scope',
+        _('error.profile.invalid-scope', { scope: requestedScope, scopes: SCOPES.join(', ') }),
+        null
+      );
     scope = requestedScope;
     instructions = request.instructions || chooseInstructions(dir);
   }
   assertInstructionsPath(instructions, metadataFile);
   if (!regularFileInside(dir, instructions)) {
     const file = path.join(dir, ...instructions.split('/'));
-    if (isSymbolicLink(file)) throw usageError('link.rules-symlink', _('error.link.rules-symlink', { file }), symbolicLinkHint(dir, file));
+    if (isSymbolicLink(file))
+      throw usageError('link.rules-symlink', _('error.link.rules-symlink', { file }), symbolicLinkHint(dir, file));
     // A rules file named in profile.json is fixed there; --instructions would only disagree with it.
-    throw usageError('link.rules-missing', _('error.link.rules-missing', { dir, file: instructions }), existing ? _('hint.link.metadata-rules', { file: metadataFile }) : _('hint.link.instructions'));
+    throw usageError(
+      'link.rules-missing',
+      _('error.link.rules-missing', { dir, file: instructions }),
+      existing ? _('hint.link.metadata-rules', { file: metadataFile }) : _('hint.link.instructions')
+    );
   }
 
-  const metadata: ProfileMetadata | null = existing ? null : instructions === DEFAULT_INSTRUCTIONS
-    ? { schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }
-    : { schemaVersion: 2, name, scope, instructions, createdAt: new Date().toISOString() };
-  return { dir, name, scope, instructions, metadata, link: linked ? 'unchanged' : 'create', changes: Boolean(metadata) || !linked };
+  const metadata: ProfileMetadata | null = existing
+    ? null
+    : instructions === DEFAULT_INSTRUCTIONS
+      ? { schemaVersion: 1, name, scope, createdAt: new Date().toISOString() }
+      : { schemaVersion: 2, name, scope, instructions, createdAt: new Date().toISOString() };
+  return {
+    dir,
+    name,
+    scope,
+    instructions,
+    metadata,
+    link: linked ? 'unchanged' : 'create',
+    changes: Boolean(metadata) || !linked
+  };
 }
 
 /** The confirmation question for a plan. */
@@ -273,7 +400,8 @@ export function linkQuestion(plan: LinkPlan): string {
  * the hint for a link that lost its profile.json can name them in the command that brings it back.
  */
 export function writeLink(plan: LinkPlan): void {
-  if (plan.metadata) writeTextAtomic(path.join(plan.dir, PROFILE_METADATA_FILE), JSON.stringify(plan.metadata, null, 2) + '\n');
+  if (plan.metadata)
+    writeTextAtomic(path.join(plan.dir, PROFILE_METADATA_FILE), JSON.stringify(plan.metadata, null, 2) + '\n');
   const storeDir = path.join(profileHome(), plan.name);
   fs.mkdirSync(storeDir, { recursive: true });
   const record = { schemaVersion: 1, path: plan.dir, scope: plan.scope, instructions: plan.instructions };

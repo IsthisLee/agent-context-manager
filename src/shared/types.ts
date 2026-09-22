@@ -2,7 +2,17 @@
 
 export type Locale = 'ko' | 'en';
 export type Scope = 'personal' | 'company' | 'team' | 'workspace';
-export type GuidanceKey = 'workflow' | 'context' | 'tdd' | 'review' | 'verification' | 'instructions' | 'docs' | 'security' | 'untrusted' | 'language';
+export type GuidanceKey =
+  | 'workflow'
+  | 'context'
+  | 'tdd'
+  | 'review'
+  | 'verification'
+  | 'instructions'
+  | 'docs'
+  | 'security'
+  | 'untrusted'
+  | 'language';
 export type GuidanceLevel = 'off' | 'on';
 
 /** `profile.json` in a profile folder. Only schema version 2 may name the rules file with `instructions`. */

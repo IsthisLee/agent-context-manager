@@ -10,7 +10,8 @@ export interface GitOutput {
   stderr: string;
 }
 
-const REMOTE_FAILURE = /Authentication failed|could not read (Username|Password)|unable to get password|Permission denied \(publickey\)|Repository not found|does not appear to be a git repository|Could not resolve host|unable to access|Connection (timed out|refused)|Host key verification failed/i;
+const REMOTE_FAILURE =
+  /Authentication failed|could not read (Username|Password)|unable to get password|Permission denied \(publickey\)|Repository not found|does not appear to be a git repository|Could not resolve host|unable to access|Connection (timed out|refused)|Host key verification failed/i;
 
 /**
  * Whether git failed at reaching or signing in to the remote rather than at the
@@ -31,7 +32,10 @@ export function git(args: readonly string[], options: { cwd?: string; allowFailu
   const result = spawnSync('git', args, { cwd: options.cwd, encoding: 'utf8', env });
   if (result.error) {
     if ((result.error as NodeJS.ErrnoException).code === 'ENOENT') {
-      throw new CliError('git.missing', _('error.git.missing'), { exitCode: EXIT.unavailable, hint: _('hint.git.install') });
+      throw new CliError('git.missing', _('error.git.missing'), {
+        exitCode: EXIT.unavailable,
+        hint: _('hint.git.install')
+      });
     }
     throw result.error;
   }
@@ -39,9 +43,14 @@ export function git(args: readonly string[], options: { cwd?: string; allowFailu
   if (output.status !== 0 && !options.allowFailure) {
     const detail = output.stderr.trim().split('\n').slice(-3).join('\n');
     if (isRemoteFailure(output.stderr)) {
-      throw new CliError('git.remote', _('error.git.remote', { detail }), { exitCode: EXIT.unavailable, hint: _('hint.git.remote') });
+      throw new CliError('git.remote', _('error.git.remote', { detail }), {
+        exitCode: EXIT.unavailable,
+        hint: _('hint.git.remote')
+      });
     }
-    throw new CliError('git.failed', _('error.git.failed', { command: `git ${args.join(' ')}`, detail }), { exitCode: EXIT.software });
+    throw new CliError('git.failed', _('error.git.failed', { command: `git ${args.join(' ')}`, detail }), {
+      exitCode: EXIT.software
+    });
   }
   return output;
 }

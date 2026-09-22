@@ -39,7 +39,8 @@
 
 ## 2. 프로젝트 실행 및 검사 명령
 
-- **형식 검사·문서 계약·저장소 평가:** `pnpm run check`
+- **형식 검사·서식 검사·문서 계약·저장소 평가:** `pnpm run check`
+- **서식 맞추기:** `pnpm run format`(코드·JSON·YAML. Markdown은 대상이 아니다)
 - **CLI 직접 실행:** `node src/agctx.ts <command>`
 
 ---

@@ -89,7 +89,10 @@ function startedAt(file: string, stamps: (string | null)[]): number {
 /** The newest Codex session started in `startDir`, from `$CODEX_HOME/sessions/**\/rollout-*.jsonl`. */
 export function codexSessionEvidence(startDir: string): CodexEvidence | null {
   const home = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
-  for (const file of jsonlFiles(path.join(home, 'sessions'), name => name.startsWith('rollout-') && name.endsWith('.jsonl'))) {
+  for (const file of jsonlFiles(
+    path.join(home, 'sessions'),
+    name => name.startsWith('rollout-') && name.endsWith('.jsonl')
+  )) {
     const lines = records(file);
     const cwd = lines
       .filter(record => record.type === 'session_meta' || record.type === 'turn_context')
@@ -126,7 +129,10 @@ export function claudeSessionEvidence(startDir: string): ClaudeEvidence | null {
     // The folder naming is not documented; fall back to folders that end with the same last path segment.
     const tail = path.basename(startDir).replace(/[^A-Za-z0-9]/g, '-');
     try {
-      folders = fs.readdirSync(projects).filter(name => name.endsWith(tail)).map(name => path.join(projects, name));
+      folders = fs
+        .readdirSync(projects)
+        .filter(name => name.endsWith(tail))
+        .map(name => path.join(projects, name));
     } catch {
       folders = [];
     }
@@ -156,7 +162,16 @@ export function claudeSessionEvidence(startDir: string): ClaudeEvidence | null {
       }
     }
     const at = loadedAt ? Date.parse(loadedAt) : NaN;
-    return { source: file, startedAt: Number.isNaN(at) ? startedAt(file, lines.map(record => text(record.timestamp))) : at, loaded };
+    return {
+      source: file,
+      startedAt: Number.isNaN(at)
+        ? startedAt(
+            file,
+            lines.map(record => text(record.timestamp))
+          )
+        : at,
+      loaded
+    };
   }
   return null;
 }

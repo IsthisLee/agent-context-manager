@@ -85,7 +85,7 @@ flowchart TB
 ## 관리자: 팀 프로필 올리기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 759faba2335b833f804bc230b528af8d98c47115cc7864d6f04f08692a3305fc -->
+<!-- agctx-doc-sources-sha256: 959878af211621b34c5ce8e89bc8ee62c52e04ddfc5ea2a0a18c090adef09aa4 -->
 
 ### 1. 프로필 만들기
 
@@ -103,7 +103,7 @@ $ agctx profile setup team-backend --tdd on --security on
 Configured profile: team-backend
 ```
 
-작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->·`setupProfile`<!--s:605737432754-->). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
+작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목마다 `on`과 `off` 중에서 고른다. 옵션으로 넘기지 않은 항목은 이전에 고른 값을 그대로 쓰고, 처음 설정하는 프로필이면 응답 언어는 `off`, 나머지는 `on`이 된다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->·`setupProfile`<!--s:abc05cb69cde-->). 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에, 옵션은 [CLI Reference](../reference/cli.md#profile-setup)에 있다.
 
 ### 3. 첫 커밋 만들기
 
@@ -144,7 +144,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 03a3b0c5eabfe1b8615fab0b12cd8e08e91d5a234e71fb918c363a8b95f45d14 -->
+<!-- agctx-doc-sources-sha256: d1e01c66f1d28616026e8abeccbf6b5f1da10d4c21d3e4a22c29920d3185e086 -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
@@ -209,7 +209,7 @@ Next: Add profile.json at the repository root, for example {"schemaVersion": 1, 
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 99565cbc1a1103db34b29024b720132a2d7b930637c53461380630f9eba0647c -->
+<!-- agctx-doc-sources-sha256: 882ba2e44841872d4c967b0624ffc1fb6ebd33876c586ad6cc5c8864df8b29c6 -->
 
 ### 1. 프로필 받기
 
@@ -316,7 +316,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 76a20cc928278b1f28b2c37fc7da4455b2d9810e02d3b786a2aff582057e046a -->
+<!-- agctx-doc-sources-sha256: 80b2486e816e59a2439be8819dd6f1da2cd0683aab94c2335763129f41df50f2 -->
 
 ```mermaid
 sequenceDiagram
@@ -392,7 +392,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 5730cd71f4dd514c49c2f245edbaf19b51303e406870be00620237591df20671 -->
+<!-- agctx-doc-sources-sha256: 49c1615f6969b17cb74c2f2e54ef51c084056c8dabe581723fda432ed16a820e -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

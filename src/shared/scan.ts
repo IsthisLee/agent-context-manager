@@ -2,7 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 /** Folders never searched for instruction files: dependencies, build output, and agctx's own copies. */
-export const SKIPPED_FOLDERS: ReadonlySet<string> = new Set(['.git', 'node_modules', '.agctx', 'dist', 'build', 'vendor', '.venv', 'target', 'coverage']);
+export const SKIPPED_FOLDERS: ReadonlySet<string> = new Set([
+  '.git',
+  'node_modules',
+  '.agctx',
+  'dist',
+  'build',
+  'vendor',
+  '.venv',
+  'target',
+  'coverage'
+]);
 const MAX_SCANNED_FOLDERS = 5000;
 
 /**

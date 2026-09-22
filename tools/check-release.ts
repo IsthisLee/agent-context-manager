@@ -12,7 +12,11 @@ function checkRelease(tag: string | undefined) {
   const changelog = fs.readFileSync(path.join(repoRoot, 'CHANGELOG.md'), 'utf8');
   if (!tag) throw new Error('A release tag is required, for example v0.1.0.');
   const version = tag.replace(/^v/, '');
-  assert.equal(version, packageJson.version, `Release tag ${tag} does not match package version ${packageJson.version}.`);
+  assert.equal(
+    version,
+    packageJson.version,
+    `Release tag ${tag} does not match package version ${packageJson.version}.`
+  );
   const changelogHeading = `## [${version}]`;
   const hasChangelogEntry = changelog.split('\n').some(line => line.startsWith(changelogHeading));
   assert.ok(hasChangelogEntry, `CHANGELOG.md is missing version ${version}.`);

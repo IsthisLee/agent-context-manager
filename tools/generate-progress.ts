@@ -52,11 +52,18 @@ function historyRef(root: string): string {
 }
 
 export function recentEntries(root: string, count = RECENT_COUNT): RecentEntry[] {
-  const log = execSync(`git log ${historyRef(root)} --first-parent --format=%ad%x09%s --date=short -n ${count}`, { cwd: root, encoding: 'utf8' });
-  return log.trim().split('\n').filter(Boolean).map(line => {
-    const [date, ...rest] = line.split('\t');
-    return { date, subject: rest.join('\t') };
+  const log = execSync(`git log ${historyRef(root)} --first-parent --format=%ad%x09%s --date=short -n ${count}`, {
+    cwd: root,
+    encoding: 'utf8'
   });
+  return log
+    .trim()
+    .split('\n')
+    .filter(Boolean)
+    .map(line => {
+      const [date, ...rest] = line.split('\t');
+      return { date, subject: rest.join('\t') };
+    });
 }
 
 export function renderRecent(entries: readonly RecentEntry[]): string {
@@ -80,7 +87,10 @@ function fromRoot(area: string, file: string, target: string): string {
 }
 
 export function progressRow(topic: TopicRow): string {
-  const next = topic.next.replace(/\]\(([^)\s]+)\)/g, (whole, target: string) => `](${fromRoot(topic.area, topic.file, target)})`);
+  const next = topic.next.replace(
+    /\]\(([^)\s]+)\)/g,
+    (whole, target: string) => `](${fromRoot(topic.area, topic.file, target)})`
+  );
   return `| [${topic.title}](${path.posix.join('docs/discussion', topic.area, 'topics', topic.file)}) | ${next} |`;
 }
 
@@ -96,8 +106,11 @@ function recommendedNext(root: string, area: string, file: string): string {
 export function renderInProgress(root: string): string {
   const topics = readTopics(root);
   const rows = Object.entries(topics).flatMap(([area, list]) =>
-    list.filter(topic => topic.status === 'Implementing')
-      .map(topic => progressRow({ area, file: topic.file, title: topic.title, next: recommendedNext(root, area, topic.file) }))
+    list
+      .filter(topic => topic.status === 'Implementing')
+      .map(topic =>
+        progressRow({ area, file: topic.file, title: topic.title, next: recommendedNext(root, area, topic.file) })
+      )
   );
   return ['| 주제 | 다음에 할 일 |', '| --- | --- |', ...rows].join('\n');
 }
@@ -115,7 +128,8 @@ function main(): void {
   const [tableStart, tableEnd] = IN_PROGRESS_MARKER;
   const tableFrom = withRecent.indexOf(tableStart);
   const tableTo = withRecent.indexOf(tableEnd);
-  if (tableFrom < 0 || tableTo < tableFrom) throw new Error(`Add ${tableStart} and ${tableEnd} to ${PROGRESS_FILE} before generating.`);
+  if (tableFrom < 0 || tableTo < tableFrom)
+    throw new Error(`Add ${tableStart} and ${tableEnd} to ${PROGRESS_FILE} before generating.`);
   const next = `${withRecent.slice(0, tableFrom + tableStart.length)}\n${renderInProgress(repoRoot)}\n${withRecent.slice(tableTo)}`;
 
   if (next === content) {

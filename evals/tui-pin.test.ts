@@ -18,8 +18,20 @@ function makeStore(t: TestContext) {
   const project = path.join(root, 'project');
   fs.mkdirSync(home);
   fs.mkdirSync(project);
-  const env = { ...process.env, AGCTX_HOME: home, AGCTX_LANG: 'en', GIT_AUTHOR_NAME: 't', GIT_AUTHOR_EMAIL: 't@example.com', GIT_COMMITTER_NAME: 't', GIT_COMMITTER_EMAIL: 't@example.com' };
-  const created = spawnSync(process.execPath, [cli, 'profile', 'create', 'team-backend', '--scope', 'team'], { cwd: root, env, encoding: 'utf8' });
+  const env = {
+    ...process.env,
+    AGCTX_HOME: home,
+    AGCTX_LANG: 'en',
+    GIT_AUTHOR_NAME: 't',
+    GIT_AUTHOR_EMAIL: 't@example.com',
+    GIT_COMMITTER_NAME: 't',
+    GIT_COMMITTER_EMAIL: 't@example.com'
+  };
+  const created = spawnSync(process.execPath, [cli, 'profile', 'create', 'team-backend', '--scope', 'team'], {
+    cwd: root,
+    env,
+    encoding: 'utf8'
+  });
   assert.equal(created.status, 0, created.stderr);
   const previousHome = process.env.AGCTX_HOME;
   process.env.AGCTX_HOME = home;
@@ -29,7 +41,11 @@ function makeStore(t: TestContext) {
   });
   const profileDir = path.join(home, 'profiles', 'team-backend');
   const commitProfile = () => {
-    for (const gitArgs of [['init', '-b', 'main'], ['add', '-A'], ['commit', '-m', 'Add profile']]) {
+    for (const gitArgs of [
+      ['init', '-b', 'main'],
+      ['add', '-A'],
+      ['commit', '-m', 'Add profile']
+    ]) {
       const result = spawnSync('git', gitArgs, { cwd: profileDir, env, encoding: 'utf8' });
       assert.equal(result.status, 0, result.stderr);
     }
@@ -51,6 +67,9 @@ test('the TUI asks about pinning a Git profile and defaults to not pinning a new
 test('the TUI defaults to keeping the pin of a project that is already pinned', t => {
   const { project, commitProfile } = makeStore(t);
   commitProfile();
-  fs.writeFileSync(path.join(project, 'agctx.project.json'), JSON.stringify({ profile: 'team-backend', pin: true }) + '\n');
+  fs.writeFileSync(
+    path.join(project, 'agctx.project.json'),
+    JSON.stringify({ profile: 'team-backend', pin: true }) + '\n'
+  );
   assert.deepEqual(pinPrompt('team-backend', project), { ask: true, initial: true });
 });

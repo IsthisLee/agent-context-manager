@@ -117,7 +117,7 @@
       "importance": "High",
       "prerequisites": [2, 7],
       "outcome": "근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴",
-      "status": "Implementing"
+      "status": "Implemented"
     },
     {
       "stage": 13,

@@ -1,7 +1,7 @@
 # 기본 지침의 근거 기준과 분량 예산
 
 <!-- agctx:generated:status:start -->
-**상태:** Implementing
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -31,7 +31,7 @@
 | 후속 제안 | 항목별 문구 구체화(10개 항목마다), 필요할 때만 읽히는 지침 형태로의 분리([프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다) |
 | 연관 제안 | [스코프 확장과 지침 합성](scope-composition.md)(여러 계층을 합치면 분량도 합산된다), [문서 정확성 자동 리뷰](../../repository/topics/doc-accuracy-review.md) |
 | 후속 작업 | 근거 기준 ADR 작성, 현재 6개 문장의 근거 감사 결과 확정, 지침 카탈로그에 근거 열 추가, 분량 예산 평가와 분량 경고 구현, `docs/product-direction.md`에 원칙 반영 |
-| 권장 다음 작업 | 근거 기준·문구·분량 예산은 [ADR 0024](../../../adr/0024-guidance-evidence-and-budget.md)와 [ADR 0026](../../../adr/0026-guidance-items-and-evidence-tiers.md)으로 확정해 구현했다. 남은 것은 프로젝트 `AGENTS.md` 분량 경고다. `apply`·`sync`가 200줄 초과 또는 24 KiB 이상에서 경고만 내도록 구현하고 세 인터페이스 경로의 평가를 추가한다. |
+| 권장 다음 작업 | 근거 기준·문구·분량 예산과 프로젝트 `AGENTS.md` 분량 경고를 모두 구현했다. 남은 것은 [별도 문서 분리 옵션](#별도-문서-분리-옵션)의 D(필요할 때만 읽히는 형태)이며 [프로필 설정 표면 확장](profile-config-surface.md)에서 다룬다. D가 구현되면 분량 경고가 그 기능을 가리키게 고친다. |
 
 ## 목차
 
@@ -270,3 +270,11 @@ $ agctx profile sync /path/to/project
 - **표기 체계:** 근거를 넘어 옮긴 문장마다 대상·합성·범위·서법·뺀 것 표기를 붙였다. 원문과 배포 문구의 차이를 문장 단위로 확인할 수 있다.
 - **실측(감사 반영 뒤):** 모든 항목을 `strict`로 켠 블록은 ko 56줄 9,077바이트, en 56줄 8,175바이트다. 상한(120줄·10,240바이트)의 89%와 80%다.
 - **남은 것:** 프로젝트 `AGENTS.md` 분량 경고(200줄 초과 또는 24 KiB 이상)는 아직 구현하지 않았다. 리뷰어 subagent가 생기면 변경 검토 항목의 점검 목록을 그 프롬프트로 옮기는 것도 [프로필 설정 표면 확장](profile-config-surface.md)의 후속 작업으로 남는다. 분량이 상한의 89%에 이르렀으므로, 조항을 더 더하려면 예산을 다시 보거나 항목을 별도 문서로 분리하는 안을 함께 판단한다.
+
+#### 구현 기록: 프로젝트 `AGENTS.md` 분량 경고 (2026-09-22)
+
+- **구현:** 기준 상수는 `src/project/plan.ts`의 `AGENTS_LINE_WARNING`(200)과 `AGENTS_BYTE_WARNING`(24 KiB)이고, 경고 문장을 만드는 것은 같은 파일의 `agentsLengthWarnings`다. `planProject`가 이번 실행으로 쓸 `AGENTS.md` 전체(프로필 영역과 프로젝트 확장 영역)를 재서 계획의 `warnings`에 넣으므로, 연결 파일 경고와 같은 경로로 `apply`·`sync`·`repos sync`·`--dry-run`·`--json`·TUI에 모두 나온다.
+- **계약대로 한 것:** 200줄 초과 또는 24 KiB 이상에서 경고만 한다. 파일 내용과 종료 코드는 바뀌지 않는다. 두 기준을 모두 넘으면 경고가 두 줄 나온다.
+- **제안 예시와 달라진 점:** 기존 고정 해제 경고처럼 문장 앞에 `경고:`·`Warning:`을 붙였다. 연결 파일 경고와 같이 계획 목록보다 먼저 출력된다.
+- **평가:** `evals/agents-length.test.ts` 5개. 기준 경계(200줄·201줄, 24 KiB 직전·24 KiB, 마지막 줄바꿈 없는 파일, 한국어 파일의 바이트 경고), CLI의 `apply`·`--dry-run`·`sync --json`·`repos sync`, 짧은 파일에서 경고가 없는 경우, 한국어 문구, TUI 경로(`runFromTui`)를 검사한다.
+- **비범위:** `check`는 분량을 보지 않는다. CI에서 막는 기준이 아니라 적용할 때의 안내이기 때문이다. 하위 폴더 `AGENTS.md`와 Codex의 합산 한도는 `agctx explain`이 이미 보고한다.

@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: cee5158752e84dd11241b2e15f0e7dcc670e94eb9b6f6fa7143fb547421e911a -->
+<!-- agctx-doc-sources-sha256: 9689ebb1150190dacba44a501fe20078d3d3f87a541fae3ee09d0907ad6f42ef -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 4901c6b30636bdcd68e8ea32eb5e5867c701f0a74fb453cfc963a696c36ab607 -->
+<!-- agctx-doc-sources-sha256: a826a0a4f5efe6d1a0b76882ec178cfb2af8936ce3399e3d00fe490158ad1e1d -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -351,6 +351,14 @@ agctx profile apply [--dry-run] [--pin] [--yes] <name> [<project>]
 - **보존하는 내용:** 기존 `AGENTS.md`의 프로젝트 규칙 확장 섹션과, 포인터 파일의 관리 블록 밖 내용은 건드리지 않는다.
 - **다시 실행할 때:** 이미 적용된 프로젝트에 같은 프로필로 다시 실행하면 관리 영역만 갱신한다. 다른 프로필 이름을 주면 그 프로필로 전환한다.
 - **여러 번 실행해도 같음:** 같은 프로필을 몇 번 다시 적용해도 결과가 같다. 바뀔 파일이 없으면 확인을 묻지 않고 `already up to date`로 끝난다.
+- **분량 경고:** 쓸 `AGENTS.md`가 200줄을 넘거나 24 KiB 이상이면 경고한다. 200줄은 Claude Code가 지침 파일마다 권하는 목표치이고, 24 KiB는 Codex가 지침 파일을 합쳐 더 읽지 않는 기본 한도 32 KiB의 75%다. 경고만 할 뿐 파일 내용과 종료 코드는 바뀌지 않는다. `--dry-run`·`profile sync`·`repos sync`에서도 같은 경고가 나오고, 경고는 stderr로 나가며 `--json`이면 `warnings`에 담긴다. 한글은 UTF-8에서 한 글자가 3바이트라서 줄 수보다 바이트 기준에 먼저 닿는다. 기준의 근거는 [ADR 0024](../adr/0024-guidance-evidence-and-budget.md)다.
+
+  ```bash
+  $ agctx profile sync payments-api --dry-run
+  Warning: AGENTS.md is 230 lines. Claude Code recommends keeping each instruction file under 200 lines, and agents follow long files less closely. Consider trimming rules that rarely matter or moving them to a file the agent reads only when it needs them.
+  Dry-run: 0 file(s) to change.
+  …
+  ```
 
 **하위 폴더 연결 파일:** Claude Code는 `AGENTS.md`를 직접 읽지 않으므로, 프로젝트 루트 아래의 `AGENTS.md`마다 같은 폴더에 `@AGENTS.md`를 가져오는 관리 블록 `CLAUDE.md`를 만든다.
 

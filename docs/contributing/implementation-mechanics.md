@@ -112,7 +112,7 @@ flowchart LR
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
 - 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:5acaa3599c14-->
-- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:43118de2a466-->, `src/project/plan.ts`의 `planProject`<!--s:a72b2288a52a-->
+- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:43118de2a466-->, `src/project/plan.ts`의 `planProject`<!--s:ca92428e9265-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
 - 지키는 평가: `evals/profile.test.ts`, `evals/sync-merge.test.ts`
@@ -201,7 +201,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 사람이 관리 영역을 고쳤으면 덮어쓰지 않고 멈춘다. 마지막 적용본을 `.agctx/base/`에 남겨 두어 3-way 병합으로 복구한다. 다만 현재 관리 영역이 이번에 쓸 내용과 같으면 잃을 것이 없으므로 멈추지 않는다.
 
-- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:a72b2288a52a-->·`knownBase`<!--s:f35f58e3e30d-->
+- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:ca92428e9265-->·`knownBase`<!--s:f35f58e3e30d-->
 - 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:59ba50885123-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:46e8e209a1fb-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
 - 복구 명령: `src/profile/resolve.ts`의 `resolveProject`<!--s:07bc57886259-->·`mergeWithEditor`<!--s:757a38979834-->·`withBaseRegion`<!--s:e1ff5455598d-->, `src/project/merge-editor.ts`의 `mergeInVsCode`<!--s:3b347041fbc3-->
 - TUI 복구: `src/tui/profile.ts`의 `resolveProjectTui`<!--s:ef177d991fab-->

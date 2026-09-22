@@ -527,7 +527,7 @@ export default {
     'managedHashes의 경로는 프로젝트 루트 기준 상대 경로여야 하고, /로 나누며 ..를 쓸 수 없습니다. {file}에서 그 키를 고치거나 지운 뒤 다시 실행하세요.',
   'error.project.unmanaged': 'agctx가 쓴 적 없고 agctx 표지도 없는 파일이 있어 아무것도 바꾸지 않았습니다: {files}',
   'hint.project.unmanaged':
-    '파일 내용을 그대로 두고 agctx 관리 영역을 더하려면 {command}를 실행하세요. CLAUDE.md와 규칙 파일은 기존 내용 아래에 관리 블록이 붙고, AGENTS.md는 기존 내용이 프로필 지침 아래로 옮겨집니다.',
+    '파일 내용을 그대로 두고 agctx 관리 영역을 더하려면 {command}를 실행하세요. CLAUDE.md와 규칙 파일은 기존 내용 아래에 관리 블록이 붙고, AGENTS.md는 기존 내용이 프로필 지침 아래로 옮겨지며, .mcp.json과 .codex/config.toml은 사람이 둔 서버와 설정을 그대로 둡니다.',
   'repos.sync.unmanaged':
     '바꾸지 않음: {files} 파일이 agctx 표지 없이 이미 있습니다. 관리 영역을 더하려면 agctx profile sync {project} --adopt를 실행하세요.',
   'repos.pr.unmanaged':
@@ -540,6 +540,49 @@ export default {
     '{files} 파일도 agctx 표지 없이 있습니다. 충돌을 푼 뒤 agctx profile resolve {project} --adopt로 편입하거나 그 에이전트를 빼세요.',
   'check.unmanaged':
     'agctx 표지 없이 있어 sync가 여기서 멈춥니다. 관리 영역을 더하려면 agctx profile sync {project} --adopt를 실행하세요',
+  'error.profile.invalid-mcp': '프로필의 MCP 서버 목록 {file}이 잘못됐습니다: {detail}',
+  'hint.profile.mcp':
+    'mcp.json에는 로컬 서버를 { "servers": { "<이름>": { "command": "...", "args": [...], "env": {...} } } }로, 원격 서버를 { "url": "https://...", "headers": {...} }로 적으세요. 비밀값은 파일에 쓰지 말고 ${TOKEN} 같은 환경 변수로 넘기세요.',
+  'error.include.unknown': '알 수 없는 대상 종류입니다: {kind}.',
+  'error.include.rules': '--include에는 rules가 있어야 합니다. 모든 에이전트가 AGENTS.md의 규칙을 읽기 때문입니다.',
+  'hint.include': '--include rules,mcp, --include rules, --include all 가운데 하나를 쓰세요.',
+  'error.project.invalid-include': '{file}의 include 목록이 잘못됐습니다: {value}.',
+  'error.project.invalid-mcp-file': '{file} 파일을 MCP 설정으로 읽을 수 없어({detail}) agctx가 바꾸지 않았습니다.',
+  'hint.project.invalid-mcp-file': '{file}의 JSON을 고치거나, --include rules로 MCP를 빼세요.',
+  'error.project.invalid-managed-keys': '{file}의 managedKeys가 파일 경로와 이름 목록의 맵이 아닙니다.',
+  'hint.project.invalid-managed-keys':
+    '{file}에서 managedKeys를 고치거나 지운 뒤 다시 실행하세요. 다음 apply가 다시 기록합니다.',
+  'error.project.mcp-name-taken':
+    '프로젝트에 프로필과 같은 이름의 MCP 서버가 이미 있어 아무것도 바꾸지 않았습니다: {servers}',
+  'hint.project.mcp-name-taken':
+    '사람이 넣은 서버의 이름을 바꾸거나 지우세요. 아니면 프로필의 mcp.json에서 이름을 바꾸세요. agctx는 자기가 쓰지 않은 서버를 덮어쓰지 않습니다.',
+  'plan.warn.mcp-skip.codex-renamed-env':
+    '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 환경 변수를 같은 이름으로만 넘기므로 ${OTHER} 같은 다른 이름의 값을 넘길 수 없습니다. "TOKEN": "${TOKEN}"처럼 같은 이름을 쓰세요.',
+  'plan.warn.mcp-skip.codex-env-reference':
+    '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 env 값 안의 ${...}를 펼치지 않습니다. "TOKEN": "${TOKEN}"처럼 값 전체를 변수로 쓰거나 고정 값을 쓰세요.',
+  'plan.warn.mcp-skip.codex-url-reference':
+    '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 서버 URL의 ${...}를 펼치지 않습니다.',
+  'plan.warn.mcp-skip.codex-header-reference':
+    '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 값 전체가 ${VAR}인 헤더와 Bearer ${VAR} 형식의 Authorization만 환경 변수에서 가져옵니다.',
+  'plan.mcp.servers': '프로필의 MCP 서버: {servers}',
+  'error.clone.mcp-symlink': '{url}의 mcp.json이 심볼릭 링크라서 프로필을 받지 않았습니다.',
+  'hint.clone.mcp-symlink': '프로필 저장소에 mcp.json을 일반 파일로 커밋하세요.',
+  'view.mcp': 'MCP 서버: {servers}',
+  'actions.apply.mcp': '프로필의 MCP 서버 {count}개도 이 저장소의 {files}에 쓸까요?',
+  'plan.warn.mcp-skip.codex-command-reference':
+    '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 command와 args의 ${...}를 펼치지 않습니다.',
+  'plan.warn.mcp-after-block':
+    '경고: {file}에서 agctx 블록 뒤에 표 머리 없이 적은 설정은 TOML 규칙상 블록의 마지막 MCP 서버에 붙습니다. 블록 위로 옮기세요.',
+  'plan.warn.mcp-codex-user':
+    '경고: 이 컴퓨터의 Codex 사용자 설정에도 같은 이름의 MCP 서버가 있습니다({servers}). Codex는 이를 {file}와 키 하나씩 합치므로, 그곳에 둔 키(bearer_token_env_var, cwd 등)가 팀 서버에도 적용됩니다.',
+  'plan.mcp.removed': '빼는 MCP 서버: {servers}',
+  'hint.project.conflict.mcp':
+    'MCP 설정은 고친 내용을 프로필의 mcp.json에 옮긴 뒤 agctx profile resolve {project} --discard로 백업하고 다시 만드세요.',
+  'error.resolve.mcp-discard':
+    'agctx가 쓴 MCP 서버를 누군가 고쳤습니다: {files}. 고친 서버 항목은 관리 영역 밖으로 옮길 수 없습니다.',
+  'hint.resolve.mcp-discard':
+    '고친 내용을 남기려면 프로필의 mcp.json에 옮긴 뒤 agctx profile resolve {project} --discard를 실행하세요. 지금 파일은 먼저 {backups}/에 복사됩니다.',
+  'view.mcp-invalid': 'MCP 서버: mcp.json이 잘못됐습니다({detail})',
   'plan.warn.agents-lines':
     '경고: 이번에 쓰는 AGENTS.md는 {lines}줄입니다. Claude Code는 지침 파일마다 {limit}줄 미만을 권장하며, 파일이 길면 에이전트가 규칙을 덜 따릅니다. 자주 쓰지 않는 규칙은 줄이거나, 필요할 때만 읽는 파일로 옮기는 것을 검토하세요.',
   'plan.warn.agents-bytes':

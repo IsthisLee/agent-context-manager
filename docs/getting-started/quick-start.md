@@ -56,7 +56,7 @@ agctx install
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 9b3e61992d22ab6402937b9fa865c60012127fbf2414c9275838e756dc3d4d1c -->
+<!-- agctx-doc-sources-sha256: 182572997143afe23601a5da2b2bfeaa10f667bad106e85c2a4714395d246f6f -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -72,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: e9b26d07f98de694df3fae7fc6ef750b04d5271780c2293c286a5081abd9399c -->
+<!-- agctx-doc-sources-sha256: d3e4e5d61fb0952158120db6103b5250740506ba15a0c19c957625e2ee01ff8f -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -91,7 +91,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: 24ecb8dbae2b11e1da8ef6517989cd99ca68a55a770ca0c26722f286edcc0d9a -->
+<!-- agctx-doc-sources-sha256: fc28c8dbf521a108d45b194fc89e5b0703215d62ce57a70133f347ac72ed961e -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -138,7 +138,7 @@ Applied profile team-backend to /work/shop
 ## 4. 저장소 확인하기
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 2716a0a7af0a442c820643f6688ee3f5f3f16daebb7e9fd26f389f889943c9ce -->
+<!-- agctx-doc-sources-sha256: 9d3f44d62bfcca8b576408a7f385133f0804e9771f69528a3eb8999a7f4a9e3a -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

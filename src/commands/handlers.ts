@@ -27,6 +27,8 @@ import {
   viewProfile
 } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
+import { describeServer } from '../mcp/targets.ts';
+import { regionServers } from '../project/mcp-plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
 import { reposStatus } from '../repos/status.ts';
@@ -95,14 +97,17 @@ async function applyOrSync(
 ): Promise<CommandOutcome> {
   const dryRun = flag(parsed, 'dry-run');
   const adopt = flag(parsed, 'adopt');
-  const { plan, version, previousPin, agents } = planFor(name, targetDir, pin, undefined, {
+  const { plan, version, previousPin, agents, include, mcpServers } = planFor(name, targetDir, pin, undefined, {
     agent: text(parsed, 'agent'),
+    include: text(parsed, 'include'),
     adopt
   });
   const data = {
     profile: name,
     project: targetDir,
     agents,
+    include,
+    mcpServers: mcpServers ? Object.keys(mcpServers) : [],
     source: version.source,
     pin: version.pin,
     uncommitted: version.uncommitted,
@@ -121,6 +126,22 @@ async function applyOrSync(
     warnings: isJsonMode() ? warnings : []
   });
   printPlan(plan, dryRun ? _('plan.label.dry-run') : _('plan.label.plan'));
+  // MCP 서버는 다른 사람의 컴퓨터에서 실행될 명령이라, 쓰기 전에 무엇을 싣고 무엇을 빼는지 보여 준다.
+  const mcpFiles = plan.files.filter(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml');
+  const writing = new Set(mcpFiles.flatMap(file => regionServers(file, file.nextRegion)));
+  const removed = [...new Set(mcpFiles.flatMap(file => regionServers(file, file.currentRegion)))]
+    .filter(server => !writing.has(server))
+    .sort();
+  if (mcpServers && writing.size)
+    say(
+      _('plan.mcp.servers', {
+        servers: Object.entries(mcpServers)
+          .filter(([server]) => writing.has(server))
+          .map(([server, spec]) => describeServer(server, spec))
+          .join(', ')
+      })
+    );
+  if (removed.length) say(_('plan.mcp.removed', { servers: removed.join(', ') }));
   const changed = plan.changes.filter(change => change.status !== 'unchanged');
   if (plan.conflicts.length) {
     if (dryRun) printConflicts(plan.conflicts);
@@ -207,13 +228,14 @@ export const HANDLERS: Record<string, Handler> = {
     const targetDir = projectDir(parsed.positional[1]);
     const pin = flag(parsed, 'pin');
     const agent = text(parsed, 'agent');
+    const include = text(parsed, 'include');
     const adopt = flag(parsed, 'adopt');
     return applyOrSync(
       parsed,
       name,
       targetDir,
       pin,
-      `agctx profile apply ${shellWord(name)} ${shellWord(targetDir)}${agent ? ` --agent ${shellWord(agent)}` : ''}${pin ? ' --pin' : ''}${adopt ? ' --adopt' : ''} --yes`
+      `agctx profile apply ${shellWord(name)} ${shellWord(targetDir)}${agent ? ` --agent ${shellWord(agent)}` : ''}${include ? ` --include ${shellWord(include)}` : ''}${pin ? ' --pin' : ''}${adopt ? ' --adopt' : ''} --yes`
     );
   },
   'profile.sync': async parsed => {

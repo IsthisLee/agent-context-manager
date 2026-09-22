@@ -1,7 +1,7 @@
 # 프로필 설정 표면 확장 (지침 → 지침·MCP·skills·subagents·hooks)
 
 <!-- agctx:generated:status:start -->
-**상태:** Proposed
+**상태:** Implementing
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -32,7 +32,7 @@
 | 후속 제안 | 아티팩트별 병합 어댑터(MCP → skills → subagents, hooks의 자리는 미정), 도구별 설정 위치 레지스트리 |
 | 연관 제안 | [에이전트 규칙 위치 탐지](agent-rule-discovery.md)의 기존 설정 스캔, [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)의 비대화형 경로 |
 | 후속 작업 | 아티팩트 종류별 소스·타깃·병합 난이도 표를 확정하고, MCP부터 실패 평가와 최소 구현을 붙인다. |
-| 권장 다음 작업 | 2026-09-16 제품 소유자 결정으로 다음 구현은 [에이전트 고르기](apply-selection.md) → MCP 순서다. 지침 safe-sync(단계 6) 완성을 선행으로 못박고, MCP 하나만 안전 병합으로 시범 구현해 계약을 검증한 뒤 skills·subagents로 넓힌다. [ADR 0022](../../../adr/0022-profile-scope-hooks.md)로 범위에 들어온 hooks는 구현 순서와 적용 전 확인 방식을 정한다. |
+| 권장 다음 작업 | MCP 시범 구현을 [ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md)로 확정해 Claude Code와 Codex에 구현했다. 남은 것은 Antigravity의 워크스페이스 MCP 설정(`.agents/mcp_config.json`)을 실제 세션에서 읽는지 확인하고 더하는 일, 같은 소유 영역 계약을 skills·subagents로 넓히는 일, hooks의 순서와 적용 전 확인 방식을 정하는 일이다. |
 
 ## 목차
 
@@ -182,3 +182,19 @@ ruler는 이 어려움을 덮어쓰기로 회피했다(그래서 `.bak`). agctx�
 - MCP 시범 구현에 대한 실패 평가 시나리오(보존·충돌 정지·`--dry-run` 계획).
 - hooks의 에이전트별 설정 위치·형식, 적용·동기화 전에 실행될 내용을 보여 주고 확인받는 방식, 받은 hooks의 숨은 문자 검사.
 - 지침 safe-sync(단계 6)의 완성 기준 — 이 확장의 선행 조건으로 명시한다.
+
+## 구현 기록
+
+#### 구현 기록: MCP 서버 시범 구현 (2026-09-22)
+
+* **결정:** [ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md). 프로필의 도구 중립 `mcp.json`을 Claude Code `.mcp.json`과 Codex `.codex/config.toml`로 옮겨 쓴다. [안전 병합 계약의 멀티포맷 확장](#안전-병합-계약의-멀티포맷-확장)의 표대로, 구조화 설정의 관리 영역은 agctx가 넣은 서버 항목이고 충돌은 그 항목이 기록 뒤에 바뀌었는지로 판정한다.
+* **구현:** 프로필 형식 검사는 `src/mcp/servers.ts`의 `parseMcpServers`, 에이전트별 번역은 `src/mcp/targets.ts`의 `claudeEntry`·`codexTables`, JSON 소유 영역 병합은 `src/mcp/json-merge.ts`의 `mergeOwned`·`ownedRegion`, TOML에서 같은 서버를 정의했는지 찾기는 `src/mcp/toml.ts`의 `definedServers`, 계획은 `src/project/mcp-plan.ts`의 `planMcpFiles`가 한다. 해시와 base 판정은 `src/project/base.ts`로 옮겨 지침 파일과 함께 쓴다. `check`는 `src/project/plan.ts`의 `recordedRegion`으로 형식마다 소유 영역을 찾는다.
+* **결정·검증 항목의 처리:**
+  - 우선순위: MCP 먼저(이 기록), 그다음 skills·subagents. hooks의 자리는 그대로 미정이다.
+  - 소스 형식과 타깃: 위 구현과 [파일 형식](../../../reference/file-formats.md#mcpjson).
+  - 형식별 안전 병합 계약: JSON은 `managedKeys`의 이름, TOML은 주석 블록. 사람이 같은 이름의 서버를 두었으면 멈추고, 고친 항목은 `resolve --discard`로만 푼다.
+  - 실패 평가 시나리오: `evals/mcp-apply.test.ts` 16개와 `evals/mcp-servers.test.ts` 2개. 처음 적용, 사람이 둔 서버·설정과의 공존과 들여쓰기 보존, 서버를 빼고 파일을 지우기, 이름 충돌(JSON·TOML), 고친 항목의 충돌과 `resolve --discard`, `--include`와 `--agent`, Codex로 옮길 수 없는 값, 잘못된 `mcp.json`과 숨은 문자, 고정한 Git 프로필, TUI의 선택, `profile view`, 심볼릭 링크 `mcp.json`의 `clone` 거부를 검사한다.
+* **실측:** agctx가 만든 파일을 실제 Codex 0.155.1(`codex mcp get --json`)과 Claude Code 2.1.278(`claude mcp get`)이 설정한 대로 읽었다([근거](../../../references.md#mcp-서버-설정-위치와-형식-근거)).
+* **계획과 달라진 점:** Antigravity는 문서에 워크스페이스 파일이 있지만 읽는 조건과 `${VAR}` 지원을 확인하지 못해 이번에는 쓰지 않았다. 사람이 같은 이름의 서버를 두었을 때는 `--adopt`로도 덮어쓰지 않는다.
+* **검수 반영:** 새 컨텍스트의 검수에서 드러난 것을 고쳤다. 점 표기·인라인 표·따옴표 이름·하위 표로 같은 서버를 정의한 `.codex/config.toml`도 찾아 멈추고, `command`·`args`의 `${...}`도 Codex에서 빼고 경고한다. 관리한 적 없는 사람의 설정 파일은 쓸 서버가 없으면 건드리지 않는다. 적용 계획의 서버 줄은 제어 문자를 드러내고 env·헤더 이름과 빼는 서버를 보여 주며, MCP를 받을 에이전트가 없으면 나오지 않는다. 표지는 줄 전체일 때만 블록 경계로 읽고, 짝 없는 서로게이트와 객체가 아닌 `mcpServers`는 받지 않는다. MCP 충돌은 프로필 `mcp.json`으로 옮긴 뒤 `resolve --discard`하라고 안내한다. Codex 사용자 설정에 같은 이름의 서버가 있으면 키가 합쳐진다고 경고한다.
+* **제약:** `.mcp.json`을 다시 쓸 때 들여쓰기 외의 서식은 `JSON.stringify` 모양이 된다. Codex가 사용자 설정과 키 하나씩 합치는 것은 경고할 뿐 막지 못한다. 비밀값인지 판정하지 않는다.

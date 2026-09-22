@@ -2,10 +2,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { _ } from '../i18n/index.ts';
 import { say } from '../commands/output.ts';
-import { AGENT_IDS, canonicalAgents, parseAgents, recordedAgents, type AgentId } from '../shared/agents.ts';
+import {
+  AGENT_IDS,
+  canonicalAgents,
+  parseAgents,
+  parseInclude,
+  recordedAgents,
+  recordedInclude,
+  type AgentId,
+  type IncludeKind
+} from '../shared/agents.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { toLf } from '../shared/fs-utils.ts';
-import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
+import { committedFile, git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
+import { parseMcpServers, PROFILE_MCP_FILE, type McpServers } from '../mcp/servers.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import { shellWord } from '../shared/shell.ts';
@@ -23,6 +33,9 @@ import { assertNoHiddenCharacters, committedProfile } from './git-profile.ts';
 import { readProfile } from './store.ts';
 
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
+
+/** 기록이 없을 때 받는 대상 종류: hooks를 뺀 전부(ADR 0042). */
+const INCLUDE_ALL: readonly IncludeKind[] = ['rules', 'mcp'];
 
 /**
  * `<!-- agctx:guidance:start/end -->`는 프로필에 속하고, 프로필에서는 `profile setup`이 그 사이를
@@ -97,7 +110,12 @@ export function conflictError(
       exitCode: EXIT.conflict,
       hint: [
         _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
-        conflicts.some(file => file.remove) ? _('hint.project.conflict.remove', { project: targetDir }) : '',
+        conflicts.some(file => file.remove && file.kind === 'pointer')
+          ? _('hint.project.conflict.remove', { project: targetDir })
+          : '',
+        conflicts.some(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml')
+          ? _('hint.project.conflict.mcp', { project: targetDir })
+          : '',
         unmanaged.length
           ? _('hint.project.conflict.unmanaged', {
               files: unmanaged.map(file => file.rel).join(', '),
@@ -116,6 +134,8 @@ export function conflictError(
 /** 프로젝트가 받는 프로필 내용과, 함께 쓰는 버전 기록. */
 export interface ProfileVersion {
   content: string;
+  /** 같은 버전의 `mcp.json` 원문. 프로필에 없으면 null. */
+  mcp: string | null;
   source: ProjectSource | null;
   uncommitted: boolean;
   pin: boolean;
@@ -139,9 +159,12 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
       profile.link ? _('hint.pin.link-not-git', { path: profile.link }) : _('hint.profile.connect', { name })
     );
   }
+  const mcpPath = path.join(dir, PROFILE_MCP_FILE);
+  const workingMcp = () => (fs.existsSync(mcpPath) ? toLf(fs.readFileSync(mcpPath, 'utf8')) : null);
   if (!connected)
     return {
       content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
+      mcp: workingMcp(),
       source: null,
       uncommitted: false,
       pin: false
@@ -172,8 +195,10 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
         }
       );
     }
+    const shownMcp = committedFile(dir, commit, PROFILE_MCP_FILE);
     return {
       content: shown,
+      mcp: shownMcp === null ? null : toLf(shownMcp),
       source: {
         ...projectConfig.source,
         git: remote ?? projectConfig.source?.git ?? null,
@@ -188,14 +213,26 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   const commit =
     git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim() || null;
   const edited =
-    git(['--literal-pathspecs', 'status', '--porcelain', '--', profile.instructions, PROFILE_METADATA_FILE], {
-      cwd: dir
-    }).stdout.trim() !== '';
+    git(
+      [
+        '--literal-pathspecs',
+        'status',
+        '--porcelain',
+        '--',
+        profile.instructions,
+        PROFILE_METADATA_FILE,
+        PROFILE_MCP_FILE
+      ],
+      {
+        cwd: dir
+      }
+    ).stdout.trim() !== '';
   if (pin === true && (edited || !commit)) {
     throw usageError('pin.uncommitted', _('error.pin.uncommitted', { name }), _('hint.git.commit', { dir }));
   }
   return {
     content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
+    mcp: workingMcp(),
     source: { git: remote, branch, commit },
     uncommitted: edited,
     pin: pin === true
@@ -211,6 +248,10 @@ export interface ApplyPlan {
   previousPin: boolean;
   /** 연결 파일을 쓸 에이전트. */
   agents: AgentId[];
+  /** 이번에 쓴 대상 종류. */
+  include: IncludeKind[];
+  /** 이번에 쓸 MCP 서버. 프로필에 없거나 고르지 않았으면 null. */
+  mcpServers: McpServers | null;
 }
 
 /**
@@ -240,6 +281,8 @@ export function agentSelection(
 export interface PlanOptions {
   /** `--agent` 값. null이면 기록한 선택을 따른다. */
   agent?: string | null;
+  /** `--include` 값. null이면 기록한 선택을 따른다. */
+  include?: string | null;
   /** `--adopt`: agctx 표지가 없는 기존 파일에도 관리 영역을 더한다. */
   adopt?: boolean;
 }
@@ -249,15 +292,25 @@ export function planFor(
   targetDir: string,
   pin: boolean | 'keep',
   overrides?: Map<string, string | null>,
-  { agent: agentOption = null, adopt = false }: PlanOptions = {}
+  { agent: agentOption = null, include: includeOption = null, adopt = false }: PlanOptions = {}
 ): ApplyPlan {
   const profile = readProfile(name);
   assertProjectDirectory(targetDir);
   const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
   const projectConfig = readProjectConfig(configPath);
   const selection = agentSelection(agentOption, projectConfig, configPath);
+  const includeRecord =
+    includeOption === null ? recordedInclude(projectConfig.include, configPath) : parseInclude(includeOption);
+  const include = includeRecord ?? [...INCLUDE_ALL];
   const version = profileVersion(profile, projectConfig, pin);
-  assertNoHiddenCharacters([{ file: `${name}/${profile.instructions}`, content: version.content }]);
+  assertNoHiddenCharacters([
+    { file: `${name}/${profile.instructions}`, content: version.content },
+    ...(version.mcp === null ? [] : [{ file: `${name}/${PROFILE_MCP_FILE}`, content: version.mcp }])
+  ]);
+  const mcpServers =
+    include.includes('mcp') && version.mcp !== null
+      ? parseMcpServers(version.mcp, path.join(profile.profileDir, PROFILE_MCP_FILE))
+      : null;
   const projectName = getProjectName(
     targetDir,
     typeof projectConfig.projectName === 'string' ? projectConfig.projectName : null
@@ -273,11 +326,22 @@ export function planFor(
       record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted },
       agents: selection.agents,
       recordAgents: selection.record,
-      adopt
+      adopt,
+      mcpServers,
+      recordInclude: includeRecord
     },
     overrides
   );
-  return { name, targetDir, version, plan, previousPin: projectConfig.pin === true, agents: selection.agents };
+  return {
+    name,
+    targetDir,
+    version,
+    plan,
+    previousPin: projectConfig.pin === true,
+    agents: selection.agents,
+    include,
+    mcpServers
+  };
 }
 
 /** 파일을 받는 에이전트. `AGENTS.md`는 모든 에이전트가 읽으므로 null이다. */

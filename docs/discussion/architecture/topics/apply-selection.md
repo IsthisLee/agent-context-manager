@@ -1,7 +1,7 @@
 # 적용할 에이전트와 대상 종류 고르기
 
 <!-- agctx:generated:status:start -->
-**상태:** Implementing
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -30,7 +30,7 @@
 | 후속 제안 | [프로필 설정 표면 확장](profile-config-surface.md): MCP·hooks의 에이전트별 설정 파일을 이 기록대로 쓴다. |
 | 연관 제안 | [에이전트 규칙 위치 탐지](agent-rule-discovery.md)의 `explain`, [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md) |
 | 후속 작업 | 에이전트 선택의 실패 평가(기록 유지, `sync`·`repos pr`의 같은 선택 재현, 뺀 에이전트의 관리 블록 제거)를 먼저 작성한다. |
-| 권장 다음 작업 | 에이전트 고르기는 [ADR 0042](../../../adr/0042-choose-agents-per-repository.md)로 확정해 구현했다. 남은 것은 대상 종류 고르기(`include`)이며, 규칙 밖의 첫 대상인 MCP를 구현할 때 함께 구현한다. |
+| 권장 다음 작업 | 에이전트 고르기([ADR 0042](../../../adr/0042-choose-agents-per-repository.md))와 대상 종류 고르기([ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md))를 모두 구현했다. hooks가 구현되면 `include`에 `hooks`를 더하고, 기록이 없을 때 hooks를 빼는 규칙을 그때 구현한다. |
 
 ## 목차
 
@@ -174,3 +174,10 @@ Dry-run: 바꿀 파일 …
 * **계획과 달라진 점:** 고친 관리 블록이 있는 파일을 빼려 하면 멈추고 선택도 기록하지 않는다. 사용자는 `profile resolve`로 고친 줄을 블록 밖으로 옮긴 뒤 같은 `apply`를 다시 실행한다.
 * **검수 반영:** 새 컨텍스트의 검수에서 `managedHashes`에 `../victim/CLAUDE.md`처럼 프로젝트 밖을 가리키는 키를 넣으면 빼는 에이전트의 파일로 보고 옆 저장소의 파일을 지우는 경로가 드러났다. `src/project/plan.ts`의 `assertManagedPaths`가 계획 전에 이런 키를 거부하고(`check`도 같다), `src/shared/fs-utils.ts`의 `assertSafeTextTarget`이 프로젝트 밖의 대상을 쓰거나 지우지 않게 했다. `explain`의 안내는 지금 고른 에이전트에 그 에이전트를 더한 `--agent` 값을 채워 보여 주고, `repos pr` 본문은 지우는 파일에 `(removed)`를 붙인다.
 * **제약:** 대상 종류 고르기(`include`)는 구현하지 않았다. 관리 표지가 없는 사람이 쓴 파일은 빼도 건드리지 않는다.
+
+#### 구현 기록: 대상 종류 고르기 (2026-09-22)
+
+* **결정:** [ADR 0044](../../../adr/0044-mcp-servers-in-profiles.md). 규칙 밖의 첫 대상인 MCP와 함께 `include`를 구현했다. 값은 `rules`·`mcp`, 기록이 없으면 hooks를 뺀 전부, `--include all`은 키를 지운다.
+* **구현:** `--include` 해석과 기록 검사는 `src/shared/agents.ts`의 `parseInclude`·`recordedInclude`가 하고, `src/profile/apply.ts`의 `planFor`가 선택에 따라 MCP 서버를 계획에 넘긴다. TUI는 `src/tui/profile.ts`의 `includePrompt`로 프로필에 `mcp.json`이 있을 때만 묻는다.
+* **계획과 달라진 점:** `rules`는 뺄 수 없다. 모든 에이전트가 읽는 `AGENTS.md`가 규칙이기 때문이다. 에이전트와 대상 종류는 제안대로 독립된 두 목록이다.
+* **평가:** `evals/mcp-apply.test.ts`의 `--include`·`--agent` 평가와 TUI 평가.

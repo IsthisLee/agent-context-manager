@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: a253c71865b796bfad754dc4a738b150fe4130265a5c207da1e5196ea3078d3a -->
+<!-- agctx-doc-sources-sha256: df1c2e56f7ccd2f0d716455573e198da9d93a835767c99b2862540f2bd4fe722 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -29,14 +29,14 @@
 agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트에 적용하면 Codex·Claude Code·Antigravity가 읽는 지침 파일을 한 번에 만듭니다. 프로필에서 기준을 바꾼 뒤 동기화하면 프로젝트마다 파일을 다시 고치지 않아도 되고, 각 프로젝트만의 도메인 규칙은 그대로 남습니다. `profile create` → `profile setup` → `profile apply`·`profile sync`로 이어지는 한 흐름입니다.
 
 - 👥 개인·팀·회사별로 프로필 나누기
-- 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 모으기 (규칙 외 항목은 구현 예정)
+- 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 모으기 (지금은 규칙과 MCP 서버, 나머지는 구현 예정)
 - 📋 TDD·검증·보안 같은 권장 지침 고르기
 - 🎯 저장소마다 적용할 프로필과 에이전트 고르기 (에이전트 선택은 구현 예정)
 - 🔄 프로필이 바뀌면 한 번에 동기화하기
 - 🛡️ 프로젝트마다 따로 쓴 지침은 그대로 두기
 - 🌿 Git으로 공유하고, CI로 검사하고, 여러 저장소에 PR 열기
 
-> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)입니다. 팀이 함께 쓰는 스킬·MCP 서버 설정·subagent 정의·hooks에서도 같은 문제가 생깁니다. 그래서 이것들까지 한 프로필로 관리하도록 범위를 넓혀 가는 중입니다.
+> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)과 MCP 서버 설정(Claude Code `.mcp.json`·Codex `.codex/config.toml`)입니다. 팀이 함께 쓰는 스킬·subagent 정의·hooks에서도 같은 문제가 생깁니다. 그래서 이것들까지 한 프로필로 관리하도록 범위를 넓혀 가는 중입니다.
 
 ## 핵심 목표
 
@@ -127,7 +127,7 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: b655e01138bf879c6502fd65ab7cc175f976990d6a363fd98f8e81507eefc995 -->
+<!-- agctx-doc-sources-sha256: a011483414d7d51dad623d31cea2f4aaa65bb868557be223b9bd43e3dbad8ea9 -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -148,7 +148,7 @@ Applied profile company to /path/to/project
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 0b5d368f8e83469ccc384460e2eccc7e95662c321b3a0a47fd36c409a5082c62 -->
+<!-- agctx-doc-sources-sha256: 0b5051f94e47b69a89082f9b58f17759e41128947cf78ba11bef9c558bfa0b46 -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 
@@ -183,9 +183,9 @@ Applied profile company to /path/to/project
 agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태는 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에 있습니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
 <!-- agctx:generated:discussion-status:start -->
-- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기본 지침의 근거 기준과 분량 예산, 기존 Git 저장소를 프로필 원천으로 쓰기, 기존 저장소 폴더를 프로필로 연결하기, 에이전트 스킬을 agctx 명령으로 설치하기
-- **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 적용할 에이전트와 대상 종류 고르기
-- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기본 지침의 근거 기준과 분량 예산, 적용할 에이전트와 대상 종류 고르기, 기존 Git 저장소를 프로필 원천으로 쓰기, 기존 저장소 폴더를 프로필로 연결하기, 에이전트 스킬을 agctx 명령으로 설치하기
+- **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 프로필 설정 표면 확장
+- **제안 단계:** 스코프 확장과 지침 합성, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
 <!-- agctx:generated:discussion-status:end -->
 
 ## 문서

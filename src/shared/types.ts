@@ -68,13 +68,20 @@ export interface ProjectConfig {
   pin?: boolean;
   uncommitted?: boolean;
   managedHashes?: Record<string, string>;
+  /** JSON 설정 파일마다 agctx가 소유한 키(MCP 서버 이름). 검사는 `src/project/mcp-plan.ts`가 한다. */
+  managedKeys?: unknown;
+  /** 이 저장소가 받는 대상 종류(`rules`·`mcp`). 없으면 hooks를 뺀 전부다. */
+  include?: unknown;
   /** 이 저장소가 고른 에이전트. 없으면 지원하는 에이전트 전부다. 검사는 `recordedAgents`가 한다. */
   agents?: unknown;
   [key: string]: unknown;
 }
 
-/** `agents`는 프로젝트 AGENTS.md이고, `pointer`는 관리 블록이 있는 에이전트 파일이다. */
-export type ManagedKind = 'agents' | 'pointer';
+/**
+ * `agents`는 프로젝트 AGENTS.md이고, `pointer`는 관리 블록이 있는 에이전트 파일이다. `mcp-json`·`mcp-toml`은
+ * MCP 서버 설정 파일이다.
+ */
+export type ManagedKind = 'agents' | 'pointer' | 'mcp-json' | 'mcp-toml';
 
 export interface Conflict {
   kind: 'missing' | 'edited';

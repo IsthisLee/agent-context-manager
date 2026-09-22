@@ -85,7 +85,7 @@ flowchart TB
 ## 관리자: 팀 프로필 올리기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 9faf91e2ae280536bd821230bee9d31b19532c068ba23a2ef62b1a8558fd5e82 -->
+<!-- agctx-doc-sources-sha256: 1aae659924fd56285b6236869fb13f0369f6eaffa0b67f2a1d476e09a8f68175 -->
 
 ### 1. 프로필 만들기
 
@@ -144,7 +144,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: b6a28221d26f989acd0c8ce587c48af7fa33999fe5e10659daf1bd33a593dfef -->
+<!-- agctx-doc-sources-sha256: 5f87331f3c466bb3e40e3626366f54dbb432df26a206606e4eb69035ebf0b4ab -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
@@ -209,7 +209,7 @@ Next: Add profile.json at the repository root, for example {"schemaVersion": 1, 
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 6ff72507827890b9d1a836125349ca6dc3f4bba1bbc3b1177b0301207631b998 -->
+<!-- agctx-doc-sources-sha256: db4450a223359c2e82bbe379d4a54b2d93dc2897fc3a2e1b577d7bd8d3753144 -->
 
 ### 1. 프로필 받기
 
@@ -316,7 +316,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 2716a0a7af0a442c820643f6688ee3f5f3f16daebb7e9fd26f389f889943c9ce -->
+<!-- agctx-doc-sources-sha256: 9d3f44d62bfcca8b576408a7f385133f0804e9771f69528a3eb8999a7f4a9e3a -->
 
 ```mermaid
 sequenceDiagram
@@ -392,7 +392,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ab442a511c24dd0a9554ebed460b1d0eca4b53275b8fb681748dfa0d6dada2fb -->
+<!-- agctx-doc-sources-sha256: 40456257b253bcaaf9d862baf494ff90762a751a232f3edc084436c01c6bd3dd -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

@@ -13,7 +13,7 @@
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: 00de71b07b3cbb6acf62597b21ac630cb5d3227cd4ed7e2b8ffd72cd0af47567 -->
+<!-- agctx-doc-sources-sha256: 868663cb6784c4bb249c162282df70eaacb1287329ae302051166e220db0b1fd -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -26,6 +26,8 @@
 | `pin` | `--pin`으로 고정했으면 `true` |
 | `uncommitted` | 프로필의 규칙 파일이나 `profile.json`에 커밋하지 않은 수정이 있는 상태로 적용했으면 `true`. 그 수정은 원격에 없어 다른 사람이 같은 내용을 받을 수 없으므로 `check`가 뒤처짐(1)으로 알린다 |
 | `agents` | `profile apply --agent`로 고른 에이전트(`codex`·`claude`·`antigravity`)를 등록 순서로 담은 목록. 키가 없으면 지원 에이전트 전부다. `sync`·`repos sync`·`repos pr`·`check`가 이 선택을 따른다. 목록이 아니거나, 비었거나, 모르는 이름이 있으면 명령이 종료 코드 64로 멈춘다 |
+| `include` | `profile apply --include`로 고른 대상 종류(`rules`·`mcp`). 키가 없으면 hooks를 뺀 전부다. `rules`는 늘 들어 있어야 하고, 아니면 명령이 종료 코드 64로 멈춘다 |
+| `managedKeys` | JSON 설정 파일마다 agctx가 쓴 항목의 이름. 지금은 `.mcp.json`의 MCP 서버 이름뿐이다. 이 이름의 항목만 agctx가 바꾸고 지운다. 맵이 아니거나 값이 이름 목록이 아니면 명령이 종료 코드 64로 멈춘다 |
 | `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일도 들어간다. 경로는 프로젝트 루트 기준 상대 경로여야 하며, 절대 경로나 `..`가 든 경로가 있으면 `apply`·`sync`·`check`가 아무것도 바꾸지 않고 종료 코드 64로 멈춘다 |
 
 ```json
@@ -50,7 +52,7 @@
 ## profile.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: a6a0d0192503a230ab85dd3d4ce57d4b26dd96b6e316816751802645dba1791f -->
+<!-- agctx-doc-sources-sha256: 0ed42e4067fdaff17c9deb7f2889cc8730aa00e78c53719a338552f53323e8cb -->
 
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다. `setup`은 이미 있는 다른 필드를 그대로 둔다.
 
@@ -74,10 +76,48 @@
 
 판정은 `src/profile/store.ts`의 `isValidProfileMetadata`<!--s:c3bf5c60f82f-->와 `isInstructionsPath`<!--s:1865487d2906-->가 하고, 원격에서 받은 파일의 링크 검사는 `src/profile/store.ts`의 `regularFileInside`<!--s:eafe6522b61c-->와 `src/shared/git.ts`의 `committedFile`<!--s:57e01f0132f4-->이 한다. 고정한 프로젝트가 기록한 커밋에서 규칙 파일을 찾는 일은 `src/profile/git-profile.ts`의 `committedProfile`<!--s:6781660c390f-->이 한다.
 
+## mcp.json
+
+<!-- agctx-doc-sources: src/mcp/servers.ts, src/mcp/targets.ts, src/mcp/toml.ts, src/mcp/json-merge.ts, src/project/mcp-plan.ts -->
+<!-- agctx-doc-sources-sha256: 780e463b2aba5835892a404f710401d523589fc86fe4c8bce1a244c4e425f4c8 -->
+
+프로필 폴더 루트에 두는 MCP 서버 목록이다. 프로필에 없으면 MCP 파일을 쓰지 않는다. 쓰는 법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md)에 있다.
+
+```json
+{
+  "servers": {
+    "issues": { "command": "npx", "args": ["-y", "@acme/issues-mcp"], "env": { "ISSUES_TOKEN": "${ISSUES_TOKEN}" } },
+    "docs": { "url": "https://mcp.acme.dev/docs", "headers": { "Authorization": "Bearer ${DOCS_TOKEN}" } }
+  }
+}
+```
+
+| 필드 | 규칙 |
+| --- | --- |
+| `servers` | 필수. 서버 이름(영문자·숫자·`-`·`_`, 64자까지)마다 서버 하나. 다른 최상위 키는 거부한다 |
+| `command` | 로컬 서버(stdio)를 시작하는 명령. 빈 글은 거부한다. `url`과 함께 쓸 수 없다 |
+| `args` | 로컬 서버의 인자 목록. 문자열만 |
+| `env` | 로컬 서버의 환경 변수. 이름마다 문자열 값 |
+| `url` | 원격 서버(HTTP)의 주소. `http://` 또는 `https://`로 시작해야 한다 |
+| `headers` | 원격 서버의 HTTP 헤더. 이름마다 문자열 값 |
+
+판정은 `src/mcp/servers.ts`의 `parseMcpServers`<!--s:625c4bb2291c-->가 한다. 이 밖의 필드는 에이전트가 이해하지 못할 설정을 조용히 버리지 않도록 종료 코드 64로 거부한다. 숨은 문자 검사는 규칙 파일과 같고, `profile clone`은 `mcp.json`이 심볼릭 링크인 저장소를 받지 않는다.
+
+적용하면 고른 에이전트마다 아래 파일에 쓴다. 옮기는 규칙은 `src/mcp/targets.ts`의 `claudeEntry`<!--s:88bd8b30cfb6-->와 `codexTables`<!--s:b66a45840724-->에 있다.
+
+| 에이전트 | 파일 | agctx가 소유하는 영역 |
+| --- | --- | --- |
+| Claude Code | `.mcp.json`의 `mcpServers` | `agctx.project.json`의 `managedKeys`에 적은 이름의 항목. 원격 서버에는 `"type": "http"`를 붙인다 |
+| Codex | `.codex/config.toml` | `# agctx:managed:start`와 `# agctx:managed:end` 사이의 블록. 파일 끝에 둔다. 서버마다 `[mcp_servers.<이름>]` 표 하나 |
+
+- **Codex로 옮기는 값:** 값 전체가 `${이름}`인 같은 이름의 환경 변수는 `env_vars`, 값 전체가 `${VAR}`인 헤더는 `env_http_headers`, `Authorization: Bearer ${VAR}`는 `bearer_token_env_var`로 간다. 그 밖에 `${...}`가 든 값(URL, `command`·`args` 포함)이 있는 서버는 Codex 파일에만 빠지고 경고가 나온다. `args`·`env`·`env_vars`·`http_headers`·`env_http_headers`는 비어 있어도 적는다.
+- **소유 영역의 기록:** 소유 영역의 sha256을 `managedHashes`에, 원문을 `.agctx/base/.mcp.json.base`·`.agctx/base/.codex/config.toml.base`에 둔다. JSON 원문은 키를 정렬하고 두 칸 들여쓴 형태다.
+- **판정:** 사람이 같은 이름의 서버를 두었으면 멈추고, 사람이 만든 설정 파일에 처음 쓰는 것은 `--adopt`로만 한다. 관리 블록 밖에서 같은 서버를 정의했는지는 표 머리, 점 표기 키, 인라인 표를 모두 보는 `src/mcp/toml.ts`의 `definedServers`<!--s:35ff1886d569-->가 찾는다. 계획은 `src/project/mcp-plan.ts`의 `planMcpFiles`<!--s:e7c6f27be8bb-->가 세운다.
+
 ## link.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/link.ts -->
-<!-- agctx-doc-sources-sha256: de8b7c5edb54e7a0dd591d9c2b2b3a1b6851c659e0e67d62df0310550db5fec4 -->
+<!-- agctx-doc-sources-sha256: 012fca6259b99422e396b10819af397bec14be1803b8b47b7a829793ca0264a5 -->
 
 `profile link`로 연결한 프로필이 보관함의 `profiles/<이름>/`에 두는 포인터다. `profile.json`과 규칙 파일은 가리키는 폴더에 있다.
 

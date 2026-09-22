@@ -111,8 +111,8 @@ flowchart LR
 
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
-- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:8b11930e9b02-->
-- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:34a4dc7d6dd3-->, `src/project/plan.ts`의 `planProject`<!--s:1d468d256c69-->
+- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->
+- 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:484e2afbede5-->, `src/project/plan.ts`의 `planProject`<!--s:ab2aaace7362-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:d9c078cea294-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
 - 지키는 평가: `evals/profile.test.ts`, `evals/sync-merge.test.ts`
@@ -133,7 +133,7 @@ flowchart LR
 `sync`는 프로젝트에 기록된 프로필만 다시 적용하고 프로필을 바꾸지 않는다. 프로필 전환은 `apply`의 몫이다.
 
 - 기록된 프로필 읽기: `src/profile/apply.ts`의 `boundProfile`<!--s:4a7d617ed27c-->
-- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:8b11930e9b02-->
+- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->
 - 지키는 평가: `evals/profile.test.ts`
 
 ## 9. 안전한 파일 쓰기
@@ -160,7 +160,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 - 메인 화면: `src/tui/main.ts`의 `mainTui`<!--s:1666baf9d9f1-->·`MAIN_MENU_ENTRIES`<!--s:7c0e1b1e5cb4-->·`MAIN_ACTIONS`<!--s:3189aceb6ee4-->
 - 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:a6f75602106f-->
-- 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:d96467fbd07b-->·`MENU_ACTIONS`<!--s:f42e83b1949b-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:be04af9dc7f0-->
+- 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:d96467fbd07b-->·`MENU_ACTIONS`<!--s:4c1fd5310294-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:be04af9dc7f0-->
 - 저장소 화면: `src/tui/repository.ts`의 `REPOS_MENU_COMMANDS`<!--s:f58f2199bf19-->
 - 명령 실행: `src/tui/commands.ts`의 `commandTokens`<!--s:b9863ab66014-->·`runFromTui`<!--s:0ea9d22b8fae-->
 - 취소 처리: `src/tui/cancel.ts`의 `cancelled`<!--s:d632c458039e-->
@@ -171,7 +171,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 명령의 정본은 등록부 하나다. 등록부에 적은 표면과 항목에 따라 CLI·TUI·에이전트가 같은 명령을 같은 계약으로 쓴다.
 
-- 등록부와 항목 형식: `src/commands/registry.ts`의 `COMMANDS`<!--s:92f1ed162d8b-->·`CommandSpec`<!--s:f7e50b3c5590-->·`agentPolicy`<!--s:2a17e53b8c57-->
+- 등록부와 항목 형식: `src/commands/registry.ts`의 `COMMANDS`<!--s:ba6251d2c525-->·`CommandSpec`<!--s:f7e50b3c5590-->·`agentPolicy`<!--s:2a17e53b8c57-->
 - 옵션·인자 검사: `src/commands/options.ts`의 `checkArguments`<!--s:46951ac06a3e-->
 - 이유: [ADR 0016](../adr/0016-command-contract.md), [ADR 0025](../adr/0025-every-command-in-cli-and-tui.md), 에이전트 표면은 [ADR 0029](../adr/0029-agent-surface-contract.md)
 - 지키는 평가: `evals/interface-parity.test.ts`, `evals/tui-commands.test.ts`, `evals/messages.test.ts`, `evals/agent-surface.test.ts`
@@ -201,9 +201,9 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 사람이 관리 영역을 고쳤으면 덮어쓰지 않고 멈춘다. 마지막 적용본을 `.agctx/base/`에 남겨 두어 3-way 병합으로 복구한다. 다만 현재 관리 영역이 이번에 쓸 내용과 같으면 잃을 것이 없으므로 멈추지 않는다.
 
-- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:1d468d256c69-->·`knownBase`<!--s:f35f58e3e30d-->
-- 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:5e4996bdda43-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:46e8e209a1fb-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
-- 복구 명령: `src/profile/resolve.ts`의 `resolveProject`<!--s:5596ba9fac01-->·`mergeWithEditor`<!--s:757a38979834-->·`withBaseRegion`<!--s:e1ff5455598d-->, `src/project/merge-editor.ts`의 `mergeInVsCode`<!--s:3b347041fbc3-->
+- 충돌 수집과 base 판정: `src/project/plan.ts`의 `planProject`<!--s:ab2aaace7362-->, `src/project/base.ts`의 `knownBase`<!--s:cbe5ac8a9bd2-->
+- 충돌 표시: `src/profile/apply.ts`의 `conflictError`<!--s:1f30e254c942-->·`printConflicts`<!--s:51d931dd55c1-->, `src/project/conflicts.ts`의 `formatDiff`<!--s:46e8e209a1fb-->·`baseFilePath`<!--s:4a36f8b8ecfd-->
+- 복구 명령: `src/profile/resolve.ts`의 `resolveProject`<!--s:595cdf8fb4f9-->·`mergeWithEditor`<!--s:757a38979834-->·`withBaseRegion`<!--s:e1ff5455598d-->, `src/project/merge-editor.ts`의 `mergeInVsCode`<!--s:3b347041fbc3-->
 - TUI 복구: `src/tui/profile.ts`의 `resolveProjectTui`<!--s:398fc4fe566d-->
 - 이유: [ADR 0008](../adr/0008-managed-conflict-recovery.md), 편집 병합 계약은 [ADR 0010](../adr/0010-edit-merge-regenerates-managed-area.md)
 - 지키는 평가: `evals/conflict-resolve.test.ts`, `evals/conflicts.test.ts`, `evals/formatter-stability.test.ts`
@@ -213,7 +213,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 프로필 폴더 자체가 Git 작업 트리인 프로필을 다룬다. 원격 URL과 추적 브랜치는 `.git/config`가 정본이고 `profile.json`에 적지 않는다.
 
 - git 실행: `src/shared/git.ts`의 `git`<!--s:5cd6cbd8922b-->·`isGitRoot`<!--s:82d5ec0e1ce5-->·`isRemoteFailure`<!--s:59e32fcf9095-->·`resolveRemoteLocation`<!--s:7de80492b458-->·`sanitizeRemoteUrl`<!--s:6198db3b36d0-->·`committedFile`<!--s:57e01f0132f4-->
-- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:e8dfa159cb9a-->·`cloneProfile`<!--s:05cae7509820-->·`pullProfile`<!--s:3e2091e5dd36-->·`planPush`<!--s:497fc3b3b02a-->·`pushProfile`<!--s:e8578cc53181-->·`connectProfile`<!--s:3ec6e5e3dc1b-->
+- 명령: `src/profile/git-profile.ts`의 `profileGitState`<!--s:e8dfa159cb9a-->·`cloneProfile`<!--s:73559fcf507d-->·`pullProfile`<!--s:6ae79ce3face-->·`planPush`<!--s:497fc3b3b02a-->·`pushProfile`<!--s:e8578cc53181-->·`connectProfile`<!--s:3ec6e5e3dc1b-->
 - 커밋 안의 프로필 읽기: `src/profile/git-profile.ts`의 `committedProfile`<!--s:6781660c390f-->. 그 커밋의 `profile.json`에서 규칙 파일 경로를 읽으므로, `pull`이 들어올 커밋을 검사할 때와 고정한 프로젝트를 다시 만들 때 모두 그 커밋의 경로를 쓴다.
 - 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
@@ -222,7 +222,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 저장소가 프로필의 어느 버전을 쓰고 있는지 기록한다. 고정한 저장소는 기록한 버전에 머물고 PR로만 올라간다.
 
-- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:f5e76935f9d5-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
+- 버전 결정과 기록: `src/profile/apply.ts`의 `profileVersion`<!--s:3a987ea9b817-->. 고정한 프로젝트는 기록한 커밋의 규칙 파일로 다시 만들고, 커밋하지 않은 수정은 `profile.json`과 규칙 파일을 보고 판정한다.
 - 기록 위치: 프로젝트의 `agctx.project.json`
 - 이유: [ADR 0017](../adr/0017-git-profile-sharing.md), [ADR 0018](../adr/0018-multi-repository-sync.md), [ADR 0036](../adr/0036-profile-json-names-rules-file.md)
 - 지키는 평가: `evals/git-profile.test.ts`, `evals/profile-instructions.test.ts`
@@ -231,7 +231,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 파일을 바꾸지 않고 저장소가 기록한 버전·관리 영역과 맞는지 판정한다.
 
-- 판정: `src/check.ts`의 `checkProject`<!--s:95d64d0ab5d9-->·`CheckReport`<!--s:a295dda2a352-->
+- 판정: `src/check.ts`의 `checkProject`<!--s:747e5b1df120-->·`CheckReport`<!--s:a295dda2a352-->
 - 처리기: `src/commands/handlers.ts`의 check 처리기
 - 지키는 평가: `evals/command-contract.test.ts`, `evals/git-profile.test.ts`, `evals/repos.test.ts`
 
@@ -240,7 +240,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 보이지 않는 문자가 지침에 섞여 에이전트에게 다른 내용이 전달되는 것을 막는다. 파일 맨 앞의 BOM은 허용한다.
 
 - 검출과 설명: `src/shared/hidden-chars.ts`의 `findHiddenCharacters`<!--s:5f84af97e1dd-->·`describeHiddenCharacters`<!--s:1c6d888af488-->
-- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:204be46441f5-->, `src/profile/apply.ts`의 `planFor`<!--s:34a4dc7d6dd3-->, `src/check.ts`의 `checkProject`<!--s:95d64d0ab5d9-->
+- 검사 지점: `src/profile/git-profile.ts`의 `assertNoHiddenCharacters`<!--s:204be46441f5-->, `src/profile/apply.ts`의 `planFor`<!--s:484e2afbede5-->, `src/check.ts`의 `checkProject`<!--s:747e5b1df120-->
 - 지키는 평가: `evals/hidden-chars.test.ts`, `evals/git-profile.test.ts`
 
 ## 19. 여러 저장소 목록과 repos 명령

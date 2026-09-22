@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 0695328027b828741006cd4d2b2cac0fadc025e898754e7b63dde7ba812b96d4 -->
+<!-- agctx-doc-sources-sha256: 6af003565c30ee1d846246e91510b8f055c635fce5bd068a350ccea8f9e819d8 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -27,14 +27,14 @@ Read in: **English** · [한국어](README.md)
 agctx manages those standards as a Profile. Applying the Profile to a project creates the instruction files that Codex, Claude Code, and Antigravity read, in one pass. After you change the standard in the Profile and sync, you do not edit each project's files again, and each project's own domain rules stay intact. It is one flow: `profile create` → `profile setup` → `profile apply`/`profile sync`.
 
 - 👥 Personal, Team & Company Profiles
-- 🧩 Rules, Skills, MCP, Subagents & Hooks in One Profile (beyond rules: planned)
+- 🧩 Rules, Skills, MCP, Subagents & Hooks in One Profile (today: rules and MCP servers; the rest is planned)
 - 📋 Choose Recommended Guidance: TDD, Verification, Security & More
 - 🎯 Pick a Profile and Agents per Repository (agent selection: planned)
 - 🔄 One-Step Sync
 - 🛡️ Project-Specific Guidance Stays Intact
 - 🌿 Git Sharing, CI Checks & Multi-Repo PRs
 
-> ⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`). The same problem shows up in the skills, MCP server settings, subagent definitions, and hooks a team shares. The scope is expanding to cover those in one Profile too.
+> ⚙️ Today a Profile manages rules (`AGENTS.md`, `CLAUDE.md`, `.agents/rules`) and MCP server settings (Claude Code `.mcp.json`, Codex `.codex/config.toml`). The same problem shows up in the skills, subagent definitions, and hooks a team shares. The scope is expanding to cover those in one Profile too.
 
 ## Core goals
 
@@ -125,7 +125,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: b655e01138bf879c6502fd65ab7cc175f976990d6a363fd98f8e81507eefc995 -->
+<!-- agctx-doc-sources-sha256: a011483414d7d51dad623d31cea2f4aaa65bb868557be223b9bd43e3dbad8ea9 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
@@ -146,7 +146,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, formatti
 ## Supported agents
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 0b5d368f8e83469ccc384460e2eccc7e95662c321b3a0a47fd36c409a5082c62 -->
+<!-- agctx-doc-sources-sha256: 0b5051f94e47b69a89082f9b58f17759e41128947cf78ba11bef9c558bfa0b46 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 
@@ -181,9 +181,9 @@ Refine such a draft by hand, then place it in the project extension area of `AGE
 agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) lists the topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
 <!-- agctx:generated:discussion-status:start -->
-- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, evidence criteria and length budget for default guidance, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
-- **In progress:** use through natural-language requests, safe synchronization of managed artifacts, choosing agents and context types per repository
-- **Proposed:** Profile configuration surface expansion, scope expansion and guidance composition, creating a Profile from an existing repository. These are not current behavior yet.
+- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, evidence criteria and length budget for default guidance, choosing agents and context types per repository, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
+- **In progress:** use through natural-language requests, safe synchronization of managed artifacts, Profile configuration surface expansion
+- **Proposed:** scope expansion and guidance composition, creating a Profile from an existing repository. These are not current behavior yet.
 <!-- agctx:generated:discussion-status:end -->
 
 ## Documentation

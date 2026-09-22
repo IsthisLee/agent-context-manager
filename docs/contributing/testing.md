@@ -19,8 +19,8 @@ pnpm run audit
 
 ## 평가 작성
 
-<!-- agctx-doc-sources: evals/support, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, tools/generate-progress.ts, evals/doc-examples.test.ts -->
-<!-- agctx-doc-sources-sha256: b4f78493759a65e399ef51c70edf7bad833ee361e9431e2fa1d2a34a36f034f1 -->
+<!-- agctx-doc-sources: evals/support, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, evals/doc-examples.test.ts -->
+<!-- agctx-doc-sources-sha256: c73844ddbc588b05ecce810b854fa4d34b8b598198c14cf29a193c66604fc07d -->
 
 - 평가는 `evals/*.test.ts`이며 Node.js 내장 `node:test`로 실행한다. 코드를 바꾸기 전에 실패하는 평가를 먼저 쓰고(Red), 통과시킨 뒤(Green) 정리한다.
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.
@@ -30,16 +30,15 @@ pnpm run audit
 - 에이전트 관련 평가는 `HOME`·`USERPROFILE`·`CODEX_HOME`·`CLAUDE_CONFIG_DIR`를 임시 폴더로 바꿔 이 컴퓨터의 사용자 파일과 세션 기록이 섞이지 않게 한다.
 - 명령 등록부를 바꾸면 `node tools/generate-skills.ts`와 `node tools/generate-reference.ts`로 스킬의 명령 목록과 레퍼런스의 생성 블록을 다시 만든다. 다르면 `evals/skills.test.ts`와 `evals/reference-docs.test.ts`가 실패한다.
 - `docs/discussion/topics.json`을 바꾸면 `node tools/generate-discussion-status.ts`로 논의 상태 줄·색인·README 목록을 다시 만든다. 다르면 `evals/discussion-status.test.ts`가 실패한다.
-- `PROGRESS.md`의 두 블록은 `node tools/generate-progress.ts`가 만든다. 최근 기록은 `git log main`에서(PR이 squash로 병합되므로 병합된 이력만 적는다), 구현 중인 주제 표는 `topics.json`과 각 주제의 `권장 다음 작업`에서 온다. `evals/progress.test.ts`는 최근 기록의 줄이 실제 커밋과 맞는지, 주제 표가 최신인지 검사한다. 최근 기록은 커밋할 때마다 다시 만들지 않아도 된다.
 
 ## CI 환경
 
 <!-- agctx-doc-sources: .github/workflows/ci.yml -->
-<!-- agctx-doc-sources-sha256: 41472c8dfbd859b6c2ee1044c599d4e4c758f35a4d2f6660733ec13ca1e30517 -->
+<!-- agctx-doc-sources-sha256: 178d6b875c2df5e77e01c7b60c7e62ffe8d525013d62975549604ab3f0333888 -->
 
 GitHub Actions의 `CI`는 `main` push와 모든 PR에서 Ubuntu의 Node.js 22·24 LTS와 26 Current, macOS와 Windows의 Node.js 22 LTS 조합을 고정된 pnpm 버전으로 검증한다. 지원 하한인 22를 세 운영체제에서 모두 돌려 새 API를 실수로 쓰면 CI가 잡게 한다. 저장소 루트의 `.nvmrc`는 기여자의 기본 로컬 런타임을 같은 이유로 Node.js 22로 맞춘다. PR은 CI가 실패한 상태로 병합하지 않는다. 의존성·워크플로 변경은 보안 영향을 함께 검토한다.
 
-CI는 전체 이력을 받는다(`fetch-depth: 0`). `PROGRESS.md`의 최근 기록이 실제 커밋과 맞는지 검사하려면 이력이 필요하기 때문이다. 얕은 복제에서는 그 두 평가가 건너뛴다.
+CI는 전체 이력을 받는다(`fetch-depth: 0`). 문서 게이트가 해시를 기록한 커밋 뒤로 바뀐 소스를 이름으로 알리려면 이력이 필요하기 때문이다(`tools/check-docs.ts`의 `changedPinnedSources`<!--s:96c386caee18-->). 얕은 복제에서는 실패 메시지가 핀한 소스 목록 전체로 대신 나온다.
 
 저장소 루트의 `.editorconfig`와 `.gitattributes`는 편집기·운영체제에 따른 인코딩, 줄바꿈, 공백 차이를 줄이는 기본 파일 형식 계약이다.
 

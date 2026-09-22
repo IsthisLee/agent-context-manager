@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 61ad9b6a7ce5ea26b30aeff9d01171b9a54f8742100a8a0b596742a5de39df63 -->
+<!-- agctx-doc-sources-sha256: 1eee4699d2d2e3f113918818319049c2314e888e65617c359f9a00a0975f7d2c -->
 
 ```mermaid
 flowchart LR
@@ -99,7 +99,6 @@ agent-context-manager/
 │   ├── doc-citations.ts         # 문서가 코드를 가리키는 형식 검사(줄 번호 금지·이름 존재·지문 표지)
 │   ├── doc-sources.ts           # 절 단위 핀 읽기, 핀 범위 규칙, 해시에서 뺄 해시 줄·생성 블록, stamp 대상 해석, 지문만 바뀐 문서 판정
 │   ├── generate-discussion-status.ts # topics.json에서 논의 상태 줄·색인 표·README 목록 생성(--check로 검사)
-│   ├── generate-progress.ts     # PROGRESS.md의 최근 기록(git log)과 구현 중인 주제 표(topics.json) 생성
 │   ├── generate-reference.ts    # 명령 등록부에서 레퍼런스의 생성 블록 생성(--check로 검사)
 │   ├── generate-skills.ts       # 명령 등록부에서 스킬의 명령 목록 생성(--check로 검사)
 │   ├── package-smoke.ts         # 실제 tarball 설치 후 핵심 명령 실행
@@ -119,7 +118,6 @@ agent-context-manager/
 ├── AGENTS.md                    # 이 저장소 개발 규칙 정본
 ├── README.md                    # npm 패키지 소개(영어는 README.en.md)
 ├── CHANGELOG.md                 # 사용자 영향 변경 이력
-├── PROGRESS.md                  # 진행 중인 작업과 다음 세션이 이어받을 순서
 ├── CLAUDE.md                    # AGENTS.md를 가져오는 Claude Code 연결 파일
 ├── SECURITY.md                  # 보안 신고·안전한 사용 정책
 ├── LICENSE                      # MIT 라이선스

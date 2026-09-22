@@ -21,6 +21,9 @@ Thumbs.db
 *.pem
 *.key
 
+# Session handoff notes: a snapshot for the next session on this machine, not shared
+HANDOFF.md
+
 # Logs & Temporary files
 npm-debug.log*
 yarn-debug.log*

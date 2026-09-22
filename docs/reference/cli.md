@@ -169,6 +169,8 @@ agctx --tui
 | [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI · TUI |
 | [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI · TUI |
 | [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI · TUI |
+| [`install`](#install) | 이 패키지의 agctx 스킬을 이 컴퓨터에 있는 에이전트마다 스킬 폴더에 복사합니다. | 에이전트 스킬 폴더 | CLI · TUI |
+| [`uninstall`](#uninstall) | agctx install이 둔 agctx 스킬을 지웁니다. | 에이전트 스킬 폴더 | CLI · TUI |
 | [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI · TUI |
 <!-- agctx:generated:commands:end -->
 
@@ -1003,6 +1005,30 @@ remotes/orders-api.git
 ../billing-api
 git@github.com:acme/payments-api.git
 ```
+
+### `install`
+
+이 패키지에 든 agctx 스킬을 이 컴퓨터에 있는 에이전트의 사용자 전역 스킬 폴더에 복사한다.
+
+<!-- agctx:generated:usage:install:start -->
+```bash
+agctx install [--agent <claude|codex|antigravity|all>] [--force] [--dry-run]
+```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:install:end -->
+
+### `uninstall`
+
+`agctx install`이 둔 agctx 스킬을 지운다.
+
+<!-- agctx:generated:usage:uninstall:start -->
+```bash
+agctx uninstall [--agent <claude|codex|antigravity|all>] [--dry-run]
+```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:uninstall:end -->
 
 ### `config lang`
 

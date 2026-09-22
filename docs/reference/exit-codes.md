@@ -46,5 +46,7 @@
 | `agctx repos status` | `0` · `1` · `2` · `3` · `64` · `69` · `70` |
 | `agctx repos sync` | `0` · `1` · `2` · `3` · `64` · `69` · `70` |
 | `agctx repos pr` | `0` · `2` · `3` · `64` · `69` · `70` |
+| `agctx install` | `0` · `64` · `70` |
+| `agctx uninstall` | `0` · `64` · `70` |
 | `agctx config lang` | `0` · `64` · `70` |
 <!-- agctx:generated:exit-codes:end -->

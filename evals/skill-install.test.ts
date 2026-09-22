@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { applyInstall, applyUninstall, INSTALL_RECORD, outdatedSkills, planInstall, planUninstall } from '../src/skills/install.ts';
 import { packageVersion } from '../src/shared/runtime.ts';
@@ -132,4 +133,84 @@ test('outdated skills are the installed ones whose record names another version'
   fs.writeFileSync(recordFile, JSON.stringify({ ...JSON.parse(read(recordFile)), version: '0.0.1' }));
 
   assert.deepEqual(outdatedSkills(), [{ dir: path.join(dir, '.claude', 'skills', 'agctx'), version: '0.0.1' }]);
+});
+
+const cli = path.join(repoRoot, 'src', 'agctx.ts');
+
+function agctx(dir: string, args: string[]) {
+  const env: NodeJS.ProcessEnv = { ...process.env, HOME: dir, USERPROFILE: dir, AGCTX_HOME: path.join(dir, '.agctx'), AGCTX_LANG: 'en' };
+  delete env.CODEX_HOME;
+  return spawnSync(process.execPath, [cli, ...args], { cwd: dir, env, encoding: 'utf8' });
+}
+
+test('agctx install lists each skill folder it writes and each agent it skips', t => {
+  const dir = home(t, ['.claude']);
+
+  const result = agctx(dir, ['install']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, new RegExp(`create\\s+${path.join(dir, '.claude', 'skills', 'agctx').replace(/[.\\]/g, '\\$&')}`));
+  assert.match(result.stdout, /skipped\s+.*\.agents.skills/);
+  assert.ok(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx-author', 'SKILL.md')));
+  assert.match(agctx(dir, ['install']).stdout, /unchanged/);
+});
+
+test('agctx install writes nothing and stops when a skill folder was edited, and --force replaces it', t => {
+  const dir = home(t, ['.claude']);
+  agctx(dir, ['install']);
+  const skill = path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md');
+  fs.appendFileSync(skill, '\nmy note\n');
+
+  const result = agctx(dir, ['install']);
+
+  assert.equal(result.status, 64);
+  assert.match(result.stdout + result.stderr, /SKILL\.md/);
+  assert.match(result.stderr, /--force/);
+  assert.match(read(skill), /my note/);
+  assert.equal(agctx(dir, ['install', '--force']).status, 0);
+  assert.doesNotMatch(read(skill), /my note/);
+});
+
+test('agctx install --dry-run shows the plan and writes nothing', t => {
+  const dir = home(t, ['.claude']);
+
+  const result = agctx(dir, ['install', '--dry-run']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /create/);
+  assert.equal(fs.existsSync(path.join(dir, '.claude', 'skills')), false);
+});
+
+test('agctx install names the folders it checked when it finds no agent', t => {
+  const dir = home(t);
+
+  const result = agctx(dir, ['install']);
+
+  assert.equal(result.status, 64);
+  assert.ok(result.stderr.includes(path.join(dir, '.claude')), result.stderr);
+  assert.match(result.stderr, /--agent/);
+});
+
+test('agctx install --json reports every item and skipped target', t => {
+  const dir = home(t, ['.codex']);
+
+  const data = JSON.parse(agctx(dir, ['install', '--json']).stdout).data;
+
+  assert.deepEqual(data.items.map((item: { target: string; skill: string; state: string }) => `${item.target}:${item.skill}:${item.state}`).sort(), ['codex:agctx-author:create', 'codex:agctx:create']);
+  assert.deepEqual(data.skipped.map((target: { target: string }) => target.target), ['claude', 'antigravity', 'antigravity-cli']);
+  assert.equal(data.written, true);
+});
+
+test('agctx uninstall removes the skill folders install wrote and names the ones it keeps', t => {
+  const dir = home(t, ['.claude']);
+  agctx(dir, ['install']);
+  fs.appendFileSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md'), '\nmy note\n');
+
+  const result = agctx(dir, ['uninstall']);
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /remove\s+.*agctx-author/);
+  assert.match(result.stdout, /kept\s+.*agctx\b/);
+  assert.equal(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx-author')), false);
+  assert.ok(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md')));
 });

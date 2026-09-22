@@ -28,7 +28,7 @@ const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode:
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
 const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
-const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(shellWord), '--yes'].join(' ');
+const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(word => shellWord(word)), '--yes'].join(' ');
 
 /** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
 function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {

@@ -179,11 +179,15 @@ test('the TUI checks a folder before searching it for rules files', t => {
   const { root, folder } = workspace(t);
   const home = path.join(root, 'user-home');
   fs.mkdirSync(home);
-  const previousHome = process.env.HOME;
+  // os.homedir() reads HOME on POSIX and USERPROFILE on Windows.
+  const previous = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   process.env.HOME = home;
+  process.env.USERPROFILE = home;
   t.after(() => {
-    if (previousHome === undefined) delete process.env.HOME;
-    else process.env.HOME = previousHome;
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
   });
   const repo = folder('company-configs', { 'agent-rules/AGENTS.md': '# Rules\n' });
   gitIn(repo, 'init', '--quiet');

@@ -32,19 +32,19 @@ flowchart LR
 ## 1. 고객사 프로필 받기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: e53f3b2e71e7896af3c85dcef8d584b7a072f1aef660d9696c886dafe2dd2952 -->
+<!-- agctx-doc-sources-sha256: 2d7ff577df34f12e64b00748cd1f704d9559c75dadd1699724ddf592ec0f20dc -->
 
 ```bash
 agctx profile clone https://git.client-a.example/rules.git
 agctx profile clone https://git.client-b.example/rules.git
 ```
 
-`clone`은 받은 저장소에 `profile.json`과 그것이 가리키는 규칙 파일(기본 `AGENTS.md`)이 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함(`~/.agctx/profiles`)에 등록한다([프로필 보관함](../concepts/profiles.md#프로필-보관함)). 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
+`clone`은 받은 저장소에 `profile.json`과 그것이 가리키는 규칙 파일(기본 `AGENTS.md`)이 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만(함께 받는 `mcp.json`·`skills/`·`subagents/`·`hooks.json`도 같은 검사를 하고, 심볼릭 링크면 받지 않는다) 이 컴퓨터의 프로필 보관함(`~/.agctx/profiles`)에 등록한다([프로필 보관함](../concepts/profiles.md#프로필-보관함)). 프로필 이름은 받은 `profile.json`의 이름을 쓴다.
 
 ## 2. 고객사 저장소에 적용
 
 <!-- agctx-doc-sources: src/repos -->
-<!-- agctx-doc-sources-sha256: 6fc8aef409e9609136576bc472ba57c21d360533ae7c11209d21fc7c67cd3fa5 -->
+<!-- agctx-doc-sources-sha256: 4e0752ddd92fb3c39798cd45837285c0824c537b862b8d8008785a60c25de447 -->
 
 ```bash
 agctx profile apply client-a ~/work/client-a-api

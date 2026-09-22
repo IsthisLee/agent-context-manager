@@ -1,7 +1,7 @@
 # 관리 영역과 확장 영역
 
 <!-- agctx-doc-sources: src/project -->
-<!-- agctx-doc-sources-sha256: 7771dfcb027b6d0d081a6746ce492b853f5139110879efaf938b147bac21e03b -->
+<!-- agctx-doc-sources-sha256: d9f0cde88cf1a0b86fd61d02c3e2e8066c1537c947ecd0586ab1054cc8ee544c -->
 
 적용된 파일은 agctx가 다시 만드는 영역과 사용자가 소유하는 영역으로 나뉜다.
 
@@ -55,7 +55,7 @@ flowchart TB
 
 포매터 설정을 무엇으로 두든 적용된 파일을 포맷 대상에서 뺄 필요가 없다([근거](../references.md#포매터가-관리-영역을-바꾸는-범위)). 낱말이나 그 차례가 바뀌면 그때는 사람의 편집이므로 지금까지처럼 멈춘다.
 
-agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 예외가 하나 있다. `.agents/rules/agctx.md`는 관리 블록 위, 파일 맨 앞에 frontmatter(`---` 두 줄 사이에 적는 설정)를 둔다. Antigravity는 파일 첫 줄부터 시작하는 frontmatter의 `trigger: always_on`을 보고 이 규칙을 항상 읽기 때문이다. 그래서 agctx는 파일 맨 앞에 frontmatter가 없을 때만 템플릿의 frontmatter를 넣고, 사람이 이미 둔 frontmatter는 고치지 않는다.
+지침 파일에서 agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 파일의 관리 블록뿐이다. 사용자 내용은 확장 섹션 아래나 관리 블록 밖에 두어야 동기화 뒤에도 남는다. 에이전트 설정 파일은 관리 영역이 다르다. MCP·hooks 설정 파일(`.mcp.json`, `.codex/config.toml`, `.claude/settings.json`, `.codex/hooks.json`)에서는 agctx가 넣은 서버와 hook 묶음이, agctx가 쓴 skills·subagents 파일에서는 파일 전체가 관리 영역이다([파일 형식](../reference/file-formats.md#skillssubagentshooks)). 예외가 하나 있다. `.agents/rules/agctx.md`는 관리 블록 위, 파일 맨 앞에 frontmatter(`---` 두 줄 사이에 적는 설정)를 둔다. Antigravity는 파일 첫 줄부터 시작하는 frontmatter의 `trigger: always_on`을 보고 이 규칙을 항상 읽기 때문이다. 그래서 agctx는 파일 맨 앞에 frontmatter가 없을 때만 템플릿의 frontmatter를 넣고, 사람이 이미 둔 frontmatter는 고치지 않는다.
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 마커 아래에 직접 쓴다. 처음 적용할 때 표시 언어에 맞춰 `## 4. 프로젝트 규칙 확장 (SSOT)` 또는 `## 4. Project rule extensions (SSOT)`을 써 주지만, 그 아래는 사용자 영역이므로 제목을 바꾸든 절을 더 나누든 상관없다.
 
@@ -68,7 +68,7 @@ agctx가 다시 만드는 곳은 `AGENTS.md`의 프로필 영역과 포인터 �
 ## 관리 영역을 고쳐서 멈췄을 때
 
 <!-- agctx-doc-sources: src/profile/resolve.ts -->
-<!-- agctx-doc-sources-sha256: e9d0eea6ea2ac2b65f7dce20f11e15117e175273f7ec34b9a0677b0121ef7fa5 -->
+<!-- agctx-doc-sources-sha256: 393b1846e659d9c8b6af6c7ecbaebca951fafd612f93a2a435fb63cc4cf151d5 -->
 
 `apply`·`sync`가 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다: <파일>`로 멈추면, agctx가 마지막으로 쓴 관리 영역과 지금 파일의 관리 영역이 다르다는 뜻이다.
 
@@ -97,5 +97,7 @@ flowchart TD
    3. 탭을 닫을 때 "파일에 처리되지 않은 충돌이 포함되어 있습니다" 경고가 뜨면 Result 창을 다시 확인하고 `충돌과 함께 닫기`(Close with Conflicts)를 누른다. 저장한 결과가 적용된다.
 
    agctx는 결과에서 관리 영역 밖의 내용만 가져오고 관리 영역은 다시 만들므로, 저장할 때 포매터가 관리 영역을 바꿔도 된다. 관리 영역 안에 남긴 변경은 적용되지 않으며 diff와 merge 결과 파일 경로로 알려 준다. `code` 명령이 PATH에 있어야 한다.
+
+MCP·hooks 설정과 skills·subagents 파일은 고친 내용을 옮겨 둘 관리 영역 밖이 없어서 2번이 멈추고 3번(`--discard`)으로만 푼다. 남길 내용은 먼저 프로필로 옮긴다. hooks 파일을 다시 쓸 때는 실행될 명령을 먼저 보여 준다.
 
 `.agctx/base/`는 마지막으로 적용한 관리 영역 원문이다. `resolve`는 이 원문과 지금 파일을 비교해 사람이 고친 줄을 찾는다. git에 커밋해 두면 팀원도 같은 원문을 기준으로 충돌을 푼다. `.agctx/base/`를 지워도 다음 `apply`·`sync`가 다시 만든다. 다만 지운 상태에서 관리 영역을 고쳤고 프로필까지 바뀌었다면, 고친 줄과 프로필 변경을 구분할 기준이 없어서 `--discard`로만 풀 수 있다. TUI에서는 `profile list`의 `프로젝트 충돌 해결` 메뉴에서 같은 선택지를 고른다. 결정 근거는 [ADR 0008](../adr/0008-managed-conflict-recovery.md)에 있다.

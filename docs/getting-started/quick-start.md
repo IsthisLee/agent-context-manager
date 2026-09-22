@@ -56,7 +56,7 @@ agctx install
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 182572997143afe23601a5da2b2bfeaa10f667bad106e85c2a4714395d246f6f -->
+<!-- agctx-doc-sources-sha256: bebc41a8a5865efc42c9a33ccffb38b4b372f7c197bed37b8e56dba2a7506f5a -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -72,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands -->
-<!-- agctx-doc-sources-sha256: 70b3f55060f6ae25fec057c99565c8a9500480dd7a1d6aefb71bac021721c08c -->
+<!-- agctx-doc-sources-sha256: 3113023e34b600e51b6981f6b73581d5cdb187fe27fed4f10ae2724805e07fe7 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -91,11 +91,11 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: fc28c8dbf521a108d45b194fc89e5b0703215d62ce57a70133f347ac72ed961e -->
+<!-- agctx-doc-sources-sha256: e4fca454eb9b4ad2d607b758ac6e56c874524badf9428bff65f81f6322d52822 -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
-TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**를 고르고 프로젝트 폴더를 고른다. 파일을 쓰기 전 확인 질문은 No가 기본이므로, `←`로 **Yes**를 고른 뒤 `Enter`를 누른다. 프로필이 Git 저장소면 그 전에 프로젝트를 커밋에 고정할지 한 번 더 묻는다([TUI로 쓰기](../guides/tui.md#프로젝트에-적용하기)).
+TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**를 고르고 프로젝트 폴더를 고른다. 파일을 쓰기 전 확인 질문은 No가 기본이므로, `←`로 **Yes**를 고른 뒤 `Enter`를 누른다. 프로필에 MCP 서버·skills·subagents·hooks가 있으면 그 전에 받을 종류를 고르고, 프로필이 Git 저장소면 프로젝트를 커밋에 고정할지 한 번 더 묻는다([TUI로 쓰기](../guides/tui.md#프로젝트에-적용하기)).
 
 ```bash
 $ mkdir shop
@@ -126,6 +126,8 @@ Applied profile team-backend to /work/shop
 ```
 
 이미 사람이 쓴 `AGENTS.md`나 `CLAUDE.md`가 있는 저장소에서는 계획에 그 파일이 `unmanaged`로 나오고 아무것도 쓰지 않은 채 종료 코드 2로 멈춘다. 기존 내용을 남기고 agctx 영역을 더하려면 안내대로 `--adopt`를 붙여 다시 실행한다. TUI에서는 편입할지 묻는다. 쓰지 않는 에이전트의 파일은 `--agent`로 뺄 수 있다([CLI Reference](../reference/cli.md#profile-apply)).
+
+위 예시는 규칙만 든 프로필이다. 프로필에 MCP 서버나 skills·subagents·hooks를 두면 같은 `apply`가 에이전트별 설정 파일과 폴더에도 쓴다. 방법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md)와 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)에 있다.
 
 `CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문에 필요하다.
 

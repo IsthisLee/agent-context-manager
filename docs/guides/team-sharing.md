@@ -85,7 +85,7 @@ flowchart TB
 ## 관리자: 팀 프로필 올리기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: 1aae659924fd56285b6236869fb13f0369f6eaffa0b67f2a1d476e09a8f68175 -->
+<!-- agctx-doc-sources-sha256: 6857c7639c6f08dbb7655dc74ae5b561d001975b17d82514dc53b3bfebd20e26 -->
 
 ### 1. 프로필 만들기
 
@@ -107,7 +107,7 @@ Configured profile: team-backend
 
 ### 3. 첫 커밋 만들기
 
-agctx는 커밋을 대신 만들지 않으므로 프로필 폴더를 Git 저장소로 만들고 첫 커밋을 직접 만든다. 커밋에는 `AGENTS.md`와 `profile.json`이 들어간다.
+agctx는 커밋을 대신 만들지 않으므로 프로필 폴더를 Git 저장소로 만들고 첫 커밋을 직접 만든다. 커밋에는 `AGENTS.md`와 `profile.json`이 들어간다. 프로필 폴더에 `mcp.json`, `skills/`, `subagents/`, `hooks.json`을 두었다면 함께 커밋된다([팀 MCP 서버 나눠 쓰기](mcp-servers.md), [팀 skills·subagents·hooks 나눠 쓰기](skills-subagents-hooks.md)).
 
 ```bash
 git -C ~/.agctx/profiles/team-backend init -b main
@@ -144,7 +144,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: 42eaa386253c16a87947a5df22d96c0baaf7b9991f614e773eadc4c99e97ae71 -->
+<!-- agctx-doc-sources-sha256: ba739b19378df8099bba241b6940dd81f5107e6a574f2ea0a339ed42d2d4f4fa -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
@@ -203,7 +203,7 @@ Error: git@github.com:acme/team-rules.git is not a profile repository: profile.j
 Next: Add profile.json at the repository root, for example {"schemaVersion": 1, "name": "team-backend", "scope": "team"}. The rules file is AGENTS.md at the root; if it is elsewhere, use "schemaVersion": 2 and add "instructions": "<path to the .md file>". To start from nothing, run agctx profile create and push it with Git.
 ```
 
-- 프로필에 들어가는 규칙은 `instructions`가 가리킨 파일 하나다. 저장소의 다른 파일은 프로젝트로 옮기지 않는다.
+- 프로필에 들어가는 규칙은 `instructions`가 가리킨 파일 하나다. 저장소 루트의 `mcp.json`, `skills/`, `subagents/`, `hooks.json`도 프로필의 MCP 서버·skills·subagents·hooks로 읽으므로, 다른 용도로 쓰는 같은 이름의 폴더가 있으면 적용이 형식 오류로 멈추거나 그 파일이 프로젝트로 옮겨진다. 이 밖의 파일은 프로젝트로 옮기지 않는다.
 - `profile setup`은 가리킨 파일에 지침 구역을 쓰고 루트에 `AGENTS.md`를 만들지 않는다. 연결한 프로필이면 그 폴더의 파일이 바로 바뀌므로 `git status`에 드러난다.
 - 연결한 프로필에서는 `profile pull`·`push`·`connect`가 멈추고, 그 폴더에서 git으로 받고 올리라고 안내한다. `profile status --refresh`도 그 폴더에서 받아 오지 않는다. `clone`으로 받은 프로필은 지금처럼 `profile pull`로 받고, 보관함의 프로필 폴더에서 고치고 커밋한 뒤 `profile push`로 올릴 수도 있다.
 - 연결한 폴더를 옮기거나 지우거나, 그 폴더에서 커밋하지 않은 `profile.json`이나 규칙 파일이 없어지면 `profile list`에 끊긴 링크로 나온다. 되살릴 때는 안내에 나온 대로 `profile remove`로 링크를 지운 뒤, 연결할 때의 이름·용도·규칙 파일을 준 `profile link`로 다시 연결한다. `profile remove`는 포인터만 지우므로 폴더는 그대로다. 멀쩡한 링크를 다른 폴더로 옮길 때도 같다.
@@ -212,7 +212,7 @@ Next: Add profile.json at the repository root, for example {"schemaVersion": 1, 
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: db4450a223359c2e82bbe379d4a54b2d93dc2897fc3a2e1b577d7bd8d3753144 -->
+<!-- agctx-doc-sources-sha256: 402ad75e3ba94219a8395a325b053fa999818611f97c30f72b01106747dd90e9 -->
 
 ### 1. 프로필 받기
 
@@ -222,7 +222,7 @@ Cloned profile team-backend at commit e0caeb1.
 Next: agctx profile apply team-backend <project>
 ```
 
-`clone`은 받은 저장소에 `profile.json`과 그것이 가리키는 규칙 파일(기본 `AGENTS.md`)이 있는지, 사람에게 보이지 않는 문자가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함에 등록한다.
+`clone`은 받은 저장소에 `profile.json`과 그것이 가리키는 규칙 파일(기본 `AGENTS.md`)이 있는지, 규칙 파일과 `mcp.json`·skills·subagents·hooks 파일에 사람에게 보이지 않는 문자나 심볼릭 링크가 섞여 있는지 검사한 뒤에만 이 컴퓨터의 프로필 보관함에 등록한다.
 
 ### 2. 갱신 방식 고르기
 
@@ -267,6 +267,8 @@ Applied profile team-backend to /path/to/orders-api
 - `agctx.project.json`: 이 저장소에 적용한 프로필과 버전(원격·브랜치·커밋)을 기록한다. CI의 `check`가 이 기록을 기준으로 검사한다.
 - `.agctx/base/`: 마지막으로 적용한 관리 영역 원문이다. 관리 영역 충돌을 풀 때 기준이 된다.
 
+프로필에 MCP 서버, skills, subagents, hooks가 있으면 `.mcp.json`, `.claude/`, `.codex/`, `.agents/skills/` 아래 파일도 생긴다. hooks는 `--include`에 `hooks`를 적은 저장소만 받는다([팀 skills·subagents·hooks 나눠 쓰기](skills-subagents-hooks.md)).
+
 ### 4. 커밋하고 올리기
 
 적용한 파일을 프로젝트 저장소에 커밋해야 다른 팀원과 CI가 같은 규칙과 버전 기록을 받는다. 프로젝트 폴더에서 새로 생긴 파일을 확인한다.
@@ -290,7 +292,7 @@ git add AGENTS.md CLAUDE.md .agents agctx.project.json .agctx
 git commit -m "Apply team-backend profile"
 ```
 
-모노레포에서 하위 폴더 연결 파일(`CLAUDE.md`)이 함께 생겼다면 그 파일도 커밋한다([모노레포에서 쓰기](monorepo.md)).
+모노레포에서 하위 폴더 연결 파일(`CLAUDE.md`)이 함께 생겼다면 그 파일도 커밋한다([모노레포에서 쓰기](monorepo.md)). MCP 서버나 skills·subagents·hooks를 받았다면 `git status`에 나온 `.mcp.json`, `.claude`, `.codex` 아래 파일도 함께 커밋한다.
 
 ### 5. 적용됐는지 확인하기
 

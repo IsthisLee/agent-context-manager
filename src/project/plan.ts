@@ -11,11 +11,14 @@ import {
 import { apmRegenerates } from './apm.ts';
 import { knownBase, readIfExists, recordedHashFor, sha256 } from './base.ts';
 import { isMcpFile, mcpRegion, planMcpFiles } from './mcp-plan.ts';
+import { hooksFileRegion, isArtifactFile, ownedFileRegion, planArtifactFiles } from './artifact-plan.ts';
+import { isHooksFile } from '../artifacts/targets.ts';
+import { NO_ARTIFACTS, type ProfileArtifacts } from '../artifacts/definitions.ts';
 import type { McpServers } from '../mcp/servers.ts';
 import { AGCTX_GITIGNORE, baseFilePath, serializeBase } from './conflicts.ts';
 import { LINK_TEMPLATE, linksTo, nestedAgentsFiles, personLink } from './links.ts';
 import { _ } from '../i18n/index.ts';
-import type { AgentId } from '../shared/agents.ts';
+import { DEFAULT_INCLUDE, type AgentId, type IncludeKind } from '../shared/agents.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { assertSafeTextTarget, toLf, writeTextAtomic } from '../shared/fs-utils.ts';
 import type {
@@ -94,11 +97,14 @@ export function managedRegion(kind: ManagedKind, content: string | null | undefi
 /** 기록한 관리 파일의 지금 관리 영역. MCP 설정 파일은 형식마다 소유 영역을 다르게 찾는다. */
 export function recordedRegion(rel: string, content: string | null, projectConfig: ProjectConfig): string | null {
   if (isMcpFile(rel)) return mcpRegion(rel, content, projectConfig);
+  if (isHooksFile(rel)) return hooksFileRegion(rel, content, projectConfig);
+  if (isArtifactFile(rel)) return ownedFileRegion(content);
   return managedRegion(rel === 'AGENTS.md' ? 'agents' : 'pointer', content);
 }
 
+/** 관리 영역의 해시. 영역이 없으면 null이다. 빈 파일을 파일째 소유하면 빈 글도 영역이다. */
 export function regionHash(region: string | null): string | null {
-  return region ? sha256(region) : null;
+  return region === null ? null : sha256(region);
 }
 
 /**
@@ -148,6 +154,10 @@ export interface PlanInput {
   mcpServers?: McpServers | null;
   /** agctx.project.json의 `include`에 쓸 목록. null이면 키를 빼서 hooks를 뺀 전부를 뜻한다. */
   recordInclude?: readonly string[] | null;
+  /** 이번에 받는 대상 종류. */
+  include?: readonly IncludeKind[];
+  /** 프로필의 skills·subagents·hooks. */
+  artifacts?: ProfileArtifacts;
 }
 
 /**
@@ -166,7 +176,9 @@ export function planProject(
     recordAgents,
     adopt = false,
     mcpServers = null,
-    recordInclude = null
+    recordInclude = null,
+    include = DEFAULT_INCLUDE,
+    artifacts = NO_ARTIFACTS
   }: PlanInput,
   overrides: Map<string, string | null> = new Map()
 ): ProjectPlan {
@@ -251,10 +263,12 @@ export function planProject(
   const warnings: string[] = [];
   const linkTemplate = toLf(fs.readFileSync(path.join(packageRoot, LINK_TEMPLATE), 'utf8'));
   const linked = new Set<string>();
-  const nestedLinks = agents.includes('claude') ? nestedAgentsFiles(targetDir) : [];
+  // skill 폴더 안의 AGENTS.md와 CLAUDE.md는 skill의 파일이지 폴더의 지침이 아니다.
+  const nestedLinks = agents.includes('claude') ? nestedAgentsFiles(targetDir).filter(rel => !isArtifactFile(rel)) : [];
+  const isLinkFile = (rel: string) => rel.endsWith('/CLAUDE.md') && !isArtifactFile(rel);
   if (!agents.includes('claude')) {
     for (const rel of Object.keys(projectConfig.managedHashes ?? {})) {
-      if (rel.endsWith('/CLAUDE.md')) {
+      if (isLinkFile(rel)) {
         removeDescribed(rel, linkTemplate);
         linked.add(rel);
       }
@@ -273,7 +287,7 @@ export function planProject(
     }
   }
   for (const rel of Object.keys(projectConfig.managedHashes ?? {})) {
-    if (rel.endsWith('/CLAUDE.md') && !linked.has(rel)) {
+    if (isLinkFile(rel) && !linked.has(rel)) {
       warnings.push(
         _('plan.warn.link-dropped', { file: rel, agents: `${rel.slice(0, -'CLAUDE.md'.length)}AGENTS.md` })
       );
@@ -292,18 +306,37 @@ export function planProject(
   files.push(...mcp.files);
   warnings.push(...mcp.warnings);
 
+  const owned = planArtifactFiles({ targetDir, projectConfig, agents, include, artifacts, adopt, overrides });
+  if (owned.clashes.length) {
+    const taken = owned.clashes.map(clash => `${clash.file}: ${clash.names.join(', ')}`).join('; ');
+    throw new CliError('project.artifact-taken', _('error.project.artifact-taken', { files: taken }), {
+      exitCode: EXIT.conflict,
+      hint: _('hint.project.artifact-taken'),
+      details: owned.clashes
+    });
+  }
+  files.push(...owned.files);
+  warnings.push(...owned.warnings);
+
   const agentsFile = files.find(file => file.rel === 'AGENTS.md');
   if (agentsFile) warnings.push(...agentsLengthWarnings(agentsFile.regenerated, writesCrlf(agentsFile.target)));
 
   const changes: PlannedChange[] = [];
-  const planFile = (relativePath: string, content: string) => {
+  const planFile = (relativePath: string, content: string, executable?: boolean) => {
     const target = path.join(targetDir, relativePath);
     const existing = readIfExists(target);
+    // Windows는 실행 권한을 파일 모드로 두지 않으므로 비교하지 않는다. 비교하면 sync할 때마다 다시 쓴다.
+    const modeChanged =
+      process.platform !== 'win32' &&
+      executable !== undefined &&
+      existing !== null &&
+      isExecutable(target) !== executable;
     changes.push({
       target,
       relativePath,
       content,
-      status: existing === null ? 'create' : existing === content ? 'unchanged' : 'update'
+      status: existing === null ? 'create' : existing === content && !modeChanged ? 'unchanged' : 'update',
+      ...(executable === undefined ? {} : { executable })
     });
   };
   const planRemoval = (relativePath: string) => {
@@ -313,11 +346,11 @@ export function planProject(
   const managedHashes: Record<string, string> = {};
   for (const file of files) {
     if (file.remove && file.regenerated === '') planRemoval(file.rel);
-    else planFile(file.rel, file.regenerated);
-    if (file.nextRegion) managedHashes[file.rel] = sha256(file.nextRegion);
+    else planFile(file.rel, file.regenerated, file.executable);
+    if (file.nextRegion !== null) managedHashes[file.rel] = sha256(file.nextRegion);
   }
   for (const file of files) {
-    if (file.nextRegion) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
+    if (file.nextRegion !== null) planFile(baseFilePath(file.rel), serializeBase(file.nextRegion));
     else if (file.remove) planRemoval(baseFilePath(file.rel));
   }
   // 이미 사람이 지운 빼는 파일도 base 사본은 남아 있을 수 있다.
@@ -328,6 +361,9 @@ export function planProject(
     if (!agents.includes(agent) && managedBefore(relativePath) && !files.some(file => file.rel === relativePath))
       planRemoval(baseFilePath(relativePath));
   }
+  // 사람이 이미 지운 skills·subagents 파일의 base 사본.
+  for (const rel of Object.keys(projectConfig.managedHashes ?? {}))
+    if (isArtifactFile(rel) && !files.some(file => file.rel === rel)) planRemoval(baseFilePath(rel));
   planFile(AGCTX_GITIGNORE, 'backups/\n');
   const {
     schemaVersion: _schemaVersion,
@@ -359,7 +395,9 @@ export function planProject(
         ...(recordInclude ? { include: recordInclude } : {}),
         ...version,
         managedHashes,
-        ...(Object.keys(mcp.managedKeys).length ? { managedKeys: mcp.managedKeys } : {})
+        ...(Object.keys({ ...mcp.managedKeys, ...owned.managedKeys }).length
+          ? { managedKeys: { ...mcp.managedKeys, ...owned.managedKeys } }
+          : {})
       },
       null,
       2
@@ -371,8 +409,22 @@ export function planProject(
     conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null),
     changes,
     unmanaged: files.filter(file => file.unmanaged),
-    warnings
+    warnings,
+    artifacts: {
+      skills: owned.skills,
+      subagents: owned.subagents,
+      hooks: owned.hooks,
+      hookCommands: owned.hookCommands
+    }
   };
+}
+
+function isExecutable(target: string): boolean {
+  try {
+    return (fs.statSync(target).mode & 0o111) !== 0;
+  } catch {
+    return false;
+  }
 }
 
 /** 바뀐 파일을 모두 쓰고 지울 파일을 지운다. 무엇이든 쓰기 전에 안전하지 않은 대상을 거부한다. */
@@ -381,9 +433,19 @@ export function writePlan(changes: readonly PlannedChange[], targetDir: string):
   for (const change of changed) assertSafeTextTarget(change.target, targetDir);
   for (const change of changed) {
     if (change.status === 'remove') removeWithEmptyParents(change.target, targetDir);
-    else writeTextAtomic(change.target, change.content);
+    else {
+      writeTextAtomic(change.target, change.content);
+      if (change.executable !== undefined) setExecutable(change.target, change.executable);
+    }
   }
   return changed;
+}
+
+/** 읽기 권한이 있는 쪽에만 실행 권한을 주거나 모두 뺀다. Windows에서는 효과가 없다. */
+function setExecutable(target: string, executable: boolean): void {
+  const mode = fs.statSync(target).mode & 0o777;
+  const next = executable ? mode | ((mode & 0o444) >> 2) : mode & ~0o111;
+  if (next !== mode) fs.chmodSync(target, next);
 }
 
 /** 파일을 지우고, 그래서 비게 된 폴더를 프로젝트 폴더 바로 아래까지 지운다. 다른 것이 든 폴더는 둔다. */

@@ -21,7 +21,7 @@
 ## 시작하기
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: cc661a44efc0a2b49384fabb29915d2987fbbe2a33683bc7064942a80eff76aa -->
+<!-- agctx-doc-sources-sha256: 0f88725f17c871ee33705c3ca2166d23f46c0d2ea748305d43995290c7169290 -->
 
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
@@ -114,7 +114,7 @@ Created profile: team-backend (team)
 ## 지침 고르기
 
 <!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 63d96a48c9eea2da50b82d85a73397db73d7a6d564490657bae9055b5a96859b -->
+<!-- agctx-doc-sources-sha256: 3756da43f58bd61cf09215102ec77a916293fb438909676c47ccd4754b3c54be -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -193,7 +193,12 @@ Configured profile: team-backend
    - `AGENTS.md`는 모든 에이전트가 읽으므로 어떤 선택이든 쓴다. 빼면 그 에이전트의 연결 파일에서 관리 블록을 지우고, 사람이 쓴 내용이 없으면 파일도 지운다. 계획에 `remove`로 나온다.
    - 전부 고르면 `--agent all`과 같아서 기록이 지워지고, 일부만 고르면 `--agent codex,claude`처럼 그 목록이 기록된다. 동작은 [CLI Reference](../reference/cli.md#profile-apply)의 에이전트 고르기에 있다.
 
-6. 프로필이 Git 저장소면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. 고정하면 프로필 보관함이 새 커밋을 받아도 이 프로젝트는 기록한 커밋의 지침에 머문다. 고정과 고정하지 않음의 차이는 [갱신 방식 고르기](update-policies.md)에 있다. Git 저장소가 아닌 로컬 프로필이면 이 질문 없이 7단계로 넘어간다.
+6. 프로필에 MCP 서버, skills, subagents, hooks가 있으면 `What else should this repository get from the profile?` 질문과 함께 그 종류가 개수와 함께 나온다. 5단계에서 고른 에이전트가 받지 않는 종류는 나오지 않고, 프로필에 하나도 없으면 이 질문 없이 7단계로 넘어간다. `Space`로 체크를 바꾸고 `Enter`로 넘어가며, 아무것도 고르지 않아도 된다.
+
+   - 이미 적용한 저장소는 `agctx.project.json`의 `include` 기록이, 처음 적용하는 저장소는 hooks를 뺀 전부가 미리 체크되어 있다. hooks는 모든 사람의 컴퓨터에서 실행될 명령이라 기록에 없으면 체크되지 않은 채로 나온다.
+   - 고른 결과는 `--include`로 바뀐다. 결과가 hooks를 뺀 전부면 `--include all`과 같아서 기록이 지워지고, 그 밖에는 `--include rules,mcp,hooks`처럼 목록이 기록된다. 종류마다 들어가는 파일은 [팀 MCP 서버 나눠 쓰기](mcp-servers.md)와 [팀 skills·subagents·hooks 나눠 쓰기](skills-subagents-hooks.md)에 있다.
+
+7. 프로필이 Git 저장소면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. 고정하면 프로필 보관함이 새 커밋을 받아도 이 프로젝트는 기록한 커밋의 지침에 머문다. 고정과 고정하지 않음의 차이는 [갱신 방식 고르기](update-policies.md)에 있다. Git 저장소가 아닌 로컬 프로필이면 이 질문 없이 8단계로 넘어간다.
 
    ```text
    ◆  Pin the project to the current profile commit? A pinned project changes only when you
@@ -206,7 +211,7 @@ Configured profile: team-backend
    - 이미 고정한 프로젝트는 **Yes**가 미리 선택되어 있어, `Enter`만 누르면 고정을 유지한 채 지금 프로필 커밋으로 옮긴다. **No**를 고르면 고정이 풀린다는 `Warning:` 줄이 나오고, 계획에 `update agctx.project.json`이 들어간다.
    - 프로필에 커밋하지 않은 수정이 있으면 고정할 수 없다. **Yes**를 고르면 `Profile team-backend has uncommitted changes, so a project cannot be pinned to a commit.` 오류가 나고 파일은 바뀌지 않는다. 프로필 폴더에서 수정을 커밋한 뒤 다시 적용한다.
 
-7. 바뀔 파일 계획이 나오면 `←`로 **Yes**를 고르고 `Enter`를 누른다. 이 질문은 No가 기본이다.
+8. 바뀔 파일 계획이 나오면 `←`로 **Yes**를 고르고 `Enter`를 누른다. 이 질문은 No가 기본이다.
 
    ```text
    Plan: 8 file(s) to change.
@@ -331,7 +336,7 @@ Next: agctx repos sync --profile team-backend
 ## 메뉴와 명령 대응표
 
 <!-- agctx-doc-sources: src/commands/registry.ts -->
-<!-- agctx-doc-sources-sha256: 40ca74f266db03dad58ce63605dbda6b7d6a4770cb35c7969e5ab81ac088c027 -->
+<!-- agctx-doc-sources-sha256: 13834c971e95503b6ccd85a82a5022dbb7c079746b0387723b486a4ad380471d -->
 
 TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으로 바뀌어 같은 처리기로 실행된다. 가이드에 나오는 CLI 명령은 아래 메뉴로 바꿔 실행할 수 있다. 표시 언어를 한국어로 두면 메뉴 이름이 둘째 열처럼 나온다.
 
@@ -347,7 +352,7 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | 첫 화면 > **Help** | 첫 화면 > **도움말** | `agctx help [<command>]` |
 | **Manage profiles** > 프로필 > **View details** | **프로필 관리** > 프로필 > **상세 보기** | `agctx profile view` |
 | **Manage profiles** > 프로필 > **Configure guidance** | **프로필 관리** > 프로필 > **지침 설정** | `agctx profile setup <name>` |
-| **Manage profiles** > 프로필 > **Apply to a project** | **프로필 관리** > 프로필 > **프로젝트에 적용** | `agctx profile apply <name> <project> --agent <고른 에이전트>`, 고정을 고르면 `--pin` |
+| **Manage profiles** > 프로필 > **Apply to a project** | **프로필 관리** > 프로필 > **프로젝트에 적용** | `agctx profile apply <name> <project> --agent <고른 에이전트>`, 받을 종류를 고르면 `--include`, 고정을 고르면 `--pin` |
 | **Manage profiles** > 프로필 > **Sync a project** | **프로필 관리** > 프로필 > **프로젝트 동기화** | `agctx profile sync <project>` |
 | **Manage profiles** > 프로필 > **Resolve project conflicts** | **프로필 관리** > 프로필 > **프로젝트 충돌 해결** | `agctx profile resolve <project>` |
 | **Manage profiles** > 프로필 > **Delete profile** | **프로필 관리** > 프로필 > **프로필 삭제** | `agctx profile remove <name>` |

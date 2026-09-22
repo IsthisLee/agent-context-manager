@@ -6,19 +6,25 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: db4450a223359c2e82bbe379d4a54b2d93dc2897fc3a2e1b577d7bd8d3753144 -->
+<!-- agctx-doc-sources-sha256: 402ad75e3ba94219a8395a325b053fa999818611f97c30f72b01106747dd90e9 -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
+
+`conflict`로 나온 파일이 `.mcp.json`·`.codex/config.toml`·`.claude/settings.json`·`.codex/hooks.json`이거나 `.claude/skills/`·`.agents/skills/`·`.claude/agents/`·`.codex/agents/` 아래 파일이면, 고친 줄을 관리 영역 밖으로 옮길 자리가 없다. 고친 내용을 프로필의 `mcp.json`, `skills/`, `subagents/`, `hooks.json`에 옮긴 뒤 `agctx profile resolve <project> --discard`로 지금 파일을 `.agctx/backups/`에 백업하고 다시 만든다.
 
 관리 영역을 고친 기억이 없는데도 이 오류가 난다면 편집기가 저장할 때 Markdown을 다시 포맷했을 수 있다. `git diff`에 목록 기호나 빈 줄만 바뀐 줄이 보이면 그 경우다. 어디까지가 관리 영역이고 포매터를 어떻게 다루는지는 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
 
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 50ad235fb28d0a68d98f5c167bd847eede0c6c0d1608a04d98b615775b035d0d -->
+<!-- agctx-doc-sources-sha256: 604a88aa89709e8eb229c5f6d07ef21767fd2e2163e08c49eb731fc60ae926fb -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
-- **`agctx did not write these files and they have no agctx markers`**(종료 코드 2): 사람이 쓴 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`가 이미 있다. 아무 파일도 바뀌지 않았다. 기존 내용을 남기고 agctx 영역을 더하려면 `Next:` 줄의 `--adopt` 명령을, 그 에이전트의 파일을 그대로 두려면 `--agent` 명령을 실행한다. 멈춘 파일이 심볼릭 링크면 `--adopt`로도 쓸 수 없으므로 `--agent`로 뺀다([`profile apply`](cli.md#profile-apply)).
+- **`agctx did not write these files and they have no agctx markers`**(종료 코드 2): 사람이 쓴 `AGENTS.md`·`CLAUDE.md`·`.agents/rules/agctx.md`나, 사람이 만든 `.mcp.json`·`.codex/config.toml`·`.claude/settings.json`·`.codex/hooks.json`이 이미 있다. 아무 파일도 바뀌지 않았다. 기존 내용을 남기고 agctx 영역을 더하려면 `Next:` 줄의 `--adopt` 명령을, 그 에이전트의 파일을 그대로 두려면 `--agent` 명령을 실행한다. 멈춘 파일이 심볼릭 링크면 `--adopt`로도 쓸 수 없으므로 `--agent`로 뺀다([`profile apply`](cli.md#profile-apply)).
+- **`already has files that agctx did not write where the profile skills or subagents go`**(종료 코드 2): 프로필의 skill이나 subagent와 같은 이름의 파일을 사람이 이미 `.claude/skills/`·`.agents/skills/`·`.claude/agents/`·`.codex/agents/`에 두었다. 아무 파일도 바뀌지 않았다. `--adopt`로도 덮어쓰지 않으므로, 사람이 둔 쪽이나 프로필 쪽의 이름을 바꾼다([팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)).
+- **`The profile file … is invalid`·`is a symbolic link, so agctx did not read the profile`·`is not a text file`**(종료 코드 64): 프로필의 `skills/`, `subagents/`, `hooks.json`이 형식에 맞지 않거나, 심볼릭 링크이거나, 텍스트가 아니다. 오류에 나온 파일과 이유대로 프로필을 고친다. 형식은 `Next:` 줄과 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md#프로필에-두기)에 있다.
+- **`cannot be read as hook settings`**(종료 코드 64): 저장소의 `.claude/settings.json`이나 `.codex/hooks.json`이 JSON이 아니거나 `hooks`가 이벤트별 배열이 아니다. 그 파일을 고치거나, `--include`에서 `hooks`를 뺀다.
+- **`the profile has hooks, but this repository does not take them`**(참고): hooks는 `--include`에 `hooks`를 적은 저장소만 받는다. 받으려면 `--include rules,mcp,skills,subagents,hooks`처럼 목록에 적어 다시 적용한다.
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
 - **`profile sync requires a project already applied`**: 아직 `apply`하지 않은 프로젝트다. 먼저 `agctx profile apply <name> <project>`를 실행한다.
 - **`Profile not found`**: 이름이 틀렸거나 다른 `AGCTX_HOME`을 쓰고 있다. `agctx profile list`로 확인한다.
@@ -41,12 +47,13 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`Invalid profile name`과 `The name comes from the folder name`**(종료 코드 64): `profile link`가 폴더 이름을 프로필 이름으로 쓰려 했는데 대문자나 밑줄처럼 이름 규칙에 맞지 않는 글자가 있다. 안내에 나온 이름이나 원하는 이름을 `--name`으로 준다.
 - **`is linked to …, so agctx does not pull, push, or change Git settings there`**(종료 코드 64): 연결한 프로필에서 `profile pull`·`push`·`connect`를 실행했다. 그 폴더에서 `git pull`·`git push`로 한다.
 - **`has several AGENTS.md files, so none was chosen`**(종료 코드 64): `profile link`가 규칙 파일 후보를 여럿 찾았다. 출력된 후보 가운데 하나를 `--instructions <경로>`로 고른다.
-- **`has uncommitted changes, so a project cannot be pinned to a commit`**(종료 코드 64): 프로필의 규칙 파일(`AGENTS.md`나 `instructions`가 가리킨 파일)이나 `profile.json`에 커밋하지 않은 수정이 있어 고정할 커밋을 정할 수 없다. `Next:` 줄에 적힌 프로필 폴더에서 수정을 커밋하거나 되돌린 뒤 다시 적용한다. TUI에서 고정 질문에 **Yes**를 골랐을 때도 같은 오류가 나고 파일은 바뀌지 않는다.
+- **`has uncommitted changes, so a project cannot be pinned to a commit`**(종료 코드 64): 프로필의 규칙 파일(`AGENTS.md`나 `instructions`가 가리킨 파일), `profile.json`, `mcp.json`, `skills/`, `subagents/`, `hooks.json`에 커밋하지 않은 수정이 있어 고정할 커밋을 정할 수 없다. `Next:` 줄에 적힌 프로필 폴더에서 수정을 커밋하거나 되돌린 뒤 다시 적용한다. TUI에서 고정 질문에 **Yes**를 골랐을 때도 같은 오류가 나고 파일은 바뀌지 않는다.
 - **`is not a Git repository, so a project cannot be pinned to it`**(종료 코드 64): Git 저장소가 아닌 로컬 프로필은 고정할 수 없다. 프로필 폴더에서 `git init`과 첫 커밋을 만든 뒤 다시 `--pin`으로 적용한다. 팀과 나눠 쓸 프로필이면 `Next:` 줄의 `profile connect`로 원격에도 연결한다([팀과 Git으로 공유하기](../guides/team-sharing.md)).
 - **`does not have the pinned commit`**(종료 코드 69): 저장소가 고정한 커밋이 이 컴퓨터의 프로필 보관함에 없다. 다른 사람이 더 새 커밋으로 고정해 올린 저장소를 받았는데 아직 `profile pull`을 하지 않았을 때 생긴다. `agctx profile pull <name>`으로 받은 뒤 다시 실행한다.
 - **`pull`·`push`가 커밋하지 않은 변경으로 멈춤**: 프로필 폴더에서 `git status`로 확인하고 커밋하거나 되돌린 뒤 다시 실행한다.
 - **CI의 `check --refresh`가 1로 실패**: 저장소가 기록한 커밋보다 새 커밋이 프로필 원격에 있다. 적용 담당이 자기 컴퓨터에서 `agctx profile pull <name>`으로 받은 뒤, 고정하지 않은 프로젝트는 `profile sync <project>`, 고정한 프로젝트는 `profile apply <name> <project> --pin`을 실행하고 바뀐 파일을 커밋해 올린다. 고정한 저장소가 여럿이면 `repos pr`로 저장소마다 PR을 연다([갱신 방식 고르기](../guides/update-policies.md)).
 - **`repos sync`가 `dirty`로 건너뜀**: 그 저장소에서 agctx가 관리하는 파일(`AGENTS.md`·`CLAUDE.md` 등)에 커밋하지 않은 변경이 있다. 동기화가 그 변경을 덮지 않도록 건너뛴 것이다. 커밋하거나 `git stash`로 치운 뒤 다시 실행한다.
+- **`repos sync`가 `review`로 건너뜀**(종료 코드 1): 그 저장소가 받는 hooks가 바뀐다. hooks는 다른 사람의 컴퓨터에서 실행될 명령이라 여러 저장소를 한 번에 쓰지 않는다. 안내대로 `agctx profile sync <project>`를 실행해 명령을 확인하고 적용한다.
 - **`repos pr`이 `branch-exists`로 끝남**: 같은 이름의 브랜치가 원격에 남아 있다. PR로 병합하거나, 닫힌 PR의 브랜치라면 지운 뒤 다시 실행한다.
 - **`repos pr`이 `pushed`로 끝남**: 브랜치는 올라갔지만 `gh`가 PR을 만들지 못했다. `gh auth status`로 인증을 확인하거나 안내된 브랜치로 PR을 직접 연다.
 - **`APM generated AGENTS.md in its default mode`**(종료 코드 2): APM 기본 모드가 만든 파일이다. [APM과 함께 쓰기](../guides/apm-coexistence.md)의 순서로 `managed_section`으로 바꾼 뒤 다시 적용한다.

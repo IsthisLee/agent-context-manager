@@ -5,6 +5,7 @@ import { say } from '../commands/output.ts';
 import {
   AGENT_IDS,
   canonicalAgents,
+  DEFAULT_INCLUDE,
   parseAgents,
   parseInclude,
   recordedAgents,
@@ -16,6 +17,14 @@ import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { toLf } from '../shared/fs-utils.ts';
 import { committedFile, git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
 import { parseMcpServers, PROFILE_MCP_FILE, type McpServers } from '../mcp/servers.ts';
+import { visible } from '../mcp/targets.ts';
+import { NO_ARTIFACTS, parseProfileArtifacts } from '../artifacts/definitions.ts';
+import {
+  committedArtifactFiles,
+  PROFILE_ARTIFACT_PATHS,
+  workingArtifactFiles,
+  type ProfileFile
+} from '../artifacts/profile-files.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import { shellWord } from '../shared/shell.ts';
@@ -33,9 +42,6 @@ import { assertNoHiddenCharacters, committedProfile } from './git-profile.ts';
 import { readProfile } from './store.ts';
 
 export const PROJECT_CONFIG_FILE = 'agctx.project.json';
-
-/** 기록이 없을 때 받는 대상 종류: hooks를 뺀 전부(ADR 0042). */
-const INCLUDE_ALL: readonly IncludeKind[] = ['rules', 'mcp'];
 
 /**
  * `<!-- agctx:guidance:start/end -->`는 프로필에 속하고, 프로필에서는 `profile setup`이 그 사이를
@@ -116,6 +122,9 @@ export function conflictError(
         conflicts.some(file => file.kind === 'mcp-json' || file.kind === 'mcp-toml')
           ? _('hint.project.conflict.mcp', { project: targetDir })
           : '',
+        conflicts.some(file => file.kind === 'file' || file.kind === 'hooks-json')
+          ? _('hint.project.conflict.artifacts', { project: targetDir })
+          : '',
         unmanaged.length
           ? _('hint.project.conflict.unmanaged', {
               files: unmanaged.map(file => file.rel).join(', '),
@@ -136,6 +145,8 @@ export interface ProfileVersion {
   content: string;
   /** 같은 버전의 `mcp.json` 원문. 프로필에 없으면 null. */
   mcp: string | null;
+  /** 같은 버전의 skills·subagents·hooks 파일. */
+  files: ProfileFile[];
   source: ProjectSource | null;
   uncommitted: boolean;
   pin: boolean;
@@ -165,6 +176,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
     return {
       content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
       mcp: workingMcp(),
+      files: workingArtifactFiles(dir),
       source: null,
       uncommitted: false,
       pin: false
@@ -199,6 +211,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
     return {
       content: shown,
       mcp: shownMcp === null ? null : toLf(shownMcp),
+      files: committedArtifactFiles(dir, commit),
       source: {
         ...projectConfig.source,
         git: remote ?? projectConfig.source?.git ?? null,
@@ -221,7 +234,8 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
         '--',
         profile.instructions,
         PROFILE_METADATA_FILE,
-        PROFILE_MCP_FILE
+        PROFILE_MCP_FILE,
+        ...PROFILE_ARTIFACT_PATHS
       ],
       {
         cwd: dir
@@ -233,6 +247,8 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   return {
     content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')),
     mcp: workingMcp(),
+    // 고정하면 커밋에 기록하므로, 작업 폴더가 아니라 그 커밋의 파일을 쓴다. 가린 파일이 섞이지 않는다.
+    files: pin === true && commit ? committedArtifactFiles(dir, commit) : workingArtifactFiles(dir),
     source: { git: remote, branch, commit },
     uncommitted: edited,
     pin: pin === true
@@ -301,12 +317,15 @@ export function planFor(
   const selection = agentSelection(agentOption, projectConfig, configPath);
   const includeRecord =
     includeOption === null ? recordedInclude(projectConfig.include, configPath) : parseInclude(includeOption);
-  const include = includeRecord ?? [...INCLUDE_ALL];
+  const include = includeRecord ?? [...DEFAULT_INCLUDE];
   const version = profileVersion(profile, projectConfig, pin);
   assertNoHiddenCharacters([
     { file: `${name}/${profile.instructions}`, content: version.content },
-    ...(version.mcp === null ? [] : [{ file: `${name}/${PROFILE_MCP_FILE}`, content: version.mcp }])
+    ...(version.mcp === null ? [] : [{ file: `${name}/${PROFILE_MCP_FILE}`, content: version.mcp }]),
+    ...version.files.map(file => ({ file: `${name}/${file.path}`, content: file.content }))
   ]);
+  // 받지 않는 종류의 정의도 검사한다. 틀린 프로필은 어느 저장소에서든 같은 오류로 멈춰야 고칠 곳이 보인다.
+  const artifacts = version.files.length ? parseProfileArtifacts(version.files) : NO_ARTIFACTS;
   const mcpServers =
     include.includes('mcp') && version.mcp !== null
       ? parseMcpServers(version.mcp, path.join(profile.profileDir, PROFILE_MCP_FILE))
@@ -328,7 +347,9 @@ export function planFor(
       recordAgents: selection.record,
       adopt,
       mcpServers,
-      recordInclude: includeRecord
+      recordInclude: includeRecord,
+      include,
+      artifacts
     },
     overrides
   );
@@ -342,6 +363,28 @@ export function planFor(
     include,
     mcpServers
   };
+}
+
+/**
+ * 쓸 skills·subagents 이름과, hooks가 실행할 명령. hooks는 다른 사람의 컴퓨터에서 실행될 명령이라 쓰기 전에
+ * 에이전트·이벤트·matcher와 명령을 그대로 보여 준다(ADR 0022). apply·sync·resolve가 함께 쓴다.
+ */
+export function printArtifacts(artifacts: ProjectPlan['artifacts'], { names = true } = {}): void {
+  if (names && artifacts.skills.length) say(_('plan.skills', { names: artifacts.skills.join(', ') }));
+  if (names && artifacts.subagents.length) say(_('plan.subagents', { names: artifacts.subagents.join(', ') }));
+  if (!artifacts.hookCommands.length) return;
+  say(_('plan.hooks'));
+  for (const command of artifacts.hookCommands)
+    say(
+      _('plan.hooks.line', {
+        hook: command.hook,
+        agent: _(`explain.agent.${command.agent}`),
+        event: command.event,
+        matcher: command.matcher ? ` ${visible(command.matcher)}` : '',
+        command: visible(command.command)
+      })
+    );
+  if (artifacts.hookCommands.some(command => command.agent === 'codex')) say(_('plan.hooks.codex-review'));
 }
 
 /** 파일을 받는 에이전트. `AGENTS.md`는 모든 에이전트가 읽으므로 null이다. */

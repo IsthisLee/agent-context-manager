@@ -527,7 +527,7 @@ export default {
     'managedHashes의 경로는 프로젝트 루트 기준 상대 경로여야 하고, /로 나누며 ..를 쓸 수 없습니다. {file}에서 그 키를 고치거나 지운 뒤 다시 실행하세요.',
   'error.project.unmanaged': 'agctx가 쓴 적 없고 agctx 표지도 없는 파일이 있어 아무것도 바꾸지 않았습니다: {files}',
   'hint.project.unmanaged':
-    '파일 내용을 그대로 두고 agctx 관리 영역을 더하려면 {command}를 실행하세요. CLAUDE.md와 규칙 파일은 기존 내용 아래에 관리 블록이 붙고, AGENTS.md는 기존 내용이 프로필 지침 아래로 옮겨지며, .mcp.json과 .codex/config.toml은 사람이 둔 서버와 설정을 그대로 둡니다.',
+    '파일 내용을 그대로 두고 agctx 관리 영역을 더하려면 {command}를 실행하세요. CLAUDE.md와 규칙 파일은 기존 내용 아래에 관리 블록이 붙고, AGENTS.md는 기존 내용이 프로필 지침 아래로 옮겨지며, .mcp.json, .codex/config.toml, .claude/settings.json, .codex/hooks.json은 사람이 둔 서버, hooks, 설정을 그대로 둡니다.',
   'repos.sync.unmanaged':
     '바꾸지 않음: {files} 파일이 agctx 표지 없이 이미 있습니다. 관리 영역을 더하려면 agctx profile sync {project} --adopt를 실행하세요.',
   'repos.pr.unmanaged':
@@ -545,7 +545,8 @@ export default {
     'mcp.json에는 로컬 서버를 { "servers": { "<이름>": { "command": "...", "args": [...], "env": {...} } } }로, 원격 서버를 { "url": "https://...", "headers": {...} }로 적으세요. 비밀값은 파일에 쓰지 말고 ${TOKEN} 같은 환경 변수로 넘기세요.',
   'error.include.unknown': '알 수 없는 대상 종류입니다: {kind}.',
   'error.include.rules': '--include에는 rules가 있어야 합니다. 모든 에이전트가 AGENTS.md의 규칙을 읽기 때문입니다.',
-  'hint.include': '--include rules,mcp, --include rules, --include all 가운데 하나를 쓰세요.',
+  'hint.include':
+    'rules, mcp, skills, subagents, hooks를 쉼표로 이어 쓰거나(rules는 필수), hooks를 뺀 전부를 뜻하는 all을 쓰세요.',
   'error.project.invalid-include': '{file}의 include 목록이 잘못됐습니다: {value}.',
   'error.project.invalid-mcp-file': '{file} 파일을 MCP 설정으로 읽을 수 없어({detail}) agctx가 바꾸지 않았습니다.',
   'hint.project.invalid-mcp-file': '{file}의 JSON을 고치거나, --include rules로 MCP를 빼세요.',
@@ -568,7 +569,6 @@ export default {
   'error.clone.mcp-symlink': '{url}의 mcp.json이 심볼릭 링크라서 프로필을 받지 않았습니다.',
   'hint.clone.mcp-symlink': '프로필 저장소에 mcp.json을 일반 파일로 커밋하세요.',
   'view.mcp': 'MCP 서버: {servers}',
-  'actions.apply.mcp': '프로필의 MCP 서버 {count}개도 이 저장소의 {files}에 쓸까요?',
   'plan.warn.mcp-skip.codex-command-reference':
     '경고: {agent}의 {file}에 MCP 서버를 쓰지 않았습니다({name}). Codex는 command와 args의 ${...}를 펼치지 않습니다.',
   'plan.warn.mcp-after-block':
@@ -714,5 +714,67 @@ export default {
     'profile sync는 프로젝트가 이미 쓰는 프로필을 유지합니다. 프로필을 바꾸려면 agctx profile apply <name> <project>를 실행하세요.',
   'error.vscode.unavailable': 'VS Code CLI `code`를 찾지 못했거나 오류로 끝났습니다.',
   'hint.vscode.install':
-    'VS Code에서 "Shell Command: Install \'code\' command in PATH"를 실행하거나 --edit 없이 resolve하세요.'
+    'VS Code에서 "Shell Command: Install \'code\' command in PATH"를 실행하거나 --edit 없이 resolve하세요.',
+  'plan.skills': '프로필의 skills: {names}',
+  'plan.subagents': '프로필의 subagents: {names}',
+  'plan.hooks': '프로필의 hooks는 이 저장소에서 에이전트를 쓰는 모든 사람의 컴퓨터에서 다음 명령을 실행합니다:',
+  'plan.hooks.line': '  {hook}: {agent} {event}{matcher}: {command}',
+  'plan.hooks.codex-review':
+    'Codex는 새로 생기거나 바뀐 프로젝트 hook을, 사람마다 프로젝트를 신뢰하고 /hooks에서 그 hook을 승인한 뒤에만 실행합니다.',
+  'plan.warn.hooks-not-included':
+    '참고: 프로필에 hooks가 있지만 이 저장소는 hooks를 받지 않습니다. hooks는 --include rules,mcp,skills,subagents,hooks처럼 목록에 hooks를 적어야만 씁니다.',
+  'plan.warn.artifacts-unverified':
+    '참고: {agent}에는 프로필의 subagents와 hooks를 아직 쓰지 않습니다. {agent}가 저장소에서 이를 읽는 것을 agctx가 확인하지 못했기 때문입니다.',
+  'plan.warn.subagent-fields':
+    '경고: subagent {name}의 {fields}는 {agents}에 쓰지 않습니다. 이름, 설명, 지시만 씁니다.',
+  'error.project.artifact-taken':
+    '프로필의 skills나 subagents를 쓸 자리에 agctx가 쓰지 않은 파일이 이미 있어 아무것도 바꾸지 않았습니다: {files}',
+  'hint.project.artifact-taken':
+    '사람이 넣은 skill이나 subagent의 이름을 바꾸거나 옮기세요. 아니면 프로필에서 이름을 바꾸세요. agctx는 --adopt를 붙여도 자기가 쓰지 않은 파일을 덮어쓰지 않습니다.',
+  'error.project.invalid-hooks-file': '{file} 파일을 hook 설정으로 읽을 수 없어({detail}) agctx가 바꾸지 않았습니다.',
+  'hint.project.invalid-hooks-file': '{file}의 JSON을 고치거나, hooks를 뺀 --include 목록으로 hooks를 빼세요.',
+  'hint.project.conflict.artifacts':
+    'skills, subagents, hooks는 고친 내용을 프로필에 옮긴 뒤 agctx profile resolve {project} --discard로 백업하고 다시 만드세요.',
+  'error.resolve.artifact-discard':
+    'agctx가 쓴 skills, subagents, hooks를 누군가 고쳤습니다: {files}. 이 파일들은 고친 내용을 관리 영역 밖에 둘 수 없습니다.',
+  'hint.resolve.artifact-discard':
+    '고친 내용을 남기려면 프로필에 옮긴 뒤 agctx profile resolve {project} --discard를 실행하세요. 지금 파일은 먼저 {backups}/에 복사됩니다.',
+  'error.profile.invalid-artifact': '프로필 파일 {file}이 잘못됐습니다: {reason}.',
+  'hint.profile.artifact':
+    'skill은 skills/<이름>/SKILL.md, subagent는 subagents/<이름>.md이고, 둘 다 맨 앞 머리말에 name(폴더나 파일 이름과 같게)과 description을 적습니다. hooks는 hooks.json에 { "hooks": { "<이름>": { "claude": { "<이벤트>": [ { "matcher": "...", "hooks": [ { "type": "command", "command": "..." } ] } ] }, "codex": { ... } } } }로 적습니다. 이름에는 소문자, 숫자, 하이픈만 씁니다.',
+  'error.profile.artifact-symlink': '프로필 파일 {file}이 심볼릭 링크라서 프로필을 읽지 않았습니다.',
+  'hint.profile.artifact-symlink':
+    '링크 대신 일반 파일을 두세요. 링크는 이 컴퓨터의 파일을 모든 저장소에 퍼뜨릴 수 있습니다.',
+  'error.profile.artifact-binary': '프로필 파일 {file}이 텍스트 파일이 아니라서 프로필을 읽지 않았습니다.',
+  'artifact.reason.frontmatter': '맨 앞에 --- 줄로 감싼 머리말이 없습니다',
+  'artifact.reason.name-pattern': '이름 {name}에는 소문자, 숫자, 하이픈만 64자까지 쓸 수 있습니다',
+  'artifact.reason.name': '머리말의 name이 "{name}"인데 {expected}여야 합니다',
+  'artifact.reason.description': '머리말에 한 줄로 된 description이 없습니다',
+  'artifact.reason.skill-folder': 'skills/의 파일은 skills/<이름>/SKILL.md처럼 skill 폴더 안에 있어야 합니다',
+  'artifact.reason.skill-md': 'skill 폴더에 SKILL.md가 없습니다',
+  'artifact.reason.subagent-file': 'subagents/에는 <이름>.md 파일만 둘 수 있습니다',
+  'artifact.reason.hooks-shape': '{ "hooks": { "<이름>": { "<에이전트>": { "<이벤트>": [...] } } } } 모양이어야 합니다',
+  'artifact.reason.hook-name': 'hook 이름 {name}에는 글자, 숫자, _, -만 쓸 수 있습니다',
+  'artifact.reason.hook-agents': 'hook {name}에는 {agents} 가운데 하나 이상의 이벤트가 있어야 합니다',
+  'artifact.reason.hook-agent': 'hook {name}에 {agent}가 있는데, 에이전트는 {agents}입니다',
+  'artifact.reason.hook-events': '{where}는 이벤트 이름과 목록의 맵이어야 합니다',
+  'artifact.reason.hook-event': '{where}: {event}는 이 에이전트의 hook 이벤트가 아닙니다(이벤트: {events})',
+  'artifact.reason.hook-entries': '{where}는 비어 있지 않은 목록이어야 합니다',
+  'artifact.reason.hook-group': '{where}는 처리기가 하나 이상인 { "matcher": "...", "hooks": [ ... ] }여야 합니다',
+  'artifact.reason.hook-command': '{where}에 command가 없습니다',
+  'artifact.reason.hook-type': '{where}의 type이 {type}입니다. "command" hook만 지원합니다',
+  'view.skills': 'Skills: {names}',
+  'view.subagents': 'Subagents: {names}',
+  'view.hooks': 'Hooks: {names}',
+  'view.artifacts-invalid': 'Skills, subagents, hooks: 잘못됐습니다({detail})',
+  'actions.apply.include': '이 저장소가 프로필에서 무엇을 더 받을까요?',
+  'actions.apply.include.mcp': 'MCP 서버 {count}개',
+  'actions.apply.include.skills': 'Skills {count}개',
+  'actions.apply.include.subagents': 'Subagents {count}개',
+  'actions.apply.include.hooks': 'Hooks {count}개: 모든 사람의 컴퓨터에서 실행되는 명령',
+  'repos.sync.hooks':
+    '바꾸지 않음: 이 저장소의 hooks가 바뀝니다. 먼저 agctx profile sync {project}로 명령을 확인하세요.',
+  'resolve.warn.hooks-edited':
+    '경고: {file}에서 agctx가 넣은 hook 묶음을 누군가 고쳤습니다. agctx는 프로필의 hooks를 다시 넣고, 고친 묶음은 그 사람의 hook으로 파일에 남습니다. 필요 없으면 지우세요.',
+  'repos.pr.body.hooks': '이 변경의 hooks는 저장소에서 에이전트를 쓰는 모든 사람의 컴퓨터에서 다음 명령을 실행합니다:'
 } satisfies Record<string, string>;

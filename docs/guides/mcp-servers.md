@@ -58,7 +58,7 @@ MCP servers: docs (https://mcp.acme.dev/docs; headers Authorization), issues (np
 ## 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/project/mcp-plan.ts, src/mcp/targets.ts -->
-<!-- agctx-doc-sources-sha256: a93ea8a4a97eff01a1dd7100f1be18ab81b67684f3844cdd60ea06f1bb774053 -->
+<!-- agctx-doc-sources-sha256: 98a17b63ae226faf96b0ba78c12da1895b718d72015361841746256b49b4ede3 -->
 
 지침과 같은 `profile apply`·`profile sync`가 MCP 서버도 쓴다. 계획 아래에 쓸 서버의 명령·URL과 env·헤더 이름이 한 줄로 나오고, 빼는 서버가 있으면 `MCP servers removed:` 줄이 더 나온다. 다른 사람의 컴퓨터에서 실행될 명령이므로 적용하기 전에 이 줄을 확인한다. 값이 비밀일 수 있는 env와 헤더는 이름만 보여 주고, 터미널 제어 문자는 `\u001b`처럼 드러낸다.
 
@@ -76,7 +76,7 @@ MCP servers from the profile: docs (https://mcp.acme.dev/docs; headers Authoriza
 Dry-run: no files were changed.
 ```
 
-- **MCP를 받지 않을 저장소:** `agctx profile apply <프로필> <저장소> --include rules`로 규칙만 받는다. 이 선택은 `agctx.project.json`의 `include`에 남아 이후 `sync`도 따른다. 다시 받으려면 `--include all`로 적용한다. 그 사이 사람이 `.mcp.json`이나 `.codex/config.toml`을 만들어 두었으면 agctx가 관리하던 기록이 없으므로 `unmanaged`로 멈추고, `--adopt`를 붙여야 한다. 프로필에 `mcp.json`을 처음 넣을 때도 같다. TUI의 「프로젝트에 적용」은 프로필에 `mcp.json`이 있을 때 MCP 서버도 쓸지 묻는다.
+- **MCP를 받지 않을 저장소:** `--include`에 받을 종류를 쉼표로 적고 `mcp`를 뺀다. `agctx profile apply <프로필> <저장소> --include rules`는 규칙만 받고, `--include rules,skills,subagents`는 MCP 서버만 뺀다. 이 선택은 `agctx.project.json`의 `include`에 남아 이후 `sync`도 따른다. 다시 받으려면 `--include all`(hooks를 뺀 전부)로 적용하고, hooks도 받는 저장소면 `--include rules,mcp,skills,subagents,hooks`처럼 목록에 적는다. 그 사이 사람이 `.mcp.json`이나 `.codex/config.toml`을 만들어 두었으면 agctx가 관리하던 기록이 없으므로 `unmanaged`로 멈추고, `--adopt`를 붙여야 한다. 프로필에 `mcp.json`을 처음 넣을 때도 같다. TUI의 「프로젝트에 적용」은 프로필에 있는 종류를 고르는 목록에 MCP 서버를 함께 보여 준다. skills·subagents·hooks는 [팀 skills·subagents·hooks 나눠 쓰기](skills-subagents-hooks.md)에 있다.
 - **에이전트 고르기:** `--agent`로 Claude Code를 빼면 `.mcp.json`을, Codex를 빼면 `.codex/config.toml`을 쓰지 않는다.
 - **커밋:** 만들어진 `.mcp.json`, `.codex/config.toml`, `.agctx/base/`의 사본, `agctx.project.json`을 함께 커밋한다.
 

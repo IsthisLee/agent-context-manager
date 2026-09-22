@@ -7,6 +7,7 @@ import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isSymbolicLink } from '../shared/fs-utils.ts';
 import { committedFile, git, isGitRoot, resolveRemoteLocation, sanitizeRemoteUrl } from '../shared/git.ts';
 import { PROFILE_MCP_FILE } from '../mcp/servers.ts';
+import { committedArtifactFiles, workingArtifactFiles } from '../artifacts/profile-files.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from '../shared/hidden-chars.ts';
 import type { ProfileMetadata } from '../shared/types.ts';
 import {
@@ -175,10 +176,12 @@ export function cloneProfile(location: string, options: { branch?: string | null
     const mcpPath = regularFileInside(temporary, PROFILE_MCP_FILE);
     if (mcpPath === null && isSymbolicLink(path.join(temporary, PROFILE_MCP_FILE)))
       throw usageError('clone.mcp-symlink', _('error.clone.mcp-symlink', { url: source }), _('hint.clone.mcp-symlink'));
+    // skills·subagents·hooks도 같다. 심볼릭 링크면 workingArtifactFiles가 멈춘다.
     assertNoHiddenCharacters([
       { file: PROFILE_METADATA_FILE, content: metadataText },
       { file, content: fs.readFileSync(instructionsPath, 'utf8') },
-      ...(mcpPath ? [{ file: PROFILE_MCP_FILE, content: fs.readFileSync(mcpPath, 'utf8') }] : [])
+      ...(mcpPath ? [{ file: PROFILE_MCP_FILE, content: fs.readFileSync(mcpPath, 'utf8') }] : []),
+      ...workingArtifactFiles(temporary).map(entry => ({ file: entry.path, content: entry.content }))
     ]);
     const target = path.join(home, metadata.name);
     if (fs.existsSync(target) || isSymbolicLink(target)) {
@@ -265,7 +268,8 @@ export function pullProfile(name: string, options: { dryRun?: boolean } = {}): P
   assertNoHiddenCharacters([
     { file: PROFILE_METADATA_FILE, content: incoming.metadataText },
     { file: incoming.file, content: incoming.content },
-    ...(incomingMcp === null ? [] : [{ file: PROFILE_MCP_FILE, content: incomingMcp }])
+    ...(incomingMcp === null ? [] : [{ file: PROFILE_MCP_FILE, content: incomingMcp }]),
+    ...committedArtifactFiles(state.dir, state.upstream).map(entry => ({ file: entry.path, content: entry.content }))
   ]);
   if (options.dryRun) return { state, commits, changedFiles, applied: false };
   git(['merge', '--ff-only', '--quiet', state.upstream], { cwd: state.dir });

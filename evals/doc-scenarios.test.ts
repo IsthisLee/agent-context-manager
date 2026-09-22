@@ -280,6 +280,45 @@ const FIXTURES: Record<string, Fixture> = {
   /** 같은 Git 프로필을 고정하지 않은 web-app과 고정한 orders-api에 적용한 뒤 프로필에 새 커밋이 생긴 컴퓨터. */
   'repos-pinned': t => pinnedPair(t, '/work'),
   'update-policies': t => pinnedPair(t, '/path/to', false),
+  /** skill 하나, subagent 하나, hook 하나를 담은 팀 프로필과, 사람이 권한 설정을 둔 저장소. */
+  'team-artifacts': t => {
+    const me = person(t, 'agctx-doc-artifacts-');
+    const repo = me.repo(me.folder('payments-api'));
+    me.agctx(['profile', 'create', 'team-backend', '--scope', 'team']);
+    const profile = path.join(me.profiles, 'team-backend');
+    me.write(
+      path.join(profile, 'skills', 'release-notes', 'SKILL.md'),
+      '---\nname: release-notes\ndescription: Use when writing release notes for a merged change.\n---\n\n# Release notes\n\nSummarise the change for users, then list breaking changes.\n'
+    );
+    me.write(
+      path.join(profile, 'subagents', 'reviewer.md'),
+      '---\nname: reviewer\ndescription: Reviews a diff for risky changes before merge.\ntools: Read, Grep\n---\n\nRead the changed files and list risky spots with file and line.\n'
+    );
+    me.write(
+      path.join(profile, 'hooks.json'),
+      `${JSON.stringify(
+        {
+          hooks: {
+            'format-on-edit': {
+              claude: {
+                PostToolUse: [{ matcher: 'Edit|Write', hooks: [{ type: 'command', command: 'pnpm run format' }] }]
+              },
+              codex: {
+                PostToolUse: [{ matcher: 'apply_patch', hooks: [{ type: 'command', command: 'pnpm run format' }] }]
+              }
+            }
+          }
+        },
+        null,
+        2
+      )}\n`
+    );
+    me.write(
+      path.join(repo, '.claude', 'settings.json'),
+      `${JSON.stringify({ permissions: { allow: ['Bash(pnpm test)'] } }, null, 2)}\n`
+    );
+    return { cwd: repo, env: me.env, paths: [[repo, '/work/payments-api']] };
+  },
   /** 규칙을 templates/AGENTS.md에 둔 규칙 저장소와, 그 저장소를 받는 팀원. */
   'link-rules': t => {
     const me = person(t, 'agctx-doc-link-');
@@ -365,6 +404,10 @@ test('guides/update-policies.md의 check·sync 예시는 실제 출력과 같다
 
 test('guides/team-sharing.md의 link·clone 예시는 실제 출력과 같다', t => {
   runExamples(t, 'docs/guides/team-sharing.md', FIXTURES);
+});
+
+test('guides/skills-subagents-hooks.md의 view·apply 예시는 실제 출력과 같다', t => {
+  runExamples(t, 'docs/guides/skills-subagents-hooks.md', FIXTURES);
 });
 
 test('예시 비교는 …를 생략으로만 인정한다', () => {

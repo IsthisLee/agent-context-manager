@@ -33,6 +33,7 @@
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
 - [포매터가 관리 영역을 바꾸는 범위](#포매터가-관리-영역을-바꾸는-범위)
 - [MCP 서버 설정 위치와 형식 근거](#mcp-서버-설정-위치와-형식-근거)
+- [skills·subagents·hooks 위치와 형식 근거](#skillssubagentshooks-위치와-형식-근거)
 - [배포 패키지와 에이전트 스킬 시나리오 실측](#배포-패키지와-에이전트-스킬-시나리오-실측)
 - [비교 대상](#비교-대상)
   - [함께 사용하기 전 확인할 규칙](#함께-사용하기-전-확인할-규칙)
@@ -1240,6 +1241,96 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
   - agctx가 만든 `.codex/config.toml`을 신뢰한 프로젝트로 두고 `codex mcp list`·`codex mcp get <이름> --json`을 실행하자, stdio 서버는 `env`·`env_vars`까지, 원격 서버는 `bearer_token_env_var`·`http_headers`까지 적은 대로 나왔다.
 - **직접 실험(Claude Code 2.1.278, 2026-09-22):** agctx가 만든 `.mcp.json`이 있는 폴더에서 `claude mcp get <이름>`을 실행하자 두 서버가 `Scope: Project config (shared via .mcp.json)`, `Status: ⏸ Pending approval`로 나왔다. 원격 서버의 `Authorization: Bearer ${DOCS_TOKEN}`은 적은 그대로다.
 - **Antigravity는 확인하지 못했다.** [Antigravity MCP](https://antigravity.google/docs/mcp)는 워크스페이스 설정으로 `.agents/mcp_config.json`을 적지만, 그 파일을 읽는 조건, 사용자 설정과의 우선순위, `${VAR}` 치환은 문서에서 찾지 못했다(확인일: 2026-09-22). agy 1.2.5의 `agy mcp list`는 사용자 수준 파일만 보여 주었고, 실제 세션이 워크스페이스 파일을 읽는지는 크레딧을 쓰는 실행이라 확인하지 않았다. 그래서 시범 구현은 Antigravity에 MCP 파일을 쓰지 않는다.
+
+## skills·subagents·hooks 위치와 형식 근거
+
+프로필의 skills·subagents·hooks를 에이전트마다 저장소에 쓰는 판정([ADR 0046](adr/0046-skills-subagents-hooks-in-profiles.md))이 기대는 사실이다.
+
+- **Claude Code는 저장소의 `.claude/skills/<이름>/SKILL.md`를 팀이 공유하는 skill로 읽는다. 같은 이름이면 개인 skill이 이긴다.** [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-23)
+
+  > "| Project | `.claude/skills/<skill-name>/SKILL.md` | Sessions in this repository. Commit it so your team gets it too |"
+  >
+  > 번역: 프로젝트 범위는 `.claude/skills/<skill-name>/SKILL.md`이고, 이 저장소의 세션에서 쓰입니다. 팀도 받도록 커밋하세요.
+
+  > "Enterprise over personal, and personal over project. With `deploy` in both `~/.claude/skills/` and the project's `.claude/skills/`, `/deploy` runs the personal one"
+  >
+  > 번역: 엔터프라이즈가 개인보다, 개인이 프로젝트보다 앞섭니다. `~/.claude/skills/`와 프로젝트의 `.claude/skills/`에 모두 `deploy`가 있으면 `/deploy`는 개인 것을 실행합니다.
+
+- **Claude Code는 저장소의 `.claude/agents/`에서 subagent를 읽고, 같은 이름이면 프로젝트가 사용자 것보다 앞선다.** [Claude Code subagents](https://code.claude.com/docs/en/sub-agents) (확인일: 2026-09-23)
+
+  > "When multiple subagents share the same name, Claude Code uses the one from the higher-priority location."
+  >
+  > 번역: 여러 subagent가 같은 이름을 쓰면 Claude Code는 우선순위가 더 높은 위치의 것을 씁니다.
+
+  같은 문서의 표에서 `.claude/agents/`는 우선순위 3이고 `~/.claude/agents/`는 4다. 파일은 YAML 머리말에 `name`과 `description`이 있는 Markdown이다.
+
+- **Claude Code hooks는 `.claude/settings.json`의 `hooks`에 두고, 설정 파일끼리 합쳐진다.** [Claude Code hooks](https://code.claude.com/docs/en/hooks) (확인일: 2026-09-23)
+
+  > "Hook entries merge across settings levels rather than replacing each other"
+  >
+  > 번역: hook 항목은 설정 수준끼리 서로 대체하지 않고 합쳐집니다.
+
+  > "If you define the same handler in more than one settings file, it runs once."
+  >
+  > 번역: 같은 처리기를 여러 설정 파일에 정의하면 한 번만 실행됩니다.
+
+  대화형 세션은 폴더를 신뢰할 때까지 hooks를 실행하지 않지만, `-p`와 SDK 세션은 신뢰한 것으로 본다.
+
+  > "**`-p` or SDK session**: Claude Code never shows the dialog and treats the folder as trusted, so hooks committed in a repository's `.claude/settings.json` run in a folder you've never trusted"
+  >
+  > 번역: `-p`나 SDK 세션에서 Claude Code는 대화상자를 보여 주지 않고 폴더를 신뢰한 것으로 봅니다. 그래서 저장소의 `.claude/settings.json`에 커밋한 hooks가 한 번도 신뢰하지 않은 폴더에서 실행됩니다.
+
+  이벤트 목록은 같은 문서의 이벤트 표에서 옮겼다. 판정은 `src/artifacts/definitions.ts`의 `HOOK_EVENTS`<!--s:eb138d3b276e-->가 한다.
+
+- **Codex는 저장소의 `.agents/skills`에서 skill을 읽는다.** [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-23)
+
+  > "For repositories, Codex scans .agents/skills in every directory from your current working directory up to the repository root."
+  >
+  > 번역: 저장소에서 Codex는 현재 작업 폴더부터 저장소 루트까지 모든 폴더의 `.agents/skills`를 찾습니다.
+
+  > "The SKILL.md file must include name and description."
+  >
+  > 번역: SKILL.md 파일에는 name과 description이 있어야 합니다.
+
+- **Codex는 저장소의 `.codex/agents/`에서 TOML 파일 하나에 subagent 하나를 읽는다.** [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents) (확인일: 2026-09-23)
+
+  > "To define your own custom agents, add standalone TOML files under ~/.codex/agents/ for personal agents or .codex/agents/ for project-scoped agents."
+  >
+  > 번역: 직접 만든 에이전트를 정의하려면 개인 에이전트는 `~/.codex/agents/`, 프로젝트 범위 에이전트는 `.codex/agents/` 아래에 독립 TOML 파일을 두세요.
+
+  같은 문서는 필수 필드를 `name`, `description`, `developer_instructions`로 적는다. 사용자와 프로젝트에 같은 이름이 있을 때의 우선순위는 문서에서 찾지 못했다.
+
+- **Codex hooks는 `<repo>/.codex/hooks.json`에 두고, 프로젝트를 신뢰하고 hook마다 승인해야 실행된다.** [Codex hooks](https://learn.chatgpt.com/docs/hooks) (확인일: 2026-09-23)
+
+  > "Project-local hooks load only when the project .codex/ layer is trusted."
+  >
+  > 번역: 프로젝트의 hooks는 그 프로젝트의 `.codex/` 계층을 신뢰했을 때만 읽힙니다.
+
+  > "Codex records trust against the hook’s current hash, so new or changed hooks are marked for review and skipped until trusted."
+  >
+  > 번역: Codex는 hook의 현재 해시에 신뢰를 기록하므로, 새로 생기거나 바뀐 hook은 검토 대상으로 표시되고 신뢰할 때까지 건너뜁니다.
+
+  형식은 Claude Code와 같은 `hooks.<이벤트>` 배열이다. 같은 문서가 여러 출처의 hooks를 모두 읽는다고 적는다.
+
+- **Antigravity 문서는 워크스페이스의 `.agents/skills/`, `.agents/agents/<이름>.md`, `.agents/hooks.json`을 적는다.** [Antigravity skills](https://antigravity.google/docs/skills), [subagents](https://antigravity.google/docs/subagents), [hooks](https://antigravity.google/docs/hooks) (확인일: 2026-09-23)
+
+  > "**Note**: Antigravity defaults to `.agents/skills`, but still maintains backward compatibility for `.agent/skills`."
+  >
+  > 번역: 참고: Antigravity의 기본 위치는 `.agents/skills`이고, `.agent/skills`도 하위 호환으로 계속 지원합니다.
+
+  > "*   **Workspace level**: `.agents/hooks.json` at your project root."
+  >
+  > 번역: 워크스페이스 수준: 프로젝트 루트의 `.agents/hooks.json`.
+
+  hooks 파일은 최상위 키가 hook 이름이고, 이벤트는 `PreToolUse`·`PostToolUse`·`PreInvocation`·`PostInvocation`·`Stop`이다. subagent의 `tools`는 `view_file`·`run_command` 같은 Antigravity 도구 이름을 쓰며, 문서는 잘못된 도구 이름이 subagent를 멈추게 할 수 있다고 적는다. 같은 이름의 우선순위와 신뢰 조건은 문서에서 찾지 못했다.
+
+- **직접 실험(Claude Code 2.1.278, 2026-09-23):** 임시 저장소에 `node src/agctx.ts profile apply team-backend . --include rules,skills,subagents,hooks --yes`로 skill `probe-review`, subagent `probe-reviewer`, `SessionStart` hook을 쓴 뒤 `claude -p --model haiku --output-format stream-json --verbose --max-turns 1 "Reply with the single word OK."`를 실행했다. init 이벤트의 `skills`에 `probe-review`, `agents`에 `probe-reviewer`가 있었고, hook이 `hook-claude.txt`를 만들었다. 비용은 0.064달러였다.
+- **직접 실험(Codex 0.155.1, 2026-09-23):** 같은 저장소에서 실험했다.
+  - `codex debug prompt-input -c 'projects={"<경로>"={trust_level="trusted"}}' "hi"`의 skill 목록에 `probe-review: … (file: r21/probe-review/SKILL.md)`가 있었고, `r21`은 저장소의 `.agents/skills`였다.
+  - 이어서 `codex exec --ephemeral -s read-only --dangerously-bypass-hook-trust -c 'projects={…}' "…list the exact agent_type values…"`를 실행했다. 답은 `probe-reviewer`, `default`, `explorer`, `worker`였고, `SessionStart` hook이 `hook-codex.txt`를 만들었다. 하이픈이 든 이름도 받는다.
+  - 점 표기(`-c 'projects."<경로>".trust_level="trusted"'`)로 신뢰를 걸면 프로젝트 `.codex/` 계층이 읽히지 않았다. 신뢰는 인라인 표 형식으로 걸어야 했다.
+  - hook 승인 단계는 `--dangerously-bypass-hook-trust`로 건너뛰었으므로, 승인 전에 건너뛰는 동작은 문서로만 확인했다.
+- **직접 실험(agy 1.2.5, 2026-09-23):** 임시 저장소에 `.agents/skills/probe-skill/SKILL.md`, `.agents/agents/probe-agent.md`, `.agents/hooks.json`을 두고 `agy --print-timeout 3m --mode plan --output-format json -p "…"`를 실행했다. 답은 skill과 agent를 알지 못했고 hook도 실행되지 않았다. 로그에는 `loaded 1 named hooks from 1 hooks.json file(s)`가 남았는데, 그 하나는 사용자 수준 파일이었다. 신뢰 목록 안의 폴더에서 `agy agent`를 실행해도 로그는 같았다. 원인은 확인하지 못했다. 그래서 agctx는 Antigravity에 subagents와 hooks를 쓰지 않고, skills는 Codex가 읽는 것을 확인한 `.agents/skills`에 쓴다.
 
 ## 배포 패키지와 에이전트 스킬 시나리오 실측
 

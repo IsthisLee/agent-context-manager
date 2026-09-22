@@ -548,7 +548,7 @@ export default {
   'error.project.unmanaged':
     'agctx did not write these files and they have no agctx markers, so nothing was changed: {files}',
   'hint.project.unmanaged':
-    'To keep what is in them and add the agctx managed area, run {command}. CLAUDE.md and rule files get the managed block below their content; AGENTS.md moves its content below the profile guidance; .mcp.json and .codex/config.toml keep the servers and settings someone put there.',
+    'To keep what is in them and add the agctx managed area, run {command}. CLAUDE.md and rule files get the managed block below their content; AGENTS.md moves its content below the profile guidance; .mcp.json, .codex/config.toml, .claude/settings.json, and .codex/hooks.json keep the servers, hooks, and settings someone put there.',
   'repos.sync.unmanaged':
     'not changed: {files} exist without agctx markers. Run agctx profile sync {project} --adopt to add the managed area.',
   'repos.pr.unmanaged':
@@ -566,7 +566,8 @@ export default {
     'Write mcp.json as { "servers": { "<name>": { "command": "...", "args": [...], "env": {...} } } } for a local server or { "url": "https://...", "headers": {...} } for a remote one. Put secrets in environment variables such as ${TOKEN}, not in the file.',
   'error.include.unknown': 'Unknown target kind: {kind}.',
   'error.include.rules': '--include must contain rules: every agent reads the rules in AGENTS.md.',
-  'hint.include': 'Use --include rules,mcp, --include rules, or --include all.',
+  'hint.include':
+    'Use a comma-separated list of rules, mcp, skills, subagents, and hooks (rules is required), or all for everything except hooks.',
   'error.project.invalid-include': '{file} has an invalid include list: {value}.',
   'error.project.invalid-mcp-file': '{file} cannot be read as MCP settings ({detail}), so agctx did not change it.',
   'hint.project.invalid-mcp-file': 'Fix the JSON in {file}, or leave out MCP with --include rules.',
@@ -589,7 +590,6 @@ export default {
   'error.clone.mcp-symlink': 'The mcp.json in {url} is a symbolic link, so the profile was not cloned.',
   'hint.clone.mcp-symlink': 'Commit mcp.json as a regular file in the profile repository.',
   'view.mcp': 'MCP servers: {servers}',
-  'actions.apply.mcp': "Also write the profile's {count} MCP server(s) to {files} in this repository?",
   'plan.warn.mcp-skip.codex-command-reference':
     'Warning: {agent} ({file}) did not get MCP server {name}: Codex does not expand ${...} in command or args.',
   'plan.warn.mcp-after-block':
@@ -737,5 +737,71 @@ export default {
   'hint.sync.no-switch':
     'profile sync keeps the profile the project already uses. To switch profiles, run agctx profile apply <name> <project>.',
   'error.vscode.unavailable': 'VS Code CLI `code` is not available or exited with an error.',
-  'hint.vscode.install': 'In VS Code run "Shell Command: Install \'code\' command in PATH", or resolve without --edit.'
+  'hint.vscode.install': 'In VS Code run "Shell Command: Install \'code\' command in PATH", or resolve without --edit.',
+  'plan.skills': 'Skills from the profile: {names}',
+  'plan.subagents': 'Subagents from the profile: {names}',
+  'plan.hooks':
+    'Hooks from the profile run these commands on the computer of everyone who uses this repository with the agent:',
+  'plan.hooks.line': '  {hook}: {agent} {event}{matcher}: {command}',
+  'plan.hooks.codex-review':
+    'Codex runs a new or changed project hook only after each person trusts the project and approves the hook in /hooks.',
+  'plan.warn.hooks-not-included':
+    'Note: the profile has hooks, but this repository does not take them. Hooks are written only when hooks is in the --include list, as in --include rules,mcp,skills,subagents,hooks.',
+  'plan.warn.artifacts-unverified':
+    'Note: {agent} does not get the profile subagents and hooks yet, because agctx has not confirmed that it reads them from a repository.',
+  'plan.warn.subagent-fields':
+    'Warning: subagent {name}: {fields} are not written for {agents}; only the name, description, and instructions are.',
+  'error.project.artifact-taken':
+    'The project already has files that agctx did not write where the profile skills or subagents go, so nothing was changed: {files}',
+  'hint.project.artifact-taken':
+    'Rename or move the skill or subagent someone added, or rename it in the profile. agctx does not overwrite files it did not write, even with --adopt.',
+  'error.project.invalid-hooks-file': '{file} cannot be read as hook settings ({detail}), so agctx did not change it.',
+  'hint.project.invalid-hooks-file':
+    'Fix the JSON in {file}, or leave out hooks with --include and a list that does not contain hooks.',
+  'hint.project.conflict.artifacts':
+    'For skills, subagents, and hooks, move the change into the profile, then run agctx profile resolve {project} --discard to back up the files and write them again.',
+  'error.resolve.artifact-discard':
+    'Someone changed skills, subagents, or hooks that agctx wrote in {files}. These files cannot keep edits outside a managed area.',
+  'hint.resolve.artifact-discard':
+    'Move the change into the profile if you want to keep it, then run agctx profile resolve {project} --discard. The current files are copied to {backups}/ first.',
+  'error.profile.invalid-artifact': 'The profile file {file} is invalid: {reason}.',
+  'hint.profile.artifact':
+    'A skill is skills/<name>/SKILL.md, and a subagent is subagents/<name>.md; both start with front matter that has name (the same as the folder or file name) and description. Hooks go in hooks.json as { "hooks": { "<name>": { "claude": { "<Event>": [ { "matcher": "...", "hooks": [ { "type": "command", "command": "..." } ] } ] }, "codex": { ... } } } }. Names use lowercase letters, digits, and hyphens.',
+  'error.profile.artifact-symlink': 'The profile file {file} is a symbolic link, so agctx did not read the profile.',
+  'hint.profile.artifact-symlink':
+    'Put a regular file in the profile instead. A link could share a file from this computer with every repository.',
+  'error.profile.artifact-binary': 'The profile file {file} is not a text file, so agctx did not read the profile.',
+  'artifact.reason.frontmatter': 'it does not start with front matter between --- lines',
+  'artifact.reason.name-pattern':
+    'the name {name} must use only lowercase letters, digits, and hyphens, up to 64 characters',
+  'artifact.reason.name': 'name in the front matter is "{name}", but it must be {expected}',
+  'artifact.reason.description': 'the front matter has no one-line description',
+  'artifact.reason.skill-folder': 'files in skills/ must be inside a skill folder, as skills/<name>/SKILL.md',
+  'artifact.reason.skill-md': 'the skill folder has no SKILL.md',
+  'artifact.reason.subagent-file': 'subagents/ may only contain <name>.md files',
+  'artifact.reason.hooks-shape': 'it must be { "hooks": { "<name>": { "<agent>": { "<Event>": [...] } } } }',
+  'artifact.reason.hook-name': 'hook name {name} must use letters, digits, _ and -',
+  'artifact.reason.hook-agents': 'hook {name} must list events for at least one of {agents}',
+  'artifact.reason.hook-agent': 'hook {name} has {agent}, but agents are {agents}',
+  'artifact.reason.hook-events': '{where} must map event names to lists',
+  'artifact.reason.hook-event': '{where}: {event} is not a hook event of this agent (events: {events})',
+  'artifact.reason.hook-entries': '{where} must be a non-empty list',
+  'artifact.reason.hook-group': '{where} must be { "matcher": "...", "hooks": [ ... ] } with at least one handler',
+  'artifact.reason.hook-command': '{where} needs a command',
+  'artifact.reason.hook-type': '{where} has type {type}; only "command" hooks are supported',
+  'view.skills': 'Skills: {names}',
+  'view.subagents': 'Subagents: {names}',
+  'view.hooks': 'Hooks: {names}',
+  'view.artifacts-invalid': 'Skills, subagents, and hooks: invalid ({detail})',
+  'actions.apply.include': 'What else should this repository get from the profile?',
+  'actions.apply.include.mcp': 'MCP servers ({count})',
+  'actions.apply.include.skills': 'Skills ({count})',
+  'actions.apply.include.subagents': 'Subagents ({count})',
+  'actions.apply.include.hooks': "Hooks ({count}): commands that run on everyone's computer",
+  'repos.sync.hooks':
+    'not changed: the hooks in this repository change. Run agctx profile sync {project} to review the commands first.',
+  'resolve.warn.hooks-edited':
+    "Warning: someone changed hook groups that agctx wrote in {file}. agctx writes the profile hooks again, and the changed groups stay in the file as that person's hooks. Remove them if they are no longer needed.",
+  'repos.pr.body.hooks':
+    'Hooks in this change run these commands on the computer of everyone who uses the repository with the agent:'
 } satisfies Record<string, string>;

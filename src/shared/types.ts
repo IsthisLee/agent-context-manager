@@ -93,6 +93,8 @@ export interface PlannedFile {
   conflict: Conflict | null;
   /** 고르지 않은 에이전트의 파일이라 관리 블록을 지운다. `regenerated`는 블록을 뺀 나머지다. */
   remove: boolean;
+  /** agctx가 쓴 적도 없고 agctx 표지도 없는 기존 파일이라, `--adopt` 없이는 쓰지 않는다. */
+  unmanaged: boolean;
 }
 
 export type ConflictedFile = PlannedFile & { conflict: Conflict };
@@ -110,6 +112,8 @@ export interface ProjectPlan {
   files: PlannedFile[];
   conflicts: ConflictedFile[];
   changes: PlannedChange[];
+  /** 허락 없이 쓰지 않을, agctx 표지가 없는 기존 파일. `adopt`로 계획하면 늘 비어 있다. */
+  unmanaged: PlannedFile[];
   /** 계획이 바꾸지는 않지만 사용자가 알아야 할 것. 예를 들어 AGENTS.md를 import하지 않는 CLAUDE.md. */
   warnings: string[];
 }

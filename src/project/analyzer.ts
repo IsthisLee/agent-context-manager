@@ -56,6 +56,16 @@ export function mergeAgentsMd(profileContent: string, existingContent?: string |
 }
 
 /**
+ * agctx가 쓴 흔적이 있는 AGENTS.md인가: 경계 마커, 마커 이전 버전이 쓴 확장 섹션 제목, 또는 적용 표시.
+ * 흔적이 없는 파일은 사람이나 다른 도구가 쓴 것이라, 허락 없이 관리 영역을 더하지 않는다.
+ */
+export function hasAgctxAgentsMarker(content: string): boolean {
+  return (
+    content.includes(MANAGED_END) || EXTENSION_HEADER.test(content) || /^> Applied from agctx profile:/m.test(content)
+  );
+}
+
+/**
  * 프로젝트 AGENTS.md에서 프로필이 소유한 부분을 돌려준다.
  * 프로젝트 확장 영역과 그 아래의 모든 것은 프로젝트의 것이다.
  */

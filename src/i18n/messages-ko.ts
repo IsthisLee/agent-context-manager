@@ -525,6 +525,21 @@ export default {
     'agctx.project.json의 managedHashes에 프로젝트 밖을 가리키는 경로가 있어 아무것도 바꾸지 않았습니다: {paths}',
   'hint.project.invalid-managed-path':
     'managedHashes의 경로는 프로젝트 루트 기준 상대 경로여야 하고, /로 나누며 ..를 쓸 수 없습니다. {file}에서 그 키를 고치거나 지운 뒤 다시 실행하세요.',
+  'error.project.unmanaged': 'agctx가 쓴 적 없고 agctx 표지도 없는 파일이 있어 아무것도 바꾸지 않았습니다: {files}',
+  'hint.project.unmanaged':
+    '파일 내용을 그대로 두고 agctx 관리 영역을 더하려면 {command}를 실행하세요. CLAUDE.md와 규칙 파일은 기존 내용 아래에 관리 블록이 붙고, AGENTS.md는 기존 내용이 프로필 지침 아래로 옮겨집니다.',
+  'repos.sync.unmanaged':
+    '바꾸지 않음: {files} 파일이 agctx 표지 없이 이미 있습니다. 관리 영역을 더하려면 agctx profile sync {project} --adopt를 실행하세요.',
+  'repos.pr.unmanaged':
+    '바꾸지 않음: {files} 파일이 agctx 표지 없이 이미 있습니다. 먼저 그 저장소에서 agctx profile sync --adopt를 실행하세요.',
+  'adopt.title': '기존 파일',
+  'adopt.offer': '이 파일들의 내용을 그대로 두고 agctx 관리 영역을 더할까요?',
+  'hint.project.unmanaged.agent': '그 파일을 그대로 두려면 그 에이전트를 빼고 적용하세요: {command}.',
+  'hint.project.unmanaged.symlink': '{files} 파일은 심볼릭 링크라서 agctx가 관리 영역을 더할 수 없습니다.',
+  'hint.project.conflict.unmanaged':
+    '{files} 파일도 agctx 표지 없이 있습니다. 충돌을 푼 뒤 agctx profile resolve {project} --adopt로 편입하거나 그 에이전트를 빼세요.',
+  'check.unmanaged':
+    'agctx 표지 없이 있어 sync가 여기서 멈춥니다. 관리 영역을 더하려면 agctx profile sync {project} --adopt를 실행하세요',
   'plan.warn.agents-lines':
     '경고: 이번에 쓰는 AGENTS.md는 {lines}줄입니다. Claude Code는 지침 파일마다 {limit}줄 미만을 권장하며, 파일이 길면 에이전트가 규칙을 덜 따릅니다. 자주 쓰지 않는 규칙은 줄이거나, 필요할 때만 읽는 파일로 옮기는 것을 검토하세요.',
   'plan.warn.agents-bytes':

@@ -3,7 +3,8 @@ import { _ } from '../i18n/index.ts';
 import { say } from '../commands/output.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import type { ConflictedFile, PlannedChange } from '../shared/types.ts';
-import { assertProjectDirectory, boundProfile, planFor, printConflicts } from './apply.ts';
+import { assertProjectDirectory, boundProfile, planFor, printConflicts, unmanagedError } from './apply.ts';
+import { shellWord } from '../shared/shell.ts';
 import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from '../project/conflicts.ts';
 import { mergeFileName, mergeInVsCode } from '../project/merge-editor.ts';
 import { managedRegion, regionHash, writePlan } from '../project/plan.ts';
@@ -78,12 +79,21 @@ export interface ResolveResult {
  */
 export async function resolveProject(
   targetDir: string,
-  options: { dryRun: boolean; discard: boolean; edit: boolean },
+  options: { dryRun: boolean; discard: boolean; edit: boolean; adopt?: boolean },
   confirm: () => Promise<boolean>
 ): Promise<ResolveResult> {
   assertProjectDirectory(targetDir);
   const name = boundProfile(targetDir, 'profile resolve');
-  const { plan } = planFor(name, targetDir, 'keep');
+  const adopt = options.adopt === true;
+  const { plan, agents } = planFor(name, targetDir, 'keep', undefined, { adopt });
+  // resolve도 계획한 파일을 모두 쓰므로, 표지 없는 파일은 편입을 허락받기 전에는 쓰지 않는다(ADR 0043).
+  if (plan.unmanaged.length)
+    throw unmanagedError(plan.unmanaged, {
+      retry: `agctx profile resolve ${shellWord(targetDir)}${options.discard ? ' --discard' : ''}${options.edit ? ' --edit' : ''} --adopt`,
+      profile: name,
+      targetDir,
+      agents
+    });
   if (!plan.conflicts.length) {
     say(_('resolve.nothing'));
     return { conflicts: 0, written: false, files: [] };
@@ -155,7 +165,7 @@ export async function resolveProject(
     return { conflicts: plan.conflicts.length, written: false, files };
   }
   for (const file of edits) overrides.set(file.rel, mergeWithEditor(file, file.conflict.base as string));
-  const resolved = planFor(name, targetDir, 'keep', overrides);
+  const resolved = planFor(name, targetDir, 'keep', overrides, { adopt });
   if (resolved.plan.conflicts.length)
     throw usageError('resolve.still-conflicted', _('error.resolve.still-conflicted'), null);
   writePlan([...backups, ...resolved.plan.changes], targetDir);

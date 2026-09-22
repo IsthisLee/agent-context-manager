@@ -455,7 +455,10 @@ test('apply는 확장 영역이 없는 기존 AGENTS.md를 지킨다', () => {
       cwd: repoRoot,
       env
     });
-    execFileSync(process.execPath, [cli, 'profile', 'apply', 'team-profile', project, '--yes'], { cwd: repoRoot, env });
+    execFileSync(process.execPath, [cli, 'profile', 'apply', 'team-profile', project, '--adopt', '--yes'], {
+      cwd: repoRoot,
+      env
+    });
     const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
     assert.match(agents, /# Profile: team-profile/);
     assert.match(agents, /Existing project guidance/);
@@ -510,11 +513,15 @@ test('apply는 모든 대상을 미리 검사하고, 어댑터가 심볼릭 링�
     }
     const env = { ...process.env, AGCTX_HOME: home };
     execFileSync(process.execPath, [cli, 'profile', 'create', 'preflight-profile'], { cwd: repoRoot, env });
-    const result = spawnSync(process.execPath, [cli, 'profile', 'apply', 'preflight-profile', project, '--yes'], {
-      cwd: repoRoot,
-      env,
-      encoding: 'utf8'
-    });
+    const result = spawnSync(
+      process.execPath,
+      [cli, 'profile', 'apply', 'preflight-profile', project, '--adopt', '--yes'],
+      {
+        cwd: repoRoot,
+        env,
+        encoding: 'utf8'
+      }
+    );
     assert.equal(result.status, 70);
     assert.match(result.stderr, /symbolic link/);
     assert.deepEqual(fs.readdirSync(project), ['.agents']);

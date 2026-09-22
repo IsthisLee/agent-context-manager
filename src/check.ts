@@ -6,6 +6,7 @@ import { profileLocation } from './profile/store.ts';
 import { assertManagedPaths, managedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
 import { toLf } from './shared/fs-utils.ts';
+import { shellWord } from './shared/shell.ts';
 import { git, isGitRoot } from './shared/git.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-chars.ts';
 import type { ManagedKind } from './shared/types.ts';
@@ -110,6 +111,13 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   const source = config.source ?? null;
   if (config.uncommitted) findings.push({ kind: 'behind', file: null, detail: _('check.uncommitted') });
 
+  // sync가 표지 없는 파일에서 멈추므로 check도 같은 답(충돌)을 낸다.
+  for (const file of plan?.unmanaged ?? [])
+    findings.push({
+      kind: 'conflict',
+      file: file.rel,
+      detail: _('check.unmanaged', { project: shellWord(targetDir) })
+    });
   const hasConflict = findings.some(finding => finding.kind === 'conflict');
   let latestCommit: string | null = null;
   if (plan && profileDir && !hasConflict) {

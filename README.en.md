@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: c01e99eabb0c9c4eccfacda17adcf0c4d211573103e86aa2a8929af8e7f70f2c -->
+<!-- agctx-doc-sources-sha256: 0695328027b828741006cd4d2b2cac0fadc025e898754e7b63dde7ba812b96d4 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -103,6 +103,8 @@ Plan: 8 file(s) to change.
 Applied profile company to /path/to/project
 ```
 
+If the repository already has an `AGENTS.md` or `CLAUDE.md` that someone wrote, agctx stops without changing anything. To keep that content and add the agctx area, run the command again with `--adopt` as the message suggests ([CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md#profile-apply)).
+
 > [!Tip]
 > Type `agctx` in your terminal to run every command from TUI menus without memorizing commands: create, configure, apply, sync, and share Profiles over Git, check a project, and work on many repositories at once.
 >
@@ -123,7 +125,7 @@ Details are in the [Handing agctx to an agent (Korean)](https://github.com/Isthi
 ## Core features
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 7d84a89ddcc48617b0400791f46399c16ee9ffa1ff3aa62a4d4c082e44d3c778 -->
+<!-- agctx-doc-sources-sha256: b655e01138bf879c6502fd65ab7cc175f976990d6a363fd98f8e81507eefc995 -->
 
 - **Create and configure Profiles** — `profile create`, `list`, `setup`, `remove`. Scopes are `personal`, `company`, `team`, and `workspace`, and `setup` turns ten items `on` or `off`: workflow, context management, TDD, change review, verification, instruction files, documentation, security, untrusted input, and response language. The sentence each item writes, and its evidence, are in the [guidance catalog (Korean)](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md).
 - **Apply and sync** — `profile apply`, `sync`, `resolve`. Applying records the Profile version, and `--pin` keeps the project on that commit. When an edit inside a managed area causes a conflict, `resolve` moves that edit outside the managed area.
@@ -144,7 +146,7 @@ Repository developers run `pnpm run check` to verify agctx's own types, formatti
 ## Supported agents
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 8fbdd5b2d1cb563a71bf17f597f84104c730975753cde1b850354e5df3062512 -->
+<!-- agctx-doc-sources-sha256: 0b5d368f8e83469ccc384460e2eccc7e95662c321b3a0a47fd36c409a5082c62 -->
 
 Applying a Profile to a project generates and syncs the per-agent guidance files below. `AGENTS.md` is the shared standard that many agents read together.
 

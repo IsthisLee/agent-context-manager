@@ -5,6 +5,7 @@ import {
   extractAgentsManagedDocument,
   extractManagedDocument,
   formatterNormalized,
+  hasAgctxAgentsMarker,
   mergeAgentsMd,
   mergeManagedDocument
 } from './analyzer.ts';
@@ -161,6 +162,8 @@ export interface PlanInput {
   agents: readonly AgentId[];
   /** agctx.project.json의 `agents`에 쓸 목록. null이면 키를 빼서 지원 에이전트 전부를 뜻한다. */
   recordAgents: readonly AgentId[] | null;
+  /** agctx 표지가 없는 기존 파일에 관리 영역을 더해도 된다는 사람의 허락(`--adopt`). */
+  adopt?: boolean;
 }
 
 /**
@@ -176,7 +179,8 @@ export function planProject(
     projectConfig,
     record,
     agents,
-    recordAgents
+    recordAgents,
+    adopt = false
   }: PlanInput,
   overrides: Map<string, string | null> = new Map()
 ): ProjectPlan {
@@ -214,6 +218,15 @@ export function planProject(
       currentRegion !== null &&
       (currentRegion === nextRegion ||
         (base !== null && formatterNormalized(base) === formatterNormalized(currentRegion)));
+    // 사람이나 다른 도구가 쓴 파일: agctx가 관리한 적 없고, 비어 있지 않고, agctx 표지가 없다.
+    const unmanaged =
+      !adopt &&
+      !remove &&
+      !overridden &&
+      recordedHash === null &&
+      existing !== null &&
+      existing.trim() !== '' &&
+      !(kind === 'agents' ? hasAgctxAgentsMarker(existing) : currentRegion !== null);
     // 빼는 파일에서 사람이 이미 블록을 지웠으면 지울 것이 없으므로 충돌이 아니다.
     const conflict =
       recordedHash && !settled && !(remove && currentRegion === null) && regionHash(currentRegion) !== recordedHash
@@ -228,7 +241,8 @@ export function planProject(
       currentRegion,
       nextRegion,
       conflict,
-      remove
+      remove,
+      unmanaged
     });
   };
   // 이 파일을 agctx가 관리해 왔는가. 관리한 적 없는 파일은 에이전트를 빼도 건드리지 않는다.
@@ -354,6 +368,7 @@ export function planProject(
     files,
     conflicts: files.filter((file): file is ConflictedFile => file.conflict !== null),
     changes,
+    unmanaged: files.filter(file => file.unmanaged),
     warnings
   };
 }

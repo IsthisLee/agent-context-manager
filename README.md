@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: d22524aa0606befab84dda92c1c5e1a3e5c15c388efaee213b941e1f8e2133d7 -->
+<!-- agctx-doc-sources-sha256: a253c71865b796bfad754dc4a738b150fe4130265a5c207da1e5196ea3078d3a -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -105,6 +105,8 @@ Plan: 8 file(s) to change.
 Applied profile company to /path/to/project
 ```
 
+이미 사람이 쓴 `AGENTS.md`나 `CLAUDE.md`가 있는 저장소에서는 아무것도 바꾸지 않고 멈춥니다. 기존 내용을 남기고 agctx 영역을 더하려면 안내대로 `--adopt`를 붙여 다시 실행합니다([CLI Reference](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/cli.md#profile-apply)).
+
 > [!Tip]
 > 터미널에서 `agctx`를 입력하면 명령을 외우지 않아도 TUI 메뉴에서 모든 기능을 실행할 수 있습니다. 프로필 만들기·지침 설정·적용·동기화·Git 공유부터 프로젝트 점검과 여러 저장소 처리까지 메뉴로 진행합니다.
 >
@@ -125,7 +127,7 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 7d84a89ddcc48617b0400791f46399c16ee9ffa1ff3aa62a4d4c082e44d3c778 -->
+<!-- agctx-doc-sources-sha256: b655e01138bf879c6502fd65ab7cc175f976990d6a363fd98f8e81507eefc995 -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -146,7 +148,7 @@ Applied profile company to /path/to/project
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 8fbdd5b2d1cb563a71bf17f597f84104c730975753cde1b850354e5df3062512 -->
+<!-- agctx-doc-sources-sha256: 0b5d368f8e83469ccc384460e2eccc7e95662c321b3a0a47fd36c409a5082c62 -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 

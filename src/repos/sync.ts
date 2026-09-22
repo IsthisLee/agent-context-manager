@@ -5,6 +5,7 @@ import { planFor, PROJECT_CONFIG_FILE, readProjectConfig, type ApplyPlan } from 
 import { writePlan } from '../project/plan.ts';
 import { EXIT, toCliError } from '../shared/errors.ts';
 import { git } from '../shared/git.ts';
+import { shellWord } from '../shared/shell.ts';
 import { recordRepo, selectRepos } from './registry.ts';
 
 /**
@@ -122,6 +123,17 @@ export function planReposSync(profileFilter: string | null): SyncItem[] {
           exitCode: EXIT.conflict,
           files,
           detail: _('repos.sync.conflict', { files: files.join(', '), project: entry.path })
+        };
+      }
+      if (plan.plan.unmanaged.length) {
+        const files = plan.plan.unmanaged.map(file => file.rel);
+        return {
+          ...item,
+          profile,
+          state: 'conflict',
+          exitCode: EXIT.conflict,
+          files,
+          detail: _('repos.sync.unmanaged', { files: files.join(', '), project: shellWord(entry.path) })
         };
       }
       if (!plan.plan.changes.some(change => change.status !== 'unchanged')) {

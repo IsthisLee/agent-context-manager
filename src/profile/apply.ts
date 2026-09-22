@@ -9,7 +9,14 @@ import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
 import { shellWord } from '../shared/shell.ts';
-import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan, ProjectSource } from '../shared/types.ts';
+import type {
+  ConflictedFile,
+  PlannedFile,
+  Profile,
+  ProjectConfig,
+  ProjectPlan,
+  ProjectSource
+} from '../shared/types.ts';
 import { formatDiff, MANAGED_END } from '../project/conflicts.ts';
 import { planProject } from '../project/plan.ts';
 import { assertNoHiddenCharacters, committedProfile } from './git-profile.ts';
@@ -80,16 +87,26 @@ export const CONFLICT_GUIDE =
 export function conflictError(
   conflicts: readonly ConflictedFile[],
   targetDir: string,
-  warnings: readonly string[] = []
+  warnings: readonly string[] = [],
+  unmanaged: readonly PlannedFile[] = []
 ): CliError {
   return new CliError(
     'project.conflict',
     _('error.project.conflict', { files: conflicts.map(file => file.rel).join(', ') }),
     {
       exitCode: EXIT.conflict,
-      hint: conflicts.some(file => file.remove)
-        ? `${_('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE })} ${_('hint.project.conflict.remove', { project: targetDir })}`
-        : _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
+      hint: [
+        _('hint.project.conflict', { project: targetDir, guide: CONFLICT_GUIDE }),
+        conflicts.some(file => file.remove) ? _('hint.project.conflict.remove', { project: targetDir }) : '',
+        unmanaged.length
+          ? _('hint.project.conflict.unmanaged', {
+              files: unmanaged.map(file => file.rel).join(', '),
+              project: shellWord(targetDir)
+            })
+          : ''
+      ]
+        .filter(Boolean)
+        .join(' '),
       details: conflicts.map(file => ({ file: file.rel, kind: file.conflict.kind })),
       warnings
     }
@@ -220,12 +237,19 @@ export function agentSelection(
   return { agents: chosen, record: chosen };
 }
 
+export interface PlanOptions {
+  /** `--agent` 값. null이면 기록한 선택을 따른다. */
+  agent?: string | null;
+  /** `--adopt`: agctx 표지가 없는 기존 파일에도 관리 영역을 더한다. */
+  adopt?: boolean;
+}
+
 export function planFor(
   name: string,
   targetDir: string,
   pin: boolean | 'keep',
   overrides?: Map<string, string | null>,
-  agentOption: string | null = null
+  { agent: agentOption = null, adopt = false }: PlanOptions = {}
 ): ApplyPlan {
   const profile = readProfile(name);
   assertProjectDirectory(targetDir);
@@ -248,19 +272,92 @@ export function planFor(
       projectConfig,
       record: { source: version.source, pin: version.pin, uncommitted: version.uncommitted },
       agents: selection.agents,
-      recordAgents: selection.record
+      recordAgents: selection.record,
+      adopt
     },
     overrides
   );
   return { name, targetDir, version, plan, previousPin: projectConfig.pin === true, agents: selection.agents };
 }
 
+/** 파일을 받는 에이전트. `AGENTS.md`는 모든 에이전트가 읽으므로 null이다. */
+function fileAgent(rel: string): AgentId | null {
+  if (rel === 'CLAUDE.md' || rel.endsWith('/CLAUDE.md')) return 'claude';
+  if (rel === '.agents/rules/agctx.md') return 'antigravity';
+  return null;
+}
+
+function isSymlink(target: string): boolean {
+  try {
+    return fs.lstatSync(target).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
+
+export interface UnmanagedContext {
+  /** 같은 명령에 `--adopt`를 붙인 것. */
+  retry: string;
+  profile: string;
+  targetDir: string;
+  /** 지금 연결 파일을 받는 에이전트. */
+  agents: readonly AgentId[];
+}
+
+/**
+ * 표지 없는 파일에서 멈춘 뒤 할 수 있는 일. 편입(`--adopt`)을 먼저 안내하고, 그 파일을 받는 에이전트를
+ * 빼서 피할 수 있으면 뺀 목록을 채운 `apply` 명령도 알려 준다. 심볼릭 링크는 agctx가 쓸 수 없으므로
+ * 편입 대신 에이전트를 빼라고만 안내한다. `AGENTS.md`는 모든 에이전트가 읽어 뺄 수 없다.
+ */
+function unmanagedHint(files: readonly PlannedFile[], context: UnmanagedContext): string {
+  const avoidable = [...new Set(files.map(file => fileAgent(file.rel)).filter(agent => agent !== null))];
+  const rest = context.agents.filter(agent => !avoidable.includes(agent));
+  const linked = files.filter(file => isSymlink(file.target)).map(file => file.rel);
+  // 에이전트를 빼도 남는 파일(AGENTS.md)이 있으면 그 명령에 편입까지 붙여 한 번에 끝나게 한다.
+  const stillUnmanaged = files.some(file => fileAgent(file.rel) === null);
+  const leaveOut =
+    avoidable.length && rest.length
+      ? _('hint.project.unmanaged.agent', {
+          command: `agctx profile apply ${shellWord(context.profile)} ${shellWord(context.targetDir)} --agent ${rest.join(',')}${stillUnmanaged ? ' --adopt' : ''}`
+        })
+      : '';
+  if (linked.length)
+    return [_('hint.project.unmanaged.symlink', { files: linked.join(', ') }), leaveOut].filter(Boolean).join(' ');
+  return [_('hint.project.unmanaged', { command: context.retry }), leaveOut].filter(Boolean).join(' ');
+}
+
+/** agctx 표지가 없는 기존 파일에서 멈추는 오류. `--json`의 `details`에 멈춘 파일을 담는다. */
+export function unmanagedError(
+  files: readonly PlannedFile[],
+  context: UnmanagedContext,
+  warnings: readonly string[] = []
+): CliError {
+  return new CliError(
+    'project.unmanaged',
+    _('error.project.unmanaged', { files: files.map(file => file.rel).join(', ') }),
+    {
+      exitCode: EXIT.conflict,
+      hint: unmanagedHint(files, context),
+      details: files.map(file => ({ file: file.rel, kind: 'unmanaged' })),
+      warnings
+    }
+  );
+}
+
 export function printPlan(plan: ProjectPlan, label: string): void {
   const conflicted = new Set(plan.conflicts.map(file => file.rel));
-  const changed = plan.changes.filter(change => change.status !== 'unchanged' && !conflicted.has(change.relativePath));
+  const unmanaged = new Set(plan.unmanaged.map(file => file.rel));
+  const changed = plan.changes.filter(
+    change =>
+      change.status !== 'unchanged' && !conflicted.has(change.relativePath) && !unmanaged.has(change.relativePath)
+  );
   say(_('plan.summary', { label, count: changed.length }));
   for (const change of plan.changes) {
-    const status = conflicted.has(change.relativePath) ? 'conflict' : change.status;
+    const status = conflicted.has(change.relativePath)
+      ? 'conflict'
+      : unmanaged.has(change.relativePath)
+        ? 'unmanaged'
+        : change.status;
     say(`  ${status.padEnd(9)} ${change.relativePath}`);
   }
 }

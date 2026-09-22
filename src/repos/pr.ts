@@ -251,15 +251,15 @@ function planTarget(
   }
   // 고정한 저장소는 프로필의 현재 커밋으로 다시 고정하고, 나머지는 보관함을 따른다.
   const plan = planFor(profile, workspace.project, config.pin === true ? true : 'keep');
-  if (plan.plan.conflicts.length) {
-    const files = plan.plan.conflicts.map(file => file.rel);
+  if (plan.plan.conflicts.length || plan.plan.unmanaged.length) {
+    const files = [...plan.plan.conflicts, ...plan.plan.unmanaged].map(file => file.rel);
     return {
       item: {
         ...planned,
         state: 'conflict',
         exitCode: EXIT.conflict,
         files,
-        detail: _('repos.pr.conflict', { files: files.join(', ') })
+        detail: _(plan.plan.conflicts.length ? 'repos.pr.conflict' : 'repos.pr.unmanaged', { files: files.join(', ') })
       },
       candidate: null
     };

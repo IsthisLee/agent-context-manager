@@ -56,7 +56,7 @@ agctx install
 ## 1. 프로필 만들기
 
 <!-- agctx-doc-sources: src/profile -->
-<!-- agctx-doc-sources-sha256: 0bc8b875f1b9468152caf8e68b35bfa8475990448cfd18eb05700079370821a8 -->
+<!-- agctx-doc-sources-sha256: 9b3e61992d22ab6402937b9fa865c60012127fbf2414c9275838e756dc3d4d1c -->
 
 1~5절의 명령 예시는 빈 작업 폴더 `/work`에서 실제로 실행한 출력이다. 저장소 테스트(`evals/doc-examples.test.ts`)가 같은 명령을 다시 실행해 출력이 문서와 같은지 확인하므로, 지금 버전의 실제 출력과 같다.
 
@@ -72,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: aeb21fef8e241ecd3892343ffabed99bf2d0e836b1faa4e69b29baa60a3f1ed6 -->
+<!-- agctx-doc-sources-sha256: e9b26d07f98de694df3fae7fc6ef750b04d5271780c2293c286a5081abd9399c -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 
@@ -91,7 +91,7 @@ Configured profile: team-backend
 ## 3. 프로젝트에 적용
 
 <!-- agctx-doc-sources: src/project, templates -->
-<!-- agctx-doc-sources-sha256: 073d4b3105376d4ef5fab6d39ad0ab9d89829b23a99cd4cb305d5918559814c4 -->
+<!-- agctx-doc-sources-sha256: 24ecb8dbae2b11e1da8ef6517989cd99ca68a55a770ca0c26722f286edcc0d9a -->
 
 선택한 프로필을 프로젝트에 처음 적용하거나 다른 프로필로 전환할 때 쓴다. 터미널에서 실행하면 바뀔 파일 계획을 먼저 출력하고 적용할지 묻는다. 스크립트·CI처럼 터미널이 아닌 환경에서는 묻지 않으므로 `--yes`를 붙여야 파일을 쓴다. 계획만 보려면 `--dry-run`을 붙인다.
 
@@ -125,6 +125,8 @@ Applied profile team-backend to /work/shop
 └── services/payments/CLAUDE.md      # 모노레포에서 하위 폴더에 AGENTS.md가 있을 때만 생기는 연결 파일
 ```
 
+이미 사람이 쓴 `AGENTS.md`나 `CLAUDE.md`가 있는 저장소에서는 계획에 그 파일이 `unmanaged`로 나오고 아무것도 쓰지 않은 채 종료 코드 2로 멈춘다. 기존 내용을 남기고 agctx 영역을 더하려면 안내대로 `--adopt`를 붙여 다시 실행한다. TUI에서는 편입할지 묻는다. 쓰지 않는 에이전트의 파일은 `--agent`로 뺄 수 있다([CLI Reference](../reference/cli.md#profile-apply)).
+
 `CLAUDE.md`와 `.agents/rules/agctx.md`처럼 `AGENTS.md`를 읽으라고 알려 주는 짧은 파일을 포인터 파일이라고 부른다. Claude Code는 `AGENTS.md`를 직접 읽지 않기 때문에 필요하다.
 
 프로젝트의 도메인 규칙은 `AGENTS.md`의 프로젝트 규칙 확장 섹션 아래에 쓴다. 그 위의 공통 지침 부분(관리 영역)은 `apply`·`sync`가 다시 만든다. 그래서 관리 영역 안을 고치면, 다음 `apply`·`sync`가 고친 내용을 지우지 않으려고 파일을 쓰지 않고 멈춘다. 두 영역의 경계와 멈췄을 때 푸는 법은 [관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)에 있다.
@@ -136,7 +138,7 @@ Applied profile team-backend to /work/shop
 ## 4. 저장소 확인하기
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 0b420dd7ac266bfdc1dc79f0f2dd836a5d84e34d2192f2fb814c11d509f73f07 -->
+<!-- agctx-doc-sources-sha256: 2716a0a7af0a442c820643f6688ee3f5f3f16daebb7e9fd26f389f889943c9ce -->
 
 `check`는 파일을 바꾸지 않고 저장소가 기록한 프로필 버전과 맞는지 확인한다. TUI에서는 첫 화면의 **Check a project** > **Profile version**을 고른다.
 

@@ -50,11 +50,11 @@ test('apply와 sync는 긴 AGENTS.md를 경고만 하고 파일과 종료 코드
   const { me, repo, agents } = project(t);
   fs.writeFileSync(agents, `# payments-api\n\n${lines(230)}`);
 
-  const preview = me.run(['profile', 'apply', 'team-backend', repo, '--dry-run']);
+  const preview = me.run(['profile', 'apply', 'team-backend', repo, '--adopt', '--dry-run']);
   assert.equal(preview.status, 0, preview.stderr);
   assert.match(preview.stderr, /AGENTS\.md will be \d+ lines/, 'dry-run도 경고한다');
 
-  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--yes']);
+  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--adopt', '--yes']);
   assert.equal(applied.status, 0, applied.stderr);
   assert.match(applied.stderr, /AGENTS\.md will be (\d+) lines[^\n]*200 lines/);
   const lineCount = fs.readFileSync(agents, 'utf8').trimEnd().split('\n').length;
@@ -81,7 +81,7 @@ test('apply와 sync는 긴 AGENTS.md를 경고만 하고 파일과 종료 코드
 test('짧은 AGENTS.md에는 분량 경고가 없다', t => {
   const { me, repo, agents } = project(t);
   fs.writeFileSync(agents, '# payments-api\n\n- Use idempotency keys.\n');
-  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--yes']);
+  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--adopt', '--yes']);
   assert.equal(applied.status, 0, applied.stderr);
   assert.doesNotMatch(applied.stderr, /lines|KiB/);
 });
@@ -89,7 +89,7 @@ test('짧은 AGENTS.md에는 분량 경고가 없다', t => {
 test('한국어 설정에서는 경고를 한국어로 보여 준다', t => {
   const { me, repo, agents } = project(t);
   fs.writeFileSync(agents, `# payments-api\n\n${Array.from({ length: 120 }, () => '가'.repeat(80)).join('\n')}\n`);
-  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--yes'], { AGCTX_LANG: 'ko' });
+  const applied = me.run(['profile', 'apply', 'team-backend', repo, '--adopt', '--yes'], { AGCTX_LANG: 'ko' });
   assert.equal(applied.status, 0, applied.stderr);
   assert.match(applied.stderr, /이번에 쓰는 AGENTS\.md는 \d+\.\d KiB로 경고 기준 24 KiB 이상입니다/);
 });
@@ -120,7 +120,7 @@ test('TUI에서 적용해도 같은 경고가 보인다', async t => {
     else process.env.AGCTX_LANG = previous.lang;
   });
   const { runFromTui } = await import('../src/tui/commands.ts');
-  const outcome = await runFromTui('profile.apply', ['team-backend', repo], { yes: true });
+  const outcome = await runFromTui('profile.apply', ['team-backend', repo], { adopt: true, yes: true });
   process.stderr.write = original;
   process.stdout.write = originalOut;
   assert.equal(outcome.exitCode, 0);
@@ -148,7 +148,7 @@ test('CRLF로 저장된 AGENTS.md는 디스크에 쓰일 바이트로 잰다', t
 test('충돌로 멈춘 --json 결과에도 분량 경고를 담는다', t => {
   const { me, repo, agents } = project(t);
   fs.writeFileSync(agents, `# payments-api\n\n${lines(230)}`);
-  me.ok(['profile', 'apply', 'team-backend', repo, '--yes']);
+  me.ok(['profile', 'apply', 'team-backend', repo, '--adopt', '--yes']);
   fs.writeFileSync(
     agents,
     fs.readFileSync(agents, 'utf8').replace('## Project context', '## Project context (edited)')

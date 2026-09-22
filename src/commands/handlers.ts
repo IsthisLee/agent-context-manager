@@ -4,7 +4,7 @@ import { _, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { checkProject } from '../check.ts';
 import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { agentsToVerify, verifyPath } from '../verify/index.ts';
-import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
+import { boundProfile, conflictError, planFor, printConflicts, printPlan, unmanagedError } from '../profile/apply.ts';
 import {
   cloneProfile,
   connectProfile,
@@ -94,7 +94,11 @@ async function applyOrSync(
   retry: string
 ): Promise<CommandOutcome> {
   const dryRun = flag(parsed, 'dry-run');
-  const { plan, version, previousPin, agents } = planFor(name, targetDir, pin, undefined, text(parsed, 'agent'));
+  const adopt = flag(parsed, 'adopt');
+  const { plan, version, previousPin, agents } = planFor(name, targetDir, pin, undefined, {
+    agent: text(parsed, 'agent'),
+    adopt
+  });
   const data = {
     profile: name,
     project: targetDir,
@@ -120,8 +124,14 @@ async function applyOrSync(
   const changed = plan.changes.filter(change => change.status !== 'unchanged');
   if (plan.conflicts.length) {
     if (dryRun) printConflicts(plan.conflicts);
-    throw conflictError(plan.conflicts, targetDir, warnings);
+    throw conflictError(plan.conflicts, targetDir, warnings, plan.unmanaged);
   }
+  if (plan.unmanaged.length)
+    throw unmanagedError(
+      plan.unmanaged,
+      { retry: retry.replace(/ --yes$/, ' --adopt'), profile: name, targetDir, agents },
+      warnings
+    );
   if (dryRun) {
     say(_('plan.dry-run.done'));
     return done(false);
@@ -197,29 +207,41 @@ export const HANDLERS: Record<string, Handler> = {
     const targetDir = projectDir(parsed.positional[1]);
     const pin = flag(parsed, 'pin');
     const agent = text(parsed, 'agent');
+    const adopt = flag(parsed, 'adopt');
     return applyOrSync(
       parsed,
       name,
       targetDir,
       pin,
-      `agctx profile apply ${shellWord(name)} ${shellWord(targetDir)}${agent ? ` --agent ${shellWord(agent)}` : ''}${pin ? ' --pin' : ''} --yes`
+      `agctx profile apply ${shellWord(name)} ${shellWord(targetDir)}${agent ? ` --agent ${shellWord(agent)}` : ''}${pin ? ' --pin' : ''}${adopt ? ' --adopt' : ''} --yes`
     );
   },
   'profile.sync': async parsed => {
     const targetDir = projectDir(parsed.positional[0]);
     const name = boundProfile(targetDir, 'profile sync');
-    return applyOrSync(parsed, name, targetDir, 'keep', `agctx profile sync ${targetDir} --yes`);
+    return applyOrSync(
+      parsed,
+      name,
+      targetDir,
+      'keep',
+      `agctx profile sync ${shellWord(targetDir)}${flag(parsed, 'adopt') ? ' --adopt' : ''} --yes`
+    );
   },
   'profile.resolve': async parsed => {
     const targetDir = projectDir(parsed.positional[0]);
     const result = await resolveProject(
       targetDir,
-      { dryRun: flag(parsed, 'dry-run'), discard: flag(parsed, 'discard'), edit: flag(parsed, 'edit') },
+      {
+        dryRun: flag(parsed, 'dry-run'),
+        discard: flag(parsed, 'discard'),
+        edit: flag(parsed, 'edit'),
+        adopt: flag(parsed, 'adopt')
+      },
       () =>
         confirmChange(
           parsed,
           _('confirm.resolve', { project: targetDir }),
-          `agctx profile resolve ${targetDir}${flag(parsed, 'discard') ? ' --discard' : ''}${flag(parsed, 'edit') ? ' --edit' : ''} --yes`
+          `agctx profile resolve ${shellWord(targetDir)}${flag(parsed, 'discard') ? ' --discard' : ''}${flag(parsed, 'edit') ? ' --edit' : ''}${flag(parsed, 'adopt') ? ' --adopt' : ''} --yes`
         )
     );
     return ok(result);

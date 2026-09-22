@@ -29,10 +29,10 @@
 ## 결정 (Decision)
 
 1. **패키지:** npm 패키지의 `files`에 `skills/`를 넣는다. 게시한 CLI와 같은 버전의 스킬이 함께 설치된다.
-2. **`agctx install [--agent <claude|codex|antigravity>]... [--force] [--dry-run]`:** 패키지 안의 스킬을 각 에이전트의 사용자 전역 위치에 복사한다. 위치는 Claude Code `~/.claude/skills/`, Codex `~/.agents/skills/`, Antigravity 앱·IDE `~/.gemini/config/skills/`, Antigravity CLI `~/.gemini/antigravity-cli/skills/`다. 설정 폴더(`~/.claude`, `CODEX_HOME` 또는 `~/.codex`, `~/.gemini/config`, `~/.gemini/antigravity-cli`)가 있는 곳에만 두고, `--agent`로 고르면 폴더가 없어도 둔다. 자기 스킬 폴더만 쓰므로 확인 질문을 하지 않는다.
+2. **`agctx install [--agent <claude|codex|antigravity|all>] [--force] [--dry-run]`:** 패키지 안의 스킬을 각 에이전트의 사용자 전역 위치에 복사한다. 위치는 Claude Code `~/.claude/skills/`, Codex `~/.agents/skills/`, Antigravity 앱·IDE `~/.gemini/config/skills/`, Antigravity CLI `~/.gemini/antigravity-cli/skills/`다. 설정 폴더(`~/.claude`, `CODEX_HOME` 또는 `~/.codex`, `~/.gemini/config`, `~/.gemini/antigravity-cli`)가 있는 곳에만 두고, `--agent`로 고르면 폴더가 없어도 둔다. 자기 스킬 폴더만 쓰므로 확인 질문을 하지 않는다.
 3. **설치 기록과 교체:** 스킬 폴더마다 CLI 버전과 파일별 해시를 적은 `.agctx-install.json`을 둔다. 기록과 같은 폴더만 교체하고, 기록이 없거나 파일이 바뀐 폴더와 심볼릭 링크는 `--force` 없이는 바꾸지 않는다.
 4. **버전 알림:** 모든 명령이 설치 기록의 버전을 CLI 버전과 비교하고, 다르면 `agctx install`을 다시 실행하라고 stderr에 한 줄로 알린다. `--json`이면 `warnings`에 담고, TUI는 첫 화면에 보여 준다. 스킬을 설치하지 않았으면 알리지 않는다.
-5. **`agctx uninstall [--agent ...]`:** 설치 기록이 있는 스킬 폴더만 지운다.
+5. **`agctx uninstall [--agent <claude|codex|antigravity|all>] [--dry-run]`:** 설치 기록이 있는 스킬 폴더만 지운다.
 6. **표면:** 두 명령은 전역 명령이고 TUI 첫 화면에서도 실행한다. 에이전트가 자기 스킬 폴더를 바꾸지 않도록 에이전트 정책은 `never`다.
 7. **문서:** 기본 설치 안내는 `npm install -g agent-context-manager`와 `agctx install` 두 줄이다. `npx skills add`는 안내하지 않는다.
 

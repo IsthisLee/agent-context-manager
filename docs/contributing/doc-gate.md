@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts -->
-<!-- agctx-doc-sources-sha256: b5e034bb294b0e9779bcaf8b29887c170af0b8993756687944218d408ec0a911 -->
+<!-- agctx-doc-sources-sha256: e736e01f7413ab51ec5c12791e233a870c4f7b002966999362d84316435f73be -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 

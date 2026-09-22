@@ -1,7 +1,7 @@
 # 에이전트 스킬을 agctx 명령으로 설치하기
 
 <!-- agctx:generated:status:start -->
-**상태:** Proposed
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -29,8 +29,8 @@
 | 선행 제안 | [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)(스킬 배포) |
 | 후속 제안 | 없음 |
 | 연관 제안 | [구현 계약 및 문서 규칙](implementation-contracts.md)의 인터페이스 동등성 |
-| 후속 작업 | 결정은 [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3을 대체하는 새 ADR로 남긴다. |
-| 권장 다음 작업 | 전역 위치는 확인했다. [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3을 대체하는 ADR을 쓰고, [평가 계획](#평가-계획)의 평가를 먼저 쓴다. |
+| 후속 작업 | 없음. 결정은 [ADR 0038](../../../adr/0038-install-agent-skills-from-cli-package.md)에, 사용 절차는 [에이전트에게 agctx를 맡기기](../../../guides/agent-skills.md)에, 명령과 파일 형식은 [CLI Reference](../../../reference/cli.md#install)와 [파일 형식](../../../reference/file-formats.md#agctx-installjson)에 옮겼다. |
+| 권장 다음 작업 | 없음. 이 주제의 계약은 [구현 기록](#구현-기록)대로 모두 구현했다. |
 
 ## 목차
 
@@ -41,6 +41,7 @@
 - [구현 전에 확인할 것](#구현-전에-확인할-것)
 - [평가 계획](#평가-계획)
 - [비범위](#비범위)
+- [구현 기록](#구현-기록)
 
 ## 현재 동작
 
@@ -71,7 +72,7 @@ $ agctx install
 ```
 
 1. **패키지:** `package.json`의 `files`에 `skills/`를 더해, 게시한 CLI와 같은 버전의 스킬이 함께 설치되게 한다.
-2. **`agctx install [--agent <claude|codex|antigravity>]... [--force] [--dry-run]`:**
+2. **`agctx install [--agent <claude|codex|antigravity|all>] [--force] [--dry-run]`:**
    - 이 컴퓨터에 설치된 에이전트를 찾아, 패키지 안의 스킬 두 개를 각 에이전트의 전역 스킬 폴더에 복사한다.
    - 설치할 곳과 에이전트를 찾는 기준은 아래와 같다. 설치할 곳은 각 에이전트의 공식 문서가 드는 사용자 전역 위치다. 찾는 기준은 그 에이전트의 설정 폴더가 있는지다. 건너뛴 곳은 출력에 적는다.
 
@@ -82,7 +83,7 @@ $ agctx install
      | Antigravity 앱·IDE | `~/.gemini/config/skills/` | `~/.gemini/config`가 있다 |
      | Antigravity CLI | `~/.gemini/antigravity-cli/skills/` | `~/.gemini/antigravity-cli`가 있다 |
 
-   - `--agent`로 고르면 설정 폴더가 없어도 그 에이전트에 설치한다. 이름은 `explain`·`verify`의 `--agent`와 같은 `claude`·`codex`·`antigravity`이고, `antigravity`는 앱·IDE와 CLI 두 곳에 모두 둔다. 하나도 찾지 못하면 확인한 폴더와 `--agent`를 안내하고 멈춘다.
+   - `--agent`로 고르면 설정 폴더가 없어도 그 에이전트에 설치한다. 값은 `explain`·`verify`의 `--agent`처럼 하나만 받고 `claude`·`codex`·`antigravity`·`all` 가운데 고른다. `antigravity`는 앱·IDE와 CLI 두 곳에, `all`은 네 곳 모두에 둔다. 하나도 찾지 못하면 확인한 폴더와 `--agent`를 안내하고 멈춘다.
    - 자기 스킬 폴더만 쓰므로 확인 질문을 하지 않는다. `profile create`와 같은 방식이다. `--dry-run`은 계획만 출력한다.
 3. **설치 기록과 교체:**
    - 스킬 폴더마다 설치 기록 `.agctx-install.json`(CLI 버전과 파일별 해시)을 둔다.
@@ -91,7 +92,7 @@ $ agctx install
 4. **오래된 스킬 알림:**
    - 모든 명령이 실행될 때 설치 기록의 버전을 CLI 버전과 비교한다. 다르면 「스킬이 CLI와 버전이 다르다, `agctx install`을 실행하라」를 stderr에 한 줄로 출력한다.
    - `--json`이면 출력하지 않고 `warnings`에 담고, TUI는 첫 화면에 보여 준다. 스킬을 설치하지 않았으면 알리지 않는다.
-5. **`agctx uninstall [--agent ...]`:** 설치 기록이 있는 스킬 폴더만 지운다. 기록이 없는 폴더는 남기고 그 경로를 알린다.
+5. **`agctx uninstall [--agent <claude|codex|antigravity|all>] [--dry-run]`:** 설치 기록이 있는 스킬 폴더만 지운다. 기록이 없는 폴더는 남기고 그 경로를 알린다.
 6. **CLI·TUI·에이전트:** 등록부에 두 명령을 전역 명령으로 등록하고, TUI 첫 화면에 「에이전트 스킬 설치」를 더한다. 에이전트가 자기 스킬 폴더를 바꾸면 안 되므로 에이전트 정책은 `never`다.
 7. **문서:**
    - README와 빠른 시작의 기본 설치를 두 줄(`npm install -g agent-context-manager`, `agctx install`)로 바꾸고 `npx skills add` 안내를 뺀다.
@@ -149,3 +150,26 @@ $ agctx install
 - 저장소 안(`.agents/skills`, `.claude/skills`)에 스킬을 두는 프로젝트 설치는 다루지 않는다. 전역 설치만 한다.
 - 세 에이전트 밖의 에이전트는 다루지 않는다.
 - 저장소의 `skills/` 폴더는 그대로 두므로, skills CLI로 GitHub에서 받는 길은 막지 않는다. 문서에서 안내하지 않을 뿐이다.
+
+## 구현 기록
+
+#### 구현 기록: agctx install과 uninstall, 버전 알림
+
+* **결정:** [ADR 0038](../../../adr/0038-install-agent-skills-from-cli-package.md). [결정](#결정)의 다섯 항목대로 구현했다.
+* **구현:**
+  - `src/skills/install.ts`가 네 곳의 대상과 에이전트 찾기(`skillTargets`), 설치 계획(`planInstall`), 복사와 설치 기록(`applyInstall`), 제거(`planUninstall`·`applyUninstall`), 버전 알림(`skillNotice`)을 맡는다. 기록이 없거나 파일이 기록과 다른 폴더와 심볼릭 링크는 막고, 하나라도 막히면 아무것도 쓰지 않는다.
+  - 명령 등록부에 전역 명령 `install`·`uninstall`(변경 분류 `agent-skills`, 에이전트 정책 `never`)을, TUI 첫 화면에 「에이전트 스킬 설치」·「제거」를 더했다.
+  - `src/commands/cli.ts`의 `run`이 성공과 실패 두 경로 모두에서 알림을 붙이고, TUI 첫 화면도 같은 알림을 보여 준다.
+  - `package.json`의 `files`에 `skills`를 더했고, 설치 스모크(`tools/package-smoke.ts`)가 tarball로 설치한 agctx로 임시 `HOME`에서 `agctx install`을 실행한다.
+  - README 두 개, 빠른 시작, 에이전트 스킬 가이드의 기본 설치를 `agctx install`로 바꿨다.
+* **평가:**
+  - `evals/skill-install.test.ts` 17개가 통과한다. 명령 등록부의 전체 목록 평가(`evals/interface-parity.test.ts`)와 패키지 구성 평가(`evals/package-contents.test.ts`)도 고쳤다. 모두 구현보다 먼저 쓰고 실패를 확인했다.
+  - 검사를 하나씩 빼는 변이 12개를 돌렸다. 11개는 해당 평가가 실패했다. 남은 1개(심볼릭 링크 검사)는 `lstat`이 링크를 폴더로 보고하지 않아 바로 뒤의 조건과 겹치는 코드였으므로, 겹치는 조건을 지웠다.
+  - `pnpm run package:smoke`가 통과했다. TUI는 가상 터미널로 띄워, 기록이 오래됐을 때 첫 화면에 알림이 나오고 「에이전트 스킬 설치」를 고르면 `update`·`unchanged`·`skipped` 줄과 함께 기록이 새 버전으로 바뀌는 것을 확인했다.
+* **계획과 달라진 점:**
+  - `--agent`는 옵션 파서가 같은 옵션을 여러 번 받지 못해, `explain`처럼 값 하나에 `all`을 더한 형태로 바꿨다.
+  - 다시 실행해 바뀐 폴더가 없으면 「이미 최신」이라고 알린다. 실제 출력을 문서에 옮기다가, 바뀐 것이 없을 때도 설치했다고 말하는 것을 발견해 고쳤다.
+* **제약:**
+  - `CLAUDE_CONFIG_DIR`로 Claude Code의 스킬 위치가 바뀌는지, Antigravity가 `~/.agents/skills/`도 읽는지는 확인하지 못했다.
+  - 공용 평가 도우미(`evals/support/git-workspace.ts`의 `makeWorkspace`)는 `HOME`을 바꾸지 않는다. 그래서 개발자 컴퓨터에 설치된 스킬이 CLI와 버전이 다르면, 그 평가들의 stderr에도 알림 한 줄이 붙는다. 지금은 stderr가 비어 있기를 기대하는 평가가 없다.
+* **다음 단계:** 없음.

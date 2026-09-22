@@ -36,15 +36,17 @@ flowchart LR
 ## 설치
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 8acfdb81ac78095841f4ccb59e9abcabea0d230e82f08d9cbd5fb7c22c74c2f5 -->
+<!-- agctx-doc-sources-sha256: 22cacd1cc34af4647a947aef09322aa9d0117a76b460594f0ceb0bf8d8cb2c79 -->
 
 agctx는 npm 패키지 `agent-context-manager`로 배포되고, 설치하면 `agctx` 명령이 생긴다. Node.js 22 이상이 필요하다.
 
 ```bash
 npm install -g agent-context-manager
-agctx help
+agctx install
 ```
 
+- `agctx install`은 패키지에 든 에이전트용 스킬을 이 컴퓨터에 설치된 Claude Code·Codex·Antigravity의 스킬 폴더에 복사한다. 스킬이 있으면 에이전트에게 agctx 일을 말로 맡길 수 있다. 쓰지 않으면 건너뛰어도 되고, 자세한 내용은 [에이전트에게 agctx를 맡기기](../guides/agent-skills.md)에 있다. CLI를 업데이트한 뒤에는 다시 실행한다.
+- 명령 목록은 `agctx help`로 본다.
 - 설치하지 않고 한 번만 쓰려면 `npx agent-context-manager <명령>`으로 실행한다. CI에서 쓰는 예시는 [CI와 자동화에서 쓰기](../guides/ci.md)에 있다.
 - 터미널에서 인자 없이 `agctx`를 실행하면 메인 TUI(명령을 외우지 않고 메뉴에서 골라 진행하는 터미널 화면)가 열린다. 프로필 만들기·설정·적용을 메뉴로 진행할 수 있다. 아래 단계마다 같은 일을 하는 TUI 메뉴를 적었고, 화면과 조작 방법은 [TUI로 쓰기](../guides/tui.md)에 있다.
 - Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. `repos pr`이 PR까지 열려면 GitHub CLI `gh`가 필요하다.
@@ -70,7 +72,7 @@ TUI에서는 첫 화면의 **Create a new profile**을 고르고 이름과 용�
 ## 2. 지침 설정
 
 <!-- agctx-doc-sources: src/commands, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 101f33afa942a5f819b4ab91be47fa42367bf4dd790c6b35c873cdf8bc84fb12 -->
+<!-- agctx-doc-sources-sha256: c0f10b14f71eaf8b271e1fc642bd114482a5ac70ba456fbc5f5107fc7c70f3d2 -->
 
 프로필에 담을 공통 지침을 고른다. 항목은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개이고, 항목마다 `on`과 `off` 중 하나다. 응답 언어만 기본값이 `off`이고 나머지는 `on`이다.
 

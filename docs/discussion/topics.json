@@ -201,7 +201,7 @@
         5
       ],
       "outcome": "CLI 패키지에 든 스킬을 `agctx install`이 설치된 에이전트의 스킬 폴더에 복사하고, CLI와 버전이 어긋나면 모든 명령이 알림",
-      "status": "Proposed"
+      "status": "Implemented"
     },
     {
       "file": "implementation-contracts.md",

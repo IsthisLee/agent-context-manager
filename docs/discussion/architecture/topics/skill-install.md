@@ -29,8 +29,8 @@
 | 선행 제안 | [자연어 요청을 통한 agctx 사용](agent-mediated-usage.md)(스킬 배포) |
 | 후속 제안 | 없음 |
 | 연관 제안 | [구현 계약 및 문서 규칙](implementation-contracts.md)의 인터페이스 동등성 |
-| 후속 작업 | 구현 전에 세 에이전트의 전역 스킬 위치를 확인해 `docs/references.md`에 기록한다. 결정은 [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3을 대체하는 새 ADR로 남긴다. |
-| 권장 다음 작업 | [구현 전에 확인할 것](#구현-전에-확인할-것)의 세 가지를 확인하고, [평가 계획](#평가-계획)의 평가를 먼저 쓴다. |
+| 후속 작업 | 결정은 [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3을 대체하는 새 ADR로 남긴다. |
+| 권장 다음 작업 | 전역 위치는 확인했다. [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3을 대체하는 ADR을 쓰고, [평가 계획](#평가-계획)의 평가를 먼저 쓴다. |
 
 ## 목차
 
@@ -55,7 +55,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 - [ADR 0019](../../../adr/0019-explain-verify-and-agent-skills.md)의 결정 3이 「사용자는 skills CLI로 설치하며, npm 패키지에는 넣지 않는다」로 정했다. 그래서 `package.json`의 `files`에는 `skills/`가 없다.
 - 스킬의 명령 목록은 `tools/generate-skills.ts`가 명령 등록부에서 만든다. CLI와 스킬을 서로 다른 곳에서 받으므로 두 버전이 맞는다는 보장이 없다.
 - skills CLI의 옵션, 설치 위치, 사용 통계 전송은 [에이전트 지침 로드와 전달 확인 근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)에 있다. 거기 적힌 실험에 따르면, `-a` 없이 전역 설치하면 에이전트 폴더 70곳 넘게 설치된다.
-- 같은 절의 전역 설치 실험에는 `~/.agents/skills`와 `~/.claude/skills`만 나온다. 반면 Antigravity의 전역 스킬 위치는 공식 문서에서 `~/.gemini/config/skills/`다([전역 지침 파일 공유 근거](../../../references.md#전역-지침-파일-공유-근거)). 지금 안내하는 명령이 Antigravity에 전역으로 닿는지는 확인하지 않았다.
+- **지금 안내는 Antigravity의 전역 위치에 닿지 않는다.** Antigravity의 전역 스킬 위치는 공식 문서에서 앱·IDE는 `~/.gemini/config/skills/`, CLI는 `~/.gemini/antigravity-cli/skills/`다. 그런데 skills CLI 1.7.0에 `-g -a antigravity`를 주고 실측하니 `~/.agents/skills/`에만 설치하고 `~/.gemini`는 만들지 않았다. Antigravity가 `~/.agents/skills/`도 읽는지는 문서에 없고 확인하지 않았다. 근거는 [에이전트 지침 로드와 전달 확인 근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)의 2026-09-22 항목에 있다. 이 결함은 이 제안이 기본 설치를 바꾸면서 함께 없어진다.
 
 ## 제안
 
@@ -64,16 +64,25 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 ```text
 $ npm install -g agent-context-manager
 $ agctx install
-  claude       ~/.claude/skills/agctx, agctx-author   installed
-  codex        <Codex 전역 위치>/agctx, agctx-author   installed
-  antigravity  ~/.gemini 없음                          skipped
+  claude           ~/.claude/skills                  installed agctx, agctx-author
+  codex            ~/.agents/skills                  installed agctx, agctx-author
+  antigravity      ~/.gemini/config/skills           installed agctx, agctx-author
+  antigravity-cli  ~/.gemini/antigravity-cli 없음     skipped
 ```
 
 1. **패키지:** `package.json`의 `files`에 `skills/`를 더해, 게시한 CLI와 같은 버전의 스킬이 함께 설치되게 한다.
 2. **`agctx install [--agent <claude|codex|antigravity>]... [--force] [--dry-run]`:**
    - 이 컴퓨터에 설치된 에이전트를 찾아, 패키지 안의 스킬 두 개를 각 에이전트의 전역 스킬 폴더에 복사한다.
-   - 에이전트를 찾는 기준은 설정 폴더가 있는지다. Claude Code는 `CLAUDE_CONFIG_DIR`(없으면 `~/.claude`), Codex는 `CODEX_HOME`(없으면 `~/.codex`), Antigravity는 `~/.gemini`를 본다. `verify`가 세션 기록을 찾을 때 쓰는 변수와 같다. 건너뛴 에이전트는 출력에 적는다.
-   - `--agent`로 고르면 설정 폴더가 없어도 그 에이전트에 설치한다. 하나도 찾지 못하면 확인한 폴더와 `--agent`를 안내하고 멈춘다.
+   - 설치할 곳과 에이전트를 찾는 기준은 아래와 같다. 설치할 곳은 각 에이전트의 공식 문서가 드는 사용자 전역 위치다. 찾는 기준은 그 에이전트의 설정 폴더가 있는지다. 건너뛴 곳은 출력에 적는다.
+
+     | 대상 | 설치할 곳 | 찾는 기준 |
+     | --- | --- | --- |
+     | Claude Code | `~/.claude/skills/` | `~/.claude`가 있다 |
+     | Codex | `~/.agents/skills/` | `CODEX_HOME`(없으면 `~/.codex`)이 있다 |
+     | Antigravity 앱·IDE | `~/.gemini/config/skills/` | `~/.gemini/config`가 있다 |
+     | Antigravity CLI | `~/.gemini/antigravity-cli/skills/` | `~/.gemini/antigravity-cli`가 있다 |
+
+   - `--agent`로 고르면 설정 폴더가 없어도 그 에이전트에 설치한다. 이름은 `explain`·`verify`의 `--agent`와 같은 `claude`·`codex`·`antigravity`이고, `antigravity`는 앱·IDE와 CLI 두 곳에 모두 둔다. 하나도 찾지 못하면 확인한 폴더와 `--agent`를 안내하고 멈춘다.
    - 자기 스킬 폴더만 쓰므로 확인 질문을 하지 않는다. `profile create`와 같은 방식이다. `--dry-run`은 계획만 출력한다.
 3. **설치 기록과 교체:**
    - 스킬 폴더마다 설치 기록 `.agctx-install.json`(CLI 버전과 파일별 해시)을 둔다.
@@ -95,7 +104,7 @@ $ agctx install
 1. **업데이트 방식:** 링크가 아니라 복사한다. CLI를 업데이트한 뒤에는 `agctx install`을 다시 실행해야 하고, 그 전까지는 알림이 그 사실을 알린다.
 2. **알림 위치:** 모든 명령에서 알린다. 스킬과 CLI가 어긋난 채 에이전트가 없는 명령을 실행하는 것이 이 기능이 막으려는 문제라서, 어느 경로로 실행하든 보여야 한다.
 3. **이미 있는 폴더:** 설치 기록과 같은 폴더만 교체하고, 그 밖의 폴더는 `--force` 없이는 바꾸지 않는다.
-4. **대상 에이전트:** 설정 폴더가 있는 에이전트에만 설치하고, `--agent`로 고를 수 있다.
+4. **대상 에이전트:** 설정 폴더가 있는 에이전트에만 설치하고, `--agent`로 고를 수 있다. 설치할 곳은 [제안](#제안)의 표대로 각 공식 문서의 사용자 전역 위치다.
 5. **되돌리기:** `agctx uninstall`을 함께 둔다. 설치 위치를 agctx가 관리하므로, 지우는 수단이 없으면 사용자가 폴더를 찾아 지워야 한다.
 
 ## 검토한 대안
@@ -118,12 +127,10 @@ $ agctx install
 
 ## 구현 전에 확인할 것
 
-1. **에이전트별 전역 스킬 위치:** 공식 문서와 실측으로 확인해 `docs/references.md`에 기록한다.
-   - Claude Code: 저장소의 근거에는 프로젝트 위치(`.claude/skills/`)만 공식 문서로 인용되어 있다. 사용자 위치 `~/.claude/skills/`는 skills CLI 실험에서 본 것이므로 공식 문서로 확인한다.
-   - Codex: 사용자 전역 위치의 근거가 저장소에 없다.
-   - Antigravity: 공식 문서의 `~/.gemini/config/skills/`에 두면 스킬 목록에 나오는지 실측한다.
-2. **지금 안내가 Antigravity에 닿는지:** `npx skills add ... -g -a antigravity`가 `~/.gemini/config/skills/`에 설치하는지 확인한다. 닿지 않으면 지금 문서의 결함이므로 이 주제와 별도로 고친다.
-3. **알림의 비용과 예외:** 모든 명령이 설치 기록 몇 개를 읽는 비용을 잰다. `--help`와 `install`·`uninstall` 자신은 알리지 않을지 정한다.
+1. **에이전트별 전역 스킬 위치:** 2026-09-22에 공식 문서로 확인해 [제안](#제안)의 표에 반영했다. 근거는 [에이전트 지침 로드와 전달 확인 근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)에 있다.
+2. **지금 안내가 Antigravity에 닿는지:** 같은 날 실측했고, 닿지 않는다([현재 동작](#현재-동작)).
+3. **`CLAUDE_CONFIG_DIR`:** Claude Code 문서는 개인 스킬 위치를 `~/.claude/skills/`로만 든다. 이 변수를 설정한 사람의 스킬 위치가 바뀌는지는 확인하지 못했으므로, 문서대로 `~/.claude/skills/`에 둔다. 이 변수만 쓰고 `~/.claude`가 없는 사람은 `--agent claude`로 설치한다.
+4. **알림의 비용과 예외:** 모든 명령이 설치 기록 몇 개를 읽는 비용을 잰다. `--help`와 `install`·`uninstall` 자신은 알리지 않을지 정한다.
 
 ## 평가 계획
 

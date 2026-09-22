@@ -200,6 +200,19 @@ test('소스로 핀한 문서는 자기 기록 해시를 빼고 해시하므로 
     withoutRecordedHash(doc('a'.repeat(64), 'edited body')),
     '핀한 문서를 고치면 여전히 게이트가 걸린다'
   );
+  // 절마다 지문을 둔 문서는 해시 줄이 여럿이다. 어느 절을 다시 stamp해도 그 문서를 핀한 쪽은 그대로여야 한다.
+  const sections = (first: string, second: string) =>
+    `# Title\n\n<!-- agctx-doc-sources: src/a.ts -->\n<!-- agctx-doc-sources-sha256: ${first} -->\n\none\n\n## Two\n\n<!-- agctx-doc-sources: src/b.ts -->\n<!-- agctx-doc-sources-sha256: ${second} -->\n\ntwo\n`;
+  assert.equal(
+    withoutRecordedHash(sections('a'.repeat(64), 'b'.repeat(64))),
+    withoutRecordedHash(sections('a'.repeat(64), 'c'.repeat(64))),
+    '두 번째 절의 지문만 바뀌어도 그 문서를 핀한 쪽은 바뀌지 않는다'
+  );
+  assert.equal(
+    withoutRecordedHash(sections('a'.repeat(64), 'b'.repeat(64))),
+    withoutRecordedHash(sections('PENDING', 'd'.repeat(64))),
+    '모든 지문 줄을 뺀다'
+  );
 
   for (const [readme, translation] of [
     ['README.md', 'README.en.md'],

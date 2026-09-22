@@ -114,4 +114,4 @@
 - 사용자에게 보이는 기능·호환성·설치·검증·보안 변경을 릴리스할 때는 `CHANGELOG.md`의 `Unreleased` 항목을 갱신하라.
 - 공개 저장소 운영 계약을 변경할 때는 `docs/contributing/releasing.md`와 관련 GitHub community health file·workflow를 함께 갱신하라. GitHub 저장소 설정 자체는 파일만으로 보장되지 않으므로 실제 설정 상태를 별도로 확인하라.
 - 단순한 내부 리팩터링이나 자명한 코드 설명까지 문서화하지 말고, 다른 개발자·에이전트·사용자가 알아야 할 동작과 계약만 기록하라.
-- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서는 인용한 소스를 문서 상단 마커로 핀하고 `node tools/check-docs.ts --stamp <문서 경로>`로 해시를 기록한다. 핀한 소스가 바뀌면 `check:docs`가 실패하므로, 문서를 다시 읽어 드리프트를 고친 뒤 그 문서를 지정해 다시 stamp한다. 경로를 적는 것이 승인 단위여서 경로 없이 실행하면 목록만 보여 주고 멈춘다. 마커 형식·핀 범위·대상 문서 목록의 정본은 [`docs/contributing/doc-gate.md`](docs/contributing/doc-gate.md)다.
+- **문서 소스 해시 게이트:** 현재 코드 동작을 서술하는 문서는 인용한 소스를 문서 상단 마커로 핀하고 `node tools/check-docs.ts --stamp <문서 경로>`로 해시를 기록한다. `$` 명령과 출력을 싣는 예시는 `<!-- agctx-example: <고정물> -->`를 붙여 실행과 대조하고, 출력 문구 때문에 메시지 카탈로그를 핀하지 않는다. 핀한 소스가 바뀌면 `check:docs`가 실패하므로, 문서를 다시 읽어 드리프트를 고친 뒤 그 문서를 지정해 다시 stamp한다. 경로를 적는 것이 승인 단위여서 경로 없이 실행하면 목록만 보여 주고 멈춘다. 마커 형식·핀 범위·대상 문서 목록의 정본은 [`docs/contributing/doc-gate.md`](docs/contributing/doc-gate.md)다.

@@ -140,6 +140,7 @@
   - [ADR 0042: 저장소마다 파일을 받을 에이전트를 골라 `agctx.project.json`에 기록한다](adr/0042-choose-agents-per-repository.md)
   - [ADR 0043: agctx 표지가 없는 기존 파일은 `--adopt` 없이 쓰지 않는다](adr/0043-stop-on-unmanaged-files.md)
   - [ADR 0044: 프로필의 MCP 서버를 Claude Code `.mcp.json`과 Codex `.codex/config.toml`에 소유 영역만 병합해 쓴다](adr/0044-mcp-servers-in-profiles.md)
+  - [ADR 0045: 명령 출력을 싣는 문서 예시는 메시지 카탈로그를 핀하지 않고 실제 실행과 대조한다](adr/0045-run-doc-examples-instead-of-pinning-messages.md)
 
 저장소 공개 운영 파일: [`SECURITY.md`](../SECURITY.md) · [PR 템플릿](../.github/PULL_REQUEST_TEMPLATE.md)
 

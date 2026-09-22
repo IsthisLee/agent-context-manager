@@ -47,8 +47,8 @@ agctx profile apply company ~/work/api-server
 
 ## 여러 저장소를 한 번에 맞추기
 
-<!-- agctx-doc-sources: src/repos, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 51b878b3a980692cdcddb2af176afc4c54ed6f4383ad3a34d545748c25f34ee4 -->
+<!-- agctx-doc-sources: src/repos -->
+<!-- agctx-doc-sources-sha256: 6fc8aef409e9609136576bc472ba57c21d360533ae7c11209d21fc7c67cd3fa5 -->
 
 프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
 
@@ -64,6 +64,7 @@ flowchart LR
 
 ### 뒤처진 저장소 보기
 
+<!-- agctx-example: repos-personal -->
 ```bash
 $ agctx repos status
 behind            personal         -      -               /work/blog
@@ -87,6 +88,7 @@ agctx repos sync --profile personal
 
 동기화한 뒤 `agctx repos status`를 다시 실행해 줄이 `ok`로 바뀌었는지 본다. 고정한 저장소는 `repos sync`가 건너뛰므로 `behind`로 남는다. 아래는 고정하지 않은 `web-app`과 고정한 `orders-api`를 함께 둔 실제 출력에서 경로만 바꾼 것이다.
 
+<!-- agctx-example: repos-pinned -->
 ```bash
 $ agctx repos status
 behind            team-backend     pinned ab35396→c61bea6 /work/orders-api

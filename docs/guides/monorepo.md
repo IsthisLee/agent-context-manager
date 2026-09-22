@@ -82,13 +82,14 @@ Dry-run: no files were changed.
 
 ## 확인하기
 
-<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 40456257b253bcaaf9d862baf494ff90762a751a232f3edc084436c01c6bd3dd -->
+<!-- agctx-doc-sources: src/explain.ts -->
+<!-- agctx-doc-sources-sha256: e93bc5b760763507a4a026f326b8db388866ac35d538dd6c487de6f0bc1979fa -->
 
 에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 
 사람이 둔 `packages/web/CLAUDE.md`가 `AGENTS.md`를 가져오지 않으면 `missing` 줄이 나오고 종료 코드 4로 끝난다.
 
+<!-- agctx-example: monorepo-web -->
 ```bash
 $ agctx explain packages/web --agent claude
 Claude Code · started in packages/web
@@ -104,6 +105,7 @@ $ echo $?
 
 `missing` 줄의 안내대로 `packages/web/CLAUDE.md`에 `@AGENTS.md` 줄을 더하고 다시 실행하면, 같은 줄이 `read … imported by packages/web/CLAUDE.md`로 바뀌고 종료 코드 0으로 끝난다.
 
+<!-- agctx-example: monorepo-web -->
 ```bash
 $ agctx explain packages/web --agent claude
 Claude Code · started in packages/web

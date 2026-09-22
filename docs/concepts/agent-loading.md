@@ -29,11 +29,12 @@ flowchart LR
 
 ## 읽는 파일 보기
 
-<!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 40456257b253bcaaf9d862baf494ff90762a751a232f3edc084436c01c6bd3dd -->
+<!-- agctx-doc-sources: src/explain.ts -->
+<!-- agctx-doc-sources-sha256: e93bc5b760763507a4a026f326b8db388866ac35d538dd6c487de6f0bc1979fa -->
 
 Antigravity 규칙 파일은 맨 앞 frontmatter(`---` 두 줄 사이의 설정)의 `trigger` 값으로 언제 적용할지 정한다. 실측에서 `trigger: always_on` 규칙은 세션 시작에 받았고 `trigger: glob` 규칙은 받지 않았다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)). 아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`와 `trigger: glob` 규칙을 더하고, 결제 서비스 폴더에서 에이전트를 시작한다고 보고 실행한 결과다. 긴 줄은 줄였고 전체 출력은 [CLI Reference](../reference/cli.md#explain)에 있다.
 
+<!-- agctx-example: explain-payments -->
 ```bash
 $ agctx explain services/payments
 Codex · started in services/payments
@@ -63,6 +64,7 @@ Antigravity · started in services/payments
 
 `services/payments/CLAUDE.md`를 만들고 `.agents/rules/payments.md`의 `trigger: glob`을 `trigger: always_on`으로 고친 뒤 다시 확인하면, `missing`이 사라지고 경고만 남아 0으로 끝난다.
 
+<!-- agctx-example: explain-payments -->
 ```bash
 $ printf '@AGENTS.md\n' > services/payments/CLAUDE.md
 $ agctx explain --agent claude,antigravity services/payments

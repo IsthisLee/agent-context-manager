@@ -384,7 +384,17 @@ function pullRequestBody(candidate: Candidate): string {
   );
   const commits = profileCommits(item.profile ?? '', fromCommit, source?.commit ?? null);
   if (commits.length) lines.push('', _('repos.pr.body.commits'), ...commits.map(commit => `- ${commit}`));
-  lines.push('', _('repos.pr.body.files'), ...item.files.map(file => `- \`${file}\``), '', _('repos.pr.body.check'));
+  // 지우는 파일은 리뷰어가 diff를 열기 전에 알 수 있게 표시한다(고르지 않은 에이전트의 파일).
+  const removed = new Set(
+    plan.plan.changes.filter(change => change.status === 'remove').map(change => change.relativePath)
+  );
+  lines.push(
+    '',
+    _('repos.pr.body.files'),
+    ...item.files.map(file => `- \`${file}\`${removed.has(file) ? ` ${_('repos.pr.body.removed')}` : ''}`),
+    '',
+    _('repos.pr.body.check')
+  );
   return `${lines.join('\n')}\n`;
 }
 

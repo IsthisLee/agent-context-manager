@@ -1,7 +1,7 @@
 # 적용할 에이전트와 대상 종류 고르기
 
 <!-- agctx:generated:status:start -->
-**상태:** Proposed
+**상태:** Implementing
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -30,7 +30,7 @@
 | 후속 제안 | [프로필 설정 표면 확장](profile-config-surface.md): MCP·hooks의 에이전트별 설정 파일을 이 기록대로 쓴다. |
 | 연관 제안 | [에이전트 규칙 위치 탐지](agent-rule-discovery.md)의 `explain`, [agctx 관리 산출물의 안전한 동기화](managed-artifact-safety.md) |
 | 후속 작업 | 에이전트 선택의 실패 평가(기록 유지, `sync`·`repos pr`의 같은 선택 재현, 뺀 에이전트의 관리 블록 제거)를 먼저 작성한다. |
-| 권장 다음 작업 | 에이전트 고르기를 지금 대상인 규칙으로 먼저 구현한다(2026-09-16 제품 소유자 결정: 다음 구현은 에이전트 고르기 → MCP). 대상 종류 고르기는 기록 형식만 함께 정하고, 규칙 밖의 대상이 처음 들어올 때 구현한다. |
+| 권장 다음 작업 | 에이전트 고르기는 [ADR 0042](../../../adr/0042-choose-agents-per-repository.md)로 확정해 구현했다. 남은 것은 대상 종류 고르기(`include`)이며, 규칙 밖의 첫 대상인 MCP를 구현할 때 함께 구현한다. |
 
 ## 목차
 
@@ -159,3 +159,18 @@ Dry-run: 바꿀 파일 …
 - `profile sync`·`repos sync`·`repos pr`·`check`가 같은 선택을 재현하는지 확인하는 평가.
 - 고정(`--pin`)한 저장소에서 선택만 바꿀 때 버전 기록을 어떻게 다룰지.
 - TUI와 프로필 관리 메뉴의 선택 화면.
+
+## 구현 기록
+
+#### 구현 기록: 에이전트 고르기 (2026-09-22)
+
+* **결정:** [ADR 0042](../../../adr/0042-choose-agents-per-repository.md). 필드 이름은 `agents`, 기록이 없으면 전부, `--agent all`은 키를 지운다. `--agent` 형식은 `explain`·`verify`와 같다.
+* **구현:** 에이전트 이름과 해석은 `src/shared/agents.ts`의 `AGENT_IDS`·`parseAgents`·`recordedAgents`로 모았다. `--agent`와 기록에서 이번 선택을 정하는 것은 `src/profile/apply.ts`의 `agentSelection`이다. 연결 파일마다 받는 에이전트는 `src/project/plan.ts`의 `POINTER_TEMPLATES`에 적고, 빠진 에이전트의 파일에서 관리 블록을 지운 나머지는 같은 파일의 `withoutManagedBlock`이 만든다. `planProject`는 관리해 온 파일만 지우고, 지울 파일과 `.agctx/base/` 사본을 계획에 `remove`로 넣는다. `writePlan`이 파일을 지우고 그래서 빈 폴더도 지운다. `explain`은 `src/explain.ts`의 `explainPath`에서 에이전트마다 `selected`를 붙이고, `verify`는 `src/verify/index.ts`의 `agentsToVerify`로 확인할 에이전트를 정한다. TUI는 `src/tui/profile.ts`의 `agentPrompt`로 미리 체크할 목록을 읽고 `agentAnswer`로 `--agent` 값을 만든다.
+* **평가:** `evals/agent-selection.test.ts` 10개. 고른 파일만 만들고 기록하는지, `sync`·`check`·`--agent` 없는 `apply`가 기록을 따르는지, 빼면 관리 블록만 지우고 사람이 쓴 내용은 남기는지, 고친 블록에서 멈추고 `resolve` 뒤 다시 적용되는지, 하위 폴더 연결 파일, 모르는 이름과 잘못된 기록, `explain`·`verify`의 `not-selected`, `repos sync`, TUI의 미리 체크와 답 변환, 프로젝트 밖을 가리키는 기록 경로, `explain` 안내의 `--agent` 값과 빈 `--agent`를 검사한다. 가상 터미널로 TUI의 선택 화면을 실제로 조작해 기록한 선택이 미리 체크되는 것을 확인했다.
+* **결정·검증 항목의 처리:**
+  - 뺄 때 파일을 지우는 조건: 관리해 온 파일만, 블록 밖에 사람이 쓴 내용이 없을 때. 파일을 만들 때 agctx가 붙인 템플릿 frontmatter만 남으면 지운다.
+  - 고정한 저장소에서 선택만 바꾸기: `apply`로만 바꾸므로 `--pin`으로 지금 커밋에 다시 고정해야 한다(ADR 0042의 결과 절).
+  - `explain`·`verify`의 보고: `explain`은 `not-selected` 판정, `verify`는 `not-selected` 상태.
+* **계획과 달라진 점:** 고친 관리 블록이 있는 파일을 빼려 하면 멈추고 선택도 기록하지 않는다. 사용자는 `profile resolve`로 고친 줄을 블록 밖으로 옮긴 뒤 같은 `apply`를 다시 실행한다.
+* **검수 반영:** 새 컨텍스트의 검수에서 `managedHashes`에 `../victim/CLAUDE.md`처럼 프로젝트 밖을 가리키는 키를 넣으면 빼는 에이전트의 파일로 보고 옆 저장소의 파일을 지우는 경로가 드러났다. `src/project/plan.ts`의 `assertManagedPaths`가 계획 전에 이런 키를 거부하고(`check`도 같다), `src/shared/fs-utils.ts`의 `assertSafeTextTarget`이 프로젝트 밖의 대상을 쓰거나 지우지 않게 했다. `explain`의 안내는 지금 고른 에이전트에 그 에이전트를 더한 `--agent` 값을 채워 보여 주고, `repos pr` 본문은 지우는 파일에 `(removed)`를 붙인다.
+* **제약:** 대상 종류 고르기(`include`)는 구현하지 않았다. 관리 표지가 없는 사람이 쓴 파일은 빼도 건드리지 않는다.

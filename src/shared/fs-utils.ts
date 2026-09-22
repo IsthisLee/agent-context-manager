@@ -22,6 +22,8 @@ export function assertSafeTextTarget(target: string, boundary: string | null = n
 
   if (!boundary) return;
   const resolvedBoundary = path.resolve(boundary);
+  if (!path.resolve(target).startsWith(`${resolvedBoundary}${path.sep}`))
+    throw new Error(`Refusing to write outside ${resolvedBoundary}: ${target}`);
   let current = path.resolve(path.dirname(target));
   while (current !== resolvedBoundary && current.startsWith(`${resolvedBoundary}${path.sep}`)) {
     try {

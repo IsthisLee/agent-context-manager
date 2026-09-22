@@ -135,7 +135,10 @@ test('저장소를 바꾸는 명령은 터미널 밖에서 --yes가 필요하고
 test('<command> --help는 명령을 실행하지 않고 사용법과 종료 코드를 출력한다', t => {
   const { project, ok } = sandbox(t);
   const result = ok(['profile', 'apply', '--help']);
-  assert.match(result.stdout, /Usage: agctx profile apply \[--dry-run\] \[--pin\] \[--yes\] <name> \[<project>\]/);
+  assert.match(
+    result.stdout,
+    /Usage: agctx profile apply \[--dry-run\] \[--agent <codex\|claude\|antigravity\|all>\] \[--pin\] \[--yes\] <name> \[<project>\]/
+  );
   assert.match(
     result.stdout,
     /Exit codes: 0 success, 64 usage error, 70 other error, 2 conflict, 3 hidden characters, 69 external tool or network unavailable/

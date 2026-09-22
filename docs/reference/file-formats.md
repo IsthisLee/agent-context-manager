@@ -13,7 +13,7 @@
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: f9049c303dbfbca7c0da89dd996ea4c1ecea2591f624e1c2e57387192eac17a4 -->
+<!-- agctx-doc-sources-sha256: a09809debc73937cdfb04b25f63a0c8ede81786bf28d00ff1d823315a09046d8 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -25,13 +25,15 @@
 | `source` | Git 프로필이면 `{ git, branch, commit }`. URL의 사용자 정보와 토큰은 지운다 |
 | `pin` | `--pin`으로 고정했으면 `true` |
 | `uncommitted` | 프로필의 규칙 파일이나 `profile.json`에 커밋하지 않은 수정이 있는 상태로 적용했으면 `true`. 그 수정은 원격에 없어 다른 사람이 같은 내용을 받을 수 없으므로 `check`가 뒤처짐(1)으로 알린다 |
-| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일도 들어간다 |
+| `agents` | `profile apply --agent`로 고른 에이전트(`codex`·`claude`·`antigravity`)를 등록 순서로 담은 목록. 키가 없으면 지원 에이전트 전부다. `sync`·`repos sync`·`repos pr`·`check`가 이 선택을 따른다. 목록이 아니거나, 비었거나, 모르는 이름이 있으면 명령이 종료 코드 64로 멈춘다 |
+| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일도 들어간다. 경로는 프로젝트 루트 기준 상대 경로여야 하며, 절대 경로나 `..`가 든 경로가 있으면 `apply`·`sync`·`check`가 아무것도 바꾸지 않고 종료 코드 64로 멈춘다 |
 
 ```json
 {
   "schemaVersion": 2,
   "profile": "team-backend",
   "projectName": "orders-api",
+  "agents": ["codex", "claude"],
   "source": {
     "git": "/work/team-backend.git",
     "branch": "main",
@@ -40,8 +42,7 @@
   "pin": true,
   "managedHashes": {
     "AGENTS.md": "e60685b9…",
-    "CLAUDE.md": "b4a3d190…",
-    ".agents/rules/agctx.md": "df4f0e9c…"
+    "CLAUDE.md": "b4a3d190…"
   }
 }
 ```

@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { cancel, confirm, intro, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
+import { cancel, confirm, intro, multiselect, note, outro, path as pathPrompt, select, text } from '@clack/prompts';
 import { cancelled } from './cancel.ts';
 import { runFromTui } from './commands.ts';
 import { canPrompt } from '../commands/options.ts';
@@ -32,6 +32,7 @@ import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
 import { isGitRoot } from '../shared/git.ts';
 import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
+import { AGENT_IDS, canonicalAgents, recordedAgents, type AgentId } from '../shared/agents.ts';
 
 /** TUI 단계 하나를 실행하고, 실패하면 TUI를 나가지 않고 다음 명령과 함께 안내로 보여 준다. */
 export async function runTuiStep(step: () => Promise<void>): Promise<void> {
@@ -372,6 +373,40 @@ export function pinPrompt(name: string, targetDir: string): { ask: boolean; init
   return { ask: true, initial: readProjectConfig(path.join(targetDir, PROJECT_CONFIG_FILE)).pin === true };
 }
 
+/**
+ * TUI 적용 흐름에서 미리 체크할 에이전트. 저장소가 기록한 선택이 있으면 그것을, 없으면 전부를 체크한다.
+ * 기록이 잘못돼 있으면 전부를 체크해 보여 준다. 고른 답이 `--agent`로 넘어가 잘못된 기록을 덮어쓴다.
+ */
+export function agentPrompt(targetDir: string): AgentId[] {
+  const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
+  try {
+    return recordedAgents(readProjectConfig(configPath).agents, configPath) ?? [...AGENT_IDS];
+  } catch {
+    return [...AGENT_IDS];
+  }
+}
+
+/** 체크한 에이전트를 `--agent` 값으로. 전부 골랐으면 `all`이라 기록이 지워지고 나중에 늘어날 에이전트도 받는다. */
+export function agentAnswer(selected: readonly AgentId[]): string {
+  const chosen = canonicalAgents(selected);
+  return chosen.length === AGENT_IDS.length ? 'all' : chosen.join(',');
+}
+
+async function agentChoiceTui(targetDir: string): Promise<string | null> {
+  const selected = await multiselect<AgentId>({
+    message: _('actions.apply.agents'),
+    required: true,
+    initialValues: agentPrompt(targetDir),
+    options: AGENT_IDS.map(agent => ({
+      value: agent,
+      label: _(`explain.agent.${agent}`),
+      hint: _(`actions.apply.agents.${agent}`)
+    }))
+  });
+  if (cancelled(selected)) return null;
+  return agentAnswer(selected);
+}
+
 /** 프로필 메뉴 항목마다 하는 일. 키는 등록부의 명령 id다. */
 export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.setup': name => setupProfileTui(name),
@@ -383,6 +418,8 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.apply': async name => {
     const target = await projectPathTui(_('actions.apply.path'));
     if (!target) return cancel(_('actions.project.cancel'));
+    const agent = await agentChoiceTui(target);
+    if (agent === null) return cancel(_('actions.project.cancel'));
     const choice = pinPrompt(name, target);
     let pin = false;
     if (choice.ask) {
@@ -390,7 +427,7 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
       if (cancelled(answer)) return cancel(_('actions.project.cancel'));
       pin = answer;
     }
-    await withConflictRecovery(target, () => runFromTui('profile.apply', [name, target], { pin }));
+    await withConflictRecovery(target, () => runFromTui('profile.apply', [name, target], { agent, pin }));
   },
   'profile.sync': async () => {
     const target = await projectPathTui(_('actions.sync.path'));

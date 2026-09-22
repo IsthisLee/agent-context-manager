@@ -68,6 +68,8 @@ export interface ProjectConfig {
   pin?: boolean;
   uncommitted?: boolean;
   managedHashes?: Record<string, string>;
+  /** 이 저장소가 고른 에이전트. 없으면 지원하는 에이전트 전부다. 검사는 `recordedAgents`가 한다. */
+  agents?: unknown;
   [key: string]: unknown;
 }
 
@@ -89,11 +91,13 @@ export interface PlannedFile {
   currentRegion: string | null;
   nextRegion: string | null;
   conflict: Conflict | null;
+  /** 고르지 않은 에이전트의 파일이라 관리 블록을 지운다. `regenerated`는 블록을 뺀 나머지다. */
+  remove: boolean;
 }
 
 export type ConflictedFile = PlannedFile & { conflict: Conflict };
 
-export type ChangeStatus = 'create' | 'update' | 'unchanged';
+export type ChangeStatus = 'create' | 'update' | 'remove' | 'unchanged';
 
 export interface PlannedChange {
   target: string;

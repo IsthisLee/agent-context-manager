@@ -3,7 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
-import { EXIT, usageError } from './shared/errors.ts';
+import { EXIT } from './shared/errors.ts';
 import { filesBelow } from './shared/scan.ts';
 
 /**
@@ -12,8 +12,9 @@ import { filesBelow } from './shared/scan.ts';
  * docs/references.md에 기록한 측정 결과를 따른다. 아무것도 쓰지 않는다.
  */
 
-export type AgentId = 'codex' | 'claude' | 'antigravity';
-export const AGENT_IDS: readonly AgentId[] = ['codex', 'claude', 'antigravity'];
+import { canonicalAgents, recordedAgents, type AgentId } from './shared/agents.ts';
+
+export { AGENT_IDS, parseAgents, type AgentId } from './shared/agents.ts';
 
 export type FileStatus = 'read' | 'on-demand' | 'conditional' | 'not-read' | 'shadowed';
 export type FileScope = 'managed-policy' | 'user' | 'project';
@@ -29,13 +30,16 @@ export interface ExplainedFile {
 }
 
 export interface ExplainFinding {
-  kind: 'missing' | 'warning';
+  /** `not-selected`는 이 저장소가 agctx.project.json에서 고르지 않은 에이전트라는 안내다. */
+  kind: 'missing' | 'warning' | 'not-selected';
   file: string | null;
   message: string;
 }
 
 export interface AgentExplanation {
   agent: AgentId;
+  /** 이 저장소가 고른 에이전트인가. 고르지 않은 에이전트의 누락은 종료 코드에 세지 않는다. */
+  selected: boolean;
   startDir: string;
   files: ExplainedFile[];
   findings: ExplainFinding[];
@@ -508,30 +512,15 @@ function duplicateFindings(collector: Collector): void {
   });
 }
 
-export function parseAgents(value: string | null): AgentId[] {
-  if (!value || value === 'all') return [...AGENT_IDS];
-  const agents = value
-    .split(',')
-    .map(item => item.trim())
-    .filter(Boolean);
-  const unknown = agents.filter(agent => !(AGENT_IDS as readonly string[]).includes(agent));
-  if (unknown.length || !agents.length) {
-    throw usageError(
-      'explain.unknown-agent',
-      _('error.explain.unknown-agent', { agent: unknown.join(', ') || value }),
-      _('hint.explain.agents')
-    );
-  }
-  return agents as AgentId[];
-}
-
 export function explainPath(requested: string, agents: readonly AgentId[]): Explanation {
   const target = fs.existsSync(requested) && fs.statSync(requested).isFile() ? path.dirname(requested) : requested;
   assertProjectDirectory(target);
   const start = fs.realpathSync(target);
   const root = projectRoot(start);
-  const config = readProjectConfig(path.join(root, PROJECT_CONFIG_FILE));
+  const configPath = path.join(root, PROJECT_CONFIG_FILE);
+  const config = readProjectConfig(configPath);
   const managed = new Set(Object.keys(config.managedHashes ?? {}));
+  const chosen = recordedAgents(config.agents, configPath);
 
   const explained = agents.map((agent): AgentExplanation => {
     const collector: Collector = { root, managed, files: [], findings: [] };
@@ -539,8 +528,21 @@ export function explainPath(requested: string, agents: readonly AgentId[]): Expl
     else if (agent === 'claude') explainClaude(collector, start);
     else explainAntigravity(collector);
     duplicateFindings(collector);
+    const selected = chosen === null || chosen.includes(agent);
+    if (!selected) {
+      // 안내하는 명령은 지금 고른 에이전트에 이 에이전트를 더한 목록이라, 그대로 실행해도 다른 에이전트가 빠지지 않는다.
+      const message =
+        agent === 'codex'
+          ? _('explain.not-selected.codex')
+          : _('explain.not-selected', {
+              profile: config.profile ?? '<profile>',
+              agents: canonicalAgents([...(chosen ?? []), agent]).join(',')
+            });
+      collector.findings.unshift({ kind: 'not-selected', file: null, message });
+    }
     return {
       agent,
+      selected,
       startDir: path.relative(root, start).split(path.sep).join('/') || '.',
       files: collector.files,
       findings: collector.findings
@@ -551,6 +553,6 @@ export function explainPath(requested: string, agents: readonly AgentId[]): Expl
     path: name,
     reason: _('explain.unsupported.reason')
   }));
-  const missing = explained.some(agent => agent.findings.some(finding => finding.kind === 'missing'));
+  const missing = explained.some(agent => agent.selected && agent.findings.some(finding => finding.kind === 'missing'));
   return { path: start, root, agents: explained, unsupported, exitCode: missing ? EXIT.deliveryMissing : EXIT.ok };
 }

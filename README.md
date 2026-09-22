@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 247a15ac7aa576a3f48f782fe38700bd74cc42f3d1677dca969ceeb1b8e1e542 -->
+<!-- agctx-doc-sources-sha256: d22524aa0606befab84dda92c1c5e1a3e5c15c388efaee213b941e1f8e2133d7 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -125,7 +125,7 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: dd3afbc8772d44b7d6c25f75309def7f29675a52e25cb9891107c2802d5b72b5 -->
+<!-- agctx-doc-sources-sha256: 7d84a89ddcc48617b0400791f46399c16ee9ffa1ff3aa62a4d4c082e44d3c778 -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
@@ -146,7 +146,7 @@ Applied profile company to /path/to/project
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 24568316e42e31074f3445fadab17f533a66ef3180fc9950b83c45c40fbdbd96 -->
+<!-- agctx-doc-sources-sha256: 8fbdd5b2d1cb563a71bf17f597f84104c730975753cde1b850354e5df3062512 -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 
@@ -182,8 +182,8 @@ agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 
 
 <!-- agctx:generated:discussion-status:start -->
 - **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기본 지침의 근거 기준과 분량 예산, 기존 Git 저장소를 프로필 원천으로 쓰기, 기존 저장소 폴더를 프로필로 연결하기, 에이전트 스킬을 agctx 명령으로 설치하기
-- **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화
-- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
+- **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 적용할 에이전트와 대상 종류 고르기
+- **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
 <!-- agctx:generated:discussion-status:end -->
 
 ## 문서

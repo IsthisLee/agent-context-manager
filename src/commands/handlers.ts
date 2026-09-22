@@ -3,7 +3,7 @@ import path from 'node:path';
 import { _, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { checkProject } from '../check.ts';
 import { explainPath, parseAgents, type AgentId } from '../explain.ts';
-import { verifyPath } from '../verify/index.ts';
+import { agentsToVerify, verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
 import {
   cloneProfile,
@@ -94,10 +94,11 @@ async function applyOrSync(
   retry: string
 ): Promise<CommandOutcome> {
   const dryRun = flag(parsed, 'dry-run');
-  const { plan, version, previousPin } = planFor(name, targetDir, pin);
+  const { plan, version, previousPin, agents } = planFor(name, targetDir, pin, undefined, text(parsed, 'agent'));
   const data = {
     profile: name,
     project: targetDir,
+    agents,
     source: version.source,
     pin: version.pin,
     uncommitted: version.uncommitted,
@@ -195,12 +196,13 @@ export const HANDLERS: Record<string, Handler> = {
     const name = requirePositional(parsed, 0, 'agctx profile apply <name> [<project>]');
     const targetDir = projectDir(parsed.positional[1]);
     const pin = flag(parsed, 'pin');
+    const agent = text(parsed, 'agent');
     return applyOrSync(
       parsed,
       name,
       targetDir,
       pin,
-      `agctx profile apply ${name} ${targetDir}${pin ? ' --pin' : ''} --yes`
+      `agctx profile apply ${shellWord(name)} ${shellWord(targetDir)}${agent ? ` --agent ${shellWord(agent)}` : ''}${pin ? ' --pin' : ''} --yes`
     );
   },
   'profile.sync': async parsed => {
@@ -368,8 +370,9 @@ export const HANDLERS: Record<string, Handler> = {
   },
   verify: async parsed => {
     const agents = parseAgents(text(parsed, 'agent'));
+    const named = text(parsed, 'agent') !== null && text(parsed, 'agent') !== 'all';
     const probe = flag(parsed, 'probe');
-    const names = agents.map(agentName).join(', ');
+    const names = agentsToVerify(projectDir(parsed.positional[0]), agents, named).map(agentName).join(', ');
     // probe는 파일을 바꾸지 않지만 에이전트 사용량을 쓰므로, 거절 메시지는 dry run 대신 그 비용을 말한다.
     if (probe && parsed.options.yes !== true && !canPrompt()) {
       throw usageError(
@@ -385,7 +388,7 @@ export const HANDLERS: Record<string, Handler> = {
       say(_('confirm.declined'));
       return ok();
     }
-    const report = verifyPath(projectDir(parsed.positional[0]), agents, { probe });
+    const report = verifyPath(projectDir(parsed.positional[0]), agents, { probe, named });
     const unstarted: string[] = [];
     const stale: string[] = [];
     const errors: string[] = [];
@@ -395,9 +398,11 @@ export const HANDLERS: Record<string, Handler> = {
           ? _('verify.evidence.session-log', { source: agent.source ?? '' })
           : agent.evidence === 'probe'
             ? _('verify.evidence.probe', { command: agent.source ?? '' })
-            : agent.agent === 'antigravity'
-              ? _('verify.evidence.unreadable')
-              : _('verify.evidence.none');
+            : agent.status === 'not-selected'
+              ? _('verify.evidence.not-selected')
+              : agent.agent === 'antigravity'
+                ? _('verify.evidence.unreadable')
+                : _('verify.evidence.none');
       say(`${agent.agent.padEnd(12)} ${agent.status.padEnd(12)} ${evidence}`);
       for (const file of agent.delivered) say(`  ${'delivered'.padEnd(10)} ${file}`);
       for (const file of agent.missing) say(`  ${'missing'.padEnd(10)} ${file}`);

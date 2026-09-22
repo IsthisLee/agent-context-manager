@@ -127,7 +127,7 @@
       "importance": "High",
       "prerequisites": [3, 4],
       "outcome": "저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현",
-      "status": "Proposed"
+      "status": "Implementing"
     },
     {
       "stage": 14,

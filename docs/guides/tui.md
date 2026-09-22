@@ -21,7 +21,7 @@
 ## 시작하기
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 9dcc2b394827075a84cc0fb7de223632b07cff945e7a5a5c7a292f60a50ae6c3 -->
+<!-- agctx-doc-sources-sha256: 219c9c6ae4f6b15a3de001d8b4849948bd9eff20953e0f23a5fb5ba120c6a094 -->
 
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
@@ -114,7 +114,7 @@ Created profile: team-backend (team)
 ## 지침 고르기
 
 <!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f8fab34416f2c73eb5ac11e5a70f4be30d1bcbae81f19db1aa4db177ca619f5d -->
+<!-- agctx-doc-sources-sha256: 0e7261e53a1626c8768819a6d4dd7780c704bc6ba2e30bf8c0b2514316c1b416 -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -179,7 +179,21 @@ Configured profile: team-backend
    └
    ```
 
-5. 프로필이 Git 저장소면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. 고정하면 프로필 보관함이 새 커밋을 받아도 이 프로젝트는 기록한 커밋의 지침에 머문다. 고정과 고정하지 않음의 차이는 [갱신 방식 고르기](update-policies.md)에 있다. Git 저장소가 아닌 로컬 프로필이면 이 질문 없이 6단계로 넘어간다.
+5. 이 저장소에 파일을 쓸 에이전트를 고른다. 이미 적용한 저장소는 `agctx.project.json`에 기록한 선택이, 처음 적용하는 저장소는 전부가 미리 체크되어 있다. `Space`로 체크를 바꾸고 `Enter`로 넘어간다. 하나 이상 골라야 한다.
+
+   ```text
+   ◆  Which agents should this repository get files for? AGENTS.md is always written.
+   │  ◻ Codex
+   │  ◼ Claude Code (CLAUDE.md and folder links that import AGENTS.md)
+   │  ◻ Antigravity
+   │  ↑/↓ to navigate • Space: select • Enter: confirm
+   └
+   ```
+
+   - `AGENTS.md`는 모든 에이전트가 읽으므로 어떤 선택이든 쓴다. 빼면 그 에이전트의 연결 파일에서 관리 블록을 지우고, 사람이 쓴 내용이 없으면 파일도 지운다. 계획에 `remove`로 나온다.
+   - 전부 고르면 `--agent all`과 같아서 기록이 지워지고, 일부만 고르면 `--agent codex,claude`처럼 그 목록이 기록된다. 동작은 [CLI Reference](../reference/cli.md#profile-apply)의 에이전트 고르기에 있다.
+
+6. 프로필이 Git 저장소면 프로젝트를 지금 프로필 커밋에 고정할지 묻는다. 고정하면 프로필 보관함이 새 커밋을 받아도 이 프로젝트는 기록한 커밋의 지침에 머문다. 고정과 고정하지 않음의 차이는 [갱신 방식 고르기](update-policies.md)에 있다. Git 저장소가 아닌 로컬 프로필이면 이 질문 없이 7단계로 넘어간다.
 
    ```text
    ◆  Pin the project to the current profile commit? A pinned project changes only when you
@@ -192,7 +206,7 @@ Configured profile: team-backend
    - 이미 고정한 프로젝트는 **Yes**가 미리 선택되어 있어, `Enter`만 누르면 고정을 유지한 채 지금 프로필 커밋으로 옮긴다. **No**를 고르면 고정이 풀린다는 `Warning:` 줄이 나오고, 계획에 `update agctx.project.json`이 들어간다.
    - 프로필에 커밋하지 않은 수정이 있으면 고정할 수 없다. **Yes**를 고르면 `Profile team-backend has uncommitted changes, so a project cannot be pinned to a commit.` 오류가 나고 파일은 바뀌지 않는다. 프로필 폴더에서 수정을 커밋한 뒤 다시 적용한다.
 
-6. 바뀔 파일 계획이 나오면 `←`로 **Yes**를 고르고 `Enter`를 누른다. 이 질문은 No가 기본이다.
+7. 바뀔 파일 계획이 나오면 `←`로 **Yes**를 고르고 `Enter`를 누른다. 이 질문은 No가 기본이다.
 
    ```text
    Plan: 8 file(s) to change.
@@ -302,7 +316,7 @@ Next: agctx repos sync --profile team-backend
 ## 메뉴와 명령 대응표
 
 <!-- agctx-doc-sources: src/commands/registry.ts -->
-<!-- agctx-doc-sources-sha256: b1b102586c9dbeebe96afdc40d922f701c8db8510fcf59f5069eb3331dbe3825 -->
+<!-- agctx-doc-sources-sha256: a06ce1c08d90fba1ad1ee7d599760ec70e98cfd700cd66ceabf712021fee09ec -->
 
 TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으로 바뀌어 같은 처리기로 실행된다. 가이드에 나오는 CLI 명령은 아래 메뉴로 바꿔 실행할 수 있다. 표시 언어를 한국어로 두면 메뉴 이름이 둘째 열처럼 나온다.
 
@@ -318,7 +332,7 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | 첫 화면 > **Help** | 첫 화면 > **도움말** | `agctx help [<command>]` |
 | **Manage profiles** > 프로필 > **View details** | **프로필 관리** > 프로필 > **상세 보기** | `agctx profile view` |
 | **Manage profiles** > 프로필 > **Configure guidance** | **프로필 관리** > 프로필 > **지침 설정** | `agctx profile setup <name>` |
-| **Manage profiles** > 프로필 > **Apply to a project** | **프로필 관리** > 프로필 > **프로젝트에 적용** | `agctx profile apply <name> <project>`, 고정을 고르면 `--pin` |
+| **Manage profiles** > 프로필 > **Apply to a project** | **프로필 관리** > 프로필 > **프로젝트에 적용** | `agctx profile apply <name> <project> --agent <고른 에이전트>`, 고정을 고르면 `--pin` |
 | **Manage profiles** > 프로필 > **Sync a project** | **프로필 관리** > 프로필 > **프로젝트 동기화** | `agctx profile sync <project>` |
 | **Manage profiles** > 프로필 > **Resolve project conflicts** | **프로필 관리** > 프로필 > **프로젝트 충돌 해결** | `agctx profile resolve <project>` |
 | **Manage profiles** > 프로필 > **Delete profile** | **프로필 관리** > 프로필 > **프로필 삭제** | `agctx profile remove <name>` |

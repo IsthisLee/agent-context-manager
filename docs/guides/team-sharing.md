@@ -144,7 +144,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 ## 기존 저장소를 프로필로 쓰기
 
 <!-- agctx-doc-sources: src/profile/link.ts, src/profile/git-profile.ts, src/profile/store.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 44039456dccf5ee4bca8e146c14e414a21fbb29829902ce0e2b850133e1a7376 -->
+<!-- agctx-doc-sources-sha256: 53145c611931d0d3bcae53a1ebc269003262e724d59e372587237fe1c47955f6 -->
 
 규칙을 이미 Git 저장소에 두고 있으면 새 프로필을 만들어 올리지 않는다. 관리자는 그 저장소 폴더를 `profile link`로 보관함에 잇고, 팀과 나눌 때는 그 폴더에 생긴 `profile.json`을 커밋해 올린다. 위의 `profile create` → `connect` → `push` 순서는 빈 원격을 전제하므로, 커밋이 있는 저장소에 쓰면 첫 `push`와 그다음 `pull`이 모두 멈춘다.
 
@@ -209,7 +209,7 @@ Next: Add profile.json at the repository root, for example {"schemaVersion": 1, 
 ## 적용 담당: 저장소에 적용하기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 6cad8c95b66de286483b8d3f152efe2e45694e2f3887c9e07591e2cc35e43eb5 -->
+<!-- agctx-doc-sources-sha256: a1b9e7c8fe8415414b0ce1854ec0c3a8d57e5768901dd30b331ece1eeb8b0ebc -->
 
 ### 1. 프로필 받기
 
@@ -316,7 +316,7 @@ Antigravity · started in the project root
 ## 프로필이 바뀌었을 때
 
 <!-- agctx-doc-sources: src/check.ts -->
-<!-- agctx-doc-sources-sha256: 25e68e746ba4b29583a787af5cadde2f30b5d512c69a8ca20735115bd5b23645 -->
+<!-- agctx-doc-sources-sha256: 0b420dd7ac266bfdc1dc79f0f2dd836a5d84e34d2192f2fb814c11d509f73f07 -->
 
 ```mermaid
 sequenceDiagram
@@ -392,7 +392,7 @@ Applied profile team-backend to /path/to/orders-api
 ## 개발자: 저장소 받기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: ba8ead90bd3618286ecd0825dbc32b18a6cd310ebb502c75d8c2a049da8f4806 -->
+<!-- agctx-doc-sources-sha256: 7f450c09fcbbdbcf2fa8ee8c4cab03895819adef01dddaf00d5271df226c1eba -->
 
 개발자는 agctx를 설치하지 않는다. 적용 담당이 올린 커밋을 받으면 된다.
 

@@ -15,9 +15,7 @@
       "title": "setup과 지침 옵션",
       "titleEn": "setup and guidance options",
       "importance": "High",
-      "prerequisites": [
-        1
-      ],
+      "prerequisites": [1],
       "outcome": "선택 가능한 규칙 preset과 프로필 `AGENTS.md`",
       "status": "Implemented"
     },
@@ -27,10 +25,7 @@
       "title": "프로젝트 적용",
       "titleEn": "project application",
       "importance": "Critical",
-      "prerequisites": [
-        1,
-        2
-      ],
+      "prerequisites": [1, 2],
       "outcome": "선택 프로필을 프로젝트에 적용, 도메인 지침 분리",
       "status": "Implemented"
     },
@@ -40,9 +35,7 @@
       "title": "에이전트 산출물 동기화",
       "titleEn": "agent artifact synchronization",
       "importance": "High",
-      "prerequisites": [
-        3
-      ],
+      "prerequisites": [3],
       "outcome": "도구별 포인터 생성·갱신·프로젝트 규칙 보존",
       "status": "Implemented"
     },
@@ -52,10 +45,7 @@
       "title": "자연어 요청을 통한 agctx 사용",
       "titleEn": "use through natural-language requests",
       "importance": "High",
-      "prerequisites": [
-        1,
-        3
-      ],
+      "prerequisites": [1, 3],
       "outcome": "사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계",
       "status": "Implementing"
     },
@@ -65,11 +55,7 @@
       "title": "agctx 관리 산출물의 안전한 동기화",
       "titleEn": "safe synchronization of managed artifacts",
       "importance": "Critical",
-      "prerequisites": [
-        1,
-        3,
-        4
-      ],
+      "prerequisites": [1, 3, 4],
       "outcome": "관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화",
       "status": "Implementing"
     },
@@ -79,9 +65,7 @@
       "title": "지침 항목 켜고 끄기",
       "titleEn": "turning guidance items on and off",
       "importance": "Medium",
-      "prerequisites": [
-        2
-      ],
+      "prerequisites": [2],
       "outcome": "지침 항목마다 on·off 두 값만 받고, 켠 항목만 산출물에 넣음",
       "status": "Implemented"
     },
@@ -91,10 +75,7 @@
       "title": "에이전트 규칙 위치 탐지",
       "titleEn": "agent rule discovery",
       "importance": "Medium",
-      "prerequisites": [
-        3,
-        4
-      ],
+      "prerequisites": [3, 4],
       "outcome": "적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공",
       "status": "Implemented"
     },
@@ -104,12 +85,7 @@
       "title": "프로필 설정 표면 확장",
       "titleEn": "Profile configuration surface expansion",
       "importance": "Critical",
-      "prerequisites": [
-        3,
-        4,
-        6,
-        13
-      ],
+      "prerequisites": [3, 4, 6, 13],
       "outcome": "프로필이 MCP·skills·subagents·hooks까지 담고 멀티포맷 안전 병합으로 동기화",
       "status": "Proposed"
     },
@@ -119,10 +95,7 @@
       "title": "스코프 확장과 지침 합성",
       "titleEn": "scope expansion and guidance composition",
       "importance": "Medium",
-      "prerequisites": [
-        1,
-        6
-      ],
+      "prerequisites": [1, 6],
       "outcome": "사용자 정의·공유 가능한 지침 계층과 프로젝트의 다계층 상속·병합",
       "status": "Proposed"
     },
@@ -132,9 +105,7 @@
       "title": "Git 기반 프로필 관리",
       "titleEn": "Git-based Profile management",
       "importance": "Critical",
-      "prerequisites": [
-        1
-      ],
+      "prerequisites": [1],
       "outcome": "표준 Git 원격을 통한 프로필 공유·확인·안전한 갱신",
       "status": "Implemented"
     },
@@ -144,10 +115,7 @@
       "title": "기본 지침의 근거 기준과 분량 예산",
       "titleEn": "evidence criteria and length budget for default guidance",
       "importance": "High",
-      "prerequisites": [
-        2,
-        7
-      ],
+      "prerequisites": [2, 7],
       "outcome": "근거가 확인된 문장만 기본 지침에 두고 분량 예산·경고로 에이전트가 읽는 범위를 지킴",
       "status": "Implementing"
     },
@@ -157,10 +125,7 @@
       "title": "적용할 에이전트와 대상 종류 고르기",
       "titleEn": "choosing agents and context types per repository",
       "importance": "High",
-      "prerequisites": [
-        3,
-        4
-      ],
+      "prerequisites": [3, 4],
       "outcome": "저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현",
       "status": "Proposed"
     },
@@ -170,11 +135,7 @@
       "title": "기존 저장소에서 프로필 만들기",
       "titleEn": "creating a Profile from an existing repository",
       "importance": "Medium",
-      "prerequisites": [
-        1,
-        3,
-        5
-      ],
+      "prerequisites": [1, 3, 5],
       "outcome": "기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦",
       "status": "Proposed"
     },
@@ -184,11 +145,28 @@
       "title": "기존 Git 저장소를 프로필 원천으로 쓰기",
       "titleEn": "using an existing Git repository as a Profile source",
       "importance": "High",
-      "prerequisites": [
-        1,
-        11
-      ],
+      "prerequisites": [1, 11],
       "outcome": "규칙 파일을 옮기지 않고 `profile.json` 하나만 더해 기존 규칙 저장소를 `profile clone`으로 받고 `pull`로 따라감",
+      "status": "Implemented"
+    },
+    {
+      "stage": 16,
+      "file": "profile-link.md",
+      "title": "기존 저장소 폴더를 프로필로 연결하기",
+      "titleEn": "linking an existing repository folder as a Profile",
+      "importance": "High",
+      "prerequisites": [1, 11, 15],
+      "outcome": "규칙 저장소 폴더에서 `profile link` 한 번으로 `profile.json`을 만들고 폴더를 보관함에 연결해 커밋 없이 적용",
+      "status": "Implemented"
+    },
+    {
+      "stage": 17,
+      "file": "skill-install.md",
+      "title": "에이전트 스킬을 agctx 명령으로 설치하기",
+      "titleEn": "installing agent skills with an agctx command",
+      "importance": "High",
+      "prerequisites": [5],
+      "outcome": "CLI 패키지에 든 스킬을 `agctx install`이 설치된 에이전트의 스킬 폴더에 복사하고, CLI와 버전이 어긋나면 모든 명령이 알림",
       "status": "Implemented"
     },
     {

@@ -27,6 +27,7 @@
 - [CI에서 비공개 프로필 저장소를 읽는 근거](#ci에서-비공개-프로필-저장소를-읽는-근거)
 - [공개 npm·GitHub 저장소 운영 근거](#공개-npmgithub-저장소-운영-근거)
 - [TypeScript 실행과 배포 근거](#typescript-실행과-배포-근거)
+- [린트와 TypeScript 7 병행 설치 근거](#린트와-typescript-7-병행-설치-근거)
 - [CLI 계약과 지침 공급망 근거](#cli-계약과-지침-공급망-근거)
 - [세션 사이 작업 상태 근거](#세션-사이-작업-상태-근거)
 - [문서와 코드의 드리프트 검출 근거](#문서와-코드의-드리프트-검출-근거)
@@ -800,6 +801,16 @@
   >
   > 번역: Codex는 사용자 프롬프트를 보고 스킬을 암묵적으로 호출하지 않지만, `$skill`로 명시해 호출하는 방식은 여전히 동작합니다.
 
+- **공식 문서(스킬의 사용자 전역 위치, 2026-09-22):** 모든 프로젝트에 쓰는 스킬을 두는 폴더는 에이전트마다 다르다.
+  - Claude Code는 개인 위치를 `~/.claude/skills/<skill-name>/SKILL.md`로 든다. 문서에는 `CLAUDE_CONFIG_DIR`로 이 위치가 바뀐다는 말이 없다. [Claude Code skills](https://code.claude.com/docs/en/skills) (확인일: 2026-09-22)
+  - Codex는 사용자 위치를 `$HOME/.agents/skills`로 든다. `CODEX_HOME` 아래가 아니다. [Codex skills](https://learn.chatgpt.com/docs/build-skills) (확인일: 2026-09-22)
+
+    > "Any skills checked into the user’s personal folder."
+    >
+    > 번역: 사용자의 개인 폴더에 넣어 둔 스킬.
+
+  - Antigravity는 전역 위치를 앱·IDE는 `~/.gemini/config/skills/<skill-folder>/`, CLI는 `~/.gemini/antigravity-cli/skills/<skill-folder>/`로 나눈다. 페이지를 스크립트로 그려 원문을 내려받아 대조하지는 못했고, 렌더링한 페이지에서 확인했다. [Google Antigravity Skills](https://antigravity.google/docs/skills/) (확인일: 2026-09-22)
+- **직접 실험(skills CLI의 Antigravity 전역 설치, 2026-09-22):** 스크래치패드의 빈 폴더를 `HOME`과 npm 캐시로 두고, 저장소의 `skills/`를 복사한 Git 저장소에서 `DISABLE_TELEMETRY=1 DO_NOT_TRACK=1 npx -y skills@latest add <사본> -g -a antigravity -y`를 실행했다(skills 1.7.0). `SKILL.md`는 `~/.agents/skills/agctx`와 `~/.agents/skills/agctx-author`에만 생겼고, `~/.gemini` 폴더는 만들어지지 않았다. 위 공식 문서의 Antigravity 전역 위치에는 설치하지 않는다는 뜻이다. Antigravity가 `~/.agents/skills`도 전역으로 읽는지는 문서에 없고, 에이전트를 실행해 확인하지는 않았다.
 - **비공식 자료(skills CLI):** skills CLI는 저장소의 `skills/` 등에서 스킬을 찾고, `add`의 `--skill`(`'*'`는 전부), `-a`·`--agent`, `-g`·`--global`, `-y`·`--yes`, `--list`로 설치 대상을 고른다. 프로젝트 설치 위치는 Claude Code `.claude/skills/`, Codex와 Antigravity `.agents/skills/`다. 익명 사용 통계를 모으며 `DISABLE_TELEMETRY=1`이나 `DO_NOT_TRACK=1`로 끈다. [vercel-labs/skills](https://github.com/vercel-labs/skills) (확인일: 2026-09-15)
 
   > "This CLI collects anonymous usage data to help improve the tool. No personal information is collected."
@@ -1093,6 +1104,23 @@ agctx가 Microsoft APM(Agent Package Manager)과 한 저장소에서 부딪히�
   - `npx -p node@22.17.1 node main.ts`는 `ERR_UNKNOWN_FILE_EXTENSION`으로 실패했다.
   - `node_modules/dep/index.ts`를 `exports`로 가리키는 패키지를 import한 `use-dep.ts`는 Node.js v24.21.0에서 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`으로 실패했다.
   - TypeScript 7.0.2의 `tsc -p tsconfig.build.json`으로 만든 `dist/agentic.js`(이름을 바꾸기 전 진입점)는 첫 줄 `#!/usr/bin/env node`를 유지했고, 소스의 `import { run } from './commands/cli.ts'`를 `./commands/cli.js`로 바꿨다.
+
+## 린트와 TypeScript 7 병행 설치 근거
+
+[ADR 0040](adr/0040-lint-with-eslint-and-typescript6-compat.md)이 기대는 외부 사실이다.
+
+- **공식 자료(TypeScript 팀 블로그):** TypeScript 7.0은 API를 제공하지 않고, 7.1에서 새 API를 낼 예정이다. 그때까지 typescript-eslint처럼 컴파일러 API가 필요한 도구를 위해 6.0 API를 다시 내보내는 호환 패키지 `@typescript/typescript6`를 게시했다. 이 패키지의 실행 파일은 `tsc6`라서 7.0의 `tsc`와 이름이 겹치지 않는다. typescript-eslint는 peer 의존성으로 `typescript`를 직접 가져오므로, `typescript` 이름을 호환 패키지의 별칭으로 두고 7.0은 `@typescript/native` 같은 다른 별칭으로 설치하라고 안내한다. [Announcing TypeScript 7.0](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0/)의 「Running Side-by-Side with TypeScript 6.0」 절 (확인일: 2026-09-22)
+
+  > "While TypeScript 7.0 is here, it does not ship with an API. We expect TypeScript 7.1 to ship with a new (and different) API, but until then we have made it a priority to ensure TypeScript can be run side-by-side with TypeScript 6.0 for utilities that still need some programmatic access to the compiler (such as typescript-eslint)."
+  >
+  > 번역: TypeScript 7.0이 나왔지만 API는 함께 제공하지 않습니다. TypeScript 7.1이 새로운(그리고 다른) API를 제공할 것으로 예상하며, 그때까지는 컴파일러에 프로그래밍 방식으로 접근해야 하는 도구(typescript-eslint 등)를 위해 TypeScript를 TypeScript 6.0과 나란히 실행할 수 있게 하는 것을 우선했습니다.
+
+  > "Because some tools like typescript-eslint expect to import from typescript directly via peer dependencies, we recommend achieving this via npm aliases."
+  >
+  > 번역: typescript-eslint 같은 일부 도구는 peer 의존성을 통해 typescript에서 직접 가져오기를 기대하므로, 이것을 npm 별칭으로 해결하기를 권장합니다.
+
+- **npm 레지스트리(2026-09-22 조회):** `npm view typescript-eslint peerDependencies`는 `typescript`를 `>=4.8.4 <6.1.0`으로 요구했다(8.70.1). `@typescript/typescript6`의 최신 버전은 6.0.2였다.
+- **직접 실험(2026-09-22):** 스크래치패드의 빈 프로젝트에 `typescript@7.0.2`, `eslint@10.11.0`, `typescript-eslint@8.70.1`을 설치하고 `eslint`를 실행하자 `typescript-eslint does not support TS 7.0.`을 출력하고 실패했다. 같은 메시지는 TS 7.1 이상 지원을 추적하는 곳으로 [typescript-eslint 이슈 #10940](https://github.com/typescript-eslint/typescript-eslint/issues/10940)(제목 「Enhancement: Use TS 7 (tsgo / typescript-go) for type information」, 열려 있음)을 가리켰다 (확인일: 2026-09-22). pnpm `overrides`로 typescript-eslint 쪽 `typescript`만 6.0.3으로 바꾸려 했으나 설치된 것은 7.0.2 하나였다. 위 블로그대로 `"@typescript/native": "npm:typescript@7.0.2"`와 `"typescript": "npm:@typescript/typescript6@6.0.2"`로 바꾸자 `eslint`가 TypeScript 파일을 검사했고, `tsc --version`은 `Version 7.0.2`, `tsc6 --version`은 `Version 6.0.3`을 출력했다.
 
 ## CLI 계약과 지침 공급망 근거
 

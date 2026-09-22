@@ -1,0 +1,4 @@
+# git blame에서 건너뛸 커밋이다. 로컬에서는 `git config blame.ignoreRevsFile .git-blame-ignore-revs`로 켠다.
+
+# Prettier로 저장소 전체를 포맷한 커밋(#81, ADR 0039)
+ed1ebaea95226aa455f183d8641a718003739a75

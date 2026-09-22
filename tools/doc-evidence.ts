@@ -1,21 +1,20 @@
-// Evidence rules for documentation that records facts from outside the
-// repository. External sources change without notice, so every external link
-// in references.md carries the date its claim was checked, and newer ADRs state
-// where their evidence lives or that they rely on none.
+// 저장소 밖의 사실을 기록하는 문서에 대한 근거 규칙. 외부 출처는 예고 없이 바뀌므로 references.md의
+// 모든 외부 링크에는 주장을 확인한 날짜를 붙이고, 새 ADR은 근거가 어디 있는지나 근거에 기대지
+// 않는다는 것을 밝힌다.
 
 const EXTERNAL_LINK = /\]\(\s*<?https?:\/\//i;
 const CHECKED_DATE = /확인일:\s*\d{4}-\d{2}-\d{2}\b/;
 const CODE_FENCE = /^\s*(```|~~~)/;
 
-/** The first ADR number that must carry the evidence header field. */
+/** 근거 머리말 필드를 갖춰야 하는 첫 ADR 번호. */
 export const EVIDENCE_REQUIRED_FROM_ADR = 9;
 const EVIDENCE_FIELD = /^\s*[*-]?\s*\*\*(?:근거|Evidence):\*\*[ \t]*(.*)$/m;
 const MARKDOWN_LINK = /\]\([^)\s]+\)/;
 const NO_EXTERNAL_EVIDENCE = /^(?:외부 근거 없음|No external evidence)\s*:\s*\S/i;
 
 /**
- * 1-based line numbers of lines that cite an external link without a 확인일.
- * Fenced code blocks are skipped because they show examples, not claims.
+ * 확인일 없이 외부 링크를 인용하는 줄의 번호. 1부터 센다.
+ * 펜스 코드 블록은 주장이 아니라 예시를 보여 주므로 건너뛴다.
  */
 export function undatedReferenceLinkLines(content: string): number[] {
   const undated: number[] = [];
@@ -31,9 +30,9 @@ export function undatedReferenceLinkLines(content: string): number[] {
 }
 
 /**
- * Error message when an ADR from EVIDENCE_REQUIRED_FROM_ADR on lacks an evidence
- * field holding a link or a stated reason for having no external evidence.
- * @param fileName - e.g. `0009-agent-rule-frontmatter.md`
+ * EVIDENCE_REQUIRED_FROM_ADR 이후의 ADR에 링크나 외부 근거가 없다는 이유를 담은 근거 필드가 없을 때의
+ * 오류 메시지.
+ * @param fileName - 예: `0009-agent-rule-frontmatter.md`
  */
 export function adrEvidenceError(fileName: string, content: string): string | null {
   const number = Number.parseInt(fileName.slice(0, 4), 10);

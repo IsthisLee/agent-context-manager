@@ -6,7 +6,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 관리 영역 충돌
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 6f01ffe18c818b21f65f303dc5a781f1d2f52a13ddd9623624d1d331b081c53b -->
+<!-- agctx-doc-sources-sha256: 023714cf31133646043c71ab1d99851d64ca90ef6748ca2e214524c5b4c54bba -->
 
 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다`로 멈췄다면 [관리 영역을 고쳐서 멈췄을 때](../concepts/managed-and-extension-areas.md#관리-영역을-고쳐서-멈췄을-때)의 순서로 푼다.
 
@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: cb79ad69f7393f89b132a00b7bcc873b518ddd7d107c9fffeeac6440c78d894e -->
+<!-- agctx-doc-sources-sha256: 16f49dcf3cab3ae80ee2f63d4e67bd240e665ed4464dd9694aef01959701b0b7 -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -25,6 +25,21 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`is not a Git repository yet`**: 로컬 프로필을 원격에 연결하려 했다. `Next:` 줄의 `git init`·`add`·`commit`을 실행한 뒤 다시 `profile connect`한다.
 - **`is not a profile repository: profile.json is missing at its root`**(종료 코드 64): 규칙은 있지만 프로필 메타데이터가 없는 저장소를 `profile clone`했다. 그 저장소 루트에 `profile.json`을 더해 올린다. 규칙 파일이 하위 폴더에 있으면 파일을 옮기지 말고 `instructions`로 가리킨다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **`"instructions" in profile.json (…) must be a relative path to a .md file`·`the rules file profile.json names (…) is missing`**(종료 코드 64): `instructions` 값이 규칙에 맞지 않거나, 가리킨 파일이 없거나 심볼릭 링크다. 허용하는 경로는 [파일 형식](file-formats.md#profilejson)에 있다.
+- **`is linked to a folder that is missing`**(종료 코드 64): `profile link`로 연결한 폴더를 옮기거나 지웠다. 옮겼다면 안내에 나온 대로 `agctx profile remove <name> --yes`로 링크를 지운 뒤 `agctx profile link <새 경로> --name <name> --scope <scope> --instructions <file>`로 같은 프로필을 다시 잇는다. 용도와 규칙 파일은 안내에 채워져 있다. 필요 없으면 링크만 지운다. `profile list`의 끊긴 링크 목록에서 원래 경로를 볼 수 있다.
+- **`is linked to …, which has no profile.json`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 없어졌다. `link`가 만든 `profile.json`은 커밋하기 전이라 `git clean`이나 브랜치 전환으로 지워지기 쉽다. 커밋했었다면 그 폴더에서 `git restore profile.json`으로 되살리고, 아니면 안내에 나온 대로 링크를 지운 뒤 연결할 때의 이름·용도·규칙 파일로 다시 연결한다.
+- **`which no longer has its rules file`**(종료 코드 64): 연결한 폴더에서 `profile.json`이 가리키는 규칙 파일이 없어졌다. 다른 브랜치로 바꿨거나 파일을 옮긴 경우다. 파일을 되돌려 놓거나, 그 폴더의 `profile.json`에 지금 위치를 적는다.
+- **`The link of profile … cannot be read`**(종료 코드 64): 보관함의 `link.json`이 깨졌다. `agctx profile remove <name> --yes`로 지운 뒤 `agctx profile link <경로> --name <name>`으로 다시 연결한다.
+- **`is a broken link to`**(종료 코드 64): 같은 이름의 링크가 끊겨 있다. `profile link`는 끊긴 링크를 다른 폴더로 옮기지 않는다. 안내에 나온 대로 링크를 지운 뒤 다시 연결한다.
+- **`is already linked as profile`**(종료 코드 64): 이 폴더를 가리키는 끊긴 링크가 다른 이름으로 이미 있다. 새 이름으로 연결하면 프로필이 둘로 갈라지므로, 안내에 나온 대로 그 링크를 지운 뒤 원래 이름으로 다시 연결한다.
+- **`is already linked to`**(종료 코드 64): 같은 이름의 링크가 멀쩡히 다른 폴더를 가리키고 있다. 폴더 이름이 같은 다른 폴더를 연결하면 이렇게 된다. 옮기려면 `agctx profile remove <name> --yes`로 링크를 지운 뒤 다시 연결하고, 둘 다 두려면 `--name`으로 다른 이름을 준다.
+- **`but its profile.json is not for profile`**(종료 코드 64): 연결한 폴더의 `profile.json`에서 `name`이 바뀌었다. 안내에 나온 파일의 `name`을 원래 이름으로 되돌리거나, 링크를 지운 뒤 새 이름으로 다시 연결한다.
+- **`is your home folder, not a rules repository folder`**(종료 코드 64): 홈 폴더에서 인자 없이 `profile link`를 실행했거나 홈 폴더를 줬다. 규칙 저장소 폴더를 준다.
+- **`Stopped looking for AGENTS.md after 1000 folders`**(종료 코드 64): 폴더가 커서 규칙 파일을 다 찾지 못했다. `--instructions <경로>`로 규칙 파일을 준다.
+- **`is inside the Git repository`**(종료 코드 64): `profile link`에 Git 저장소 안의 하위 폴더를 줬다. 안내에 나온 대로 저장소 루트를 연결하고 규칙 파일을 `--instructions <하위 폴더>/AGENTS.md`로 준다.
+- **`is a symbolic link. Pinning and profile clone read the rules file from Git`**(종료 코드 64): `profile link`가 고른 규칙 파일이 심볼릭 링크다. 안내에 나온 대로 링크가 가리키는 파일을 `--instructions`로 준다.
+- **`Invalid profile name`과 `The name comes from the folder name`**(종료 코드 64): `profile link`가 폴더 이름을 프로필 이름으로 쓰려 했는데 대문자나 밑줄처럼 이름 규칙에 맞지 않는 글자가 있다. 안내에 나온 이름이나 원하는 이름을 `--name`으로 준다.
+- **`is linked to …, so agctx does not pull, push, or change Git settings there`**(종료 코드 64): 연결한 프로필에서 `profile pull`·`push`·`connect`를 실행했다. 그 폴더에서 `git pull`·`git push`로 한다.
+- **`has several AGENTS.md files, so none was chosen`**(종료 코드 64): `profile link`가 규칙 파일 후보를 여럿 찾았다. 출력된 후보 가운데 하나를 `--instructions <경로>`로 고른다.
 - **`has uncommitted changes, so a project cannot be pinned to a commit`**(종료 코드 64): 프로필의 규칙 파일(`AGENTS.md`나 `instructions`가 가리킨 파일)이나 `profile.json`에 커밋하지 않은 수정이 있어 고정할 커밋을 정할 수 없다. `Next:` 줄에 적힌 프로필 폴더에서 수정을 커밋하거나 되돌린 뒤 다시 적용한다. TUI에서 고정 질문에 **Yes**를 골랐을 때도 같은 오류가 나고 파일은 바뀌지 않는다.
 - **`is not a Git repository, so a project cannot be pinned to it`**(종료 코드 64): Git 저장소가 아닌 로컬 프로필은 고정할 수 없다. 프로필 폴더에서 `git init`과 첫 커밋을 만든 뒤 다시 `--pin`으로 적용한다. 팀과 나눠 쓸 프로필이면 `Next:` 줄의 `profile connect`로 원격에도 연결한다([팀과 Git으로 공유하기](../guides/team-sharing.md)).
 - **`does not have the pinned commit`**(종료 코드 69): 저장소가 고정한 커밋이 이 컴퓨터의 프로필 보관함에 없다. 다른 사람이 더 새 커밋으로 고정해 올린 저장소를 받았는데 아직 `profile pull`을 하지 않았을 때 생긴다. `agctx profile pull <name>`으로 받은 뒤 다시 실행한다.
@@ -39,4 +54,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`verify`가 `no-evidence`만 보여 줌**: 그 폴더에서 에이전트를 시작한 세션 기록이 없거나, 에이전트가 지침을 읽은 뒤에 지침 파일이 바뀌어 그 기록을 증거로 쓸 수 없다. Antigravity는 기록을 읽지 못해 항상 `no-evidence`다. 에이전트를 그 폴더에서 다시 시작하거나 `agctx verify --probe`를 실행한다.
 - **`verify --probe`가 69로 끝남**: 에이전트 CLI가 PATH에 없거나 로그인하지 않았다. 터미널에서 그 CLI를 한 번 실행해 로그인한 뒤 다시 실행한다.
 - **하위 폴더에서 시작한 Claude Code가 루트 규칙을 따르지 않음**: 하위 폴더에서 시작하면 루트 `CLAUDE.md`가 `@AGENTS.md`로 가져오는 루트 `AGENTS.md`는 시작 폴더 밖의 파일이 된다. Claude Code는 이런 가져오기를 사용자가 승인해야 읽는다. 그 프로젝트를 대화형으로 시작해 승인 창에서 허용하거나, 저장소 루트에서 시작한다.
+- **`No agent was found on this machine`**(종료 코드 64): `agctx install`이 Claude Code·Codex·Antigravity의 설정 폴더를 찾지 못했다. 오류에 확인한 폴더가 나온다. 에이전트를 설치하고 한 번 실행한 뒤 다시 하거나, `--agent claude`처럼 에이전트를 골라 폴더가 없어도 설치한다.
+- **`Some skill folders were not written by agctx install or were changed since`**(종료 코드 64): `blocked` 줄의 스킬 폴더를 agctx가 두지 않았거나(전에 `npx skills add`로 설치한 경우 등) 그 뒤로 고쳤다. 아무것도 쓰지 않았다. 폴더를 확인하고 바꿔도 되면 `agctx install --force`로 바꾼다.
+- **`The agctx skills in … are from agctx …`**: 설치된 스킬이 지금 CLI와 버전이 다르다. CLI를 업데이트한 뒤 스킬을 다시 설치하지 않은 경우다. `agctx install`을 실행하면 사라진다.
 - **`Git is not installed`**(종료 코드 69): Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. 로컬 프로필만 쓰면 `git` 없이 동작한다.

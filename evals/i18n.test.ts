@@ -24,13 +24,41 @@ function run(home: string, args: string[], env: NodeJS.ProcessEnv = {}) {
 
 function buildProject(home: string, env: NodeJS.ProcessEnv = {}) {
   run(home, ['profile', 'create', 'demo', '--scope', 'team'], env);
-  run(home, ['profile', 'setup', 'demo', '--workflow', 'on', '--context', 'on', '--tdd', 'on', '--review', 'on', '--verification', 'on', '--instructions', 'on', '--docs', 'on', '--security', 'on', '--untrusted', 'on', '--language', 'on'], env);
+  run(
+    home,
+    [
+      'profile',
+      'setup',
+      'demo',
+      '--workflow',
+      'on',
+      '--context',
+      'on',
+      '--tdd',
+      'on',
+      '--review',
+      'on',
+      '--verification',
+      'on',
+      '--instructions',
+      'on',
+      '--docs',
+      'on',
+      '--security',
+      'on',
+      '--untrusted',
+      'on',
+      '--language',
+      'on'
+    ],
+    env
+  );
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-proj-'));
   run(home, ['profile', 'apply', 'demo', project, '--yes'], env);
   return fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
 }
 
-test('resolveLocale follows the fixed precedence order', () => {
+test('resolveLocale은 정해진 우선순위를 따른다', () => {
   assert.equal(resolveLocale({ flag: 'en', env: 'ko', saved: 'ko', isTTY: true }), 'en');
   assert.equal(resolveLocale({ env: 'en', saved: 'ko', isTTY: true }), 'en');
   assert.equal(resolveLocale({ saved: 'en', isTTY: true }), 'en');
@@ -39,16 +67,16 @@ test('resolveLocale follows the fixed precedence order', () => {
   assert.equal(resolveLocale({ isTTY: true }), null);
 });
 
-test('resolveLocale rejects an unsupported flag or env value', () => {
+test('resolveLocale은 지원하지 않는 플래그나 환경 변수 값을 거부한다', () => {
   assert.throws(() => resolveLocale({ flag: 'fr' }), /--lang must be one of: en, ko/);
   assert.throws(() => resolveLocale({ env: 'jp' }), /AGCTX_LANG must be one of: en, ko/);
 });
 
-test('AGCTX_LANG=ko generates Korean guidance', () => {
+test('AGCTX_LANG=ko는 한국어 지침을 만든다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-ko-'));
   try {
     const agents = buildProject(home, { AGCTX_LANG: 'ko' });
-    assert.ok(hasHangul(agents), 'ko AGENTS.md should contain Korean guidance');
+    assert.ok(hasHangul(agents), 'ko AGENTS.md에는 한국어 지침이 있어야 한다');
     assert.match(agents, /프로젝트 규칙 확장/);
     assert.match(agents, /^## 변경 검토$/m);
     assert.doesNotMatch(agents, /^## 리뷰$/m);
@@ -57,11 +85,11 @@ test('AGCTX_LANG=ko generates Korean guidance', () => {
   }
 });
 
-test('the default (non-interactive) locale generates English guidance', () => {
+test('기본(비대화형) 로캘은 영어 지침을 만든다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-default-'));
   try {
     const agents = buildProject(home);
-    assert.equal(hasHangul(agents), false, 'the default AGENTS.md must contain no Korean characters');
+    assert.equal(hasHangul(agents), false, '기본 AGENTS.md에는 한글이 없어야 한다');
     assert.match(agents, /Project rule extensions/);
     assert.match(agents, /^## Change review$/m);
     assert.doesNotMatch(agents, /^## Review$/m);
@@ -70,7 +98,7 @@ test('the default (non-interactive) locale generates English guidance', () => {
   }
 });
 
-test('AGCTX_LANG=en sync preserves domain rules added under the extension section', () => {
+test('AGCTX_LANG=en sync는 확장 영역 아래에 더한 도메인 규칙을 지킨다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-sync-'));
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-en-sync-proj-'));
   const env = { AGCTX_LANG: 'en' };
@@ -93,7 +121,7 @@ test('AGCTX_LANG=en sync preserves domain rules added under the extension sectio
   }
 });
 
-test('a saved config.json locale is honored with no flag or env', () => {
+test('플래그도 환경 변수도 없으면 저장한 config.json 로캘을 따른다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-cfg-'));
   try {
     fs.mkdirSync(home, { recursive: true });
@@ -107,7 +135,7 @@ test('a saved config.json locale is honored with no flag or env', () => {
   }
 });
 
-test('config lang persists the selected locale', () => {
+test('config lang은 고른 로캘을 저장한다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-save-'));
   try {
     run(home, ['config', 'lang', 'en']);
@@ -118,7 +146,7 @@ test('config lang persists the selected locale', () => {
   }
 });
 
-test('an unsupported --lang value exits non-zero', () => {
+test('지원하지 않는 --lang 값은 0이 아닌 코드로 끝난다', () => {
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-i18n-bad-'));
   try {
     const result = spawnSync(process.execPath, [cli, 'profile', 'list', '--lang', 'fr'], {
@@ -133,6 +161,6 @@ test('an unsupported --lang value exits non-zero', () => {
   }
 });
 
-test('SUPPORTED_LOCALES lists ko and en', () => {
+test('SUPPORTED_LOCALES에는 ko와 en이 있다', () => {
   assert.deepEqual([...SUPPORTED_LOCALES].sort(), ['en', 'ko']);
 });

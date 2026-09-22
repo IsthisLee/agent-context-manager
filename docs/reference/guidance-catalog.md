@@ -1,6 +1,6 @@
 # 지침 카탈로그 (배포되는 공통 지침)
 
-이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance`<!--s:ac0eea31e97c--> 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
+이 문서는 agctx가 프로필에 넣어 배포하는 공통 지침의 정본 목록이다. 각 항목이 무엇을 왜 요구하는지를 여기서 정한다. 산출물에 실제로 들어가는 문자열은 `src/i18n/index.ts`의 `guidance`<!--s:09cc098f50e2--> 상수에 있다. 이 문서와 그 상수는 같은 내용을 가리켜야 한다.
 
 
 ## 지침이 만들어지는 두 경로
@@ -30,7 +30,7 @@ flowchart TB
 ## 지침 항목 10개
 
 <!-- agctx-doc-sources: src/i18n/index.ts -->
-<!-- agctx-doc-sources-sha256: 72dc750c3471443d2efdef753dabeaa40cba81ce5e59ca1689b9080942e297a5 -->
+<!-- agctx-doc-sources-sha256: 80e07528ba33380a4c7b89e60a9b484ed2fdc0408ebb75ae6e68eeaee2df9831 -->
 
 아래는 현재 배포되는 10개 항목이다. 항목마다 값은 `on`과 `off` 둘이고 규칙 문구는 하나다([ADR 0028](../adr/0028-guidance-on-off.md)). `off`면 그 항목이 산출물에서 빠지고, 모든 항목이 `off`면 블록 안이 빈다.
 
@@ -117,7 +117,7 @@ flowchart TB
 ## 켜고 끄기 (on / off)
 
 <!-- agctx-doc-sources: src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 995ebfaa041d2a29da68952c10e485beb589f81fbcf532a63ee67635ff635d79 -->
+<!-- agctx-doc-sources-sha256: d541bd7beafa7530046bddd08a98fa755d58fe018aee9d3a20658a6de919018f -->
 
 - `on`: 이 항목을 프로필 지침에 넣는다. 응답 언어를 뺀 나머지 항목의 기본값이다.
 - `off`: 넣지 않는다.

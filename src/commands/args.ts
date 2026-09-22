@@ -1,6 +1,10 @@
 export function parseFlag(values: readonly string[], flag: string): string | null | undefined;
 export function parseFlag(values: readonly string[], flag: string, fallback: string): string | undefined;
-export function parseFlag(values: readonly string[], flag: string, fallback: string | null = null): string | null | undefined {
+export function parseFlag(
+  values: readonly string[],
+  flag: string,
+  fallback: string | null = null
+): string | null | undefined {
   const index = values.indexOf(`--${flag}`);
   return index === -1 ? fallback : values[index + 1];
 }

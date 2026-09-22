@@ -7,19 +7,28 @@ import { fileURLToPath } from 'node:url';
 import type { TestContext } from 'node:test';
 
 /**
- * A throwaway machine for evaluations: people with separate agctx homes, bare
- * Git remotes, service repositories, and a fake `gh` that records its calls.
+ * 평가용으로 쓰고 버리는 컴퓨터: agctx 홈을 따로 쓰는 사람들, bare Git 원격, 서비스 저장소,
+ * 그리고 호출을 기록하는 가짜 `gh`.
  */
 
 export const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const cli = path.join(repoRoot, 'src', 'agctx.ts');
 export const PATH_KEY = Object.keys(process.env).find(key => key.toUpperCase() === 'PATH') || 'PATH';
 
-const identity = (who: string) => ({ GIT_AUTHOR_NAME: who, GIT_AUTHOR_EMAIL: `${who}@example.com`, GIT_COMMITTER_NAME: who, GIT_COMMITTER_EMAIL: `${who}@example.com` });
+const identity = (who: string) => ({
+  GIT_AUTHOR_NAME: who,
+  GIT_AUTHOR_EMAIL: `${who}@example.com`,
+  GIT_COMMITTER_NAME: who,
+  GIT_COMMITTER_EMAIL: `${who}@example.com`
+});
 
 export function gitIn(cwd: string, ...args: string[]): string {
-  const result = spawnSync('git', args, { cwd, encoding: 'utf8', env: { ...process.env, GIT_TERMINAL_PROMPT: '0', ...identity('tester') } });
-  assert.equal(result.status, 0, `git ${args.join(' ')} failed\n${result.stderr}`);
+  const result = spawnSync('git', args, {
+    cwd,
+    encoding: 'utf8',
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0', ...identity('tester') }
+  });
+  assert.equal(result.status, 0, `git ${args.join(' ')} 실패\n${result.stderr}`);
   return result.stdout.trim();
 }
 
@@ -41,7 +50,7 @@ export function makeWorkspace(t: TestContext, prefix = 'agctx-workspace-') {
       spawnSync(process.execPath, [cli, ...args], { cwd: root, env: { ...base, ...env }, encoding: 'utf8' });
     const ok = (args: string[], env: Record<string, string> = {}) => {
       const result = run(args, env);
-      assert.equal(result.status, 0, `agctx ${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
+      assert.equal(result.status, 0, `agctx ${args.join(' ')} 실패\n${result.stdout}\n${result.stderr}`);
       return result;
     };
     return { home, run, ok, profileDir: name => path.join(home, 'profiles', name) };
@@ -54,7 +63,7 @@ export function makeWorkspace(t: TestContext, prefix = 'agctx-workspace-') {
   return { root, person, folder };
 }
 
-/** The admin creates a profile, commits it, and pushes it to a new bare remote. */
+/** 관리자가 프로필을 만들고 커밋해서 새 bare 원격에 push한다. */
 export function publishProfile(root: string, admin: Person, name: string) {
   const remote = path.join(root, 'remotes', `${name}.git`);
   fs.mkdirSync(path.dirname(remote), { recursive: true });
@@ -69,7 +78,7 @@ export function publishProfile(root: string, admin: Person, name: string) {
   return { dir, remote };
 }
 
-/** A service repository: a bare origin with one commit on main, and a clone to work in. */
+/** 서비스 저장소: main에 커밋 하나가 있는 bare origin과 작업용 clone. */
 export function serviceRepo(root: string, name: string) {
   const origin = path.join(root, 'remotes', `${name}.git`);
   fs.mkdirSync(path.dirname(origin), { recursive: true });
@@ -98,13 +107,15 @@ export interface GhCall {
 }
 
 /**
- * A fake `gh` on PATH. Mode `ok` lists no pull requests and creates one; `existing`
- * lists an open pull request; `not-github` fails the way gh does outside GitHub.
+ * PATH에 둔 가짜 `gh`. `ok` 모드는 pull request 목록이 비어 있고 하나를 만든다. `existing`은 열린
+ * pull request 하나를 보여 주고, `not-github`는 GitHub 밖에서 gh가 실패하는 방식으로 실패한다.
  */
 export function fakeGh(t: TestContext) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-fake-gh-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  fs.writeFileSync(path.join(dir, 'fake-gh.mjs'), `import fs from 'node:fs';
+  fs.writeFileSync(
+    path.join(dir, 'fake-gh.mjs'),
+    `import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -125,11 +136,15 @@ if (args[0] === 'pr' && args[1] === 'create') {
   process.exit(0);
 }
 process.exit(0);
-`);
+`
+  );
   if (process.platform === 'win32') {
     fs.writeFileSync(path.join(dir, 'gh.cmd'), `@"${process.execPath}" "%~dp0fake-gh.mjs" %*\r\n`);
   } else {
-    fs.writeFileSync(path.join(dir, 'gh'), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-gh.mjs" "$@"\n`);
+    fs.writeFileSync(
+      path.join(dir, 'gh'),
+      `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-gh.mjs" "$@"\n`
+    );
     fs.chmodSync(path.join(dir, 'gh'), 0o755);
   }
   return {
@@ -139,7 +154,14 @@ process.exit(0);
     },
     calls(): GhCall[] {
       const log = path.join(dir, 'calls.jsonl');
-      return fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
+      return fs.existsSync(log)
+        ? fs
+            .readFileSync(log, 'utf8')
+            .trim()
+            .split('\n')
+            .filter(Boolean)
+            .map(line => JSON.parse(line))
+        : [];
     }
   };
 }
@@ -151,31 +173,44 @@ export interface FakeCall {
 }
 
 /**
- * Fake commands on PATH. Each entry is the body of an ES module that receives
- * `args` (process.argv after the script) and may use `fs` and `path`; every call is logged.
+ * PATH에 둔 가짜 명령들. 항목마다 ES 모듈 본문이며, `args`(스크립트 뒤의 process.argv)를 받고
+ * `fs`와 `path`를 쓸 수 있다. 모든 호출을 기록한다.
  */
 export function fakeCommands(t: TestContext, commands: Record<string, string>) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-fake-commands-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const log = path.join(dir, 'calls.jsonl');
   for (const [name, body] of Object.entries(commands)) {
-    fs.writeFileSync(path.join(dir, `${name}.mjs`), `import fs from 'node:fs';
+    fs.writeFileSync(
+      path.join(dir, `${name}.mjs`),
+      `import fs from 'node:fs';
 import path from 'node:path';
 const args = process.argv.slice(2);
 fs.appendFileSync(${JSON.stringify(log)}, JSON.stringify({ command: ${JSON.stringify(name)}, args, cwd: process.cwd() }) + '\\n');
 ${body}
-`);
+`
+    );
     if (process.platform === 'win32') {
       fs.writeFileSync(path.join(dir, `${name}.cmd`), `@"${process.execPath}" "%~dp0${name}.mjs" %*\r\n`);
     } else {
-      fs.writeFileSync(path.join(dir, name), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/${name}.mjs" "$@"\n`);
+      fs.writeFileSync(
+        path.join(dir, name),
+        `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/${name}.mjs" "$@"\n`
+      );
       fs.chmodSync(path.join(dir, name), 0o755);
     }
   }
   return {
     env: { [PATH_KEY]: `${dir}${path.delimiter}${process.env[PATH_KEY]}` },
     calls(): FakeCall[] {
-      return fs.existsSync(log) ? fs.readFileSync(log, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
+      return fs.existsSync(log)
+        ? fs
+            .readFileSync(log, 'utf8')
+            .trim()
+            .split('\n')
+            .filter(Boolean)
+            .map(line => JSON.parse(line))
+        : [];
     }
   };
 }

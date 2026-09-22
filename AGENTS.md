@@ -41,15 +41,17 @@
 
 ## 2. 프로젝트 실행 및 검사 명령
 
-- **형식 검사·문서 계약·저장소 평가:** `pnpm run check`
+- **형식 검사·서식 검사·린트·문서 계약·저장소 평가:** `pnpm run check`
+- **서식 맞추기:** `pnpm run format`(코드·JSON·YAML. Markdown은 대상이 아니다)
 - **CLI 직접 실행:** `node src/agctx.ts <command>`
 
 ---
 
 ## 3. 프로젝트 기술 스택 및 핵심 제약
 
-- **개발 언어:** TypeScript (설치본 실행은 Node.js 22 이상, 저장소 개발은 Node.js 22.18 이상). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다.
+- **개발 언어:** TypeScript (설치본 실행은 Node.js 22 이상, 저장소 개발은 Node.js 22.18 이상). `src/`를 `pnpm run build`(배포 전에는 `prepack`)로 `dist/`에 컴파일해 배포하고, 저장소의 CLI·테스트·도구는 컴파일 없이 `.ts` 파일을 바로 실행한다. 형식 검사와 빌드는 TypeScript 7(`@typescript/native` 별칭의 `tsc`)이 하고, `typescript` 이름에는 typescript-eslint가 쓰는 6.0 호환 패키지가 있다(ADR 0040).
 - **TypeScript 제약:** Node가 타입만 지워 실행할 수 있는 문법만 쓴다(`erasableSyntaxOnly`: `enum`·`namespace`·생성자 매개변수 속성 금지). 상대 import에는 `.ts` 확장자를 붙이고, 타입만 가져올 때는 `import type`을 쓴다(`verbatimModuleSyntax`). 형식 검사는 `pnpm run typecheck`이며 `pnpm run check`에 포함된다.
+- **코드 안의 설명:** 코드 주석, JSDoc, 설정 파일의 주석, 테스트 이름, 단언 메시지는 한국어로 쓴다. 명령·식별자·경로·원문 인용처럼 번역하면 정확성이 떨어지는 문자열은 그대로 둔다. CLI와 저장소 도구가 출력하는 문구는 이 규칙의 대상이 아니다. CLI 출력의 언어는 `src/i18n/`의 메시지 카탈로그가 정한다.
 - **패키지 매니저:** pnpm — 저장소 의존성·스크립트·CI는 고정된 pnpm 버전을 사용하라. 사용자의 npm 설치 명령은 배포 호환성을 위해 README에 유지한다.
 
 ---

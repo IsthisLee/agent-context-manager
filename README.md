@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: ffa5d7dd0d9d436fbc265d09f545bbc6acfc74a392ed0fdfc5f05a1ec613ba92 -->
+<!-- agctx-doc-sources-sha256: 5fc1437e8cb808acbf5b03578fd8f6de234fd95808c47c718695396696d237cb -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -76,12 +76,13 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 ## 시작하기
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 8acfdb81ac78095841f4ccb59e9abcabea0d230e82f08d9cbd5fb7c22c74c2f5 -->
+<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
 
 > 실행 환경: Node.js 22 LTS 이상
 
 ```bash
 npm install -g agent-context-manager
+agctx install      # 설치된 에이전트에 agctx 스킬을 등록
 
 agctx profile create company --scope company
 agctx profile setup company --tdd on --security on
@@ -115,25 +116,24 @@ Applied profile company to /path/to/project
 
 ### 에이전트에게 맡기기 (선택)
 
-여기까지는 사람이 명령으로 실행했습니다. 에이전트용 스킬을 설치하면 이후 작업은 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
+여기까지는 사람이 명령으로 실행했습니다. 위의 `agctx install`로 에이전트용 스킬을 등록해 두면 이후 작업은 "이 저장소 컨텍스트가 최신인지 확인해 줘"처럼 말로 맡길 수 있습니다. 에이전트가 `agctx check`를 실행하고 결과를 설명합니다. 스킬은 쓰기 명령 전에 `--dry-run` 결과를 보여 주고 승인을 받게 합니다. 프로필을 게시하고 PR을 여는 `agctx-author` 스킬은 이름으로 부를 때만 동작합니다.
 
-```bash
-npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a antigravity
-```
+스킬은 CLI 패키지에 들어 있고, `agctx install`이 이 컴퓨터에 설치된 Claude Code·Codex·Antigravity의 스킬 폴더에 복사합니다. 그래서 스킬에 적힌 명령이 설치한 CLI와 항상 같습니다. CLI를 업데이트한 뒤에는 `agctx install`을 다시 실행하고, 그 전까지는 모든 명령이 한 줄로 알려 줍니다.
 
 자세한 내용은 [에이전트에게 agctx를 맡기기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/agent-skills.md)에 있습니다.
 
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 8a0dc7540cc2c280aecbae0d925ddda81c32c02b25a2f18f255819ffbeb5efea -->
+<!-- agctx-doc-sources-sha256: c83af6ea462748fef83ec5297742ab4982f2b87acca0a8474401ac6618213d8b -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
-- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다.
+- **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다. 이미 쓰던 규칙 저장소는 그 폴더에서 `profile link`로 커밋 없이 바로 연결하고, 팀과는 그때 생긴 `profile.json`을 커밋해 나눕니다([기존 저장소를 프로필로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
 - **여러 저장소** — `repos list`·`status`·`sync`·`pr`로 프로필을 적용한 저장소를 한 번에 다루고, 고정한 저장소는 PR로 갱신합니다. 예약 봇은 `repos pr --targets <file> --yes`로 실행합니다.
 - **전달 확인** — `explain`은 그 폴더에서 시작한 에이전트가 읽는 지침 파일과 그 이유를 보여 줍니다. 확인한 에이전트 가운데 하나라도 받지 못하는 파일이 있으면 종료 코드 4로 끝납니다. `verify`는 세션 기록으로 실제로 들어갔는지 확인하고, `--probe`는 승인 뒤 임시 사본에서 에이전트를 한 번씩 실행합니다.
+- **에이전트용 스킬** — `install`·`uninstall`. CLI 패키지에 든 스킬을 이 컴퓨터에 설치된 Claude Code·Codex·Antigravity의 스킬 폴더에 복사하고, 자기가 둔 폴더만 바꾸거나 지웁니다. 설치된 스킬이 CLI와 버전이 다르면 모든 명령이 한 줄로 알립니다.
 - **모노레포와 APM 공존** — 하위 폴더 `AGENTS.md`마다 Claude Code가 읽는 `CLAUDE.md` 연결 파일을 만들고, Microsoft APM의 `managed_section` 블록과 함께 씁니다. APM 기본 모드가 만든 파일에는 쓰지 않고 멈춥니다.
 - **모든 명령의 공통 계약** — `--json` 결과 문서, 뒤처짐·충돌·숨은 문자를 구분하는 종료 코드, `agctx <명령> --help`. 파일을 바꾸는 명령은 터미널이 아니면 확인을 물을 수 없으므로 `--yes`가 있어야 실행합니다. 표시·생성 언어는 `config lang <ko|en>`으로 정합니다.
 
@@ -141,12 +141,12 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 
 ### 검증의 범위
 
-저장소를 개발하는 사람은 `pnpm run check`로 agctx 자체의 형식 검사, 문서 계약, CLI 평가를 실행합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하지 않고, 에이전트가 쓴 코드의 품질도 보증하지 않습니다. 대상 프로젝트의 검증은 그 프로젝트가 제공하는 명령으로 에이전트가 실행합니다. 프로필에는 그 검증을 요구하는 지침만 골라 담을 수 있습니다.
+저장소를 개발하는 사람은 `pnpm run check`로 agctx 자체의 형식 검사, 서식 검사, 린트, 문서 계약, CLI 평가를 실행합니다. 이 명령은 대상 프로젝트의 테스트를 대신 실행하지 않고, 에이전트가 쓴 코드의 품질도 보증하지 않습니다. 대상 프로젝트의 검증은 그 프로젝트가 제공하는 명령으로 에이전트가 실행합니다. 프로필에는 그 검증을 요구하는 지침만 골라 담을 수 있습니다.
 
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 3c6265720e35c65ee2a634d928f858a6d9bf87d6027f1f3a7e9fd1710d0bf5bf -->
+<!-- agctx-doc-sources-sha256: cd4e52f50873cef8cd9ec070707458be5439e83ec3f244b8fca73df8a4d73bab -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 
@@ -181,7 +181,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 agctx의 구현은 “공통 컨텍스트를 어디에 두고, 누가 무엇을 변경하는가”를 기준으로 단계적으로 관리합니다. 주제마다 목표와 중요도, 구현 전에 정해야 할 계약, 구현 기록을 논의 문서에 둡니다. 주제 목록과 상태는 [아키텍처 논의 인덱스](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/)에 있습니다. 지금 쓸 수 있는 명령은 [핵심 기능](#핵심-기능)에 있습니다.
 
 <!-- agctx:generated:discussion-status:start -->
-- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기존 Git 저장소를 프로필 원천으로 쓰기
+- **구현됨:** 프로필 모델과 저장소, setup과 지침 옵션, 프로젝트 적용, 에이전트 산출물 동기화, 지침 항목 켜고 끄기, 에이전트 규칙 위치 탐지, Git 기반 프로필 관리, 기존 Git 저장소를 프로필 원천으로 쓰기, 기존 저장소 폴더를 프로필로 연결하기, 에이전트 스킬을 agctx 명령으로 설치하기
 - **구현 중:** 자연어 요청을 통한 agctx 사용, agctx 관리 산출물의 안전한 동기화, 기본 지침의 근거 기준과 분량 예산
 - **제안 단계:** 프로필 설정 표면 확장, 스코프 확장과 지침 합성, 적용할 에이전트와 대상 종류 고르기, 기존 저장소에서 프로필 만들기. 아직 현재 동작이 아니므로 보장하지 않습니다.
 <!-- agctx:generated:discussion-status:end -->

@@ -1,53 +1,68 @@
-/** Domain types shared across the CLI modules. */
+/** CLI 모듈들이 함께 쓰는 도메인 타입. */
 
 export type Locale = 'ko' | 'en';
 export type Scope = 'personal' | 'company' | 'team' | 'workspace';
-export type GuidanceKey = 'workflow' | 'context' | 'tdd' | 'review' | 'verification' | 'instructions' | 'docs' | 'security' | 'untrusted' | 'language';
+export type GuidanceKey =
+  | 'workflow'
+  | 'context'
+  | 'tdd'
+  | 'review'
+  | 'verification'
+  | 'instructions'
+  | 'docs'
+  | 'security'
+  | 'untrusted'
+  | 'language';
 export type GuidanceLevel = 'off' | 'on';
 
-/** `profile.json` in a profile folder. Only schema version 2 may name the rules file with `instructions`. */
+/** 프로필 폴더의 `profile.json`. 스키마 버전 2만 `instructions`로 규칙 파일을 지정할 수 있다. */
 export interface ProfileMetadata {
   schemaVersion: 1 | 2;
   name: string;
   scope: Scope;
-  /** The rules file relative to the profile folder, folders separated by `/`. AGENTS.md when absent. */
+  /** 프로필 폴더 기준의 규칙 파일 경로. 폴더는 `/`로 나눈다. 없으면 AGENTS.md. */
   instructions?: string;
   createdAt?: string;
   settings?: Partial<Record<GuidanceKey, GuidanceLevel>>;
   updatedAt?: string;
 }
 
+/** `profile list`가 보고하는 프로필: 메타데이터와, 연결된 경우 가리키는 폴더. */
+export type ListedProfile = ProfileMetadata & { link?: string };
+
 export interface Profile {
   profileDir: string;
   metadataPath: string;
-  /** The rules file relative to the profile folder, as profile.json names it. */
+  /** profile.json에 적힌 대로의 규칙 파일. 프로필 폴더 기준 경로. */
   instructions: string;
   instructionsPath: string;
+  /** 연결된 프로필이 가리키는 폴더. 폴더가 보관함에 있는 프로필이면 null. */
+  link: string | null;
   metadata: ProfileMetadata;
 }
 
-/** The Git version of the profile a project was applied from. */
+/** 프로젝트가 적용한 프로필의 Git 버전. */
 export interface ProjectSource {
-  /** Remote URL without user names, passwords, or tokens; null when the profile has no remote. */
+  /** 사용자 이름, 비밀번호, 토큰을 뺀 원격 URL. 프로필에 원격이 없으면 null. */
   git: string | null;
   branch: string | null;
   commit: string | null;
 }
 
-/** What `agctx.project.json` records about the applied profile version. */
+/** `agctx.project.json`이 적용한 프로필 버전에 대해 기록하는 것. */
 export interface VersionRecord {
   source: ProjectSource | null;
-  /** The project stays on `source.commit` until `profile apply --pin` moves it. */
+  /** 프로젝트는 `profile apply --pin`이 옮기기 전까지 `source.commit`에 머문다. */
   pin: boolean;
-  /** The applied content included profile edits that were not committed, so it cannot be reproduced. */
+  /** 적용한 내용에 커밋하지 않은 프로필 수정이 들어 있어서 다시 만들 수 없다. */
   uncommitted: boolean;
 }
 
-/** `agctx.project.json` in a project. Unknown keys are kept when the file is rewritten. */
+/** 프로젝트의 `agctx.project.json`. 파일을 다시 쓸 때 모르는 키도 남긴다. */
 export interface ProjectConfig {
   schemaVersion?: number;
   profile?: string;
-  /** The project name AGENTS.md was rendered with. */
+  /** AGENTS.md를 렌더링할 때 쓴 프로젝트 이름. */
   projectName?: string;
   source?: ProjectSource;
   pin?: boolean;
@@ -56,12 +71,12 @@ export interface ProjectConfig {
   [key: string]: unknown;
 }
 
-/** `agents` is the project AGENTS.md; `pointer` is an agent file with a managed block. */
+/** `agents`는 프로젝트 AGENTS.md이고, `pointer`는 관리 블록이 있는 에이전트 파일이다. */
 export type ManagedKind = 'agents' | 'pointer';
 
 export interface Conflict {
   kind: 'missing' | 'edited';
-  /** The managed area as last written, or null when it cannot be known. */
+  /** 마지막으로 쓴 관리 영역. 알 수 없으면 null. */
   base: string | null;
 }
 
@@ -91,6 +106,6 @@ export interface ProjectPlan {
   files: PlannedFile[];
   conflicts: ConflictedFile[];
   changes: PlannedChange[];
-  /** Things the plan does not change but the user should know, such as a CLAUDE.md that does not import its AGENTS.md. */
+  /** 계획이 바꾸지는 않지만 사용자가 알아야 할 것. 예를 들어 AGENTS.md를 import하지 않는 CLAUDE.md. */
   warnings: string[];
 }

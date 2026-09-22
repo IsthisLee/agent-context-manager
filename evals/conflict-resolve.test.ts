@@ -36,14 +36,15 @@ function makeFixture(t: TestContext) {
   const project = path.join(home, 'project');
   fs.mkdirSync(project);
   t.after(() => fs.rmSync(home, { recursive: true, force: true }));
-  const run = (args: string[], env: NodeJS.ProcessEnv = {}) => spawnSync(process.execPath, [cli, ...args], {
-    cwd: repoRoot,
-    env: { ...process.env, AGCTX_HOME: home, ...env },
-    encoding: 'utf8'
-  });
+  const run = (args: string[], env: NodeJS.ProcessEnv = {}) =>
+    spawnSync(process.execPath, [cli, ...args], {
+      cwd: repoRoot,
+      env: { ...process.env, AGCTX_HOME: home, ...env },
+      encoding: 'utf8'
+    });
   const ok = (args: string[], env: NodeJS.ProcessEnv = {}) => {
     const result = run(args, env);
-    assert.equal(result.status, 0, `${args.join(' ')} failed\n${result.stdout}\n${result.stderr}`);
+    assert.equal(result.status, 0, `${args.join(' ')} 실패\n${result.stdout}\n${result.stderr}`);
     return result;
   };
   ok(['profile', 'create', 'team', '--scope', 'team']);
@@ -53,7 +54,6 @@ function makeFixture(t: TestContext) {
   const write = (rel: string, content: string) => fs.writeFileSync(file(rel), content);
   return { project, run, ok, file, read, write };
 }
-
 
 type Fixture = ReturnType<typeof makeFixture>;
 
@@ -74,7 +74,9 @@ function assertCleanSync(fixture: Fixture) {
 function fakeCode(t: TestContext, mode: string) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-fake-code-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
-  fs.writeFileSync(path.join(dir, 'fake-code.mjs'), `import fs from 'node:fs';
+  fs.writeFileSync(
+    path.join(dir, 'fake-code.mjs'),
+    `import fs from 'node:fs';
 const args = process.argv.slice(2);
 const at = args.indexOf('--merge');
 const [current, incoming, , result] = args.slice(at + 1, at + 5);
@@ -87,17 +89,21 @@ else if (mode === 'formatted') fs.writeFileSync(result, mine.replace('## Command
 else if (mode === 'nomarkers') fs.writeFileSync(result, mine.replace(START, '').replace(END, ''));
 else if (mode === 'untouched') {}
 else fs.writeFileSync(result, fs.readFileSync(incoming, 'utf8') + '\\n## Kept by merge\\n');
-`);
+`
+  );
   if (process.platform === 'win32') {
     fs.writeFileSync(path.join(dir, 'code.cmd'), `@"${process.execPath}" "%~dp0fake-code.mjs" %*\r\n`);
   } else {
-    fs.writeFileSync(path.join(dir, 'code'), `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-code.mjs" "$@"\n`);
+    fs.writeFileSync(
+      path.join(dir, 'code'),
+      `#!/bin/sh\nexec "${process.execPath}" "$(dirname "$0")/fake-code.mjs" "$@"\n`
+    );
     fs.chmodSync(path.join(dir, 'code'), 0o755);
   }
   return { [PATH_KEY]: `${dir}${path.delimiter}${process.env[PATH_KEY]}` };
 }
 
-test('a conflicting sync names every changed managed file and how to see and resolve it', t => {
+test('충돌하는 sync는 바뀐 관리 파일을 모두 알리고 확인·해결 방법을 안내한다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   editProfileRegion(fixture);
@@ -112,7 +118,7 @@ test('a conflicting sync names every changed managed file and how to see and res
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('dry-run lists a conflict with its diff, writes nothing, and exits 2', t => {
+test('dry-run은 충돌을 diff와 함께 나열하고 아무것도 쓰지 않고 2로 끝난다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   const before = snapshot(fixture.project);
@@ -127,7 +133,7 @@ test('dry-run lists a conflict with its diff, writes nothing, and exits 2', t =>
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('dry-run reports a deleted managed file as a missing conflict', t => {
+test('dry-run은 지운 관리 파일을 missing 충돌로 보고한다', t => {
   const fixture = makeFixture(t);
   fs.rmSync(fixture.file('CLAUDE.md'));
 
@@ -138,7 +144,7 @@ test('dry-run reports a deleted managed file as a missing conflict', t => {
   assert.match(result.stdout, /missing/i);
 });
 
-test('apply stores a base copy of every managed area that matches its recorded hash', t => {
+test('apply는 기록된 해시와 맞는 모든 관리 영역의 base 사본을 저장한다', t => {
   const fixture = makeFixture(t);
   const { managedHashes } = JSON.parse(fixture.read('agctx.project.json'));
 
@@ -150,7 +156,7 @@ test('apply stores a base copy of every managed area that matches its recorded h
   assert.match(fixture.read('.agctx/.gitignore'), /^backups\/$/m);
 });
 
-test('sync creates base files for a project applied before they existed', t => {
+test('sync는 base 파일이 생기기 전에 적용한 프로젝트에 base 파일을 만든다', t => {
   const fixture = makeFixture(t);
   fs.rmSync(fixture.file('.agctx'), { recursive: true, force: true });
 
@@ -160,7 +166,7 @@ test('sync creates base files for a project applied before they existed', t => {
   assertCleanSync(fixture);
 });
 
-test('resolve moves edits made inside a pointer block below the block and regenerates it', t => {
+test('resolve는 포인터 블록 안의 수정을 블록 아래로 옮기고 블록을 다시 만든다', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
   editPointerBlock(fixture);
@@ -174,7 +180,7 @@ test('resolve moves edits made inside a pointer block below the block and regene
   assertCleanSync(fixture);
 });
 
-test('resolve moves edits made in the AGENTS.md profile region into the extension section', t => {
+test('resolve는 AGENTS.md 프로필 영역의 수정을 확장 영역으로 옮긴다', t => {
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
 
@@ -185,7 +191,7 @@ test('resolve moves edits made in the AGENTS.md profile region into the extensio
   assertCleanSync(fixture);
 });
 
-test('resolve keeps edits through a profile change when the base is available', t => {
+test('base가 있으면 resolve는 프로필이 바뀌어도 수정을 지킨다', t => {
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
   fixture.ok(['profile', 'setup', 'team', '--tdd', 'on']);
@@ -193,12 +199,12 @@ test('resolve keeps edits through a profile change when the base is available', 
   fixture.ok(['profile', 'resolve', fixture.project, '--yes']);
 
   const agents = fixture.read('AGENTS.md');
-  assert.match(agents, /## TDD/, 'the profile change reached the project');
+  assert.match(agents, /## TDD/, '프로필 변경이 프로젝트에 닿았다');
   assert.ok(agents.indexOf('- Test: `pnpm test`') > agents.indexOf(EXTENSION));
   assertCleanSync(fixture);
 });
 
-test('resolve stops without writing when the base is unknown and the profile also changed', t => {
+test('base를 모르고 프로필도 바뀌었으면 resolve는 쓰지 않고 멈춘다', t => {
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
   fs.rmSync(fixture.file('.agctx/base'), { recursive: true, force: true });
@@ -212,7 +218,7 @@ test('resolve stops without writing when the base is unknown and the profile als
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('resolve --discard backs up the conflicting file before regenerating it', t => {
+test('resolve --discard는 다시 만들기 전에 충돌한 파일을 백업한다', t => {
   const fixture = makeFixture(t);
   editProfileRegion(fixture);
   fs.rmSync(fixture.file('.agctx/base'), { recursive: true, force: true });
@@ -226,15 +232,15 @@ test('resolve --discard backs up the conflicting file before regenerating it', t
   const [stamp] = fs.readdirSync(backupRoot);
   assert.equal(fs.readFileSync(path.join(backupRoot, stamp, 'AGENTS.md'), 'utf8'), edited);
   assert.doesNotMatch(fixture.read('AGENTS.md'), /Test: `pnpm test`/);
-  assert.match(fixture.read('AGENTS.md'), /## TDD/, 'the profile change reached the project');
+  assert.match(fixture.read('AGENTS.md'), /## TDD/, '프로필 변경이 프로젝트에 닿았다');
   assertCleanSync(fixture);
 });
 
-test('resolve restores template lines that were deleted inside the managed area', t => {
+test('resolve는 관리 영역 안에서 지운 템플릿 줄을 되살린다', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
   const deleted = '- Manage project-specific domain rules there.\n';
-  assert.ok(original.includes(deleted), 'the template changed; pick a line this fixture can delete');
+  assert.ok(original.includes(deleted), '템플릿이 바뀌었다. 이 픽스처가 지울 수 있는 줄을 골라라');
   fixture.write('CLAUDE.md', original.replace(deleted, ''));
 
   const result = fixture.ok(['profile', 'resolve', fixture.project, '--yes']);
@@ -243,7 +249,7 @@ test('resolve restores template lines that were deleted inside the managed area'
   assert.equal(fixture.read('CLAUDE.md'), original);
 });
 
-test('resolve recreates a deleted managed file', t => {
+test('resolve는 지운 관리 파일을 다시 만든다', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
   fs.rmSync(fixture.file('CLAUDE.md'));
@@ -254,7 +260,7 @@ test('resolve recreates a deleted managed file', t => {
   assertCleanSync(fixture);
 });
 
-test('resolve without conflicts changes nothing', t => {
+test('충돌이 없으면 resolve는 아무것도 바꾸지 않는다', t => {
   const fixture = makeFixture(t);
   const before = snapshot(fixture.project);
 
@@ -264,7 +270,7 @@ test('resolve without conflicts changes nothing', t => {
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('resolve --dry-run describes the moves without writing', t => {
+test('resolve --dry-run은 쓰지 않고 옮길 내용을 설명한다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   const before = snapshot(fixture.project);
@@ -275,7 +281,7 @@ test('resolve --dry-run describes the moves without writing', t => {
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('resolve --edit applies a VS Code merge result whose managed area matches the regenerated one', t => {
+test('resolve --edit은 관리 영역이 다시 만든 것과 같은 VS Code 병합 결과를 적용한다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
 
@@ -285,14 +291,17 @@ test('resolve --edit applies a VS Code merge result whose managed area matches t
   assertCleanSync(fixture);
 });
 
-test('resolve --edit starts the merge result from the automatic resolution', t => {
+test('resolve --edit은 병합 결과를 자동 해결에서 시작한다', t => {
   const automatic = makeFixture(t);
   editPointerBlock(automatic);
   automatic.ok(['profile', 'resolve', automatic.project, '--yes']);
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
 
-  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], { ...fakeCode(t, 'untouched'), AGCTX_LANG: 'ko' });
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], {
+    ...fakeCode(t, 'untouched'),
+    AGCTX_LANG: 'ko'
+  });
 
   assert.match(result.stdout, /CLAUDE\.md: VS Code 병합 편집기를 엽니다/);
   assert.match(result.stdout, /`current-CLAUDE\.md` 창/);
@@ -304,7 +313,7 @@ test('resolve --edit starts the merge result from the automatic resolution', t =
   assertCleanSync(fixture);
 });
 
-test('resolve --edit keeps content moved outside the managed area even when a formatter rewrote the block', t => {
+test('resolve --edit은 포매터가 블록을 다시 써도 관리 영역 밖으로 옮긴 내용을 지킨다', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
   editPointerBlock(fixture);
@@ -318,25 +327,28 @@ test('resolve --edit keeps content moved outside the managed area even when a fo
   assertCleanSync(fixture);
 });
 
-test('resolve --edit regenerates the managed area and reports edits left inside it', t => {
+test('resolve --edit은 관리 영역을 다시 만들고 그 안에 남은 수정을 보고한다', t => {
   const fixture = makeFixture(t);
   const original = fixture.read('CLAUDE.md');
   editPointerBlock(fixture);
 
-  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], { ...fakeCode(t, 'current'), AGCTX_LANG: 'en' });
+  const result = fixture.ok(['profile', 'resolve', '--edit', fixture.project, '--yes'], {
+    ...fakeCode(t, 'current'),
+    AGCTX_LANG: 'en'
+  });
 
   assert.match(result.stdout, /CLAUDE\.md: opening the VS Code merge editor/);
   assert.match(result.stdout, /'Close with Conflicts'/);
   assert.match(result.stdout, /changes inside it were not applied/);
   assert.match(result.stdout, /^-- Test: `pnpm test`$/m);
   const kept = result.stdout.match(/Merge result kept at (.+)$/m);
-  assert.ok(kept && fs.existsSync(kept[1].trim()), 'the merge result file is kept for recovery');
+  assert.ok(kept && fs.existsSync(kept[1].trim()), '병합 결과 파일은 복구를 위해 남긴다');
   t.after(() => fs.rmSync(path.dirname(kept[1].trim()), { recursive: true, force: true }));
   assert.equal(fixture.read('CLAUDE.md'), original);
   assertCleanSync(fixture);
 });
 
-test('resolve --edit refuses a merge result without the managed markers', t => {
+test('resolve --edit은 관리 마커가 없는 병합 결과를 거부한다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   const before = snapshot(fixture.project);
@@ -348,7 +360,7 @@ test('resolve --edit refuses a merge result without the managed markers', t => {
   assert.deepEqual(snapshot(fixture.project), before);
 });
 
-test('resolve --edit explains when the VS Code CLI is not available', t => {
+test('VS Code CLI가 없으면 resolve --edit이 그렇다고 설명한다', t => {
   const fixture = makeFixture(t);
   editPointerBlock(fixture);
   const emptyDir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-no-code-'));
@@ -360,7 +372,7 @@ test('resolve --edit explains when the VS Code CLI is not available', t => {
   assert.match(result.stderr, /VS Code/);
 });
 
-test('resolve requires a project that was already applied', t => {
+test('resolve는 이미 적용한 프로젝트가 필요하다', t => {
   const fixture = makeFixture(t);
   const other = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-unapplied-'));
   t.after(() => fs.rmSync(other, { recursive: true, force: true }));

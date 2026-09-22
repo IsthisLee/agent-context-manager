@@ -20,7 +20,7 @@
 ## CI에서 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/commands/output.ts -->
-<!-- agctx-doc-sources-sha256: a9f2ee5b3eb2d990eadcfe79ab7defcfb88f837d92052f53838a616a2193d363 -->
+<!-- agctx-doc-sources-sha256: 6fe346f3819842ab46ed01ee576b8a8d50b818dffc6634e7a70e9676251fef63 -->
 
 `agctx check`는 프로필 보관함(프로필을 받아 두는 `~/.agctx/profiles` 폴더)이 없는 CI에서도 저장소 파일이 `agctx.project.json`에 기록한 프로필 버전과 맞는지 확인한다. 결과는 종료 코드로 알린다.
 
@@ -108,14 +108,14 @@ $ agctx check --refresh /path/to/orders-api
 ## 에이전트 전달을 CI에서 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts -->
-<!-- agctx-doc-sources-sha256: f62d0a36f1de49132641f22e156f9ac59daf9f3668e333cc8c720347cf9b3a41 -->
+<!-- agctx-doc-sources-sha256: 94c54f11287fdd1e5927ace3f24a8f1bb6960e58b5bf717bd6229cc3fdb84401 -->
 
 `agctx explain <폴더>`는 그 폴더에서 시작한 에이전트마다 어떤 지침 파일을 왜 읽는지 보여 주는 명령이다. 에이전트를 실행하지 않으므로 CI 단계로 둘 수 있다. 확인한 에이전트(기본은 세 에이전트 모두, `--agent`로 고를 수 있다) 가운데 하나라도 받지 못하는 지침 파일이 있으면 그 줄에 `missing`을 표시하고 4로 끝난다. `verify`는 지침 파일이 실제로 에이전트에 들어갔는지 확인하는 명령인데, 개발자 컴퓨터의 세션 기록을 읽거나 에이전트를 실행하므로 CI 단계에는 맞지 않는다. 판정 방법은 [에이전트가 읽는 지침 파일](../concepts/agent-loading.md)에 있다.
 
 ## 자동화와 스크립트에서 쓰기
 
 <!-- agctx-doc-sources: src/commands/options.ts -->
-<!-- agctx-doc-sources-sha256: 66f3ecaed98d8751b7ae392a2cd2d158443dbf1b8cb992f3f79a97653dee518e -->
+<!-- agctx-doc-sources-sha256: 316a5a5310f930c539f4aa4d659d9b2b83c6357d77575fe8ef5334cc8529d725 -->
 
 TUI(터미널에서 메뉴로 고르는 화면)를 쓸 수 없는 환경에서는 옵션을 플래그로 직접 넘긴다. 파일을 바꾸는 명령은 터미널이 아니면 확인을 물을 수 없어 멈추므로, 확인 없이 실행하는 `--yes`를 붙인다([확인과 `--yes`](../reference/cli.md#확인과---yes)).
 

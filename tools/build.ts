@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
  * JavaScript: Node does not strip TypeScript types from files under node_modules.
  */
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const tsc = path.join(repoRoot, 'node_modules', 'typescript', 'bin', 'tsc');
+// `typescript` 이름에는 typescript-eslint가 쓰는 6.0 호환 패키지가 있어서, 컴파일은 7.0을 가리키는 별칭으로 한다(ADR 0040).
+const tsc = path.join(repoRoot, 'node_modules', '@typescript', 'native', 'bin', 'tsc');
 
 // Start from an empty dist/ so files deleted from src/ do not linger in the package.
 fs.rmSync(path.join(repoRoot, 'dist'), { recursive: true, force: true });

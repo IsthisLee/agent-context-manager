@@ -60,6 +60,27 @@ test('assertSafeTextTarget detects a symbolic link before a write plan starts', 
   }
 });
 
+test(
+  'assertSafeTextTarget keeps the file-system error as the cause when a parent path is a file',
+  { skip: process.platform === 'win32' ? 'ENOTDIR for a path under a file is POSIX behavior' : false },
+  () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-parent-file-test-'));
+    const target = path.join(directory, 'profile.json', 'AGENTS.md');
+
+    try {
+      fs.writeFileSync(path.join(directory, 'profile.json'), '{}\n');
+      assert.throws(
+        () => assertSafeTextTarget(target),
+        (error: Error) =>
+          /Parent path is not a directory/.test(error.message) &&
+          (error.cause as NodeJS.ErrnoException | undefined)?.code === 'ENOTDIR'
+      );
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true });
+    }
+  }
+);
+
 test('assertSafeTextTarget rejects a directory target', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-directory-target-test-'));
   const target = path.join(directory, 'guidance.md');

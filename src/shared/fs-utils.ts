@@ -16,7 +16,7 @@ export function assertSafeTextTarget(target: string, boundary: string | null = n
     if (stat.isSymbolicLink()) throw new Error(`Refusing to replace symbolic link: ${target}`);
     if (!stat.isFile()) throw new Error(`Refusing to replace non-regular file: ${target}`);
   } catch (error) {
-    if (errorCode(error) === 'ENOTDIR') throw new Error(`Parent path is not a directory: ${target}`);
+    if (errorCode(error) === 'ENOTDIR') throw new Error(`Parent path is not a directory: ${target}`, { cause: error });
     if (errorCode(error) !== 'ENOENT') throw error;
   }
 
@@ -33,7 +33,8 @@ export function assertSafeTextTarget(target: string, boundary: string | null = n
         current = path.dirname(current);
         continue;
       }
-      if (errorCode(error) === 'ENOTDIR') throw new Error(`Parent path is not a directory: ${current}`);
+      if (errorCode(error) === 'ENOTDIR')
+        throw new Error(`Parent path is not a directory: ${current}`, { cause: error });
       throw error;
     }
     current = path.dirname(current);

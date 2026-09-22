@@ -139,7 +139,7 @@ Options, exit codes, and usage for each command are in the [CLI Reference](https
 
 ### Scope of verification
 
-Repository developers run `pnpm run check` to verify agctx's own types, formatting, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
+Repository developers run `pnpm run check` to verify agctx's own types, formatting, lint, documentation contracts, and CLI evaluations. It does not run the target project's tests or vouch for an agent's code quality. The target project's real verification is run by the agent using that project's own commands; a Profile only records the guidance that requires such verification.
 
 ## Supported agents
 

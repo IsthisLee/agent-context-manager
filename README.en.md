@@ -181,8 +181,8 @@ Refine such a draft by hand, then place it in the project extension area of `AGE
 agctx's implementation is managed in stages around where the shared context lives and who changes what. Each topic's goal, priority, contracts to settle before implementation, and implementation record live in a discussion document, and the [architecture discussion index](https://github.com/IsthisLee/agent-context-manager/tree/main/docs/discussion/architecture/) lists the topics and their status. The commands you can use today are listed under [Core features](#core-features).
 
 <!-- agctx:generated:discussion-status:start -->
-- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, turning guidance items on and off, agent rule discovery, Git-based Profile management, evidence criteria and length budget for default guidance, choosing agents and context types per repository, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
-- **In progress:** use through natural-language requests, safe synchronization of managed artifacts, Profile configuration surface expansion
+- **Implemented:** Profile model and store, setup and guidance options, project application, agent artifact synchronization, use through natural-language requests, turning guidance items on and off, agent rule discovery, Git-based Profile management, evidence criteria and length budget for default guidance, choosing agents and context types per repository, using an existing Git repository as a Profile source, linking an existing repository folder as a Profile, installing agent skills with an agctx command
+- **In progress:** safe synchronization of managed artifacts, Profile configuration surface expansion
 - **Proposed:** scope expansion and guidance composition, creating a Profile from an existing repository. These are not current behavior yet.
 <!-- agctx:generated:discussion-status:end -->
 

@@ -209,7 +209,7 @@ flowchart TD
 
 - 프로필 데이터의 기준 위치는 (`src/shared/home.ts`의 `agctxHome`<!--s:e54fff59419c-->)이 정한다: `process.env.AGCTX_HOME`이 있으면 그 폴더, 없으면 사용자 홈 디렉터리 아래의 `.agctx`다. 프로필은 그 아래 `profiles/`, 언어 설정은 `config.json`에 둔다.
 - 프로필 하나는 디렉터리 하나이며, 그 안에 메타데이터 `profile.json`과 규칙 파일이 있다. 규칙 파일은 기본으로 `AGENTS.md`이고 `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다(`src/profile/store.ts`의 `readProfile`<!--s:1674cbf36d97-->, `src/profile/store.ts`의 `createProfile`<!--s:a908d869e3ef-->).
-- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 고른 에이전트의 포인터 파일(기본은 전부), `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->, `src/project/plan.ts`의 `planProject`<!--s:ab2aaace7362-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
+- 프로젝트에 적용할 때는 대상 디렉터리에 `AGENTS.md`, 고른 에이전트의 포인터 파일(기본은 전부), `agctx.project.json`, 마지막 적용 관리 영역 원문 `.agctx/base/`를 만든다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:c9de87c638fb-->, `src/project/plan.ts`의 `planProject`<!--s:ab2aaace7362-->). 생성되는 파일 목록의 정본 설명은 [현재 아키텍처](architecture.md)에 있다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -452,7 +452,7 @@ flowchart TD
 
 ### 이 패키지에서의 적용 예시
 
-- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts`의 `profile.apply` 항목).
+- **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:c9de87c638fb-->). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts`의 `profile.apply` 항목).
 - **로그**: 각 변경의 상태(create/update/remove/unchanged/conflict/unmanaged)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts`의 `printPlan`<!--s:d9c078cea294-->).
 - **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts`의 `run`<!--s:2ba71c9bbb82-->), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
@@ -551,7 +551,7 @@ npm에 게시하려면 게시자 신원을 증명해야 한다. 전통적 방식
 1. **(사용자)** `npm install -g agent-context-manager` → **(npm)** tarball을 받아 전역 설치하고 `agctx` 진입점을 만든다([2·3번](#2-npm-install이-패키지를-다운로드하고-저장하는-위치)).
 2. **(사용자)** `agctx` 입력 → **(셸/OS)** 진입점을 찾아 Node로 `dist/agctx.js` 실행 → **(agctx)** TTY면 메인 TUI를 연다(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->).
 3. **(사용자)** 프로필 생성·설정 선택 → **(agctx)** `~/.agctx/profiles/<name>/`(기본 위치이며 `AGCTX_HOME`으로 바뀔 수 있다. [6번](#6-javascript가-nodejs-api로-파일폴더에-접근하는-원리) 참고)에 `profile.json`과 `AGENTS.md`를 만들고(`src/profile/store.ts`의 `createProfile`<!--s:a908d869e3ef-->), `profile setup`은 지침 블록을 `AGENTS.md`에 기록한다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->).
-4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
+4. **(사용자)** `agctx profile apply <name> <project>` → **(agctx)** 관리 영역 hash를 검사하고, 변경 계획을 만들고, 안전 검사 후 원자적으로 파일을 교체한다. 터미널이면 확인을 받고, 필요하면 사용자가 먼저 `--dry-run`으로 검토한다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:c9de87c638fb-->, [13·14번](#13-cli의-파일-수정-시-보안권한백업심볼릭-링크-위험)).
 5. **(사용자)** 이후 평소 쓰는 AI 에이전트에 작업을 의뢰 → **(에이전트)** 프로젝트의 `AGENTS.md`와 지침을 읽고 작업. agctx는 에이전트 런타임을 실행하지 않는다([빠른 시작 6절](../getting-started/quick-start.md#6-에이전트로-개발), [제품 방향의 범위와 경계](product-direction.md#범위와-경계)).
 6. **(사용자)** 프로필을 바꾼 뒤 `agctx profile sync <project>` → **(agctx)** 관리 블록만 다시 적용하고 사용자 영역은 보존한다(`src/commands/handlers.ts`의 `profile.sync` 처리기). 관리 영역을 밖에서 고쳐 멈추면 `agctx profile resolve <project>`로 푼다(`src/profile/resolve.ts`의 `resolveProject`<!--s:595cdf8fb4f9-->).
 

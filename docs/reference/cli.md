@@ -74,7 +74,7 @@ Next: Did you mean agctx profile list?
 
 ### `--json` 출력
 
-`--json`을 주면 stdout에는 JSON 문서 하나만 쓰고, 사람용 안내와 경고는 stderr로 보낸다. TUI를 열지 않고 stdin에서 답을 읽지도 않는다.
+`--json`을 주면 stdout에는 JSON 문서 하나만 쓰고, 사람용 안내와 경고는 stderr로 보낸다. TUI를 열지 않고 stdin에서 답을 읽지도 않는다. 명령마다 다른 `data`의 필드는 [`--json` 결과의 `data` 형식](json-data.md)에 있다.
 
 | 필드 | 뜻 |
 | --- | --- |
@@ -82,7 +82,7 @@ Next: Did you mean agctx profile list?
 | `command` | 실행한 명령(`profile apply`, `check` 등) |
 | `exitCode` | 종료 코드와 같은 값 |
 | `ok` | `exitCode`가 0이면 `true` |
-| `data` | 명령별 결과. 실패하면 `null` |
+| `data` | 명령별 결과. `errors`가 비어 있지 않으면 `null`이고, 종료 코드가 0이 아니어도 결과를 보고한 것이면 값이 있다 |
 | `warnings` | 경고 문장 목록 |
 | `errors` | `{ code, message, hint }` 목록. `code`는 `confirm.required`·`profile.not-found`처럼 로케일과 무관한 식별자다. 어느 파일에서 멈췄는지 알 수 있는 오류(`project.conflict`·`project.unmanaged`)는 `details`에 `{ file, kind }` 목록을 더한다 |
 
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 5a514eb5991e359f8affdd2efef3ab888fcec0405f6c6f36022bf9bdb3be2a62 -->
+<!-- agctx-doc-sources-sha256: 758cb304d3e6b56de7122bddc4e88a28d6ebefae3b5a2c7f378fbdecc32ea046 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

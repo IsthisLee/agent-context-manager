@@ -15,7 +15,7 @@
 | 2 | [setup과 지침 옵션](topics/setup-and-guidance.md) | High | 1 | 선택 가능한 규칙 preset과 프로필 `AGENTS.md` | Implemented |
 | 3 | [프로젝트 적용](topics/project-application.md) | Critical | 1·2 | 선택 프로필을 프로젝트에 적용, 도메인 지침 분리 | Implemented |
 | 4 | [에이전트 산출물 동기화](topics/agent-sync.md) | High | 3 | 도구별 포인터 생성·갱신·프로젝트 규칙 보존 | Implemented |
-| 5 | [자연어 요청을 통한 agctx 사용](topics/agent-mediated-usage.md) | High | 1·3 | 사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계 | Implementing |
+| 5 | [자연어 요청을 통한 agctx 사용](topics/agent-mediated-usage.md) | High | 1·3 | 사람용 TUI와 에이전트용 비대화형 CLI의 책임·안전 경계 | Implemented |
 | 6 | [agctx 관리 산출물의 안전한 동기화](topics/managed-artifact-safety.md) | Critical | 1·3·4 | 관리 영역만 갱신하고 사용자 변경·충돌·복구를 보장하는 동기화 | Implementing |
 | 7 | [지침 항목 켜고 끄기](topics/guidance-level-semantics.md) | Medium | 2 | 지침 항목마다 on·off 두 값만 받고, 켠 항목만 산출물에 넣음 | Implemented |
 | 8 | [에이전트 규칙 위치 탐지](topics/agent-rule-discovery.md) | Medium | 3·4 | 적용 전 기존 규칙 위치를 스캔·보고해 가시성·동의 제공 | Implemented |
@@ -73,8 +73,8 @@ flowchart LR
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
   %% agctx:generated:stage-classes:start
-  class S1,S2,S3,S4,S7,S8,S11,S12,S13,S15,S16,S17 done
-  class S5,S6,S9 doing
+  class S1,S2,S3,S4,S5,S7,S8,S11,S12,S13,S15,S16,S17 done
+  class S6,S9 doing
   class S10,S14 todo
   %% agctx:generated:stage-classes:end
 ```

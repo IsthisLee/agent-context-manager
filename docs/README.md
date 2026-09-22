@@ -44,6 +44,7 @@
 - [CLI Reference](reference/cli.md)
 - [지침 카탈로그](reference/guidance-catalog.md): `profile setup`의 열 개 항목이 넣는 문장과 그 근거
 - [종료 코드](reference/exit-codes.md)
+- [`--json` 결과의 `data` 형식](reference/json-data.md): 명령마다 스크립트와 에이전트가 읽는 결과 필드
 - [파일 형식과 저장 위치](reference/file-formats.md)
 - [지원 에이전트](reference/supported-agents.md)
 - [문제 해결](reference/troubleshooting.md)
@@ -75,7 +76,7 @@
 | `docs/getting-started/`                          | 설치와 첫 적용·확인까지의 최소 흐름                                                                                                   |
 | `docs/guides/`                                   | 상황별 사용 절차: 여러 저장소·고객사·팀 공유·모노레포·갱신 방식·CI·스킬·APM·MCP                                                           |
 | `docs/concepts/`                                 | 동작 원리와 이유: 책임 경계·프로필·관리 영역·에이전트 로드·전달 확인                                                                  |
-| `docs/reference/`                                | CLI 명령·옵션·종료 코드·파일 형식·지원 에이전트·배포 지침 목록·문제 해결의 정확한 사양                                                |
+| `docs/reference/`                                | CLI 명령·옵션·종료 코드·`--json` 결과 형식·파일 형식·지원 에이전트·배포 지침 목록·문제 해결의 정확한 사양                                                |
 | `docs/faq.md`                                    | 자주 묻는 질문의 짧은 답과 정본 링크                                                                                                  |
 | `docs/contributing/product-direction.md`         | 패키지의 목적, 책임 경계, 장기 방향의 정본                                                                                            |
 | `docs/contributing/architecture.md`              | 현재 채택되어 실제로 동작하는 구조와 소유권. 기능별 구현 위치 안내는 `implementation-mechanics.md`, 배포 지침 목록은 `docs/reference/guidance-catalog.md` |

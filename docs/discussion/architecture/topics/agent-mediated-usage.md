@@ -1,7 +1,7 @@
 # 자연어 요청을 통한 agctx 사용
 
 <!-- agctx:generated:status:start -->
-**상태:** Implementing
+**상태:** Implemented
 <!-- agctx:generated:status:end -->
 
 ## 제안 요약
@@ -29,8 +29,8 @@
 | 선행 제안 | [구현 계약 및 문서 규칙](implementation-contracts.md), [프로젝트 적용](project-application.md), [프로필 모델과 저장소](profile-model.md) |
 | 후속 제안 | 비대화형 실행 계약·기계 판독 결과 스키마·적용 및 동기화 복구 정책, 스킬을 CLI 패키지에 넣어 설치하기([에이전트 스킬을 agctx 명령으로 설치하기](skill-install.md)) |
 | 연관 제안 | [에이전트 산출물 동기화](agent-sync.md), [setup과 지침 옵션](setup-and-guidance.md) |
-| 후속 작업 | 실제 배포 패키지 기준으로 에이전트가 각 명령을 호출하는 평가 시나리오를 추가하고, 안전한 오류·승인 흐름을 확정한다. |
-| 권장 다음 작업 | 노출과 트리거 계약은 [ADR 0029](../../../adr/0029-agent-surface-contract.md)로 확정해 구현했다. 남은 것은 명령별 `data` 필드의 스키마를 문서로 정하는 일과, 배포한 npm 패키지를 임시 프로젝트에 설치해 에이전트가 스킬대로 agctx를 호출하는 시나리오 평가다. |
+| 후속 작업 | 배포 패키지 기준 시나리오는 Claude Code의 `profile apply` 하나를 `tools/agent-scenario.ts`로 두었다. 스킬 안내나 쓰기 명령의 확인 규칙을 바꾸면 그 명령의 시나리오를 더한다. |
+| 권장 다음 작업 | 노출과 트리거 계약([ADR 0029](../../../adr/0029-agent-surface-contract.md)), 명령별 `data` 스키마 문서, 배포 패키지 기준 에이전트 시나리오 평가를 모두 구현했다. 스킬 안내나 쓰기 명령의 확인 규칙을 바꾸면 `node tools/agent-scenario.ts`를 다시 실행해 결과를 남긴다. |
 
 ## 목차
 
@@ -192,3 +192,10 @@ flowchart TD
 - **구현:** 등록부에 `AgentPolicy`(`auto`·`ask`·`never`)와 `agentPolicy(command)`를 넣었다. 정책은 `changes`에서 유도하고 예외 셋(`profile remove`·`config lang`·`help`)만 `agent: 'never'`로 적는다. `generate-skills.ts`가 정책으로 스킬 목록을 고른다.
 - **실측:** `agctx` 스킬의 명령이 스물둘에서 **일곱**으로, `agctx-author`가 **열아홉**이 됐다. 시나리오는 각각 여섯과 일곱이다.
 - **평가:** `evals/agent-surface.test.ts` 다섯 개가 정책 존재, 바꾸는 명령의 `auto` 금지, 정책에 맞는 스킬 소속, 두 스킬의 시나리오 덮음을 검사한다. 요구가 바뀌어 `evals/skills.test.ts`의 두 평가를 고쳤다.
+
+#### 구현 기록: `data` 스키마 문서와 배포 패키지 시나리오 평가 (2026-09-22)
+
+* **`data` 스키마:** [`--json` 결과의 `data` 형식](../../../reference/json-data.md)에 명령마다 필드·형식·뜻을 표로 적었다. `evals/json-data.test.ts`가 등록된 모든 명령에 절이 있는지 확인하고, 격리한 홈에서 명령을 모두 실행해 최상위 필드가 표와 같은지, 목록 항목의 필드가 실제 결과에 있는지 본다. 새 컨텍스트의 검수가 짚은 대로 처음에는 목록 항목의 필드를 한쪽으로만, 빈 목록은 건너뛰며 비교해 몇 가지 어긋남(`profile link`의 `link` 값 등)을 놓쳤다. 양쪽을 비교하고, 뜻에 "~때만 있다"라고 적은 필드만 없어도 되게 하고, 충돌 해결·`check`·끊긴 링크 목록을 실제로 채워 확인하게 고쳤다. 표에서 목록 항목의 필드 이름을 바꾸거나 한 줄을 지우면 실패하는 것을 네 경우로 확인했다. 상태 값의 목록은 평가가 확인하지 않는다.
+* **시나리오 평가:** `tools/agent-scenario.ts`가 이 저장소를 `npm pack`한 패키지를 임시 prefix에 설치하고, 패키지의 스킬을 임시 프로젝트에 둔 뒤 실제 Claude Code에 적용을 요청한다. 합격 조건은 `profile apply … --dry-run`을 실제로 실행했고(권한에 거부된 호출은 세지 않는다), `--dry-run` 없는 `--yes`·`--adopt`를 쓰지 않았고, 실행 전후로 프로젝트와 프로필 보관함의 파일이 그대로인 것이다. 모델 사용량을 쓰고 답이 실행마다 달라 `pnpm run check`에 넣지 않았다. 실행 결과는 [배포 패키지와 에이전트 스킬 시나리오 실측](../../../references.md#배포-패키지와-에이전트-스킬-시나리오-실측)에 있다.
+* **계획과 달라진 점:** 시나리오는 Claude Code에 `profile apply`를 요청하는 경우 하나다. 다른 명령과 Codex·Antigravity의 시나리오는 요금이 드는 실행이라 스킬 안내를 바꿀 때 필요한 만큼 더한다. Codex는 우리가 `verify`에서 읽는 세션 기록이 사용자 홈(`$CODEX_HOME/sessions`)에 남으므로([근거](../../../references.md#에이전트-지침-로드와-전달-확인-근거)), 시나리오를 돌리면 사용자의 세션 목록에 기록이 섞인다.
+* **제약:** 시나리오 평가는 모델의 판단을 한 번 표본으로 볼 뿐이다. 같은 요청에 늘 같은 명령을 부른다는 보장은 아니다.

@@ -44,8 +44,9 @@ CI는 전체 이력을 받는다(`fetch-depth: 0`). 문서 게이트가 해시�
 
 ## 네트워크가 필요한 확인
 
-<!-- agctx-doc-sources: tools/skills-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 86b621317926c198e51458f540e1f79d73ec916bb03c9b9bc30aed72cf3ba1a4 -->
+<!-- agctx-doc-sources: tools/skills-smoke.ts, tools/agent-scenario.ts -->
+<!-- agctx-doc-sources-sha256: 4fa63cd718b8f81100bed7276fb84556edb109fb1eb3fce1b3f46c313f4ae6d4 -->
 
 - `node tools/skills-smoke.ts`: skills CLI로 스킬을 임시 프로젝트에 설치해 위치를 확인하고, 기여자 전용 스킬(`.agents/skills/repo-docs`)이 사용자 설치에서 빠지는지 검사한다. skills CLI가 저장소 전체를 순회하므로 사용자가 실제로 보는 것과 같게 `skills/`와 `.agents/skills/`를 모두 복사해 실행한다. npm에서 skills CLI를 받으므로 `pnpm run check`에는 넣지 않는다.
+- `node tools/agent-scenario.ts`: 이 저장소를 `npm pack`한 패키지를 임시 prefix에 설치하고, 패키지의 스킬을 임시 프로젝트의 `.claude/skills/`에 복사한 뒤 실제 Claude Code(`claude -p`)에 `/agctx-author 이 저장소에 team-backend 프로필을 적용해 줘.`를 요청한다. 프로젝트에는 사람이 쓴 `AGENTS.md`가 있다. 에이전트가 `profile apply … --dry-run`을 실제로 실행했고(권한에 거부된 호출은 세지 않는다), `--dry-run` 없는 `--yes`·`--adopt`를 쓰지 않았고, 실행 전후로 프로젝트와 프로필 보관함의 파일이 그대로면 0으로 끝난다. 실행한 agctx 명령과 비용을 출력하고 임시 폴더를 지운다. `npm pack`이 prepack으로 이 저장소의 `dist/`를 지우고 다시 빌드하므로, 같은 체크아웃의 `dist/`를 쓰는 다른 세션이 있으면 끝난 뒤 확인한다. 모델 사용량을 쓰고(2026-09-22 실측 약 0.6~0.8달러) 답이 실행마다 다를 수 있어 `pnpm run check`에 넣지 않는다. 스킬의 안내나 쓰기 명령의 확인 규칙을 바꾸면 한 번 실행하고 결과를 [외부 참고 문헌](../references.md#배포-패키지와-에이전트-스킬-시나리오-실측)에 기록한다.
 - 실제 에이전트 CLI로 `agctx verify --probe`를 실행하는 확인은 요금제·로그인이 필요해 자동화하지 않는다. 에이전트 판정을 바꾸면 한 번 수동으로 실행하고 결과를 [외부 참고 문헌](../references.md)에 기록한다.

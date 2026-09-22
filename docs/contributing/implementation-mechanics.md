@@ -111,7 +111,7 @@ flowchart LR
 
 `apply`는 프로젝트에 쓸 프로필을 정하고, `sync`는 이미 정해진 프로필을 다시 적용한다. 둘 다 무엇을 바꿀지 계획으로 먼저 보여 준다.
 
-- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->
+- 공통 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:c9de87c638fb-->
 - 계획 수립: `src/profile/apply.ts`의 `planFor`<!--s:484e2afbede5-->, `src/project/plan.ts`의 `planProject`<!--s:ab2aaace7362-->
 - 계획 출력: `src/profile/apply.ts`의 `printPlan`<!--s:d9c078cea294-->
 - 이유: 지원 에이전트 범위는 [ADR 0011](../adr/0011-supported-agents.md)
@@ -133,7 +133,7 @@ flowchart LR
 `sync`는 프로젝트에 기록된 프로필만 다시 적용하고 프로필을 바꾸지 않는다. 프로필 전환은 `apply`의 몫이다.
 
 - 기록된 프로필 읽기: `src/profile/apply.ts`의 `boundProfile`<!--s:4a7d617ed27c-->
-- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:367c788432d4-->
+- 처리기: `src/commands/handlers.ts`의 `applyOrSync`<!--s:c9de87c638fb-->
 - 지키는 평가: `evals/profile.test.ts`
 
 ## 9. 안전한 파일 쓰기

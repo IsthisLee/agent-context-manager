@@ -83,7 +83,7 @@ Dry-run: no files were changed.
 ## 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: bb758239200f1829286b271c5ed6936df33dc7a3e26078f7871d800c7ece28c1 -->
+<!-- agctx-doc-sources-sha256: 709e3960ad50b9952e355e7ceb1972bea697641ac73e59f4552dd12facdfcfde -->
 
 에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 

@@ -29,8 +29,8 @@
 | 선행 제안 | [프로필 모델과 저장소](profile-model.md), [Git 기반 프로필 관리](git-profile-management.md), [기존 Git 저장소를 프로필 원천으로 쓰기](existing-repository-source.md) |
 | 후속 제안 | 없음 |
 | 연관 제안 | [기존 저장소에서 프로필 만들기](profile-import.md)는 저장소 파일에서 고른 절을 복사해 새 프로필을 만든다. 이 주제는 복사하지 않고 폴더 자체를 프로필로 쓴다. |
-| 후속 작업 | 없음. 결정은 [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md)에, 사용 절차는 [기존 저장소를 프로필로 쓰기](../../../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)에, 명령과 파일 형식은 [CLI Reference](../../../reference/cli.md#profile-link)와 [파일 형식](../../../reference/file-formats.md#linkjson)에 옮겼다. |
-| 권장 다음 작업 | 없음. 이 주제의 계약은 [구현 기록](#구현-기록)대로 모두 구현했다. |
+| 후속 작업 | 다섯 번째 검수에서 넘긴 11건([구현 기록](#구현-기록-다섯-번째-검수의-조용히-틀린-결과를-고침)의 다음 단계). 결정은 [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md)에, 사용 절차는 [기존 저장소를 프로필로 쓰기](../../../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)에, 명령과 파일 형식은 [CLI Reference](../../../reference/cli.md#profile-link)와 [파일 형식](../../../reference/file-formats.md#linkjson)에 옮겼다. |
+| 권장 다음 작업 | 이 주제의 계약은 [구현 기록](#구현-기록)대로 모두 구현했다. 넘긴 11건 가운데 push하지 않은 커밋으로 고정하는 문제는 사본 프로필에도 있으므로, 링크와 따로 떼어 먼저 다룬다. |
 
 ## 목차
 
@@ -248,3 +248,27 @@ Git 저장소가 아닌 폴더도 연결한다. 그 프로필은 지금의 로�
 * **계획과 달라진 점:** 끊긴 링크를 같은 이름으로 다시 잇는 기능과 TUI의 「다시 연결」을 없앴다.
 * **제약:** 폴더를 옮기면 링크를 지우고 다시 연결하는 두 단계가 든다. 안내가 두 명령을 채워 보여 준다.
 * **다음 단계:** 없음.
+
+#### 구현 기록: 다섯 번째 검수의 조용히 틀린 결과를 고침
+
+* **배경:** 다섯 번째 검수는 새 지적 15건을 냈다. 검수가 「조용히 틀린 결과」로 분류한 4건 가운데 3건을 고치고, 나머지는 후속 작업으로 넘기기로 사용자와 정했다. 지적 수가 줄지 않아 검수 0건은 오지 않을 가능성이 높다고 보았기 때문이다.
+* **결정:** [ADR 0037](../../../adr/0037-link-existing-folder-as-profile.md)의 결정 2·4·6에 두 가지를 더했다. agctx가 프로필을 적용하며 만든 `AGENTS.md`는 규칙 파일로 스스로 고르지 않는다. 포인터의 용도·규칙 파일 기록은 그 프로필을 읽을 때마다 갱신한다. 되살리는 길은 안내된 CLI 명령 하나로 적었다.
+* **구현:**
+  - `src/profile/link.ts`의 `ruleFileChoices`와 `chooseInstructions`는 관리 표지(`<!-- agctx:managed:end -->`)가 있는 `AGENTS.md`를 후보에서 빼고, 그런 파일밖에 없으면 그렇다고 알린다.
+  - `src/profile/store.ts`의 `refreshPointerRecord`가 `readProfile`에서 `link.json`의 기록을 폴더의 `profile.json`에 맞춘다. 멀쩡한 링크를 다시 `link`해도 이 경로를 지난다.
+  - 끊긴 링크 목록의 힌트, `cli.md`, ADR 0037에서 없앤 TUI 「다시 연결」을 가리키던 문장을 고쳤다.
+* **평가:** `evals/profile-link.test.ts`에 3개, `evals/tui-link.test.ts`에 1개를 더해 각각 52개·15개가 통과한다. 생성된 `AGENTS.md`밖에 없는 폴더의 평가는 구현 뒤에 썼으므로, 그 분기를 빼는 변이로 실패하는 것을 확인했다. 이번 검사 5개를 하나씩 빼는 변이를 모두 해당 평가가 잡았다.
+* **계획과 달라진 점:** 없음.
+* **제약:** 검수를 더 돌리지 않았으므로, 아래 넘긴 11건 말고도 찾지 못한 예외가 있을 수 있다.
+* **다음 단계:** 다섯 번째 검수에서 넘긴 11건이다.
+  1. 연결한 폴더에서 push하지 않은 브랜치나 커밋으로 `--pin`과 `repos pr`이 고정한다. 사본 프로필에도 있는 성질이다.
+  2. 폴더가 없어진 끊긴 링크에서 `pull`·`push`·`connect`가 없는 경로에서 git을 쓰라고 안내한다.
+  3. 규칙 파일이 심볼릭 링크이고 `profile.json`이 이미 있으면, `--instructions`를 주라는 안내가 기록된 값과의 불일치로 막힌다.
+  4. `profile.json`이 심볼릭 링크여도 받아들여, 나중에 고정과 `clone`에서 막힌다.
+  5. `--instructions`로 잘못된 경로를 주면 오류가 있지도 않은 `profile.json`을 탓한다.
+  6. 폴더를 심볼릭 링크 경로로 주면, 폴더 안을 절대 경로로 가리키는 `AGENTS.md` 링크를 폴더 밖으로 판정한다.
+  7. TUI의 규칙 파일 목록이 심볼릭 링크 `AGENTS.md`를 후보로 넣고 미리 고른다. 그 파일은 연결할 때 항상 거부된다.
+  8. TUI의 연결한 프로필 메뉴에 받기·올리기·원격 연결이 그대로 나오고, 고르면 항상 거부된다.
+  9. `repos status`가 저장소 한 줄마다 같은 프로필의 링크 판정을 세 번 한다.
+  10. `ProfileLocation.kind`와 `ProfileLink.broken`이 다른 필드와 겹치는 상태를 두고, `relinkCommand`·`isPointerFolder`는 파일 밖에서 쓰지 않는데 내보낸다.
+  11. 범용 파일 시스템 함수 `isDirectory`·`sameFolder`·`readMetadataFile`이 `src/profile/store.ts`에 있어, `isSymbolicLink`를 둔 `src/shared/fs-utils.ts`와 자리가 갈린다.

@@ -195,6 +195,18 @@ export function relinkCommand(name: string, pointer: ProfileLink | null, folder:
   ].join(' ');
 }
 
+/**
+ * Keep the pointer's record of scope and rules file in step with the folder's profile.json whenever the profile is
+ * read, so the hint that brings back a lost profile.json names what the folder last had. A record that cannot be
+ * written is left as it is; it only feeds that hint.
+ */
+export function refreshPointerRecord(name: string, pointer: ProfileLink, metadata: ProfileMetadata): void {
+  const instructions = instructionsFile(metadata);
+  if (pointer.scope === metadata.scope && pointer.instructions === instructions) return;
+  const record = { schemaVersion: 1, path: pointer.path, scope: metadata.scope, instructions };
+  try { writeTextAtomic(path.join(profileHome(), name, LINK_FILE), JSON.stringify(record, null, 2) + '\n'); } catch {}
+}
+
 /** What to run to bring back the broken link `name`, or null when it can be used. */
 export function brokenLinkHint(name: string): string | null {
   try {
@@ -308,6 +320,7 @@ export function readProfile(name: string): Profile {
     if (metadata.instructions === undefined) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
     throw usageError('profile.instructions-missing', _('error.profile.instructions-missing', { source: metadataPath, file: instructions }), _('hint.profile.instructions'));
   }
+  if (location.pointer) refreshPointerRecord(name, location.pointer, metadata);
   return { profileDir, metadataPath, instructions, instructionsPath, metadata, link };
 }
 

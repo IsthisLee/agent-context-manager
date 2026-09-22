@@ -194,3 +194,13 @@ test('the TUI checks a folder before searching it for rules files', t => {
   assert.throws(() => checkLinkFolder(path.join(repo, 'agent-rules')), { code: 'link.inside-repository' });
   checkLinkFolder(repo);
 });
+
+test('the TUI rules file list leaves out an AGENTS.md that agctx wrote when it applied a profile', t => {
+  const { folder } = workspace(t);
+  const dir = folder('applied-rules', { 'AGENTS.md': '# Project\n<!-- agctx:managed:end -->\n', 'templates/AGENTS.md': '# Rules\n' });
+
+  const rules = linkRuleOptions(dir);
+
+  assert.deepEqual(rules.options.map(option => option.value), ['templates/AGENTS.md', OTHER_RULES_FILE]);
+  assert.equal(rules.initial, 'templates/AGENTS.md');
+});

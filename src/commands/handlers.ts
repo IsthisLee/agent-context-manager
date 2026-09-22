@@ -9,7 +9,7 @@ import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, p
 import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { brokenLinkHint, createProfile, getProfiles, profileLocation, readStore, removeProfile, viewProfile } from '../profile/store.ts';
+import { brokenLinkHint, createProfile, getProfiles, profileLocation, readProfile, readStore, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
@@ -167,6 +167,8 @@ export const HANDLERS: Record<string, Handler> = {
     printLinkPlan(plan);
     const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, written: false };
     if (!plan.changes) {
+      // Reading the profile brings the link record in step with the folder's profile.json.
+      readProfile(plan.name);
       say(_('link.unchanged', { name: plan.name, path: plan.dir }));
       return ok(data);
     }

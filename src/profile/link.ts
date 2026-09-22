@@ -7,6 +7,7 @@ import { isSymbolicLink, writeTextAtomic } from '../shared/fs-utils.ts';
 import { git } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE, profileHome } from '../shared/home.ts';
 import { shellWord } from '../shared/shell.ts';
+import { MANAGED_END } from '../project/conflicts.ts';
 import type { ProfileMetadata, Scope } from '../shared/types.ts';
 import { assertInstructionsPath, brokenLinkHint, DEFAULT_INSTRUCTIONS, instructionsFile, isDirectory, isInstructionsPath, isProfileName, isScope, isValidProfileMetadata, LINK_FILE, profileLocation, readMetadataFile, readStore, regularFileInside, sameFolder, SCOPES, validateProfileName } from './store.ts';
 
@@ -83,21 +84,35 @@ function readExistingMetadata(dir: string): ProfileMetadata | null {
 }
 
 /**
- * The rules files `profile link` can take from `dir`: every AGENTS.md in it, and the one it takes without being
- * told, which is the root AGENTS.md, or else the only AGENTS.md. With several and none at the root it takes none,
- * and after a search that stopped early it takes only the root one, since there may be more.
+ * Whether the AGENTS.md at `rel` in `dir` is one agctx wrote when it applied a profile to this folder. It holds the
+ * output of that other profile, not rules of this folder's own, so it is never taken without being named.
  */
-export function ruleFileChoices(dir: string): { detected: string | null; candidates: string[]; complete: boolean } {
-  const { files: candidates, complete } = instructionCandidates(dir);
-  const detected = regularFileInside(dir, DEFAULT_INSTRUCTIONS) ? DEFAULT_INSTRUCTIONS : complete && candidates.length === 1 ? candidates[0] : null;
-  return { detected, candidates, complete };
+function writtenByAgctx(dir: string, rel: string): boolean {
+  try { return fs.readFileSync(path.join(dir, ...rel.split('/')), 'utf8').includes(MANAGED_END); } catch { return false; }
+}
+
+/**
+ * The rules files `profile link` can take from `dir`: every AGENTS.md in it that agctx did not write, and the one
+ * it takes without being told, which is the root AGENTS.md, or else the only AGENTS.md. With several and none at
+ * the root it takes none, and after a search that stopped early it takes only the root one, since there may be more.
+ */
+export function ruleFileChoices(dir: string): { detected: string | null; candidates: string[]; complete: boolean; written: string[] } {
+  const { files, complete } = instructionCandidates(dir);
+  const written = files.filter(file => writtenByAgctx(dir, file));
+  const candidates = files.filter(file => !written.includes(file));
+  const detected = candidates.includes(DEFAULT_INSTRUCTIONS) && regularFileInside(dir, DEFAULT_INSTRUCTIONS) ? DEFAULT_INSTRUCTIONS : complete && candidates.length === 1 ? candidates[0] : null;
+  return { detected, candidates, complete, written };
 }
 
 function chooseInstructions(dir: string): string {
-  // A root AGENTS.md decides without searching; a root AGENTS.md that is a symbolic link is reported by planLink.
-  if (regularFileInside(dir, DEFAULT_INSTRUCTIONS) || isSymbolicLink(path.join(dir, DEFAULT_INSTRUCTIONS))) return DEFAULT_INSTRUCTIONS;
-  const { detected, candidates, complete } = ruleFileChoices(dir);
+  // A root AGENTS.md of the folder's own decides without searching; one that is a symbolic link is reported by planLink.
+  const root = path.join(dir, DEFAULT_INSTRUCTIONS);
+  if ((regularFileInside(dir, DEFAULT_INSTRUCTIONS) && !writtenByAgctx(dir, DEFAULT_INSTRUCTIONS)) || isSymbolicLink(root)) return DEFAULT_INSTRUCTIONS;
+  const { detected, candidates, complete, written } = ruleFileChoices(dir);
   if (detected) return detected;
+  if (!candidates.length && written.length && complete) {
+    throw usageError('link.rules-written', _('error.link.rules-written', { dir, files: written.join(', ') }), _('hint.link.instructions'));
+  }
   const files = candidates.join('\n  ');
   if (!complete) {
     throw usageError('link.search-limit', candidates.length

@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 6200be87e500979c9999b002b456ac2ae668ca67e646bf15874e9865a29b1045 -->
+<!-- agctx-doc-sources-sha256: 56a7aafd881841e7b361712ec5bc81aea598ced4d5a67ddfd6c9ff27c4d65143 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -126,7 +126,7 @@ npx skills add IsthisLee/agent-context-manager -g -a claude-code -a codex -a ant
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: e026383e178bc4f0ee945a0e34f462113d4b85b5350836c6bc994739188cdaad -->
+<!-- agctx-doc-sources-sha256: 3d946f3e4edae91d6ffa2e187e19fdbb289cfb45f259129e36350cb32ac0080f -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
 - **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.

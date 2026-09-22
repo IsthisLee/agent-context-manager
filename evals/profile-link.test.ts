@@ -780,3 +780,43 @@ test('a profile that is a working operating system link is named as one when lin
   assert.match(result.stderr, /operating system link/);
   assert.doesNotMatch(result.stderr, /is not a link/);
 });
+
+test('the link record follows the profile.json it last saw, so the hint for a lost profile.json is current', t => {
+  const { root, admin } = setup(t);
+  const dir = rulesFolder(root, 'team-rules', { 'AGENTS.md': '# For contributors\n', 'templates/AGENTS.md': '# Team rules\n' }, { git: false });
+  admin.ok(['profile', 'link', dir, '--yes']);
+  const metadataFile = path.join(dir, 'profile.json');
+  fs.writeFileSync(metadataFile, JSON.stringify({ ...json(metadataFile), schemaVersion: 2, scope: 'company', instructions: 'templates/AGENTS.md' }) + '\n');
+
+  assert.match(admin.ok(['profile', 'link', dir, '--yes']).stdout, /already links/);
+  fs.rmSync(metadataFile);
+
+  const view = admin.run(['profile', 'view', 'team-rules']);
+  assert.ok(view.stderr.includes('--scope company --instructions templates/AGENTS.md'), view.stderr);
+});
+
+test('link does not take a root AGENTS.md that agctx wrote for another profile as the rules file', t => {
+  const { root, admin, folder } = setup(t);
+  admin.ok(['profile', 'create', 'base']);
+  const dir = rulesFolder(root, 'rules', { 'templates/AGENTS.md': '# Team rules\n' }, { git: false });
+  admin.ok(['profile', 'apply', 'base', dir, '--yes']);
+
+  admin.ok(['profile', 'link', dir, '--yes']);
+
+  assert.equal(json(path.join(dir, 'profile.json')).instructions, 'templates/AGENTS.md');
+  const project = folder('orders-api');
+  admin.ok(['profile', 'apply', 'rules', project, '--yes']);
+  assert.match(read(path.join(project, 'AGENTS.md')), /# Team rules/);
+});
+
+test('link says so when the only AGENTS.md in a folder is one agctx wrote for another profile', t => {
+  const { root, admin } = setup(t);
+  admin.ok(['profile', 'create', 'base']);
+  const dir = rulesFolder(root, 'applied', { 'README.md': '# Notes\n' }, { git: false });
+  admin.ok(['profile', 'apply', 'base', dir, '--yes']);
+
+  const result = admin.run(['profile', 'link', dir, '--yes']);
+
+  assert.equal(result.status, 64);
+  assert.match(result.stderr, /agctx wrote when it applied a profile/);
+});

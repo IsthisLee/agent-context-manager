@@ -20,7 +20,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: f3a09dc5f07b9da7ea88165b51f6d211f232a5908747615c171bcaf39072c0db -->
+<!-- agctx-doc-sources-sha256: 58e0b526ee0527e024b9115abfc52d14c3bf3ce370524cd4fecd1d2b8a925632 -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -142,7 +142,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 3f0bb3a8f24890df61f24a065094b05eac957ff9986b8903020eea3b26b47dd2 -->
+<!-- agctx-doc-sources-sha256: 218ab1a1feac09e269590747ad6f19da8b30731a58af75a599954e1540164f50 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -217,7 +217,7 @@ agctx profile list [--scope <scope>]
 - Git으로 올리기
 - Git에 연결
 
-파이프·스크립트 환경에서는 읽기 쉬운 scope별 텍스트 목록만 출력한다. [`profile link`](#profile-link)로 연결한 프로필은 `이름  -> 폴더`로 표시하고, 끊긴 링크는 `[broken links]` 아래에 이유와 함께 따로 표시한다. `profile link`가 생기기 전에 손으로 만든 운영체제 심볼릭 링크도 가리키던 폴더가 없어지면 끊긴 링크로 표시한다. 목록에서 끊긴 링크를 고르면 다시 연결과 삭제만 있는 메뉴가 열린다.
+파이프·스크립트 환경에서는 읽기 쉬운 scope별 텍스트 목록만 출력한다. [`profile link`](#profile-link)로 연결한 프로필은 `이름  -> 폴더`로 표시하고, 끊긴 링크는 `[broken links]` 아래에 이유와 함께 따로 표시한다. `profile link`가 생기기 전에 손으로 만든 운영체제 심볼릭 링크도 가리키던 폴더가 없어지면 끊긴 링크로 표시한다. 목록에서 끊긴 링크를 고르면 되살리는 명령을 보여 준 뒤 삭제 확인으로 넘어간다.
 
 `--json`이면 `data.profiles`에 프로필 메타데이터 목록을, `data.brokenLinks`에 끊긴 링크 목록(`{ name, path, reason }`)을 담는다. 연결한 프로필의 메타데이터에는 `link`(가리키는 폴더)가 붙는다. `reason` 값은 [파일 형식](file-formats.md#linkjson)에 있다. `--scope`를 주면 끊긴 링크는 텍스트와 JSON 모두에서 빠진다. 끊긴 링크에는 용도를 읽을 `profile.json`이 없기 때문이다.
 
@@ -523,7 +523,7 @@ agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--
 | `--dry-run` | 계획만 보여 주고 아무것도 쓰지 않는다 |
 | `--yes` | 확인하지 않고 쓴다. 터미널이 아니면 있어야 진행한다 |
 
-- 루트에 `AGENTS.md`가 있으면 더 찾지 않고 그것을 쓴다. 없으면 폴더 안의 `AGENTS.md`를 네 단계 아래 폴더까지, 폴더 1000개를 읽을 때까지 찾는다. 숨은 폴더(`.`으로 시작)와 `node_modules`·`vendor`·`dist`·`build`는 보지 않는다. 후보가 여럿이거나 폴더 1000개를 읽고도 다 보지 못했으면 추측하지 않고, 찾은 후보를 보여 주며 64로 멈춘다.
+- 루트에 `AGENTS.md`가 있으면 더 찾지 않고 그것을 쓴다. agctx가 프로필을 적용하며 만든 `AGENTS.md`(관리 표지 `<!-- agctx:managed:end -->`가 있는 파일)는 다른 프로필의 결과물이므로 루트든 하위 폴더든 스스로 고르지 않는다. 없으면 폴더 안의 `AGENTS.md`를 네 단계 아래 폴더까지, 폴더 1000개를 읽을 때까지 찾는다. 숨은 폴더(`.`으로 시작)와 `node_modules`·`vendor`·`dist`·`build`는 보지 않는다. 후보가 여럿이거나 폴더 1000개를 읽고도 다 보지 못했으면 추측하지 않고, 찾은 후보를 보여 주며 64로 멈춘다.
 - 홈 폴더는 규칙 저장소 폴더가 아니므로 연결하지 않고 64로 멈춘다. 인자 없이 홈 폴더에서 실행해도 폴더 안을 찾지 않는다.
 - 규칙 파일은 폴더 안의 일반 파일이어야 한다. 루트든 하위 폴더든 심볼릭 링크면 64로 멈추고, 링크가 폴더 안의 파일을 가리키면 그 파일을 `--instructions`로 주라고, 폴더 밖을 가리키면 그렇다고 안내한다. 고정과 `profile clone`은 규칙 파일을 Git에서 읽는데, Git에는 링크가 가리키는 파일이 아니라 링크 자체가 기록되기 때문이다.
 - Git 저장소 루트가 아닌 하위 폴더는 64로 멈추고, 저장소 루트를 연결하면서 규칙 파일을 `--instructions <하위 폴더>/AGENTS.md`로 주라고 안내한다. 고정·`profile status`·`profile clone`이 저장소 루트를 기준으로 동작하기 때문이다. 안내하는 명령에는 준 `--name`·`--scope`가 들어가고, `--name`이 없으면 하위 폴더 이름으로 만든 이름이 들어간다. 심볼릭 링크를 거친 경로는 실제 위치로 판정한다. 커밋에 들어 있지 않은 폴더와, 홈 폴더가 저장소(dotfiles)일 때 그 아래의 폴더는 Git 밖의 폴더로 보고 연결한다. 아직 커밋이 없는 저장소의 하위 폴더는 저장소 안으로 본다.
@@ -533,7 +533,7 @@ agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--
 - 한 폴더에는 링크 하나만 둔다. 끊긴 링크가 이미 이 폴더를 가리키면 다른 이름으로 연결하지 않고 64로 멈추며, 그 링크를 되살리는 명령을 알려 준다. 프로필이 두 개로 갈라지지 않게 하려는 것이다.
 - 연결한 프로필은 `view`·`apply`·`sync`·`setup`·`check`가 그 폴더를 직접 읽고 쓰므로, 커밋하지 않은 수정도 바로 적용된다. 그 상태로 적용하면 `uncommitted`로 기록하고 `--pin`은 거부한다.
 - 연결한 프로필에서 `pull`·`push`·`connect`는 64로 멈추고 그 폴더에서 git을 쓰라고 안내한다. `status`는 `--refresh`를 줘도 그 폴더에서 `fetch`하지 않는다. `remove`는 포인터만 지운다.
-- 연결한 폴더를 옮기거나 지우거나, 그 폴더의 `profile.json`이나 규칙 파일이 없어지면 `profile list`가 끊긴 링크로 이유와 함께 보여 준다. 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈추고, 같은 프로필로 되살리는 명령을 안내한다. `agctx profile remove <name> --yes` 뒤 `agctx profile link <경로> --name <name> --scope <scope> --instructions <file>`이고, 용도와 규칙 파일은 포인터에 기록해 둔 연결할 때의 값이다. 그 폴더의 `profile.json`이 다른 프로필 것이 되었으면 `name`을 되돌리거나 링크를 지우라고 안내한다. `check`는 멈추지 않고 경고한다.
+- 연결한 폴더를 옮기거나 지우거나, 그 폴더의 `profile.json`이나 규칙 파일이 없어지면 `profile list`가 끊긴 링크로 이유와 함께 보여 준다. 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 64로 멈추고, 같은 프로필로 되살리는 명령을 안내한다. `agctx profile remove <name> --yes` 뒤 `agctx profile link <경로> --name <name> --scope <scope> --instructions <file>`이고, 용도와 규칙 파일은 포인터에 기록해 둔 값이고, 그 프로필을 읽을 때마다 폴더의 `profile.json`에 맞춰 갱신된다. 그 폴더의 `profile.json`이 다른 프로필 것이 되었으면 `name`을 되돌리거나 링크를 지우라고 안내한다. `check`는 멈추지 않고 경고한다.
 - TUI에서는 첫 화면이나 프로필 목록의 `Link a folder as a profile`에서 폴더를 고른다. 폴더를 고르면 홈 폴더인지와 Git 저장소 안의 하위 폴더인지를 먼저 확인하고, 그다음에 규칙 파일을 찾는다. 폴더에 `profile.json`이 없으면 규칙 파일(찾은 `AGENTS.md`들과 직접 입력), 이름, 용도를 묻는다. 이름 입력 칸에는 폴더 이름을 이름 규칙에 맞게 바꾼 값이 들어 있다. 목록에서 끊긴 링크를 고르면 되살리는 명령을 보여 준 뒤 삭제 확인으로 넘어간다.
 
 ```bash

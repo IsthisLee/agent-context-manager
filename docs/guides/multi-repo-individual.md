@@ -48,7 +48,7 @@ agctx profile apply company ~/work/api-server
 ## 여러 저장소를 한 번에 맞추기
 
 <!-- agctx-doc-sources: src/repos, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 0253c063495aae93f7582fc83e85b28c8bbde87e49c3535090045f2ea3d15799 -->
+<!-- agctx-doc-sources-sha256: 18bb37ea4d329c3d0bdd41994b96b3286e7e212b7240c7263896a882462ad856 -->
 
 프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
 

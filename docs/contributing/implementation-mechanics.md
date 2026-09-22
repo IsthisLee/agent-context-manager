@@ -140,7 +140,7 @@ flowchart LR
 
 프로젝트 파일을 바꿀 때 심볼릭 링크와 비정규 파일을 거부하고, 같은 폴더의 임시 파일을 거쳐 원자적으로 교체한다. 기존 파일이 CRLF면 CRLF로 다시 쓴다. 이 검사들이 던지는 오류는 `CliError`가 아니므로 종료 코드 70으로 끝난다.
 
-- 대상·부모 경로 검사: `src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:d1ff5389600c-->
+- 대상·부모 경로 검사: `src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:726a55528542-->
 - 원자적 교체와 줄 끝 보존: 같은 파일의 `writeTextAtomic`·`toLf`
 - 지키는 평가: `evals/file-safety.test.ts`
 

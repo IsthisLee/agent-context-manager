@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 3de3fa7430e5a7f40c87cbfefd3503f7b91e44b2a850f575d820dfba72e3c037 -->
+<!-- agctx-doc-sources-sha256: b9624c77d900b1ba7cc5bfd41fa87ae41d7e154f9e2a8b00595044f7b9da208d -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -76,7 +76,7 @@ agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트�
 ## 시작하기
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 460ae721b7ccb26feee3396a3b310635a62097ffbd54c479133ae484e1b4f0ee -->
+<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
 
 > 실행 환경: Node.js 22 LTS 이상
 

@@ -117,7 +117,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 ## 4. Shebang과 Node.js 실행 원리
 
 <!-- agctx-doc-sources: src/agctx.ts, tools/build.ts -->
-<!-- agctx-doc-sources-sha256: 8fbc137a9232a091a360d9fd8d44d4a03836b3fcb40bed11d4d7dd221739bec3 -->
+<!-- agctx-doc-sources-sha256: 88722c573b8ed6243858c87fcbd5fd3d164b58a94c38315b52c3748a55ee7055 -->
 
 ### 핵심 원리
 
@@ -145,7 +145,7 @@ flowchart LR
 
 - **저장소에서는 컴파일하지 않는다.** Node 22.18 이상은 `.ts` 파일의 타입 표기만 지우고 바로 실행한다. 그래서 `node src/agctx.ts`, `node --test evals/**/*.test.ts`(`package.json`의 `test`<!--s:e1f6fc9efc0d--> 스크립트), `node tools/check-docs.ts`가 빌드 없이 돈다. 타입을 지우는 것만으로 실행할 수 없는 문법(`enum` 등)은 `tsconfig.json`의 `erasableSyntaxOnly`<!--s:b5bea41b6c62-->로 막는다.
 - **배포본은 컴파일한다.** Node는 `node_modules` 아래의 `.ts` 파일을 실행하지 않는다. 설치된 패키지는 `node_modules` 아래에 놓이므로 `.ts`를 그대로 배포하면 실행되지 않는다. 그래서 `npm pack`·`npm publish` 직전에 `prepack`이 `tools/build.ts`를 실행해(`package.json`의 `prepack`<!--s:7a90f1ded2a4--> 스크립트) `src/`를 `dist/`로 컴파일한다(`tools/build.ts`). 소스의 `import { run } from './commands/cli.ts'`는 `tsconfig.build.json`의 `rewriteRelativeImportExtensions`<!--s:b5bea41b6c62-->로 `./commands/cli.js`가 된다.
-- **형식 검사는 따로 한다.** Node는 타입을 검사하지 않고 지우기만 하므로, 타입 오류는 `pnpm run typecheck`(`tsc -p tsconfig.json`, `package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트)가 잡는다.
+- **형식 검사는 따로 한다.** Node는 타입을 검사하지 않고 지우기만 하므로, 타입 오류는 `pnpm run typecheck`(`tsc -p tsconfig.json`, `package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트)가 잡는다. 이 `tsc`는 TypeScript 7이다. `typescript`라는 패키지 이름에는 typescript-eslint가 쓰는 6.0 호환 패키지가 있어서 7은 `@typescript/native` 별칭으로 설치하고, `tools/build.ts`도 그 `tsc`로 컴파일한다([ADR 0040](../adr/0040-lint-with-eslint-and-typescript6-compat.md)).
 
 ### 사용자가 알아야 할 주의점
 
@@ -350,7 +350,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json`의 `packageManager`<!--s:e57f45d300b3-->에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json`의 `scripts`<!--s:d9b08741f851-->). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml`의 `Setup pnpm` 단계, `.github/workflows/publish.yml`의 `Setup pnpm` 단계).
+- **저장소 개발**은 고정된 pnpm 버전을 쓴다. `package.json`의 `packageManager`<!--s:e57f45d300b3-->에 `"packageManager": "pnpm@10.15.0"`이 있고, 검증 스크립트도 `pnpm run ...`으로 묶여 있다(`package.json`의 `scripts`<!--s:af10aab21254-->). CI·배포 워크플로 역시 pnpm 10.15.0을 설치해 쓴다(`.github/workflows/ci.yml`의 `Setup pnpm` 단계, `.github/workflows/publish.yml`의 `Setup pnpm` 단계).
 - **일반 사용자 설치**는 배포 호환성을 위해 `npm install`을 안내한다([CLI Reference](../reference/cli.md#설치와-실행)). 즉 “개발은 pnpm, 사용자 설치 안내는 npm”으로 역할이 나뉜다.
 - `npx`를 이 저장소가 요구하는 흐름은 **현재 저장소에서 확인되지 않는다.** README·CLI Reference의 사용 예시는 전역 설치 후 `agctx` 실행을 전제로 한다.
 
@@ -364,7 +364,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ## 12. package.json의 files 설정과 실제 배포 파일 범위
 
 <!-- agctx-doc-sources: evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: 08054a257a678a5ea25f90cce549ca68f12c8de9cd7323bae74e30828bc61d7d -->
+<!-- agctx-doc-sources-sha256: a6f1f8f2ec637116e4b524ef599dcc0d75b2c388b5207ab355ef9a4da5f323bb -->
 
 ### 핵심 원리
 
@@ -409,7 +409,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 각 관문의 구현 위치는 [기능 구현 메커니즘](implementation-mechanics.md)의 6·7·9절이 안내한다. 여기서는 일반 원리와 연결되는 지점만 요약한다.
 
-- **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:d1ff5389600c-->). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:d1ff5389600c-->).
+- **심볼릭 링크·비정규 파일 거부**: `assertSafeTextTarget`이 대상이 심볼릭 링크면 교체를 거부하고, 일반 파일이 아니어도 거부한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:726a55528542-->). 경계(`boundary`)가 주어지면, 대상의 부모 디렉터리들을 경계까지 거슬러 올라가며 심볼릭 링크 부모가 섞여 있지 않은지 확인한다(`src/shared/fs-utils.ts`의 `assertSafeTextTarget`<!--s:726a55528542-->).
 - **원자적 교체**: `writeTextAtomic`이 같은 폴더에 임시 파일(`.<이름>.agctx-<uuid>.tmp`)을 쓰고 `rename`으로 교체하며 기존 파일의 권한 모드를 임시 파일 생성 옵션으로 전달한다(`src/shared/fs-utils.ts`의 `writeTextAtomic`<!--s:b0a8d2c5de9a-->). 교체할 파일이 CRLF 줄 끝을 쓰고 있으면 새 내용도 CRLF로 쓴다. 다만 `fs.writeFileSync`는 생성 시 umask를 적용하므로 권한 비트가 항상 그대로 보존된다는 보장은 아니다.
 - **경계 검사 적용**: 프로젝트 적용 시 실제 쓰기 전에 대상마다 `assertSafeTextTarget(change.target, targetDir)`로 프로젝트 폴더를 경계로 검사한다(`writePlan`, `src/project/plan.ts`의 `writePlan`<!--s:ff58786507f2-->).
 - **관리 영역 무결성**: 사용자 영역과 agctx 관리 영역을 분리하고, 관리 영역의 hash를 `agctx.project.json`에, 원문을 `.agctx/base/`에 기록한다(`src/project/plan.ts`의 `planProject`<!--s:acf9ac211b66-->). 다음 적용/동기화 때 기록된 hash와 현재 내용이 다르면 파일을 쓰지 않고 `프로필이 관리하는 영역을 직접 고친 파일이 있습니다` 오류와 종료 코드 2로 멈춘다(`src/project/plan.ts`의 `planProject`<!--s:acf9ac211b66-->). 다만 현재 관리 영역이 이번에 쓸 내용과 글자까지 같으면 덮어써도 잃을 것이 없으므로 멈추지 않는다. 편집기가 저장하면서 Markdown을 다시 포맷한 경우가 여기에 해당한다. `profile resolve`는 base를 기준으로 관리 영역 안의 편집을 밖으로 옮겨 이 충돌을 푼다. 병합·추출·hash 로직은 `src/project/analyzer.ts`, 충돌 편집 처리는 `src/project/conflicts.ts`에 있다.
@@ -456,7 +456,7 @@ flowchart TD
 - **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->).
 - **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts`의 `run`<!--s:4724943a91e5-->), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
-- **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 서식 검사 → 린트 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json`의 `check`<!--s:ceba53c4fab5--> 스크립트). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트), 서식 검사는 `prettier --check .`가 코드·JSON·YAML의 서식이 설정과 같은지 확인하며(`package.json`의 `format:check` 스크립트), 린트는 ESLint가 `src`·`evals`·`tools`를 검사하며(`package.json`의 `lint` 스크립트), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json`의 `test`<!--s:e1f6fc9efc0d--> 스크립트).
+- **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 서식 검사 → 린트 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json`의 `check`<!--s:82db547bca58--> 스크립트). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트), 서식 검사는 `prettier --check .`가 코드·JSON·YAML의 서식이 설정과 같은지 확인하며(`package.json`의 `format:check` 스크립트), 린트는 ESLint가 `src`·`evals`·`tools`를 검사하며(`package.json`의 `lint`<!--s:9c66d492df48--> 스크립트), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json`의 `test`<!--s:e1f6fc9efc0d--> 스크립트).
 
 ### 사용자가 알아야 할 주의점
 

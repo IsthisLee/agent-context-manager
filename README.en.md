@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: 9976596df3ce40901c31887bf2c1fea4ece3ceec17d99ba4470b7d042b674544 -->
+<!-- agctx-doc-sources-sha256: 8799b5fc1bf84b15f53b68e2485dca78f907a9ab8a544b4195f5d46f22d078de -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -74,7 +74,7 @@ Pick the guide that fits your situation. The same list is in the [documentation 
 ## Getting Started
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 460ae721b7ccb26feee3396a3b310635a62097ffbd54c479133ae484e1b4f0ee -->
+<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
 
 > Runtime: Node.js 22 LTS or newer
 

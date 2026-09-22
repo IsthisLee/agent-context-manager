@@ -28,7 +28,10 @@
     "build": "node tools/build.ts",
     "prepack": "node tools/build.ts",
     "check:docs": "node tools/check-docs.ts",
-    "check": "pnpm run typecheck && pnpm run check:docs && pnpm test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint src evals tools eslint.config.js",
+    "check": "pnpm run typecheck && pnpm run format:check && pnpm run lint && pnpm run check:docs && pnpm test",
     "check:release": "node tools/check-release.ts",
     "pack:check": "npm pack --dry-run",
     "audit": "pnpm audit --audit-level high",
@@ -60,7 +63,12 @@
     "diff": "^9.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "@types/node": "22.20.2",
-    "typescript": "7.0.2"
+    "@typescript/native": "npm:typescript@7.0.2",
+    "eslint": "10.11.0",
+    "prettier": "3.9.8",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-eslint": "8.70.1"
   }
 }

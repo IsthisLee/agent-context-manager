@@ -2,7 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { commitAndPush, fakeGh, gitIn, makeWorkspace, optionValue, publishProfile, serviceRepo } from './support/git-workspace.ts';
+import {
+  commitAndPush,
+  fakeGh,
+  gitIn,
+  makeWorkspace,
+  optionValue,
+  publishProfile,
+  serviceRepo
+} from './support/git-workspace.ts';
 import { ghFailureReason } from '../src/repos/pr.ts';
 
 interface ListedRepo {
@@ -14,10 +22,11 @@ interface ListedRepo {
 
 const names = (repos: { path: string }[]) => repos.map(repo => path.basename(repo.path)).sort();
 
-/** The row `repos pr` prints for a result state: `<state> <target>  <detail>`. */
-const resultRow = (stdout: string, state: string) => stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
+/** `repos pr`이 결과 상태마다 출력하는 줄: `<state> <target>  <detail>`. */
+const resultRow = (stdout: string, state: string) =>
+  stdout.split('\n').find(line => line.startsWith(`${state} `)) ?? '';
 
-test('apply records repositories; repos list marks a moved one missing and --prune forgets it', t => {
+test('apply는 저장소를 기록하고, repos list는 옮겨진 저장소를 missing으로 표시하며, --prune은 그것을 잊는다', t => {
   const { root, person, folder } = makeWorkspace(t, 'agctx-repos-list-');
   const me = person('me');
   me.ok(['profile', 'create', 'personal']);
@@ -31,11 +40,17 @@ test('apply records repositories; repos list marks a moved one missing and --pru
   me.ok(['profile', 'apply', 'personal', preview, '--dry-run']);
 
   const listed: ListedRepo[] = JSON.parse(me.ok(['repos', 'list', '--json']).stdout).data.repos;
-  assert.deepEqual(listed.map(repo => [path.basename(repo.path), repo.profile, repo.pinned, repo.missing]).sort(), [
-    ['blog', 'personal', false, false],
-    ['client-a-api', 'client-a', false, false]
-  ], 'apply and sync register a repository once; a dry run registers nothing');
-  assert.deepEqual(names(JSON.parse(me.ok(['repos', 'list', '--profile', 'client-a', '--json']).stdout).data.repos), ['client-a-api']);
+  assert.deepEqual(
+    listed.map(repo => [path.basename(repo.path), repo.profile, repo.pinned, repo.missing]).sort(),
+    [
+      ['blog', 'personal', false, false],
+      ['client-a-api', 'client-a', false, false]
+    ],
+    'apply와 sync는 저장소를 한 번만 등록하고, dry run은 아무것도 등록하지 않는다'
+  );
+  assert.deepEqual(names(JSON.parse(me.ok(['repos', 'list', '--profile', 'client-a', '--json']).stdout).data.repos), [
+    'client-a-api'
+  ]);
 
   fs.renameSync(api, path.join(root, 'moved-api'));
   const human = me.ok(['repos', 'list']);
@@ -46,7 +61,7 @@ test('apply records repositories; repos list marks a moved one missing and --pru
   assert.deepEqual(names(JSON.parse(me.ok(['repos', 'list', '--json']).stdout).data.repos), ['blog']);
 });
 
-test('repos status checks every listed repository and exits with the most severe state', t => {
+test('repos status는 목록의 모든 저장소를 검사하고 가장 심각한 상태로 끝난다', t => {
   const { person, folder } = makeWorkspace(t, 'agctx-repos-status-');
   const me = person('me');
   me.ok(['profile', 'create', 'personal']);
@@ -61,10 +76,15 @@ test('repos status checks every listed repository and exits with the most severe
 
   me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claude = path.join(api, 'CLAUDE.md');
-  fs.writeFileSync(claude, fs.readFileSync(claude, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
+  fs.writeFileSync(
+    claude,
+    fs
+      .readFileSync(claude, 'utf8')
+      .replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n')
+  );
 
   const all = me.run(['repos', 'status']);
-  assert.equal(all.status, 2, 'a conflict outranks repositories that are behind');
+  assert.equal(all.status, 2, '충돌이 뒤처진 저장소보다 우선한다');
   assert.match(all.stdout, /behind\s+personal\s+.*status-blog/);
   assert.match(all.stdout, /behind\s+personal\s+.*status-notes/);
   assert.match(all.stdout, /conflict\s+client-a\s+.*status-api/);
@@ -75,10 +95,16 @@ test('repos status checks every listed repository and exits with the most severe
   assert.equal(personal.status, 1);
   const document = JSON.parse(personal.stdout);
   assert.equal(document.command, 'repos status');
-  assert.deepEqual(document.data.repos.map((repo: { state: string; exitCode: number }) => [repo.state, repo.exitCode]), [['behind', 1], ['behind', 1]]);
+  assert.deepEqual(
+    document.data.repos.map((repo: { state: string; exitCode: number }) => [repo.state, repo.exitCode]),
+    [
+      ['behind', 1],
+      ['behind', 1]
+    ]
+  );
 });
 
-test('repos sync previews every repository, asks once, and skips conflicted and dirty ones while updating the rest', t => {
+test('repos sync는 모든 저장소를 미리 보여 주고 한 번 묻고, 충돌하거나 더러운 저장소는 건너뛰고 나머지를 갱신한다', t => {
   const { person, folder } = makeWorkspace(t, 'agctx-repos-sync-');
   const me = person('me');
   me.ok(['profile', 'create', 'personal']);
@@ -92,7 +118,12 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
 
   me.ok(['profile', 'setup', 'personal', '--tdd', 'on']);
   const claudeTwo = path.join(two, 'CLAUDE.md');
-  fs.writeFileSync(claudeTwo, fs.readFileSync(claudeTwo, 'utf8').replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n'));
+  fs.writeFileSync(
+    claudeTwo,
+    fs
+      .readFileSync(claudeTwo, 'utf8')
+      .replace('<!-- agctx:managed:start -->\n', '<!-- agctx:managed:start -->\nEdited by hand.\n')
+  );
   fs.appendFileSync(path.join(three, 'AGENTS.md'), '\n- A note not committed yet.\n');
   const read = (project: string) => fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
   const before = [read(one), read(two), read(three)];
@@ -102,7 +133,7 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
   assert.match(preview.stdout, /update\s+\S*sync-one/);
   assert.match(preview.stdout, /conflict\s+\S*sync-two/);
   assert.match(preview.stdout, /dirty\s+\S*sync-three\s+.*AGENTS\.md/);
-  assert.deepEqual([read(one), read(two), read(three)], before, 'a dry run writes nothing');
+  assert.deepEqual([read(one), read(two), read(three)], before, 'dry run은 아무것도 쓰지 않는다');
 
   const refused = me.run(['repos', 'sync', '--profile', 'personal']);
   assert.equal(refused.status, 64);
@@ -110,21 +141,24 @@ test('repos sync previews every repository, asks once, and skips conflicted and 
   assert.deepEqual([read(one), read(two), read(three)], before);
 
   const synced = me.run(['repos', 'sync', '--profile', 'personal', '--yes']);
-  assert.equal(synced.status, 2, 'the conflict still decides the exit code after the others are updated');
+  assert.equal(synced.status, 2, '나머지를 갱신한 뒤에도 충돌이 종료 코드를 정한다');
   assert.match(synced.stdout, /updated\s+\S*sync-one/);
   assert.match(read(one), /## TDD/);
   assert.equal(read(two), before[1]);
   assert.equal(read(three), before[2]);
 
   const again = JSON.parse(me.run(['repos', 'sync', '--profile', 'personal', '--yes', '--json']).stdout);
-  assert.deepEqual(again.data.repos.map((repo: { path: string; state: string }) => [path.basename(repo.path), repo.state]).sort(), [
-    ['sync-one', 'up-to-date'],
-    ['sync-three', 'dirty'],
-    ['sync-two', 'conflict']
-  ]);
+  assert.deepEqual(
+    again.data.repos.map((repo: { path: string; state: string }) => [path.basename(repo.path), repo.state]).sort(),
+    [
+      ['sync-one', 'up-to-date'],
+      ['sync-three', 'dirty'],
+      ['sync-two', 'conflict']
+    ]
+  );
 });
 
-test('repos pr opens a pull request from a separate worktree only when the profile moved', t => {
+test('repos pr은 프로필이 바뀌었을 때만 별도 worktree에서 pull request를 연다', t => {
   const { root, person } = makeWorkspace(t, 'agctx-repos-pr-');
   const admin = person('admin');
   const member = person('member');
@@ -139,7 +173,7 @@ test('repos pr opens a pull request from a separate worktree only when the profi
 
   const quiet = member.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
   assert.match(quiet.stdout, /up-to-date\s+\S*orders-api/);
-  assert.deepEqual(creates(), [], 'a scheduled run with no new profile commit opens nothing');
+  assert.deepEqual(creates(), [], '새 프로필 커밋이 없는 예약 실행은 아무것도 열지 않는다');
   assert.doesNotMatch(remoteHeads(), /agctx\//);
 
   const pinnedSync = member.ok(['repos', 'sync', '--profile', 'team-backend', '--yes']);
@@ -151,7 +185,11 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   member.ok(['profile', 'pull', 'team-backend']);
   const newCommit = gitIn(member.profileDir('team-backend'), 'rev-parse', 'HEAD');
   const branch = `agctx/team-backend-${newCommit.slice(0, 7)}`;
-  assert.equal(member.run(['check', service.work]).status, 1, 'a pinned repository is behind once the profile store has a newer commit');
+  assert.equal(
+    member.run(['check', service.work]).status,
+    1,
+    '보관함에 더 새로운 커밋이 생기면 고정한 저장소는 뒤처진다'
+  );
 
   const preview = member.ok(['repos', 'pr', '--profile', 'team-backend', '--dry-run'], gh.env);
   assert.match(preview.stdout, new RegExp(`would-open\\s+\\S*orders-api\\s+.*${branch}`));
@@ -170,15 +208,24 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
   const recorded = JSON.parse(gitIn(service.work, 'show', 'FETCH_HEAD:agctx.project.json'));
   assert.equal(recorded.source.commit, newCommit);
-  assert.equal(recorded.pin, true, 'a pinned repository is pinned again to the new commit');
+  assert.equal(recorded.pin, true, '고정한 저장소는 새 커밋으로 다시 고정한다');
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Always add a migration test/);
-  assert.equal(gitIn(service.work, 'log', '-1', '--format=%s', 'FETCH_HEAD'), `chore(agctx): update team-backend profile to ${newCommit.slice(0, 7)}`);
+  assert.equal(
+    gitIn(service.work, 'log', '-1', '--format=%s', 'FETCH_HEAD'),
+    `chore(agctx): update team-backend profile to ${newCommit.slice(0, 7)}`
+  );
 
-  assert.equal(gitIn(service.work, 'status', '--porcelain'), '', 'the working copy stays clean');
+  assert.equal(gitIn(service.work, 'status', '--porcelain'), '', '작업 사본은 깨끗하게 남는다');
   assert.equal(gitIn(service.work, 'rev-parse', '--abbrev-ref', 'HEAD'), 'main');
   assert.doesNotMatch(fs.readFileSync(path.join(service.work, 'AGENTS.md'), 'utf8'), /Always add a migration test/);
-  assert.equal(gitIn(service.work, 'branch', '--list', 'agctx/*'), '', 'no local branch is left behind');
-  assert.equal(gitIn(service.work, 'worktree', 'list', '--porcelain').split('\n').filter(line => line.startsWith('worktree ')).length, 1, 'the temporary worktree is removed');
+  assert.equal(gitIn(service.work, 'branch', '--list', 'agctx/*'), '', '로컬 브랜치가 남지 않는다');
+  assert.equal(
+    gitIn(service.work, 'worktree', 'list', '--porcelain')
+      .split('\n')
+      .filter(line => line.startsWith('worktree ')).length,
+    1,
+    '임시 worktree를 지운다'
+  );
 
   const [create] = creates();
   assert.equal(optionValue(create.args, '--base'), 'main');
@@ -195,7 +242,7 @@ test('repos pr opens a pull request from a separate worktree only when the profi
   assert.equal(creates().length, 1);
 });
 
-test('repos pr --targets lets a scheduled bot work from clone URLs and pushes with a hint when gh cannot open the pull request', t => {
+test('repos pr --targets는 예약된 봇이 clone URL로 작업하게 하고, gh가 pull request를 열지 못하면 안내와 함께 push한다', t => {
   const { root, person } = makeWorkspace(t, 'agctx-repos-targets-');
   const admin = person('admin');
   const developer = person('developer');
@@ -226,19 +273,23 @@ test('repos pr --targets lets a scheduled bot work from clone URLs and pushes wi
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
   const recorded = JSON.parse(gitIn(service.work, 'show', 'FETCH_HEAD:agctx.project.json'));
   assert.equal(recorded.source.commit, newCommit);
-  assert.equal(recorded.pin, undefined, 'a repository that was not pinned stays unpinned');
+  assert.equal(recorded.pin, undefined, '고정하지 않았던 저장소는 고정하지 않은 채로 남는다');
 
-  assert.deepEqual(JSON.parse(bot.ok(['repos', 'list', '--json']).stdout).data.repos, [], 'temporary clones are never registered');
+  assert.deepEqual(
+    JSON.parse(bot.ok(['repos', 'list', '--json']).stdout).data.repos,
+    [],
+    '임시 clone은 등록하지 않는다'
+  );
 });
 
-test('repos pr applies inside the worktree when a target folder is spelled with another letter case', t => {
+test('대상 폴더를 다른 대소문자로 적어도 repos pr은 worktree 안에서 적용한다', t => {
   const { root, person } = makeWorkspace(t, 'agctx-repos-spelling-');
   const admin = person('admin');
   const bot = person('bot');
   const profile = publishProfile(root, admin, 'team-backend');
   bot.ok(['profile', 'clone', profile.remote]);
   const service = serviceRepo(root, 'orders-api');
-  // Windows can name one folder RUNNER~1 or runneradmin, and git reports the spelling on disk.
+  // Windows는 한 폴더를 RUNNER~1이나 runneradmin으로 부를 수 있고, git은 디스크의 표기를 보고한다.
   const respelled = path.join(root, 'WORK', 'orders-api');
   if (!fs.existsSync(respelled)) {
     t.skip('this file system tells folder names apart by letter case');
@@ -262,7 +313,7 @@ test('repos pr applies inside the worktree when a target folder is spelled with 
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Document every public endpoint/);
 });
 
-test('repos pr updates a project that lives in a repository subfolder', t => {
+test('repos pr은 저장소 하위 폴더에 있는 프로젝트를 갱신한다', t => {
   const { root, person } = makeWorkspace(t, 'agctx-repos-subfolder-');
   const admin = person('admin');
   const bot = person('bot');
@@ -284,14 +335,21 @@ test('repos pr updates a project that lives in a repository subfolder', t => {
   const result = bot.run(['repos', 'pr', '--profile', 'team-backend', '--yes'], gh.env);
   assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
   gitIn(service.work, 'fetch', '--quiet', 'origin', branch);
-  assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'), /Document every public endpoint/);
-  assert.equal(gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'), '', 'nothing is written at the repository top');
+  assert.match(
+    gitIn(service.work, 'show', 'FETCH_HEAD:packages/orders-api/AGENTS.md'),
+    /Document every public endpoint/
+  );
+  assert.equal(
+    gitIn(service.work, 'ls-tree', '--name-only', 'FETCH_HEAD', 'AGENTS.md'),
+    '',
+    '저장소 맨 위에는 아무것도 쓰지 않는다'
+  );
 });
 
-/** Git as Git for Windows installs it: files are checked out with CRLF line endings (core.autocrlf). */
+/** Git for Windows가 설치하는 Git: 파일을 CRLF 줄 끝으로 checkout한다(core.autocrlf). */
 const CRLF_CHECKOUT = { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'core.autocrlf', GIT_CONFIG_VALUE_0: 'true' };
 
-test('check and repos pr read files git checks out with CRLF line endings as the ones agctx wrote', t => {
+test('check와 repos pr은 git이 CRLF 줄 끝으로 checkout한 파일을 agctx가 쓴 파일로 읽는다', t => {
   const { root, person } = makeWorkspace(t, 'agctx-repos-crlf-');
   const admin = person('admin');
   const bot = person('bot');
@@ -300,12 +358,20 @@ test('check and repos pr read files git checks out with CRLF line endings as the
   const service = serviceRepo(root, 'orders-api');
   bot.ok(['profile', 'apply', 'team-backend', service.work, '--pin', '--yes'], CRLF_CHECKOUT);
   commitAndPush(service.work, 'Apply team-backend profile');
-  assert.equal(bot.run(['check', service.work], CRLF_CHECKOUT).status, 0, 'a profile cloned with CRLF line endings renders what the pinned commit holds');
+  assert.equal(
+    bot.run(['check', service.work], CRLF_CHECKOUT).status,
+    0,
+    'CRLF 줄 끝으로 clone한 프로필은 고정한 커밋의 내용을 렌더링한다'
+  );
   const gh = fakeGh(t);
   gh.setMode('not-github');
 
   const quiet = bot.ok(['repos', 'pr', '--profile', 'team-backend', '--yes'], { ...gh.env, ...CRLF_CHECKOUT });
-  assert.match(quiet.stdout, /up-to-date\s+\S*orders-api/, 'a worktree checked out with CRLF line endings has no edited managed area');
+  assert.match(
+    quiet.stdout,
+    /up-to-date\s+\S*orders-api/,
+    'CRLF 줄 끝으로 checkout한 worktree에는 고친 관리 영역이 없다'
+  );
 
   fs.appendFileSync(path.join(profile.dir, 'AGENTS.md'), '\n- Document every public endpoint.\n');
   gitIn(profile.dir, 'commit', '--quiet', '-am', 'Document endpoints');
@@ -318,9 +384,12 @@ test('check and repos pr read files git checks out with CRLF line endings as the
   assert.match(gitIn(service.work, 'show', 'FETCH_HEAD:AGENTS.md'), /Document every public endpoint/);
 });
 
-test('repos pr explains a missing GitHub CLI in words instead of the spawn error', () => {
+test('repos pr은 GitHub CLI가 없으면 실행 오류 대신 말로 설명한다', () => {
   const missing = Object.assign(new Error('spawnSync gh ENOENT'), { code: 'ENOENT' });
-  assert.equal(ghFailureReason(missing), 'GitHub CLI (gh) is not installed; install it to open pull requests automatically.');
+  assert.equal(
+    ghFailureReason(missing),
+    'GitHub CLI (gh) is not installed; install it to open pull requests automatically.'
+  );
   const other = Object.assign(new Error('spawnSync gh EACCES'), { code: 'EACCES' });
   assert.equal(ghFailureReason(other), 'spawnSync gh EACCES');
 });

@@ -54,7 +54,7 @@ flowchart LR
 ## 두 방식의 차이 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: be319d589192127821b81dfed00e0678160f35499d62e55ff8ff1107201aedfa -->
+<!-- agctx-doc-sources-sha256: 9a54c2076ab7dbc4910dc362691254ba22d75908b666d1ab47c18dccb03c3df3 -->
 
 두 저장소에 같은 프로필 커밋 `ab35396`을 적용하되, `web-app`은 고정하지 않고 `orders-api`는 `--pin`으로 고정했다. 그 뒤 관리자가 변경 검토 수준을 `strict`로 바꿔 올린 커밋 `c61bea6`을 `profile pull`로 받고, 두 저장소에서 `check`와 `sync`를 차례로 실행했다. 아래 출력은 실제 실행 결과에서 경로만 바꿨다.
 
@@ -101,14 +101,14 @@ Plan: 0 file(s) to change.
 ## 고정하지 않은 저장소
 
 <!-- agctx-doc-sources: src/repos/sync.ts -->
-<!-- agctx-doc-sources-sha256: d58f3b82546b629add7a39c82b27773f15f5044efeea6d7b5fe8c69f93cae448 -->
+<!-- agctx-doc-sources-sha256: c3f99d7b8f253fd2582c2f5537aeaa7b759821d9f1ab20b01d31d49f24518652 -->
 
 프로필을 고치거나 `profile pull`로 받은 뒤 `agctx repos sync --profile <이름>`을 실행한다. 절차와 출력은 [성격이 다른 저장소 여럿에 프로필 나눠 쓰기](multi-repo-individual.md#여러-저장소를-한-번에-맞추기)에 있다.
 
 ## 고정한 저장소를 PR로 갱신
 
 <!-- agctx-doc-sources: src/repos/pr.ts -->
-<!-- agctx-doc-sources-sha256: 67a857b3828b8544947573190ae9e6fa681e3428bc54bb243a79e1d2180e72dd -->
+<!-- agctx-doc-sources-sha256: f877fb6eaac0f635a0f03be5f94da84c8dd598b3cfd7b598de5d9c9ef5294dbb -->
 
 ```bash
 agctx profile pull team-backend
@@ -163,7 +163,7 @@ jobs:
 ## 고정하거나 풀기
 
 <!-- agctx-doc-sources: src/profile/apply.ts -->
-<!-- agctx-doc-sources-sha256: 99565cbc1a1103db34b29024b720132a2d7b930637c53461380630f9eba0647c -->
+<!-- agctx-doc-sources-sha256: 023714cf31133646043c71ab1d99851d64ca90ef6748ca2e214524c5b4c54bba -->
 
 - 처음 고정하거나 새 커밋으로 옮기려면 `agctx profile apply <이름> <프로젝트> --pin`을 실행한다. Git에 연결했고 커밋하지 않은 수정이 없는 프로필이어야 한다.
 - 고정한 프로젝트에 `--pin` 없이 `apply`하면 고정이 풀린다는 경고를 먼저 출력한다.

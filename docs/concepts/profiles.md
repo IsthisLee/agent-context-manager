@@ -13,7 +13,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: aeeca1fffacbf74532d6f46bef7bbbff3217c17acaafc10c99d1b92ec1d93836 -->
+<!-- agctx-doc-sources-sha256: 9c154ac34e3d75ebfe18abe22c92938102277f6c3ec03ca8bf63fa7a1d6bf211 -->
 
 프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
 
@@ -28,7 +28,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 지침 항목 켜고 끄기
 
 <!-- agctx-doc-sources: src/profile/setup.ts, src/i18n/index.ts -->
-<!-- agctx-doc-sources-sha256: f3ae2f31fdd318ef41029b2c6ae94d2db4cc1c178c4d14fcdf8ab484a9d5a8c3 -->
+<!-- agctx-doc-sources-sha256: eacc3de41fdcaa0dab0c38ed64e16ad5d3e9dcec052fe646d259d8f92ca32382 -->
 
 `profile setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목을 골라 프로필 규칙 파일(기본 `AGENTS.md`)의 `<!-- agctx:guidance:start -->` 블록에 쓴다. 항목마다 값은 둘뿐이다(`src/profile/setup.ts`의 `guidanceDefaults`<!--s:b4d095fe641d-->).
 
@@ -44,7 +44,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 9aac7032975ba23fe99dc927ba9dbf124c5cae3b7ce40e5101ee6d3a396899cf -->
+<!-- agctx-doc-sources-sha256: ba6fb000aa299e766c35a1b53ee259fb294964ad48c20d861c59b0a6b394c074 -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.

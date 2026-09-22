@@ -1,18 +1,16 @@
 /**
- * Find characters that change how text reads without showing up on screen.
- * Received guidance is agent input, so a profile that hides instructions
- * behind bidirectional controls or invisible tag characters must be caught
- * before it reaches a repository.
+ * 화면에 보이지 않으면서 글이 읽히는 방식을 바꾸는 문자를 찾는다. 받은 지침은 에이전트의 입력이므로,
+ * 양방향 제어 문자나 보이지 않는 태그 문자 뒤에 지시를 숨긴 프로필은 저장소에 닿기 전에 잡아야 한다.
  */
 
 export interface HiddenCharacter {
-  /** 1-based line number. */
+  /** 줄 번호. 1부터 센다. */
   line: number;
-  /** 1-based column, counted in code points. */
+  /** 열 번호. 1부터 세고 코드 포인트 단위다. */
   column: number;
-  /** Code point written as `U+XXXX`. */
+  /** `U+XXXX`로 적은 코드 포인트. */
   codePoint: string;
-  /** What kind of hidden character it is. */
+  /** 숨은 문자의 종류. */
   kind: 'bidi-control' | 'zero-width' | 'tag' | 'variation-selector';
 }
 
@@ -33,7 +31,7 @@ function kindOf(code: number): HiddenCharacter['kind'] | null {
   return null;
 }
 
-/** Every hidden character in `text`. A byte order mark at the very start is allowed. */
+/** `text`의 모든 숨은 문자. 맨 앞의 바이트 순서 표시는 허용한다. */
 export function findHiddenCharacters(text: string): HiddenCharacter[] {
   const found: HiddenCharacter[] = [];
   let line = 1;
@@ -57,7 +55,7 @@ export function findHiddenCharacters(text: string): HiddenCharacter[] {
   return found;
 }
 
-/** One line per finding, for messages: `AGENTS.md:12:5 U+202E bidi-control`. */
+/** 찾은 것마다 한 줄. 메시지에 쓴다: `AGENTS.md:12:5 U+202E bidi-control`. */
 export function describeHiddenCharacters(file: string, found: readonly HiddenCharacter[]): string[] {
   return found.map(item => `${file}:${item.line}:${item.column} ${item.codePoint} ${item.kind}`);
 }

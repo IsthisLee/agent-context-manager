@@ -8,7 +8,7 @@ agctx는 개인·조직별 에이전트 컨텍스트를 프로필로 생성·설
 ## 현재 구조
 
 <!-- agctx-doc-sources: src/agctx.ts, src/check.ts, src/explain.ts, src/commands, src/profile, src/project, src/repos, src/verify, src/i18n, src/tui, src/shared, tools -->
-<!-- agctx-doc-sources-sha256: 1eee4699d2d2e3f113918818319049c2314e888e65617c359f9a00a0975f7d2c -->
+<!-- agctx-doc-sources-sha256: 5ba291acd5deab3de8f461215ce1ede3a6739e241e762d51400e1993c17daecc -->
 
 ```mermaid
 flowchart LR
@@ -51,7 +51,7 @@ flowchart LR
 - **Git 공유와 적용 버전:** 프로필 폴더가 Git 작업 트리이면 `profile clone`·`status`·`pull`·`push`·`connect`로 원격과 주고받는다. 이 명령들은 사용자의 Git 인증으로 `git`을 실행하고 프로젝트 파일은 건드리지 않는다. clone·pull은 받을 `profile.json`과 그것이 가리키는 규칙 파일을 검증하고(규칙 파일이나 거쳐 가는 폴더가 심볼릭 링크면 거부) 숨은 문자를 검사한 뒤에만 반영하며, pull은 fast-forward만 한다. `apply`·`sync`는 적용한 프로필의 `source { git, branch, commit }`와 고정 여부(`pin`)를 `agctx.project.json`에 기록하고, 고정한 프로젝트의 `sync`는 기록한 커밋의 `profile.json`이 가리키는 규칙 파일로 다시 만든다. 결정은 [ADR 0017](../adr/0017-git-profile-sharing.md)이고, 규칙 파일 경로는 [ADR 0036](../adr/0036-profile-json-names-rules-file.md)이다.
 - **저장소 검사:** `agctx check`는 파일을 바꾸지 않고 관리 영역 hash(충돌 2), 관리 파일의 숨은 문자(3), 프로필이나 원천 저장소보다 뒤처졌는지(1)를 판정한다. 보관함이 없는 CI에서는 `--refresh`가 `git ls-remote`로 원천 브랜치의 최신 커밋과 비교한다.
 - **여러 저장소:** `apply`·`sync`가 적용한 저장소를 `~/.agctx/repos.json`에 기록하고, `repos status`·`sync`·`pr`이 이 목록이나 `--targets` 파일의 저장소를 한 번에 다룬다. `repos pr`은 사용자 작업 폴더 대신 임시 worktree(URL은 임시 clone)에서 커밋해 push하고 `gh`로 PR을 연다. 렌더링이 폴더 이름에 흔들리지 않도록 프로젝트 이름을 `agctx.project.json`에 기록한다. 결정은 [ADR 0018](../adr/0018-multi-repository-sync.md)이다.
-- **전달 확인:** `agctx explain`은 에이전트마다 문서화된 로드 규칙과 실측으로, 한 폴더에서 시작한 에이전트가 읽는 지침 파일을 판정하고, 확인한 에이전트 가운데 하나라도 받지 못하는 파일(`missing`)이 있으면 4로 끝난다(`src/explain.ts`의 `explainPath`<!--s:869edbdafbce-->). `agctx verify`는 Codex·Claude Code 세션 기록에서 그 파일들이 실제로 들어갔는지 확인한다. `--probe`를 주면 확인을 받은 뒤, 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행한다. `explain`은 같은 규칙이 두 파일로 한 에이전트에 들어가는 중복도 경고한다([ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)). 결정은 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)다.
+- **전달 확인:** `agctx explain`은 에이전트마다 문서화된 로드 규칙과 실측으로, 한 폴더에서 시작한 에이전트가 읽는 지침 파일을 판정하고, 확인한 에이전트 가운데 하나라도 받지 못하는 파일(`missing`)이 있으면 4로 끝난다(`src/explain.ts`의 `explainPath`<!--s:18d6bfc2e7dd-->). `agctx verify`는 Codex·Claude Code 세션 기록에서 그 파일들이 실제로 들어갔는지 확인한다. `--probe`를 주면 확인을 받은 뒤, 파일마다 표지 줄을 붙인 임시 사본에서 에이전트 CLI를 도구 없이 한 번씩 실행한다. `explain`은 같은 규칙이 두 파일로 한 에이전트에 들어가는 중복도 경고한다([ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)). 결정은 [ADR 0019](../adr/0019-explain-verify-and-agent-skills.md)다.
 - **에이전트용 스킬:** 저장소 `skills/`에 진단·갱신용 `agctx`와 게시용 `agctx-author` 스킬이 있다. 명령 목록은 `tools/generate-skills.ts`가 등록부에서 만들고 평가가 최신인지 검사한다. 스킬은 npm 패키지에 들어 있고, `agctx install`이 설치된 에이전트(Claude Code·Codex·Antigravity 앱·IDE와 CLI)의 사용자 전역 스킬 폴더에 복사하며 폴더마다 설치 기록을 둔다. 기록과 같은 폴더만 바꾸거나 지우고, 기록의 버전이 CLI와 다르면 모든 명령이 알린다([ADR 0038](../adr/0038-install-agent-skills-from-cli-package.md)). 저장소를 skills CLI로 받는 길은 막지 않으므로, 기여자용 `.agents/skills/repo-docs`는 frontmatter의 `metadata.internal: true`로 그 설치에서 뺀다.
 
 프로필은 로컬 파일 시스템의 `~/.agctx/profiles/<name>`에 보관하며, 이 폴더가 Git 저장소이면 원격과 공유할 수 있다. 원격 저장소의 권한·리뷰·보호 규칙은 Git 호스트가 맡는다.
@@ -59,14 +59,18 @@ flowchart LR
 ## 저장소 파일 구조
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, tsconfig.build.json, templates -->
-<!-- agctx-doc-sources-sha256: b2196665517a66ef46a4657a672cd7e41a9eeab3cf3ee4d15717673e638de238 -->
+<!-- agctx-doc-sources-sha256: 0dbd755111ab7abbabaca66739cfbbd09dd0ba5c1099b9964698180d33e1ced0 -->
 
 ```text
 agent-context-manager/
 ├── .github/                    # CI·배포·Dependabot·커뮤니티 운영 설정
 ├── .editorconfig               # 편집기 공통 형식 규칙
 ├── .gitattributes              # Git 줄바꿈·바이너리 판정 규칙
+├── .git-blame-ignore-revs      # git blame에서 건너뛸 서식 변경 커밋
 ├── .nvmrc                      # 기여자 기본 Node.js 메이저 버전
+├── .prettierrc.json            # 코드·JSON·YAML 서식 설정
+├── .prettierignore             # 서식 검사에서 뺄 파일(Markdown, 잠금 파일)
+├── eslint.config.js             # 린트 규칙
 ├── src/                         # TypeScript 소스. 배포할 때 dist/로 컴파일
 │   ├── agctx.ts                 # CLI 진입점: commands/cli.ts의 run() 호출
 │   ├── commands/                # 명령 등록부(registry)·옵션 검사·처리기·stdout/stderr·JSON 출력·도움말
@@ -147,4 +151,4 @@ agent-context-manager/
 
 ## 패키지 내부 검증
 
-이 저장소의 `pnpm run check`는 TypeScript 형식 검사, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.
+이 저장소의 `pnpm run check`는 TypeScript 형식 검사, 서식 검사, 린트, 문서 계약 검사, CLI 평가를 실행한다. 대상 프로젝트에 검증 실행기나 테스트를 주입하지 않는다. 프로필 지침에 검증 규칙을 선택하는 기능과 대상 프로젝트의 실제 검증은 별도 책임이다.

@@ -308,7 +308,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 프로필의 `skills/<이름>/`, `subagents/<이름>.md`, `hooks.json`을 에이전트마다 다른 위치와 형식으로 저장소에 쓴다. skills·subagents 파일은 파일째 소유하고, hooks는 사람과 나눠 쓰는 설정 파일 안의 묶음만 소유한다. 사용 절차는 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)에 있다.
 
-- 프로필 파일 읽기: `src/artifacts/profile-files.ts`의 `workingArtifactFiles`<!--s:3e6e9f9bf1e4-->·`committedArtifactFiles`<!--s:f01af1e02d73-->. 심볼릭 링크와 텍스트가 아닌 파일은 거부하고, Git 프로필은 `.gitignore`를 따른다.
+- 프로필 파일 읽기: `src/artifacts/profile-files.ts`의 `workingArtifactFiles`<!--s:b604d6ec5c44-->·`committedArtifactFiles`<!--s:f01af1e02d73-->. 심볼릭 링크와 텍스트가 아닌 파일은 거부하고, Git 프로필은 `.gitignore`를 따른다.
 - 정의 검사: `src/artifacts/definitions.ts`의 `parseProfileArtifacts`<!--s:32c68e98acb5-->·`HOOK_EVENTS`<!--s:eb138d3b276e-->
 - 에이전트별 위치와 형식: `src/artifacts/targets.ts`의 `SKILL_ROOTS`<!--s:a17f7ad11104-->·`SUBAGENT_TARGETS`<!--s:76263bc9767f-->·`HOOK_TARGETS`<!--s:73db9d115065-->·`UNVERIFIED_AGENTS`<!--s:80ddaff67869-->
 - 계획: `src/project/artifact-plan.ts`의 `planArtifactFiles`<!--s:c403f51e0f8f-->. 사람이 둔 파일과 자리가 겹치면 `src/project/plan.ts`의 `planProject`<!--s:6e0253cfa38e-->가 `project.artifact-taken`으로 멈춘다.

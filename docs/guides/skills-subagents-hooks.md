@@ -21,7 +21,7 @@
 ## 프로필에 두기
 
 <!-- agctx-doc-sources: src/artifacts/definitions.ts, src/artifacts/profile-files.ts -->
-<!-- agctx-doc-sources-sha256: 8d6c402e3f9ff814db244f4abe869fabecf1cf717f383c68a35725b526efd5a4 -->
+<!-- agctx-doc-sources-sha256: d1ec326afe0e702b1f2c332fd0c028893ce98f678ad19ca77797eaa7b6da7711 -->
 
 프로필 폴더(`agctx profile view <프로필>`이 읽는 폴더, 연결한 프로필이면 그 저장소 루트)에 다음을 둔다.
 

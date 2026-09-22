@@ -59,17 +59,54 @@ function textOf(file: string, text: string): string {
   return toLf(text);
 }
 
+/** 심볼릭 링크를 따라가지 않고 여는 플래그. 없는 운영체제(Windows)에서는 0이고, 읽은 뒤에 링크인지 확인한다. */
+const NO_FOLLOW = fs.constants.O_NOFOLLOW ?? 0;
+
+type Entry = { kind: 'file'; content: string; executable: boolean } | { kind: 'dir' } | { kind: 'other' } | null;
+
+function errorCode(error: unknown): string | undefined {
+  return (error as NodeJS.ErrnoException | undefined)?.code;
+}
+
+/**
+ * 경로 하나를 한 번 열고 그 파일에서 종류를 확인하고 읽는다. 확인한 뒤 같은 경로를 다시 읽으면 그 사이에
+ * 다른 파일(링크)로 바뀔 수 있기 때문이다. 없으면 null, 심볼릭 링크면 멈춘다.
+ */
+function openEntry(full: string, rel: string): Entry {
+  let fd: number;
+  try {
+    fd = fs.openSync(full, fs.constants.O_RDONLY | NO_FOLLOW);
+  } catch (error) {
+    if (errorCode(error) === 'ENOENT') return null;
+    if (errorCode(error) === 'ELOOP') throw symlinkError(rel);
+    // Windows는 폴더를 파일처럼 열지 못한다.
+    if (errorCode(error) === 'EISDIR' || errorCode(error) === 'EPERM') return { kind: 'dir' };
+    throw error;
+  }
+  let entry: Entry;
+  try {
+    const stat = fs.fstatSync(fd);
+    entry = stat.isDirectory()
+      ? { kind: 'dir' }
+      : stat.isFile()
+        ? { kind: 'file', content: textOf(rel, fs.readFileSync(fd, 'utf8')), executable: (stat.mode & 0o111) !== 0 }
+        : { kind: 'other' };
+  } finally {
+    fs.closeSync(fd);
+  }
+  if (NO_FOLLOW === 0 && fs.lstatSync(full).isSymbolicLink()) throw symlinkError(rel);
+  return entry;
+}
+
 function walk(root: string, rel: string, found: ProfileFile[]): void {
   const full = path.join(root, ...rel.split('/'));
-  const stat = fs.lstatSync(full);
-  if (stat.isSymbolicLink()) throw symlinkError(rel);
-  if (stat.isDirectory()) {
+  const entry = openEntry(full, rel);
+  if (entry?.kind === 'dir') {
     for (const name of fs.readdirSync(full).sort())
       if (!IGNORED_NAMES.has(name) && !IGNORED_FOLDERS.has(name)) walk(root, `${rel}/${name}`, found);
     return;
   }
-  if (!stat.isFile()) return;
-  found.push({ path: rel, content: textOf(rel, fs.readFileSync(full, 'utf8')), executable: (stat.mode & 0o111) !== 0 });
+  if (entry?.kind === 'file') found.push({ path: rel, content: entry.content, executable: entry.executable });
 }
 
 /**
@@ -93,21 +130,9 @@ function gitListedArtifactFiles(dir: string): ProfileFile[] {
   const found: ProfileFile[] = [];
   for (const rel of [...new Set(listed.stdout.split('\0').filter(Boolean))].sort()) {
     if (IGNORED_NAMES.has(rel.split('/').pop() ?? '')) continue;
-    const full = path.join(dir, ...rel.split('/'));
-    let stat: fs.Stats;
-    try {
-      stat = fs.lstatSync(full);
-    } catch {
-      // 추적 중이지만 작업 폴더에서 지운 파일이다.
-      continue;
-    }
-    if (stat.isSymbolicLink()) throw symlinkError(rel);
-    if (!stat.isFile()) continue;
-    found.push({
-      path: rel,
-      content: textOf(rel, fs.readFileSync(full, 'utf8')),
-      executable: (stat.mode & 0o111) !== 0
-    });
+    // 추적 중이지만 작업 폴더에서 지운 파일은 null이다.
+    const entry = openEntry(path.join(dir, ...rel.split('/')), rel);
+    if (entry?.kind === 'file') found.push({ path: rel, content: entry.content, executable: entry.executable });
   }
   return found;
 }
@@ -116,14 +141,7 @@ function gitListedArtifactFiles(dir: string): ProfileFile[] {
 export function workingArtifactFiles(dir: string): ProfileFile[] {
   if (isGitRoot(dir)) return gitListedArtifactFiles(dir);
   const found: ProfileFile[] = [];
-  for (const rel of PROFILE_ARTIFACT_PATHS) {
-    try {
-      fs.lstatSync(path.join(dir, rel));
-    } catch {
-      continue;
-    }
-    walk(dir, rel, found);
-  }
+  for (const rel of PROFILE_ARTIFACT_PATHS) walk(dir, rel, found);
   return found.sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 

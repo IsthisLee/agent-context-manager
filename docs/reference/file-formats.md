@@ -117,7 +117,7 @@
 ## skills·subagents·hooks
 
 <!-- agctx-doc-sources: src/artifacts/definitions.ts, src/artifacts/profile-files.ts, src/artifacts/targets.ts, src/artifacts/hooks-merge.ts, src/project/artifact-plan.ts -->
-<!-- agctx-doc-sources-sha256: 0d34ed5395cf47a599b63a162a12433e62c424f4157263f063683b80c248899e -->
+<!-- agctx-doc-sources-sha256: e39bee3610a83371b6d5375466a6f7d99b257cd2ac793f3ac5cb955ae7a648e9 -->
 
 프로필 폴더 루트에 두는 skill·subagent·hook 정의다. 쓰는 법은 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)에 있다. 판정은 `src/artifacts/definitions.ts`의 `parseProfileArtifacts`<!--s:32c68e98acb5-->가 하고, 틀리면 종료 코드 64로 멈춘다.
 
@@ -127,7 +127,7 @@
 | `subagents/<이름>.md` | 머리말에 파일 이름과 같은 `name`, 한 줄 `description`. 머리말 뒤의 본문이 지시다. 하위 폴더는 거부한다 |
 | `hooks.json` | `{ "hooks": { "<hook 이름>": { "<에이전트>": { "<이벤트>": [ … ] } } } }`. 에이전트는 `claude`·`codex`·`antigravity`, 이벤트는 그 에이전트 문서의 목록(`src/artifacts/definitions.ts`의 `HOOK_EVENTS`<!--s:eb138d3b276e-->) 안에서만 받는다. 항목은 `{ "matcher": "…", "hooks": [ { "type": "command", "command": "…" } ] }`이고 처리기의 다른 키(`timeout` 등)는 그대로 옮긴다 |
 
-- 텍스트가 아닌 파일, 심볼릭 링크, 숨은 문자가 든 파일은 거부한다. Git 프로필은 추적 중이거나 `.gitignore`가 가리지 않은 파일만 읽고, Git이 아닌 프로필은 `__pycache__`·`node_modules` 같은 부산물 폴더를 건너뛴다(`src/artifacts/profile-files.ts`의 `workingArtifactFiles`<!--s:3e6e9f9bf1e4-->). 고정한 저장소는 기록한 커밋의 파일을 읽는다.
+- 텍스트가 아닌 파일, 심볼릭 링크, 숨은 문자가 든 파일은 거부한다. Git 프로필은 추적 중이거나 `.gitignore`가 가리지 않은 파일만 읽고, Git이 아닌 프로필은 `__pycache__`·`node_modules` 같은 부산물 폴더를 건너뛴다(`src/artifacts/profile-files.ts`의 `workingArtifactFiles`<!--s:b604d6ec5c44-->). 고정한 저장소는 기록한 커밋의 파일을 읽는다.
 - 쓰는 곳은 `src/artifacts/targets.ts`의 `SKILL_ROOTS`<!--s:a17f7ad11104-->·`SUBAGENT_TARGETS`<!--s:76263bc9767f-->·`HOOK_TARGETS`<!--s:73db9d115065-->에 있다.
 
 | 종류 | Claude Code | Codex | agctx가 소유하는 영역 |

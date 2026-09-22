@@ -1,7 +1,7 @@
 # 테스트와 품질 게이트
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 9c1afe02f02e94e45c8e5290fec88522bfc3aea694ab7596550054baff1af47d -->
+<!-- agctx-doc-sources-sha256: a8d936ffc9f343a890cee0eec8aa4a0d10ee0ad3265a381eb9d8784fa5927428 -->
 
 모든 변경은 CI와 같은 순서로 확인한다.
 

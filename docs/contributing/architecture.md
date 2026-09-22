@@ -65,7 +65,7 @@ flowchart LR
 ## 저장소 파일 구조
 
 <!-- agctx-doc-sources: package.json, tsconfig.json, tsconfig.build.json, templates -->
-<!-- agctx-doc-sources-sha256: 0dbd755111ab7abbabaca66739cfbbd09dd0ba5c1099b9964698180d33e1ced0 -->
+<!-- agctx-doc-sources-sha256: 523628aa959b4f3d4788d23969a81f0717113714c700dd7bac96a1f775a6882d -->
 
 ```text
 agent-context-manager/

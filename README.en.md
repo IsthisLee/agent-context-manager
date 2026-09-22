@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.md -->
-<!-- agctx-doc-sources-sha256: d05066255b39c705c04c507832ca2126add9f4d43a6b3d8bb67da3edecf7e6a6 -->
+<!-- agctx-doc-sources-sha256: 7e7a2a299de8af3ae8ef9322df3ff5507f85afbe7d61f48c9f9e72b5e4414108 -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -22,7 +22,7 @@ Read in: **English** · [한국어](README.md)
 
 </p>
 
-**Your working principles for TDD, security, documentation, skills, and MCP are already defined in CLAUDE.md. So why set the same thing up again every time you add a project or an AI tool?**
+**Your working principles for TDD, security, documentation, skills, and MCP are already defined in your repository. So why set the same thing up again every time you add a project or an AI tool?**
 
 agctx manages those standards as a Profile. Applying the Profile to a project creates the instruction files that Codex, Claude Code, and Antigravity read, in one pass. After you change the standard in the Profile and sync, you do not edit each project's files again, and each project's own domain rules stay intact. It is one flow: `profile create` → `profile setup` → `profile apply`/`profile sync`.
 
@@ -74,7 +74,7 @@ Pick the guide that fits your situation. The same list is in the [documentation 
 ## Getting Started
 
 <!-- agctx-doc-sources: package.json -->
-<!-- agctx-doc-sources-sha256: 5121b6818053c7fec722d0ded83cc15cb0977c6e2592438316d74ce7ab3b2c3b -->
+<!-- agctx-doc-sources-sha256: 8f00a3712502f02541eff34821e19fe31bfc083caa3e065aef9b384301c5c036 -->
 
 > Runtime: Node.js 22 LTS or newer
 

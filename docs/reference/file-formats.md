@@ -173,7 +173,7 @@
 ```json
 {
   "schemaVersion": 1,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "files": {
     "SKILL.md": "be91396dda8f024e20a2a365bb902958d61617dd0e74b3c857f66cff951af230"
   }

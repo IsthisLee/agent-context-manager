@@ -15,7 +15,7 @@
 ## 릴리스
 
 <!-- agctx-doc-sources: package.json, .github/workflows, tools/build.ts -->
-<!-- agctx-doc-sources-sha256: 880e27a4d0ad0c13db6dea754d62e88ed04f9869e66c7ad83989ebf8bd2ed5be -->
+<!-- agctx-doc-sources-sha256: a620bb95be02a1083731399b2dd28c27a3e88cbb83c96cff56335d1d0d07308b -->
 
 ### 릴리스 전 점검
 

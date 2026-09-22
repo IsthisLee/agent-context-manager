@@ -48,7 +48,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 이 패키지에서의 적용 예시
 
-- 패키지 이름과 버전은 `package.json`의 `name`<!--s:516f9f1e29ba-->·`version`<!--s:bb8276153b22-->에 있다(`"agent-context-manager"`, `"0.4.0"`). 이름에 스코프(`@소유자/`)가 없는 공개 패키지이며 `publishConfig.access`는 `public`이다(`package.json`의 `publishConfig`<!--s:d4c5799066fd-->).
+- 패키지 이름과 버전은 `package.json`의 `name`<!--s:516f9f1e29ba-->·`version`<!--s:99f980892d5d-->에 있다(`"agent-context-manager"`, `"0.5.0"`). 이름에 스코프(`@소유자/`)가 없는 공개 패키지이며 `publishConfig.access`는 `public`이다(`package.json`의 `publishConfig`<!--s:d4c5799066fd-->).
 - 실제 게시는 GitHub Actions가 수행한다. `release`가 게시되면 `.github/workflows/publish.yml`이 검증을 돌린 뒤 `npm publish --provenance --access public`을 실행한다(`.github/workflows/publish.yml`의 `Publish with provenance` 단계). 자세한 배포 원리는 [15번](#15-github-actions에서-npm으로-자동-배포되는-원리)에서 다룬다.
 - 같은 버전 중복 게시를 막기 위해, 워크플로는 게시 전에 Registry에 이미 그 버전이 있는지 확인하고 있으면 건너뛴다(`.github/workflows/publish.yml`의 레지스트리 확인·게시 단계).
 

@@ -30,7 +30,7 @@ flowchart LR
 ## 읽는 파일 보기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 709e3960ad50b9952e355e7ceb1972bea697641ac73e59f4552dd12facdfcfde -->
+<!-- agctx-doc-sources-sha256: 5730cd71f4dd514c49c2f245edbaf19b51303e406870be00620237591df20671 -->
 
 Antigravity 규칙 파일은 맨 앞 frontmatter(`---` 두 줄 사이의 설정)의 `trigger` 값으로 언제 적용할지 정한다. 실측에서 `trigger: always_on` 규칙은 세션 시작에 받았고 `trigger: glob` 규칙은 받지 않았다([외부 근거](../references.md#에이전트-지침-로드와-전달-확인-근거)). 아래는 `team-backend` 프로필을 적용한 모노레포에 `services/payments/AGENTS.md`와 `trigger: glob` 규칙을 더하고, 결제 서비스 폴더에서 에이전트를 시작한다고 보고 실행한 결과다. 긴 줄은 줄였고 전체 출력은 [CLI Reference](../reference/cli.md#explain)에 있다.
 

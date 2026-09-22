@@ -3,9 +3,10 @@ import { saveLocale } from '../shared/home.ts';
 import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
-import { helpTui } from './commands.ts';
+import { helpTui, runFromTui } from './commands.ts';
 import { cloneProfileTui, createProfileTui, linkProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
+import { skillNotice } from '../skills/install.ts';
 
 /**
  * The main menu, in display order. Labels and hints are message keys; a command's `tui` key in the registry
@@ -19,6 +20,8 @@ export const MAIN_MENU_ENTRIES: readonly { value: string; label: string; hint?: 
   { value: 'clone', label: 'main.clone.label', hint: 'main.clone.hint' },
   { value: 'link', label: 'main.link.label', hint: 'main.link.hint' },
   { value: 'setup', label: 'main.setup.label', hint: 'main.setup.hint' },
+  { value: 'install', label: 'main.install.label', hint: 'main.install.hint' },
+  { value: 'uninstall', label: 'main.uninstall.label', hint: 'main.uninstall.hint' },
   { value: 'lang', label: 'main.lang.label', hint: 'main.lang.hint' },
   { value: 'help', label: 'main.help.label', hint: 'main.help.hint' },
   { value: 'exit', label: 'main.exit.label' }
@@ -33,12 +36,16 @@ export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
   clone: () => runTuiStep(() => cloneProfileTui()),
   link: () => runTuiStep(() => linkProfileTui()),
   setup: () => runTuiStep(() => setupProfileTui()),
+  install: () => runTuiStep(async () => { await runFromTui('install', [], {}); }),
+  uninstall: () => runTuiStep(async () => { await runFromTui('uninstall', [], {}); }),
   lang: () => changeLocaleTui(),
   help: () => helpTui()
 };
 
 export async function mainTui(): Promise<void> {
   intro(_('main.intro'));
+  const notice = skillNotice();
+  if (notice) note(notice, _('main.install.label'));
   while (true) {
     const action = await select({
       message: _('main.message'),

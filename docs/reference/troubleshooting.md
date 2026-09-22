@@ -15,7 +15,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 ## 그 밖의 오류
 
 <!-- agctx-doc-sources: src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 923b716c24c175c9d6241998b010131940e7b7ace168bb7257e57be9abf3be09 -->
+<!-- agctx-doc-sources-sha256: c30c2ffbe43dbe8bf6badc55c9262671acc8505488a7a4f3d24847b44594753a -->
 
 - **TUI에서 적용·동기화·PR 열기 등을 골랐는데 `Nothing was changed.`만 나옴**: 파일을 쓰거나 원격으로 보내거나 에이전트를 실행하는 확인 질문은 No가 기본으로 선택되어 있다. `←`로 **Yes**를 고른 뒤 `Enter`를 누른다([TUI로 쓰기](../guides/tui.md#조작-방법)).
 - **`command not found: agctx`**: 전역 bin 경로가 PATH에 없을 때다. `npm prefix -g`로 위치를 확인해 PATH에 추가한다.
@@ -54,4 +54,7 @@ agctx의 오류는 `Error:` 줄(무엇이 잘못됐는지)과 `Next:` 줄(바로
 - **`verify`가 `no-evidence`만 보여 줌**: 그 폴더에서 에이전트를 시작한 세션 기록이 없거나, 에이전트가 지침을 읽은 뒤에 지침 파일이 바뀌어 그 기록을 증거로 쓸 수 없다. Antigravity는 기록을 읽지 못해 항상 `no-evidence`다. 에이전트를 그 폴더에서 다시 시작하거나 `agctx verify --probe`를 실행한다.
 - **`verify --probe`가 69로 끝남**: 에이전트 CLI가 PATH에 없거나 로그인하지 않았다. 터미널에서 그 CLI를 한 번 실행해 로그인한 뒤 다시 실행한다.
 - **하위 폴더에서 시작한 Claude Code가 루트 규칙을 따르지 않음**: 하위 폴더에서 시작하면 루트 `CLAUDE.md`가 `@AGENTS.md`로 가져오는 루트 `AGENTS.md`는 시작 폴더 밖의 파일이 된다. Claude Code는 이런 가져오기를 사용자가 승인해야 읽는다. 그 프로젝트를 대화형으로 시작해 승인 창에서 허용하거나, 저장소 루트에서 시작한다.
+- **`No agent was found on this machine`**(종료 코드 64): `agctx install`이 Claude Code·Codex·Antigravity의 설정 폴더를 찾지 못했다. 오류에 확인한 폴더가 나온다. 에이전트를 설치하고 한 번 실행한 뒤 다시 하거나, `--agent claude`처럼 에이전트를 골라 폴더가 없어도 설치한다.
+- **`Some skill folders were not written by agctx install or were changed since`**(종료 코드 64): `blocked` 줄의 스킬 폴더를 agctx가 두지 않았거나(전에 `npx skills add`로 설치한 경우 등) 그 뒤로 고쳤다. 아무것도 쓰지 않았다. 폴더를 확인하고 바꿔도 되면 `agctx install --force`로 바꾼다.
+- **`The agctx skills in … are from agctx …`**: 설치된 스킬이 지금 CLI와 버전이 다르다. CLI를 업데이트한 뒤 스킬을 다시 설치하지 않은 경우다. `agctx install`을 실행하면 사라진다.
 - **`Git is not installed`**(종료 코드 69): Git 프로필 명령과 `check --refresh`에는 `git`이 필요하다. 로컬 프로필만 쓰면 `git` 없이 동작한다.

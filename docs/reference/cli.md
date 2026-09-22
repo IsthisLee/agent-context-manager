@@ -6,12 +6,14 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 47bf48154b6561395be3637061c4ac4d62720779f4c62e501ecff76607a1645f -->
+<!-- agctx-doc-sources-sha256: 87d6f37a77aa3451d4c5f1e1e2c9f413a92d362598bbded8af857c48edd13950 -->
 
 ```bash
 npm install --global agent-context-manager
-agctx help
+agctx install
 ```
+
+`agctx install`은 패키지에 든 에이전트용 스킬을 설치된 에이전트의 스킬 폴더에 복사한다([`install`](#install)). 명령 목록은 `agctx help`로 본다.
 
 저장소를 직접 개발할 때는 `pnpm install` 후 `node src/agctx.ts help`로 설치 없이 같은 CLI를 실행할 수 있다.
 
@@ -20,7 +22,7 @@ agctx help
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: 58e0b526ee0527e024b9115abfc52d14c3bf3ce370524cd4fecd1d2b8a925632 -->
+<!-- agctx-doc-sources-sha256: fad027079ae6b26549abf70c31985a3ef1b116df7117fde6516ccd06e3441edd -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -117,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 1e0cd21790de65a76f36f970ef50865ce6aac894e683ee3d6e423f40435e2bf5 -->
+<!-- agctx-doc-sources-sha256: bd64cb210d4d67235aa22905463b3c55c35727e6316c4ff0a2fc4f29246cebf2 -->
 
 ```bash
 agctx
@@ -125,7 +127,7 @@ agctx
 
 인자 없이 터미널에서 실행하면 메인 TUI(명령 대신 메뉴에서 골라 진행하는 터미널 화면)가 열린다.
 
-- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 폴더를 프로필로 연결, 프로필 지침 설정, 언어 변경, 도움말 중에서 고른다.
+- **첫 화면:** 프로필 관리, 프로젝트 점검, 여러 저장소, 새 프로필 생성, Git에서 프로필 가져오기, 폴더를 프로필로 연결, 프로필 지침 설정, 에이전트 스킬 설치·제거, 언어 변경, 도움말 중에서 고른다. 설치된 스킬이 CLI와 버전이 다르면 첫 화면 위에 그 사실을 알린다.
 - **프로젝트 점검:** 경로를 고른 뒤 `check`·`explain`·`verify`를 실행한다. 원격 확인(`--refresh`), 에이전트(`--agent`), probe(`--probe`)는 질문으로 고른다.
 - **여러 저장소:** `repos list`·`status`·`sync`·`pr`을 실행한다. 목록에 프로필이 둘 이상이면 프로필(`--profile`)을 먼저 고르고, PR은 대상 파일·base 브랜치·초안·메시지를 묻는다.
 - **도움말:** 전체 사용법이나 명령 하나의 사용법·종료 코드를 보여 준다.
@@ -142,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 218ab1a1feac09e269590747ad6f19da8b30731a58af75a599954e1540164f50 -->
+<!-- agctx-doc-sources-sha256: a5d2e4b970a9255c60b8a2b03b81d55b5ed216a0b84d4350884d8fcf832c1512 -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 
@@ -170,6 +172,8 @@ agctx --tui
 | [`repos status`](#repos-status) | 목록의 저장소를 모두 검사해 일치·뒤처짐·충돌·숨은 문자를 보여 줍니다. --refresh는 각 원천 저장소의 최신 커밋도 확인합니다. | 없음 | CLI · TUI |
 | [`repos sync`](#repos-sync) | 고정하지 않은 목록의 저장소를 바뀔 내용을 보여 준 뒤 한 번에 동기화합니다. 관리 파일에 커밋하지 않은 변경이 있는 저장소는 건너뜁니다. | 저장소 파일 | CLI · TUI |
 | [`repos pr`](#repos-pr) | 프로필이 바뀐 저장소마다 임시 worktree에서 새 브랜치에 커밋하고 push한 뒤 gh로 PR을 엽니다. --targets는 파일에서 경로나 clone URL을 읽습니다. | Git 원격 | CLI · TUI |
+| [`install`](#install) | 이 패키지의 agctx 스킬을 이 컴퓨터에 있는 에이전트마다 스킬 폴더에 복사합니다. | 에이전트 스킬 폴더 | CLI · TUI |
+| [`uninstall`](#uninstall) | agctx install이 둔 agctx 스킬을 지웁니다. | 에이전트 스킬 폴더 | CLI · TUI |
 | [`config lang`](#config-lang) | 표시·생성 언어를 저장합니다. | 없음 | CLI · TUI |
 <!-- agctx:generated:commands:end -->
 
@@ -1087,6 +1091,64 @@ branch-exists /work/remotes/orders-api.git  branch agctx/team-backend-19c2988 al
 remotes/orders-api.git
 ../billing-api
 git@github.com:acme/payments-api.git
+```
+
+### `install`
+
+이 패키지에 든 agctx 스킬을 이 컴퓨터에 있는 에이전트의 사용자 전역 스킬 폴더에 복사한다. 확인 질문 없이 실행한다. TUI에서는 첫 화면의 **에이전트 스킬 설치**로 실행한다.
+
+<!-- agctx:generated:usage:install:start -->
+```bash
+agctx install [--agent <claude|codex|antigravity|all>] [--force] [--dry-run]
+```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:install:end -->
+
+| 옵션 | 설명 |
+| --- | --- |
+| `--agent <claude\|codex\|antigravity\|all>` | 이 에이전트에만 둔다. 설정 폴더가 없어도 둔다. `antigravity`는 앱·IDE와 CLI 두 곳, `all`은 네 곳 모두 |
+| `--force` | agctx가 두지 않았거나 그 뒤로 바뀐 스킬 폴더도 바꾼다 |
+| `--dry-run` | 계획만 출력하고 아무것도 쓰지 않는다 |
+
+- 옵션이 없으면 설정 폴더가 있는 에이전트에만 둔다. Claude Code `~/.claude/skills/`(`~/.claude`), Codex `~/.agents/skills/`(`CODEX_HOME` 또는 `~/.codex`), Antigravity 앱·IDE `~/.gemini/config/skills/`(`~/.gemini/config`), Antigravity CLI `~/.gemini/antigravity-cli/skills/`(`~/.gemini/antigravity-cli`)다. 하나도 찾지 못하면 확인한 폴더를 알리며 64로 멈춘다.
+- 스킬 폴더마다 한 줄을 출력한다. `create`는 새로 두고, `update`는 agctx가 둔 폴더를 새 버전으로 바꾸고, `unchanged`는 그대로 두고, `skipped`는 찾지 못한 에이전트다.
+- `blocked`는 설치 기록([`.agctx-install.json`](file-formats.md#agctx-installjson))이 없거나 파일이 기록과 다른 폴더, 또는 심볼릭 링크다. 하나라도 있으면 아무것도 쓰지 않고 64로 멈추며 `--force`를 안내한다.
+- 이 명령과 `uninstall`을 뺀 모든 명령은, 설치 기록의 버전이 지금 CLI와 다르면 `agctx install`을 다시 실행하라고 stderr에 한 줄로 알린다. `--json`이면 `warnings`에 담는다.
+- `--json`의 `data`는 `items`(`target`·`skill`·`dir`·`state`·`reason`), `skipped`(`target`·`dir`·`marker`), `written`이다.
+
+```bash
+$ agctx install
+create     ~/.claude/skills/agctx
+create     ~/.claude/skills/agctx-author
+create     ~/.agents/skills/agctx
+create     ~/.agents/skills/agctx-author
+skipped    ~/.gemini/config/skills  not found: ~/.gemini/config
+skipped    ~/.gemini/antigravity-cli/skills  not found: ~/.gemini/antigravity-cli
+Installed the agctx skills. Start a new agent session to load them.
+```
+
+### `uninstall`
+
+`agctx install`이 둔 agctx 스킬을 지운다. 확인 질문 없이 실행한다. TUI에서는 첫 화면의 **에이전트 스킬 제거**로 실행한다.
+
+<!-- agctx:generated:usage:uninstall:start -->
+```bash
+agctx uninstall [--agent <claude|codex|antigravity|all>] [--dry-run]
+```
+
+종료 코드: `0` 성공 · `64` 사용법 오류 · `70` 기타 오류
+<!-- agctx:generated:usage:uninstall:end -->
+
+- 옵션이 없으면 네 곳을 모두 본다. `--agent`는 `install`과 같다.
+- 설치 기록과 같은 폴더는 `remove`로 지우고, 기록이 없거나 고친 폴더는 `kept`로 알리고 남긴다. 지울 것이 없으면 그렇다고 알린다.
+
+```bash
+$ agctx uninstall
+kept       ~/.claude/skills/agctx  changed since agctx install wrote it: SKILL.md
+remove     ~/.claude/skills/agctx-author
+remove     ~/.agents/skills/agctx
+remove     ~/.agents/skills/agctx-author
 ```
 
 ### `config lang`

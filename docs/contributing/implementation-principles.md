@@ -16,7 +16,7 @@
 - 명령을 실행하는 주체가 **사용자**인지, 처리하는 주체가 **agctx 내부 코드**인지 구분해서 적는다.
 - 사용 흐름·명령·아키텍처의 정본은 [문서 안내](../README.md#사용-흐름), [CLI Reference](../reference/cli.md), [현재 아키텍처](architecture.md), [제품 방향](product-direction.md)이다. 이 문서는 그 계약을 다시 정의하지 않고, 원리 설명에 필요한 만큼만 인용한다.
 
-배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm tarball에 담기는 것은 `package.json`의 `files`<!--s:49dd9ad14ca1-->에 적힌 `dist/`, `templates/`, `README.md`, `LICENSE`와 npm이 메타데이터로 항상 넣는 `package.json`이다(`package.json`의 `files`<!--s:49dd9ad14ca1-->). `dist/`는 `src/`의 TypeScript를 게시 직전에 컴파일한 JavaScript다([4번](#4-shebang과-nodejs-실행-원리) 참고). 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 파일이 아니라 설치 시 별도로 내려받아 구성된다. `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
+배포되는 것과 저장소에만 있는 것의 구분은 이 문서 전반의 전제다. npm tarball에 담기는 것은 `package.json`의 `files`<!--s:f11428713cb5-->에 적힌 `dist/`, `templates/`, `skills/`, `README.md`, `LICENSE`와 npm이 메타데이터로 항상 넣는 `package.json`이다(`package.json`의 `files`<!--s:f11428713cb5-->). `dist/`는 `src/`의 TypeScript를 게시 직전에 컴파일한 JavaScript다([4번](#4-shebang과-nodejs-실행-원리) 참고). 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 파일이 아니라 설치 시 별도로 내려받아 구성된다. `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 저장소에만 있고 npm 사용자에게는 설치되지 않는다.
 
 ## 한눈에 보는 전체 그림
 
@@ -42,7 +42,7 @@ npm Registry는 패키지 이름과 버전을 키로 하는 공개 저장소다.
 
 ### 실행 또는 데이터 흐름
 
-1. 게시자가 패키지를 tarball(`.tgz`)로 묶는다. 무엇이 들어갈지는 `package.json`의 `files`<!--s:49dd9ad14ca1-->와 `.gitignore`/`.npmignore` 규칙이 결정한다.
+1. 게시자가 패키지를 tarball(`.tgz`)로 묶는다. 무엇이 들어갈지는 `package.json`의 `files`<!--s:f11428713cb5-->와 `.gitignore`/`.npmignore` 규칙이 결정한다.
 2. `npm publish`가 tarball을 Registry에 업로드하고, `name`·`version`·`bin` 같은 메타데이터를 함께 등록한다.
 3. 사용자가 `npm install`을 실행하면 Registry가 해당 tarball을 돌려주고, npm이 이를 풀어 설치한다.
 
@@ -184,7 +184,7 @@ flowchart TD
 
 - 인자가 없고 표준 입력이 터미널(TTY)이며 `--json`이 아니면 대화형 메인 TUI를 연다(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->). 이때 화면 구성은 의존성 `@clack/prompts`가 담당한다(`package.json`의 `dependencies`<!--s:e9bc4b157b5b-->, `src/tui/profile.ts`).
 - 명령 분기: 명령 목록은 등록부 `COMMANDS`(`src/commands/registry.ts`) 한 곳에 있다. `main()`은 입력과 단어가 가장 많이 맞는 명령을 찾고, 없으면 비슷한 명령을 제안하며 종료 코드 64로 끝낸다(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->).
-- 오류가 나면 `run()`이 오류를 받아 `Error:`·`Next:` 두 줄을 stderr에 출력하고, 오류가 지닌 종료 코드(사용법 오류 64, 외부 도구 69, 그 밖 70 등)를 `process.exitCode`에 넣는다(`src/commands/cli.ts`의 `run`<!--s:2fd759cbfca9-->). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
+- 오류가 나면 `run()`이 오류를 받아 `Error:`·`Next:` 두 줄을 stderr에 출력하고(설치된 에이전트 스킬이 CLI와 버전이 다르면 그 알림 한 줄도 덧붙인다), 오류가 지닌 종료 코드(사용법 오류 64, 외부 도구 69, 그 밖 70 등)를 `process.exitCode`에 넣는다(`src/commands/cli.ts`의 `run`<!--s:cdb70c19ab89-->). 종료 코드 이야기는 [14번](#14-dry-run-검증-종료-코드-로그의-필요성)에서 이어진다.
 
 ### 사용자가 알아야 할 주의점
 
@@ -265,7 +265,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ### 이 패키지에서의 적용 예시
 
 - 입력은 DOM 이벤트가 아니라 명령행 인자와 표준 입력이다: `process.argv.slice(2)`(`src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->), 비대화형에서는 `fs.readFileSync(0, 'utf8')`로 stdin을 읽는다(`src/tui/profile.ts`의 `createProfileTui`<!--s:519a5984faa0-->, `277`).
-- 출력은 화면 DOM이 아니라 표준 출력/오류다: 결과 문장은 `say()`가 stdout에(`--json`이면 stderr에) 쓰고, 오류는 `run()`이 stderr에 쓴다(`src/commands/output.ts`의 `say`<!--s:b99734f31558-->, `src/commands/cli.ts`의 `run`<!--s:2fd759cbfca9-->). `--json`이면 stdout에는 결과 문서 하나만 남는다.
+- 출력은 화면 DOM이 아니라 표준 출력/오류다: 결과 문장은 `say()`가 stdout에(`--json`이면 stderr에) 쓰고, 오류는 `run()`이 stderr에 쓴다(`src/commands/output.ts`의 `say`<!--s:b99734f31558-->, `src/commands/cli.ts`의 `run`<!--s:cdb70c19ab89-->). `--json`이면 stdout에는 결과 문서 하나만 남는다.
 - “화면”이 필요한 대화형 흐름은 브라우저 UI가 아니라 터미널 UI(`@clack/prompts`)로 그린다(`src/tui/profile.ts`, `40-60`).
 
 ### 사용자가 알아야 할 주의점
@@ -364,7 +364,7 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 ## 12. package.json의 files 설정과 실제 배포 파일 범위
 
 <!-- agctx-doc-sources: evals/package-contents.test.ts -->
-<!-- agctx-doc-sources-sha256: d99806a8b1817a9391e1b6a5b36f0bb8ae7408b24173ad24e0ee002ca0dd7aa2 -->
+<!-- agctx-doc-sources-sha256: 3936a2bf1f401daa255d9bfb1abf57d3767fbdb55b260773fef6c5c0c9bcbd91 -->
 
 ### 핵심 원리
 
@@ -378,13 +378,13 @@ Node 표준 모듈은 역할이 나뉜다. `fs`는 파일 입출력, `path`는 O
 
 ### 이 패키지에서의 적용 예시
 
-- tarball에 담기는 파일은 `files`에 적힌 `dist`, `templates`, `README.md`, `LICENSE`이며(`package.json`의 `files`<!--s:49dd9ad14ca1-->) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. `dist`는 커밋하지 않는 폴더라서 `npm pack`·`npm publish`가 `prepack`으로 먼저 만든다(`package.json`의 `prepack`<!--s:7a90f1ded2a4--> 스크립트). 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json`의 `dependencies`<!--s:e9bc4b157b5b-->).
+- tarball에 담기는 파일은 `files`에 적힌 `dist`, `templates`, `skills`, `README.md`, `LICENSE`이며(`package.json`의 `files`<!--s:f11428713cb5-->) 여기에 npm이 `package.json`을 메타데이터로 항상 함께 넣는다. `dist`는 커밋하지 않는 폴더라서 `npm pack`·`npm publish`가 `prepack`으로 먼저 만든다(`package.json`의 `prepack`<!--s:7a90f1ded2a4--> 스크립트). 런타임 의존성(`@clack/prompts`, `diff`)은 tarball 안의 파일이 아니라 설치 시 별도로 내려받아 구성된다(`package.json`의 `dependencies`<!--s:e9bc4b157b5b-->).
 
   ```json
-  "files": ["dist", "templates", "README.md", "LICENSE"]
+  "files": ["dist", "templates", "skills", "README.md", "LICENSE"]
   ```
 - 따라서 TypeScript 소스 `src/`, `docs/`(이 문서 포함), `evals/`, `tools/`, GitHub 워크플로는 **배포되지 않고 저장소에만 있다.** [현재 아키텍처](architecture.md#저장소-파일-구조)도 같은 사실을 명시한다.
-- 이 경계는 테스트로 강제된다. `evals/package-contents.test.ts`는 tarball에 `README.md`·`dist/agctx.js`·`dist/profile/`·`templates/`가 있고 `src/`·`docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.ts`).
+- 이 경계는 테스트로 강제된다. `evals/package-contents.test.ts`는 tarball에 `README.md`·`dist/agctx.js`·`dist/profile/`·`templates/`·`skills/`가 있고 `src/`·`docs/`·`evals/`가 없음을 단언한다(`evals/package-contents.test.ts`).
 
 ### 사용자가 알아야 할 주의점
 
@@ -454,7 +454,7 @@ flowchart TD
 
 - **dry-run**: `profile apply`/`profile sync`에 `--dry-run`을 주면 계획만 출력하고 파일을 바꾸지 않는다(`src/commands/handlers.ts`의 `applyOrSync`<!--s:7f638fb19dcc-->). 관리 영역 충돌이 있으면 diff까지 출력한 뒤 종료 코드 2로 끝나 자동화가 성공으로 오인하지 않게 한다. TUI에서도 계획을 먼저 보여 준 뒤 적용할지 묻는다(`MENU_ACTIONS`, `src/tui/profile.ts`의 `profile.apply` 항목).
 - **로그**: 각 변경의 상태(create/update/unchanged/conflict)를 한 줄씩 출력한다(`printPlan`, `src/profile/apply.ts`의 `printPlan`<!--s:2465899d134d-->).
-- **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts`의 `run`<!--s:2fd759cbfca9-->), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
+- **종료 코드**: 결과 상태는 뒤처짐 1·충돌 2·숨은 문자 3으로, 호출 실패는 사용법 오류 64·외부 도구 69·그 밖 70으로 나눈다(`EXIT`, `src/shared/errors.ts`의 `EXIT`<!--s:88a0b0937cc7-->). `run()`이 처리기 결과나 오류의 코드를 `process.exitCode`에 넣고(`src/commands/cli.ts`의 `run`<!--s:cdb70c19ab89-->), 성공하면 0이다. 번호의 뜻은 [종료 코드](../reference/exit-codes.md)에 있다.
 - **확인**: 파일을 바꾸는 명령은 터미널에서는 묻고, 터미널이 아니면 `--yes`가 있어야 진행한다. 자동화가 계획을 건너뛰고 바로 파일을 바꾸지 않게 하려는 장치다(`confirmChange`, `src/commands/options.ts`의 `confirmChange`<!--s:829d4d362537-->).
 - **검증 명령**: 저장소 자체 검증은 `pnpm run check`다. 이는 형식 검사 → 문서 계약 검사 → 테스트를 순서대로 실행한다(`package.json`의 `check`<!--s:b99aeedc27e3--> 스크립트). 형식 검사는 `tsc -p tsconfig.json`이 `src`·`evals`·`tools`의 TypeScript를 strict 설정으로 검사하고 파일은 만들지 않으며(`package.json`의 `typecheck`<!--s:6d6959222334--> 스크립트), 문서 검사는 링크·앵커·ADR·discussion·README 계약을 검사하고(`tools/check-docs.ts`), 테스트는 `evals/**/*.test.ts`를 `node --test`로 돌린다(`package.json`의 `test`<!--s:e1f6fc9efc0d--> 스크립트).
 

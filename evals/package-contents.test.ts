@@ -25,6 +25,8 @@ test('npm package contains only runtime assets and the package README', () => {
   assert(paths.some(file => file.startsWith('dist/profile/')));
   assert(!paths.some(file => file.startsWith('src/')));
   assert(paths.some(file => file.startsWith('templates/')));
+  assert(paths.includes('skills/agctx/SKILL.md'), 'the agent skills ship with the CLI so agctx install can copy them');
+  assert(paths.includes('skills/agctx-author/agents/openai.yaml'));
   assert(!paths.some(file => file.startsWith('docs/')));
   assert(!paths.some(file => file.startsWith('evals/')));
 

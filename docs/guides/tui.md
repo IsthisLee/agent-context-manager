@@ -21,7 +21,7 @@
 ## 시작하기
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: 1e0cd21790de65a76f36f970ef50865ce6aac894e683ee3d6e423f40435e2bf5 -->
+<!-- agctx-doc-sources-sha256: bd64cb210d4d67235aa22905463b3c55c35727e6316c4ff0a2fc4f29246cebf2 -->
 
 1. agctx를 설치한다. 설치 명령은 [빠른 시작](../getting-started/quick-start.md#설치)에 있다.
 2. 터미널에서 인자 없이 `agctx`를 실행한다. 첫 화면 메뉴가 열린다.
@@ -114,7 +114,7 @@ Created profile: team-backend (team)
 ## 지침 고르기
 
 <!-- agctx-doc-sources: src/i18n/messages-ko.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: f65e393ee7372449a00c74eb4532c8f3083801edd5f63f8cb300bd493fe45a20 -->
+<!-- agctx-doc-sources-sha256: 08aef79c36505c1c800ed993cdccafce02aa01cc00c775dcc7e3e6c94b474210 -->
 
 첫 화면에서 **Configure profile guidance**를 고르고 프로필을 고른다. 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 10개 항목이 하나씩 나오고, 항목마다 **On**과 **Off** 둘 중 하나를 고른다. 지금 설정된 값이 미리 선택되어 있으므로, 바꾸지 않을 항목은 `Enter`만 누르면 된다. 두 값의 뜻은 [지침 항목 켜고 끄기](../concepts/profiles.md#지침-항목-켜고-끄기)에 있다.
 
@@ -302,7 +302,7 @@ Next: agctx repos sync --profile team-backend
 ## 메뉴와 명령 대응표
 
 <!-- agctx-doc-sources: src/commands/registry.ts -->
-<!-- agctx-doc-sources-sha256: 581ae751fceccf748d9dd3b2dc72e77588c325b71233d4d60b6b1cfcab12af0e -->
+<!-- agctx-doc-sources-sha256: 1ef8d7334b1ed00c36d86c921e01708357c5486da31a23c2ccfc77a0a185f9ba -->
 
 TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으로 바뀌어 같은 처리기로 실행된다. 가이드에 나오는 CLI 명령은 아래 메뉴로 바꿔 실행할 수 있다. 표시 언어를 한국어로 두면 메뉴 이름이 둘째 열처럼 나온다.
 
@@ -312,6 +312,8 @@ TUI 메뉴는 CLI 명령과 같은 일을 한다. 메뉴의 답은 CLI 옵션으
 | 첫 화면 > **Clone a profile** | 첫 화면 > **프로필 가져오기** | `agctx profile clone`, 브랜치를 입력하면 `--branch` |
 | 첫 화면 > **Link a folder as a profile** | 첫 화면 > **폴더를 프로필로 연결** | `agctx profile link <path>`, 이름·용도·규칙 파일을 고르면 `--name`·`--scope`·`--instructions` |
 | 첫 화면 > **Configure profile guidance** | 첫 화면 > **프로필 지침 설정** | `agctx profile setup` |
+| 첫 화면 > **Install agent skills** | 첫 화면 > **에이전트 스킬 설치** | `agctx install` |
+| 첫 화면 > **Remove agent skills** | 첫 화면 > **에이전트 스킬 제거** | `agctx uninstall` |
 | 첫 화면 > **언어 / Language** | 첫 화면 > **언어 / Language** | `agctx config lang` |
 | 첫 화면 > **Help** | 첫 화면 > **도움말** | `agctx help [<command>]` |
 | **Manage profiles** > 프로필 > **View details** | **프로필 관리** > 프로필 > **상세 보기** | `agctx profile view` |

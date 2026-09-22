@@ -13,7 +13,7 @@ npm·Node.js·CLI의 일반 원리는 [구현 원리](implementation-principles.
 
 ## 모듈 지도
 
-`src/`의 폴더는 역할별로 나뉜다. `commands/`는 명령 등록부·옵션 검사·처리기·출력·도움말, `profile/`은 프로필 명령과 Git 프로필, `project/`는 적용 엔진과 APM·모노레포 판정, `check.ts`는 저장소 검사, `explain.ts`는 에이전트별 지침 로드 판정, `verify/`는 세션 기록 판독과 probe, `repos/`는 여러 저장소 다루기, `i18n/`은 로케일과 메시지, `tui/`는 대화형 화면, `shared/`는 프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입이다.
+`src/`의 폴더는 역할별로 나뉜다. `commands/`는 명령 등록부·옵션 검사·처리기·출력·도움말, `profile/`은 프로필 명령과 Git 프로필, `project/`는 적용 엔진과 APM·모노레포 판정, `check.ts`는 저장소 검사, `explain.ts`는 에이전트별 지침 로드 판정, `verify/`는 세션 기록 판독과 probe, `repos/`는 여러 저장소 다루기, `skills/`는 에이전트 스킬 설치와 버전 알림, `i18n/`은 로케일과 메시지, `tui/`는 대화형 화면, `shared/`는 프로필 홈·안전한 쓰기·git 실행·숨은 문자 검사·종료 코드·공용 타입이다.
 
 ```mermaid
 flowchart LR
@@ -33,6 +33,7 @@ flowchart LR
   handlers --> repos["repos/<br/>목록·상태·동기화·PR"]
   handlers --> explain["explain.ts<br/>에이전트별 로드 판정"]
   handlers --> verify["verify/<br/>세션 기록 판독·probe"]
+  handlers --> skillsmod["skills/<br/>스킬 설치·버전 알림"]
   verify --> explain
   explain --> apply
   verify --> gitrun
@@ -67,7 +68,7 @@ flowchart LR
 설치본과 저장소가 같은 경로로 명령을 찾도록, 진입점은 실행만 맡고 명령 해석은 한 곳에 모은다.
 
 - 진입점: `src/agctx.ts`. 설치본에서는 컴파일한 `dist/agctx.js`가 같은 일을 한다.
-- 전역 옵션 분리와 명령 찾기: `src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->·`run`<!--s:2fd759cbfca9-->, `src/commands/args.ts`의 `stripFlag`<!--s:3a20e16f337b-->
+- 전역 옵션 분리와 명령 찾기: `src/commands/cli.ts`의 `main`<!--s:31d0505f3375-->·`run`<!--s:cdb70c19ab89-->, `src/commands/args.ts`의 `stripFlag`<!--s:3a20e16f337b-->
 - 명령 조회와 오타 제안: `src/commands/registry.ts`의 `findCommand`<!--s:0188bf109bd7-->·`suggestCommands`<!--s:a5d7e05ff2dd-->·`usageLine`<!--s:1e6aea3c47c2-->, `src/commands/cli.ts`의 `unknownCommand`<!--s:d1b142bc79c2-->
 
 ## 2. 로케일 해석과 저장
@@ -157,7 +158,7 @@ flowchart LR
 
 TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다. 취소는 모든 화면에서 같은 함수로 처리한다.
 
-- 메인 화면: `src/tui/main.ts`의 `mainTui`<!--s:696e75813252-->·`MAIN_MENU_ENTRIES`<!--s:cab1a2d0cefd-->·`MAIN_ACTIONS`<!--s:69274f891e74-->
+- 메인 화면: `src/tui/main.ts`의 `mainTui`<!--s:94591456baef-->·`MAIN_MENU_ENTRIES`<!--s:7c0e1b1e5cb4-->·`MAIN_ACTIONS`<!--s:2cb9577fd614-->
 - 폴더 연결 화면: `src/tui/profile.ts`의 `linkProfileTui`<!--s:c10e8949cd43-->
 - 프로필 화면: `src/tui/profile.ts`의 `runTuiStep`<!--s:f2d08b8be72f-->·`PROFILE_MENU_COMMANDS`<!--s:8e00a9f03a32-->·`MENU_ACTIONS`<!--s:4ce0b2031e4c-->·`pinPrompt`<!--s:8cb0fc3f19da-->·`withConflictRecovery`<!--s:c73f4a905108-->
 - 저장소 화면: `src/tui/repository.ts`의 `REPOS_MENU_COMMANDS`<!--s:f58f2199bf19-->
@@ -170,7 +171,7 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 
 명령의 정본은 등록부 하나다. 등록부에 적은 표면과 항목에 따라 CLI·TUI·에이전트가 같은 명령을 같은 계약으로 쓴다.
 
-- 등록부와 항목 형식: `src/commands/registry.ts`의 `COMMANDS`<!--s:e2655cff557b-->·`CommandSpec`<!--s:7270a46bc11c-->·`agentPolicy`<!--s:2a17e53b8c57-->
+- 등록부와 항목 형식: `src/commands/registry.ts`의 `COMMANDS`<!--s:e473c5bfd4c0-->·`CommandSpec`<!--s:7270a46bc11c-->·`agentPolicy`<!--s:2a17e53b8c57-->
 - 옵션·인자 검사: `src/commands/options.ts`의 `checkArguments`<!--s:c85976406f8a-->
 - 이유: [ADR 0016](../adr/0016-command-contract.md), [ADR 0025](../adr/0025-every-command-in-cli-and-tui.md), 에이전트 표면은 [ADR 0029](../adr/0029-agent-surface-contract.md)
 - 지키는 평가: `evals/interface-parity.test.ts`, `evals/tui-commands.test.ts`, `evals/messages.test.ts`, `evals/agent-surface.test.ts`
@@ -291,6 +292,16 @@ TUI는 CLI와 다른 경로가 아니라 같은 명령을 부르는 화면이다
 - 폴더 탐색: `src/shared/scan.ts`의 `filesBelow`<!--s:896ffb39ffb1-->
 - 이유: [ADR 0020](../adr/0020-apm-coexistence-and-monorepo-links.md)
 - 지키는 평가: `evals/apm-coexistence.test.ts`, `evals/monorepo-links.test.ts`
+
+## 24. 에이전트 스킬 설치
+
+패키지에 든 스킬을 에이전트의 사용자 전역 스킬 폴더에 복사하고, 자기가 둔 폴더만 바꾸거나 지운다.
+
+- 대상과 판정: `src/skills/install.ts`의 `skillTargets`<!--s:ff9f5eefa2cc-->·`planInstall`<!--s:bf01a108b299-->·`planUninstall`<!--s:1e60481a2e98-->
+- 쓰기와 지우기: `src/skills/install.ts`의 `applyInstall`<!--s:85c182654efd-->·`applyUninstall`<!--s:68352b1b01f0-->
+- 버전 알림: `src/skills/install.ts`의 `skillNotice`<!--s:96e35bb59bbd-->, 명령마다 붙이는 곳은 `src/commands/cli.ts`의 `run`<!--s:cdb70c19ab89-->, TUI 첫 화면은 `src/tui/main.ts`의 `mainTui`<!--s:94591456baef-->
+- 이유: [ADR 0038](../adr/0038-install-agent-skills-from-cli-package.md)
+- 지키는 평가: `evals/skill-install.test.ts`, 설치한 패키지로 실행하는 확인은 `tools/package-smoke.ts`
 
 ## 관련 문서
 

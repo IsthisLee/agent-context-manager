@@ -19,6 +19,7 @@ import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
 import { PROFILE_METADATA_FILE, profileHome, saveLocale } from '../shared/home.ts';
 import { shellWord } from '../shared/shell.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
+import { applyInstall, applyUninstall, planInstall, planUninstall, type SkillPlan } from '../skills/install.ts';
 import { canPrompt, confirmChange, type ParsedArguments } from './options.ts';
 import { isJsonMode, say, warn, type CommandOutcome } from './output.ts';
 
@@ -381,6 +382,30 @@ export const HANDLERS: Record<string, Handler> = {
       prepared.cleanup();
     }
   },
+  install: async parsed => {
+    const plan = planInstall({ agent: text(parsed, 'agent'), force: flag(parsed, 'force') });
+    printSkillPlan(plan);
+    const data = skillPlanData(plan);
+    if (plan.blocked) throw usageError('install.blocked', _('error.install.blocked'), _('hint.install.force'));
+    if (flag(parsed, 'dry-run')) {
+      say(_('plan.dry-run.done'));
+      return ok({ ...data, written: false });
+    }
+    applyInstall(plan);
+    say(plan.items.some(item => item.state === 'create' || item.state === 'update') ? _('install.done') : _('install.unchanged'));
+    return ok({ ...data, written: true });
+  },
+  uninstall: async parsed => {
+    const plan = planUninstall({ agent: text(parsed, 'agent') });
+    if (!plan.items.length) say(_('uninstall.none'));
+    printSkillPlan(plan);
+    if (flag(parsed, 'dry-run')) {
+      say(_('plan.dry-run.done'));
+      return ok({ ...skillPlanData(plan), written: false });
+    }
+    applyUninstall(plan);
+    return ok({ ...skillPlanData(plan), written: true });
+  },
   'config.lang': async parsed => {
     const value = requirePositional(parsed, 0, `agctx config lang <${SUPPORTED_LOCALES.join('|')}>`);
     const saved = saveLocale(value);
@@ -400,6 +425,19 @@ function printLinkPlan(plan: LinkPlan): void {
 /** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */
 function linkedFolder(name: string): string | null {
   try { return profileLocation(name)?.link ?? null; } catch { return null; }
+}
+
+/** One line per skill folder, then one per agent left out because it was not found. */
+function printSkillPlan(plan: SkillPlan): void {
+  for (const item of plan.items) say(`${item.state.padEnd(10)} ${item.dir}${item.reason ? `  ${item.reason}` : ''}`);
+  for (const target of plan.skipped) say(`${'skipped'.padEnd(10)} ${target.dir}  ${_('install.skipped', { marker: target.marker })}`);
+}
+
+function skillPlanData(plan: SkillPlan) {
+  return {
+    items: plan.items.map(({ target, skill, dir, state, reason }) => ({ target, skill, dir, state, reason })),
+    skipped: plan.skipped.map(target => ({ target: target.id, dir: target.dir, marker: target.marker }))
+  };
 }
 
 function describeState(state: ReturnType<typeof profileGitState>): string {

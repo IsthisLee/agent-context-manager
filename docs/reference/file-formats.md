@@ -96,6 +96,26 @@
 - `profile remove`는 이 파일이 든 보관함 폴더만 지우고, 가리키는 폴더는 건드리지 않는다.
 - `profile list --json`의 `profiles` 항목에는 연결한 프로필에만 `link`(가리키는 경로)가 붙는다.
 
+## .agctx-install.json
+
+<!-- agctx-doc-sources: src/skills/install.ts -->
+<!-- agctx-doc-sources-sha256: b061df79fc794972b3a42b4bb09d4a328ba7a547a2ea5fd602cfbc2630b58eb4 -->
+
+`agctx install`이 에이전트의 스킬 폴더(예: `~/.claude/skills/agctx/`)마다 두는 설치 기록이다. 이 파일이 있고 폴더의 파일이 기록과 같아야 agctx가 둔 폴더로 보고, 다시 설치할 때 바꾸거나 `agctx uninstall`로 지운다.
+
+```json
+{
+  "schemaVersion": 1,
+  "version": "0.4.0",
+  "files": {
+    "SKILL.md": "be91396dda8f024e20a2a365bb902958d61617dd0e74b3c857f66cff951af230"
+  }
+}
+```
+
+- `version`은 설치한 CLI의 버전이다. 모든 명령이 이 값을 지금 CLI의 버전과 비교하고, 다르면 `agctx install`을 다시 실행하라고 알린다.
+- `files`는 이 기록을 뺀 폴더 안 파일마다 `/`로 나눈 경로와 sha256이다. 파일이 이 값과 다르거나 기록이 없는 폴더는 `--force` 없이는 바꾸거나 지우지 않는다. 판정은 `src/skills/install.ts`의 `planInstall`<!--s:bf01a108b299-->과 `planUninstall`<!--s:1e60481a2e98-->이 한다.
+
 ## repos.json
 
 <!-- agctx-doc-sources: src/repos/registry.ts -->

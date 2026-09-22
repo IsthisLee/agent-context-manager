@@ -23,7 +23,8 @@ const CHANGES: Record<CommandSpec['changes'], string> = {
   none: '없음',
   'profile-store': '프로필 보관함',
   repository: '저장소 파일',
-  remote: 'Git 원격'
+  remote: 'Git 원격',
+  'agent-skills': '에이전트 스킬 폴더'
 };
 
 /** Where a command runs: always the CLI, plus the TUI and the profile management menu when the registry names an entry there. */

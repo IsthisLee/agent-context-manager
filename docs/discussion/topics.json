@@ -206,6 +206,18 @@
       "status": "Implemented"
     },
     {
+      "stage": 17,
+      "file": "skill-install.md",
+      "title": "에이전트 스킬을 agctx 명령으로 설치하기",
+      "titleEn": "installing agent skills with an agctx command",
+      "importance": "High",
+      "prerequisites": [
+        5
+      ],
+      "outcome": "CLI 패키지에 든 스킬을 `agctx install`이 설치된 에이전트의 스킬 폴더에 복사하고, CLI와 버전이 어긋나면 모든 명령이 알림",
+      "status": "Implemented"
+    },
+    {
       "file": "implementation-contracts.md",
       "title": "구현 계약 및 문서 규칙",
       "outcome": "단계별 구현·검증·문서 정합성 규칙",

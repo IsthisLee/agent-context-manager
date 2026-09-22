@@ -15,7 +15,7 @@
 ## 릴리스
 
 <!-- agctx-doc-sources: package.json, .github/workflows, tools/build.ts -->
-<!-- agctx-doc-sources-sha256: 3868f58f63af663570ed165570a671784e4f56b6870370537edba87237f9e870 -->
+<!-- agctx-doc-sources-sha256: 880e27a4d0ad0c13db6dea754d62e88ed04f9869e66c7ad83989ebf8bd2ed5be -->
 
 ### 릴리스 전 점검
 
@@ -73,7 +73,7 @@ Release를 게시하면 workflow가 검증을 다시 실행하고 같은 버전�
 - CodeQL workflow는 `javascript-typescript`와 `actions` 두 언어를 매트릭스로 돌려 security-extended 쿼리로 분석한다. GitHub Actions는 자기 쿼리 팩을 가진 별도 언어이므로 매트릭스에 넣지 않으면 워크플로 파일이 추출만 되고 검사되지 않는다.
 - GitHub의 secret scanning, push protection, code scanning을 저장소 설정에서 활성화한다.
 - `SECURITY.md`의 비공개 신고 절차를 통해 취약점을 접수한다.
-- GitHub Actions는 필요한 최소 권한만 선언한다. `id-token: write`를 쓰는 것은 npm 신뢰된 게시를 하는 배포 workflow 하나다.
+- GitHub Actions는 필요한 최소 권한만 선언한다. 워크플로 최상위 권한은 `contents: read`뿐이고, 쓰기 권한은 그것이 필요한 잡에만 준다. `id-token: write`는 npm 신뢰된 게시를 하는 배포 잡에, `security-events: write`는 CodeQL 분석 잡에만 있다. `evals/repository-operations.test.ts`가 이것을 검사한다.
 - 모든 외부 GitHub Action은 검토한 버전의 불변 commit SHA로 고정하고 버전 주석을 함께 둔다. 모든 checkout 단계에서 `persist-credentials: false`를 사용해 workflow 작업 공간에 GitHub token을 유지하지 않는다.
 
 ## 기여와 변경 관리

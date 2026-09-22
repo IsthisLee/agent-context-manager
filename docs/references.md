@@ -1141,7 +1141,7 @@ agctx 명령의 종료 코드·출력·확인 계약([ADR 0016](adr/0016-command
 
 ## 세션 사이 작업 상태 근거
 
-[논의 문서 상태의 정본](discussion/repository/topics/discussion-status-source.md)과 진행 파일(`PROGRESS.md`)이 기대는 외부 사실이다.
+[논의 문서 상태의 정본](discussion/repository/topics/discussion-status-source.md)과 세션 인수인계(`HANDOFF.md`)가 기대는 외부 사실이다. 2026-09-22까지는 루트 `PROGRESS.md`가 이 근거에 기댔으나, `main` 기준으로 만들어져 브랜치에서 진행 중인 일을 담지 못하고 PR마다 다시 생성돼 동시에 연 PR끼리 부딪혀 없앴다. 오래 남을 지식(알려진 한계, 버린 접근)은 각 논의 문서로 옮겼다.
 
 - **공식 자료(Anthropic 엔지니어링 글):** 오래 일하는 에이전트는 세션마다 이전 기억 없이 시작한다. 그래서 첫 세션이 `init.sh`, 에이전트가 한 일을 기록하는 `claude-progress.txt`, 첫 git 커밋을 만들고, 이후 세션은 git 기록과 진행 파일을 읽고 시작해 커밋과 진행 기록 갱신으로 끝낸다. 남은 기능 목록은 JSON으로 두는데, 모델이 Markdown 파일보다 JSON 파일을 덜 함부로 고치기 때문이다. 진행 파일을 `.txt`로 둔 이유는 글에 없다. [Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) (확인일: 2026-09-19)
 

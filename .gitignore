@@ -21,6 +21,9 @@ Thumbs.db
 *.pem
 *.key
 
+# 세션 인수인계 메모. 이 컴퓨터의 다음 세션을 위한 스냅샷이라 커밋하지 않는다.
+HANDOFF.md
+
 # 로그와 임시 파일
 npm-debug.log*
 yarn-debug.log*

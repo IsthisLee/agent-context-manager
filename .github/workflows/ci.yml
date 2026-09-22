@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          # PROGRESS.md의 최근 기록이 실제 커밋과 맞는지 검사하려면 이력이 필요하다.
+          # 문서 게이트가 해시를 기록한 뒤 바뀐 소스를 이름으로 알리려면 이력이 필요하다.
           fetch-depth: 0
       - name: Setup pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0

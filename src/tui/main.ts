@@ -6,6 +6,7 @@ import { cancelled } from './cancel.ts';
 import { helpTui, runFromTui } from './commands.ts';
 import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
+import { skillNotice } from '../skills/install.ts';
 
 /**
  * The main menu, in display order. Labels and hints are message keys; a command's `tui` key in the registry
@@ -41,6 +42,8 @@ export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
 
 export async function mainTui(): Promise<void> {
   intro(_('main.intro'));
+  const notice = skillNotice();
+  if (notice) note(notice, _('main.install.label'));
   while (true) {
     const action = await select({
       message: _('main.message'),

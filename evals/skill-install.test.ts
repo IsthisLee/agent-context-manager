@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { applyInstall, applyUninstall, INSTALL_RECORD, outdatedSkills, planInstall, planUninstall } from '../src/skills/install.ts';
+import { applyInstall, applyUninstall, INSTALL_RECORD, outdatedSkills, planInstall, planUninstall, skillNotice } from '../src/skills/install.ts';
 import { packageVersion } from '../src/shared/runtime.ts';
 
 /**
@@ -213,4 +213,51 @@ test('agctx uninstall removes the skill folders install wrote and names the ones
   assert.match(result.stdout, /kept\s+.*agctx\b/);
   assert.equal(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx-author')), false);
   assert.ok(fs.existsSync(path.join(dir, '.claude', 'skills', 'agctx', 'SKILL.md')));
+});
+
+function outdated(t: TestContext) {
+  const dir = home(t, ['.claude']);
+  agctx(dir, ['install']);
+  const recordFile = path.join(dir, '.claude', 'skills', 'agctx', INSTALL_RECORD);
+  fs.writeFileSync(recordFile, JSON.stringify({ ...JSON.parse(read(recordFile)), version: '0.0.1' }));
+  return dir;
+}
+
+test('every command says so in one line when the installed skills are from another agctx version', t => {
+  const dir = outdated(t);
+
+  const list = agctx(dir, ['profile', 'list']);
+  const lines = list.stderr.split('\n').filter(line => line.includes('agctx install'));
+  assert.equal(lines.length, 1, list.stderr);
+  assert.ok(lines[0].includes('0.0.1') && lines[0].includes(packageVersion()), lines[0]);
+
+  const unknown = agctx(dir, ['profile', 'frobnicate']);
+  assert.equal(unknown.status, 64);
+  assert.match(unknown.stderr, /agctx install/);
+
+  const json = JSON.parse(agctx(dir, ['profile', 'list', '--json']).stdout);
+  assert.ok(json.warnings.some((warning: string) => warning.includes('agctx install')), JSON.stringify(json.warnings));
+});
+
+test('install and uninstall do not repeat the version notice, and nothing is said without installed skills', t => {
+  const dir = outdated(t);
+  assert.doesNotMatch(agctx(dir, ['install', '--dry-run']).stderr, /agctx install/);
+
+  const fresh = home(t, ['.claude']);
+  assert.doesNotMatch(agctx(fresh, ['profile', 'list']).stderr, /agctx install/);
+});
+
+test('the notice names the outdated folder and the two versions', t => {
+  const dir = home(t, ['.claude']);
+  assert.equal(skillNotice(), null);
+  applyInstall(planInstall({}));
+  const recordFile = path.join(dir, '.claude', 'skills', 'agctx', INSTALL_RECORD);
+  fs.writeFileSync(recordFile, JSON.stringify({ ...JSON.parse(read(recordFile)), version: '0.0.1' }));
+
+  const notice = skillNotice() ?? '';
+
+  assert.ok(notice.includes(path.join(dir, '.claude', 'skills', 'agctx')) && notice.includes('0.0.1'), notice);
+  const otherRecord = path.join(dir, '.claude', 'skills', 'agctx-author', INSTALL_RECORD);
+  fs.writeFileSync(otherRecord, JSON.stringify({ ...JSON.parse(read(otherRecord)), version: '0.0.1' }));
+  assert.match(skillNotice() ?? '', /1 more folder/);
 });

@@ -217,3 +217,14 @@ export function outdatedSkills(): { dir: string; version: string }[] {
   }
   return outdated;
 }
+
+/**
+ * The one line every command prints when the installed skills are from another agctx version, or null when they
+ * match or none is installed. An agent following an older skill may run a command this CLI no longer has.
+ */
+export function skillNotice(): string | null {
+  const [first, ...rest] = outdatedSkills();
+  if (!first) return null;
+  const vars = { dir: first.dir, version: first.version, current: packageVersion(), more: rest.length };
+  return rest.length ? _('install.warn.outdated-many', vars) : _('install.warn.outdated', vars);
+}

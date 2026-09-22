@@ -144,6 +144,8 @@ export default {
     'error.install.blocked': 'agctx install이 두지 않았거나 그 뒤로 바뀐 스킬 폴더가 있어 아무것도 쓰지 않았습니다.',
     'hint.install.force': '위에 나온 폴더를 확인한 뒤 agctx install --force로 바꾸세요.',
     'uninstall.none': '설치된 agctx 스킬이 없습니다.',
+    'install.warn.outdated': '{dir}의 agctx 스킬은 agctx {version}의 것이고, 이 CLI는 {current}입니다. agctx install을 실행해 갱신하세요.',
+    'install.warn.outdated-many': '{dir}와 다른 폴더 {more}개의 agctx 스킬은 agctx {version}의 것이고, 이 CLI는 {current}입니다. agctx install을 실행해 갱신하세요.',
     'error.command.unknown': '알 수 없는 명령입니다: {input}',
     'hint.command.suggest': '혹시 {commands} 명령인가요?',
     'hint.command.help': 'agctx help로 전체 명령을 확인하세요.',

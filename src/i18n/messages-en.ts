@@ -144,6 +144,8 @@ export default {
     'error.install.blocked': 'Some skill folders were not written by agctx install or were changed since, so nothing was written.',
     'hint.install.force': 'Check the folders listed above, then replace them with agctx install --force.',
     'uninstall.none': 'No agctx skills are installed.',
+    'install.warn.outdated': 'The agctx skills in {dir} are from agctx {version}, and this CLI is {current}. Run agctx install to update them.',
+    'install.warn.outdated-many': 'The agctx skills in {dir} and {more} more folder(s) are from agctx {version}, and this CLI is {current}. Run agctx install to update them.',
     'error.command.unknown': 'Unknown command: {input}',
     'hint.command.suggest': 'Did you mean {commands}?',
     'hint.command.help': 'Run agctx help to see all commands.',

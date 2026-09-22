@@ -1,9 +1,8 @@
 /**
- * Locale resolution and message catalog for the agctx CLI.
+ * agctx CLI의 로캘 결정과 메시지 카탈로그.
  *
- * The default locale is `en`: with no flag, environment variable, saved choice,
- * or interactive answer, output and generated guidance are English. Korean is
- * chosen with --lang ko, AGCTX_LANG=ko, or config lang ko.
+ * 기본 로캘은 `en`이다. 플래그, 환경 변수, 저장한 선택, 대화형 답이 모두 없으면 출력과 만든 지침은
+ * 영어다. 한국어는 --lang ko, AGCTX_LANG=ko, config lang ko로 고른다.
  */
 
 import type { GuidanceKey, GuidanceLevel, Locale, Scope } from '../shared/types.ts';
@@ -33,12 +32,12 @@ export interface LocaleInputs {
 }
 
 /**
- * Decide the active locale from the fixed precedence order:
- *   1. --lang flag        (this run only; invalid value throws)
- *   2. AGCTX_LANG env    (invalid value throws)
- *   3. saved user choice   (invalid value ignored)
- *   4. interactive (TTY) → null, meaning the caller must prompt and save
- *      non-interactive     → DEFAULT_LOCALE (en)
+ * 정해진 우선순위로 쓸 로캘을 정한다.
+ *   1. --lang 플래그       (이번 실행만. 잘못된 값이면 예외)
+ *   2. AGCTX_LANG 환경 변수 (잘못된 값이면 예외)
+ *   3. 저장한 사용자 선택   (잘못된 값은 무시)
+ *   4. 대화형(TTY) → null. 호출한 쪽이 묻고 저장해야 한다는 뜻
+ *      비대화형    → DEFAULT_LOCALE (en)
  */
 export function resolveLocale({
   flag = null,
@@ -99,9 +98,9 @@ const levelHints: Record<Locale, { off: string }> = {
   en: { off: 'Exclude this guidance from the profile' }
 };
 
-// What each level does, defined once. The TUI hints read from here so a person
-// choosing a level sees the same wording the docs use. A guidance item is either
-// deployed or it is not; there is no level that allows an exception (ADR 0028).
+// 각 단계가 하는 일을 한 번만 정의한다. TUI 안내가 여기서 읽으므로 단계를 고르는 사람은 문서와
+// 같은 문구를 본다. 지침 항목은 배포되거나 배포되지 않거나 둘 중 하나이고, 예외를 허락하는 단계는
+// 없다(ADR 0028).
 const levelHintsOn: Record<Locale, string> = {
   ko: '이 지침을 프로필에 포함함',
   en: 'Include this guidance in the profile'
@@ -274,7 +273,7 @@ export function guidanceSections(locale: string): Record<GuidanceKey, [title: st
 
 let activeLocale: Locale = DEFAULT_LOCALE;
 
-/** The locale this CLI run uses. */
+/** 이번 CLI 실행이 쓰는 로캘. */
 export function getLocale(): Locale {
   return activeLocale;
 }
@@ -284,5 +283,5 @@ export function setLocale(locale: Locale): Locale {
   return locale;
 }
 
-/** Translate with the active locale. */
+/** 현재 로캘로 번역한다. */
 export const _ = (key: string, vars?: MessageVars): string => t(activeLocale, key, vars);

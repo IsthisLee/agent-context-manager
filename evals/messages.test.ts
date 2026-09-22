@@ -18,7 +18,7 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-/** Message keys the CLI can look up: literal `_()` and `t()` keys plus the keys built from the registry. */
+/** CLI가 찾을 수 있는 메시지 키: 리터럴 `_()`·`t()` 키와 등록부에서 만드는 키. */
 function usedKeys(): Set<string> {
   const used = new Set<string>();
   for (const file of sourceFiles(path.join(repoRoot, 'src'))) {
@@ -47,20 +47,20 @@ function usedKeys(): Set<string> {
   return used;
 }
 
-test('every message key the CLI looks up exists in the English and Korean catalogs', () => {
+test('CLI가 찾는 메시지 키는 모두 영어·한국어 카탈로그에 있다', () => {
   const used = [...usedKeys()];
   assert.deepEqual(
     used.filter(key => !(key in en)),
     [],
-    'missing from messages-en.ts'
+    'messages-en.ts에 없다'
   );
   assert.deepEqual(
     used.filter(key => !(key in ko)),
     [],
-    'missing from messages-ko.ts'
+    'messages-ko.ts에 없다'
   );
 });
 
-test('the English and Korean catalogs define the same keys', () => {
+test('영어와 한국어 카탈로그는 같은 키를 정의한다', () => {
   assert.deepEqual(Object.keys(en).sort(), Object.keys(ko).sort());
 });

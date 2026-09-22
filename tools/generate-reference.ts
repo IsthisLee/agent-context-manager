@@ -5,12 +5,11 @@ import ko from '../src/i18n/messages-ko.ts';
 import { COMMANDS, usageLine, type CommandSpec } from '../src/commands/registry.ts';
 
 /**
- * Keep the generated parts of docs/reference in step with the command registry,
- * so a usage line or an exit code in the reference never drifts from the CLI.
- * Everything outside the generated blocks is written by people.
+ * docs/reference의 생성 부분을 명령 등록부와 맞춰서, 레퍼런스의 사용법 줄이나 종료 코드가 CLI와
+ * 어긋나지 않게 한다. 생성 블록 밖은 모두 사람이 쓴다.
  *
- *   node tools/generate-reference.ts          rewrite the generated blocks
- *   node tools/generate-reference.ts --check  exit 1 when a block is out of date
+ *   node tools/generate-reference.ts          생성 블록을 다시 쓴다
+ *   node tools/generate-reference.ts --check  블록이 최신이 아니면 1로 끝난다
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -27,7 +26,7 @@ const CHANGES: Record<CommandSpec['changes'], string> = {
   'agent-skills': '에이전트 스킬 폴더'
 };
 
-/** Where a command runs: always the CLI, plus the TUI and the profile management menu when the registry names an entry there. */
+/** 명령이 실행되는 곳: 항상 CLI이고, 등록부가 그곳의 항목을 지정하면 TUI와 프로필 관리 메뉴도. */
 const interfaces = (command: CommandSpec) =>
   ['CLI', ...(command.tui ? ['TUI'] : []), ...(command.profileMenu ? ['프로필 메뉴'] : [])].join(' · ');
 

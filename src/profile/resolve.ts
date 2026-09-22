@@ -8,13 +8,13 @@ import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from '../
 import { mergeFileName, mergeInVsCode } from '../project/merge-editor.ts';
 import { managedRegion, regionHash, writePlan } from '../project/plan.ts';
 
-/** The file as automatic resolve writes it: lines added inside the managed area move outside it. */
+/** 자동 resolve가 쓰는 파일: 관리 영역 안에 더한 줄을 영역 밖으로 옮긴다. */
 function automaticResolution(file: ConflictedFile, base: string) {
   const edits = collectUserEdits(base, file.currentRegion ?? '');
   return { edits, content: relocateUserEdits(file.regenerated, edits.addedLines, file.kind) };
 }
 
-/** The current file with its managed area swapped back to the base, for a three-way merge. */
+/** 관리 영역을 base로 되돌린 현재 파일. 3방향 병합에 쓴다. */
 function withBaseRegion(file: ConflictedFile, base: string): string {
   const existing = file.existing ?? '';
   if (file.kind === 'agents') return `${base}${existing.slice((file.currentRegion ?? '').length)}`;
@@ -22,8 +22,8 @@ function withBaseRegion(file: ConflictedFile, base: string): string {
 }
 
 /**
- * Use the VS Code merge result as the file's new content. Only what lies outside
- * the managed area survives, because the managed area is regenerated (ADR 0010).
+ * VS Code 병합 결과를 파일의 새 내용으로 쓴다. 관리 영역은 다시 만들기 때문에 관리 영역 밖에 있는
+ * 것만 남는다(ADR 0010).
  */
 function mergeWithEditor(file: ConflictedFile, base: string): string {
   say(
@@ -72,10 +72,9 @@ export interface ResolveResult {
 }
 
 /**
- * Resolve managed-area conflicts on a project bound to a profile. Edits made
- * inside a managed area move outside it and the area is regenerated. When the
- * last applied version is unknown, only `--discard` (with a backup) proceeds.
- * `confirm` runs before anything is written and may decline.
+ * 프로필에 묶인 프로젝트의 관리 영역 충돌을 푼다. 관리 영역 안의 수정은 영역 밖으로 옮기고 영역은
+ * 다시 만든다. 마지막으로 적용한 버전을 모르면 `--discard`(백업과 함께)만 진행한다. `confirm`은
+ * 무엇이든 쓰기 전에 실행되며 거절할 수 있다.
  */
 export async function resolveProject(
   targetDir: string,

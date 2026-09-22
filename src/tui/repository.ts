@@ -9,15 +9,15 @@ import { cancelled } from './cancel.ts';
 import { runFromTui } from './commands.ts';
 import { projectPathTui, runTuiStep } from './profile.ts';
 
-/** Commands under the main menu's project check, in registry order. */
+/** 첫 화면 메뉴의 프로젝트 확인 아래 명령들. 등록부 순서다. */
 export const PROJECT_MENU_COMMANDS = COMMANDS.filter(command => command.tui?.startsWith('project.menu.'));
-/** Commands under the main menu's repositories entry, in registry order. */
+/** 첫 화면 메뉴의 저장소 항목 아래 명령들. 등록부 순서다. */
 export const REPOS_MENU_COMMANDS = COMMANDS.filter(command => command.tui?.startsWith('repos.menu.'));
 
 const cancelProject = () => cancel(_('project.cancel'));
 const cancelRepos = () => cancel(_('repos.cancel'));
 
-/** The agent to check; null stands for every agent. Returns undefined when cancelled. */
+/** 확인할 에이전트. null은 모든 에이전트다. 취소하면 undefined를 돌려준다. */
 async function agentAnswer(): Promise<string | null | undefined> {
   const agent = await select<string>({
     message: _('project.agent.message'),
@@ -33,8 +33,8 @@ async function agentAnswer(): Promise<string | null | undefined> {
 }
 
 /**
- * Which profile's repositories to act on (--profile); null stands for every profile. With one profile or
- * none there is nothing to choose. Returns undefined when cancelled.
+ * 어느 프로필의 저장소에 작용할지(--profile). null은 모든 프로필이다. 프로필이 하나이거나 없으면
+ * 고를 것이 없다. 취소하면 undefined를 돌려준다.
  */
 async function profileFilterAnswer(profiles: readonly string[]): Promise<string | null | undefined> {
   if (profiles.length < 2) return null;
@@ -49,10 +49,10 @@ async function profileFilterAnswer(profiles: readonly string[]): Promise<string 
   return selected === '__all__' ? null : selected;
 }
 
-/** Profiles that have repositories on this computer's list. */
+/** 이 컴퓨터의 목록에 저장소가 있는 프로필. */
 const listedProfiles = () => [...new Set(readRepos().map(entry => entry.profile))].sort();
 
-/** Optional text; empty means "use the default". Returns undefined when cancelled. */
+/** 선택 입력. 비우면 「기본값을 쓴다」는 뜻이다. 취소하면 undefined를 돌려준다. */
 async function optionalText(message: string): Promise<string | undefined> {
   const value = await text({ message });
   if (cancelled(value)) return undefined;

@@ -1,4 +1,4 @@
-/** agctx command line: resolve the locale, find the command in the registry, run it, and report the outcome. */
+/** agctx 명령줄: 로캘을 정하고, 등록부에서 명령을 찾아 실행하고, 결과를 보고한다. */
 
 import { hasFlag, parseFlag, stripFlag } from './args.ts';
 import { commandHelp, help } from './help.ts';
@@ -72,11 +72,11 @@ export async function main(argv: readonly string[] = process.argv): Promise<Invo
   return { command, outcome };
 }
 
-/** Run the CLI: print or emit the outcome and set the process exit code. */
-/** Commands that manage the skills themselves, so they do not repeat the notice about them. */
+/** CLI를 실행한다: 결과를 출력하거나 내보내고 프로세스 종료 코드를 정한다. */
+/** 스킬 자체를 다루는 명령. 그래서 스킬에 관한 알림을 되풀이하지 않는다. */
 const NO_SKILL_NOTICE = new Set(['install', 'uninstall']);
 
-/** The version notice for this run, when the installed skills are from another agctx version. */
+/** 설치된 스킬이 다른 agctx 버전의 것일 때 이번 실행에 붙일 버전 알림. */
 function noticeFor(argv: readonly string[]): string[] {
   const command = findCommand(argv.slice(2).filter(value => !value.startsWith('--')));
   if (command && NO_SKILL_NOTICE.has(command.id)) return [];

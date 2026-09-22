@@ -1,4 +1,4 @@
-/** Korean message catalog. */
+/** 한국어 메시지 카탈로그. */
 export default {
   'create.intro': 'agctx 프로필 생성',
   'create.name.message': '프로필 이름을 입력하세요.',

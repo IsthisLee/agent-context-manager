@@ -14,9 +14,9 @@ permissions:
 
 jobs:
   analyze:
-    # GitHub Actions is a separate CodeQL language with its own query pack. With
-    # javascript-typescript alone the workflow files are extracted but never
-    # checked, so script injection and over-broad permissions go unreported.
+    # GitHub Actions는 자기 쿼리 팩을 가진 별도의 CodeQL 언어다. javascript-typescript만 두면
+    # 워크플로 파일을 추출하기만 하고 검사하지 않아서, 스크립트 주입과 지나치게 넓은 권한이
+    # 보고되지 않는다.
     name: Analyze ${{ matrix.language }}
     runs-on: ubuntu-latest
     timeout-minutes: 10

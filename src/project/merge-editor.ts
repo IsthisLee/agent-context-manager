@@ -6,7 +6,7 @@ import { _ } from '../i18n/index.ts';
 import { CliError, EXIT } from '../shared/errors.ts';
 import { toLf } from '../shared/fs-utils.ts';
 
-/** The file name VS Code shows for one merge input, e.g. `current-CLAUDE.md`. */
+/** VS Code가 병합 입력 하나에 보여 주는 파일 이름. 예: `current-CLAUDE.md`. */
 export function mergeFileName(role: string, name: string): string {
   return `${role}-${name.replaceAll(/[\\/]/g, '__')}`;
 }
@@ -26,9 +26,8 @@ export interface MergeOutcome {
 }
 
 /**
- * Open VS Code's three-way merge editor (`code --wait --merge`) for one file and
- * return what the user saved. The result pane starts from `result`. The temporary
- * directory is kept until `cleanup()` so a rejected result can still be inspected.
+ * 파일 하나에 VS Code의 3방향 병합 편집기(`code --wait --merge`)를 열고 사용자가 저장한 것을 돌려준다.
+ * 결과 창은 `result`에서 시작한다. 거부된 결과도 살펴볼 수 있도록 임시 폴더는 `cleanup()`까지 남긴다.
  */
 export function mergeInVsCode({ name, current, incoming, base, result }: MergeInput): MergeOutcome {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-merge-'));

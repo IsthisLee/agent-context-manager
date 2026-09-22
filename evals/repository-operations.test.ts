@@ -12,7 +12,7 @@ function runReleaseCheck(args: string[]) {
   return spawnSync(process.execPath, [path.join(repoRoot, 'tools/check-release.ts'), ...args], { encoding: 'utf8' });
 }
 
-test('CI verifies the repository on supported Node and operating system combinations', () => {
+test('CI는 지원하는 Node와 운영체제 조합에서 저장소를 검증한다', () => {
   const ci = read('.github/workflows/ci.yml');
   const packageJson = JSON.parse(read('package.json'));
   assert.equal(packageJson.engines.node, '>=22.0.0');
@@ -31,7 +31,7 @@ test('CI verifies the repository on supported Node and operating system combinat
   assert.match(ci, /pnpm run audit/);
 });
 
-test('npm publishing requires prepublish verification and provenance', () => {
+test('npm 게시는 게시 전 검증과 provenance를 요구한다', () => {
   const publish = read('.github/workflows/publish.yml');
   assert.match(publish, /node-version: 24\.x/);
   assert.match(publish, /persist-credentials: false/);
@@ -40,7 +40,7 @@ test('npm publishing requires prepublish verification and provenance', () => {
   assert.match(publish, /npm publish --provenance --access public/);
 });
 
-test('public repository health and dependency automation files are present', () => {
+test('공개 저장소 운영 파일과 의존성 자동화 파일이 있다', () => {
   for (const relative of [
     'SECURITY.md',
     '.github/dependabot.yml',
@@ -48,18 +48,18 @@ test('public repository health and dependency automation files are present', () 
     '.editorconfig',
     '.gitattributes'
   ])
-    assert(fs.existsSync(path.join(repoRoot, relative)), `${relative} must exist`);
-  // Dropped with ADR 0031: a code of conduct and issue templates need more than
-  // one person, and CODEOWNERS needs more than one owner.
+    assert(fs.existsSync(path.join(repoRoot, relative)), `${relative}이 있어야 한다`);
+  // ADR 0031로 뺐다. 행동 규범과 이슈 템플릿은 두 사람 이상이 있어야 의미가 있고, CODEOWNERS는
+  // 소유자가 둘 이상이어야 의미가 있다.
   for (const relative of ['CONTRIBUTING.md', 'CODE_OF_CONDUCT.md', '.github/CODEOWNERS', '.github/ISSUE_TEMPLATE']) {
-    assert(!fs.existsSync(path.join(repoRoot, relative)), `${relative} was dropped and must stay dropped`);
+    assert(!fs.existsSync(path.join(repoRoot, relative)), `${relative}은 뺐고 계속 빠져 있어야 한다`);
   }
   const dependabot = read('.github/dependabot.yml');
   assert.match(dependabot, /package-ecosystem: npm/);
   assert.match(dependabot, /package-ecosystem: github-actions/);
 });
 
-test('GitHub Actions references are pinned to immutable commits', () => {
+test('GitHub Actions 참조는 바뀌지 않는 커밋에 고정한다', () => {
   for (const relative of [
     '.github/workflows/ci.yml',
     '.github/workflows/codeql.yml',
@@ -68,12 +68,12 @@ test('GitHub Actions references are pinned to immutable commits', () => {
   ]) {
     const workflow = read(relative);
     for (const match of workflow.matchAll(/uses:\s+([^\s#]+)@([^\s#]+)/g)) {
-      assert.match(match[2], /^[0-9a-f]{40}$/, `${relative}: ${match[1]} must use a 40-character commit SHA`);
+      assert.match(match[2], /^[0-9a-f]{40}$/, `${relative}: ${match[1]}은 40자 커밋 SHA를 써야 한다`);
     }
   }
 });
 
-test('every GitHub workflow disables checkout credential persistence', () => {
+test('모든 GitHub 워크플로는 checkout 자격 증명을 남기지 않는다', () => {
   for (const relative of [
     '.github/workflows/ci.yml',
     '.github/workflows/codeql.yml',
@@ -84,19 +84,19 @@ test('every GitHub workflow disables checkout credential persistence', () => {
     const checkouts = [
       ...workflow.matchAll(/uses: actions\/checkout@[^\n]+\n([\s\S]*?)(?=\n {6}- name:|\n {2}jobs:|$)/g)
     ];
-    assert(checkouts.length > 0, `${relative} must use checkout`);
+    assert(checkouts.length > 0, `${relative}은 checkout을 써야 한다`);
     for (const [, block] of checkouts) assert.match(block, /persist-credentials: false/);
   }
 });
 
-test('release check reports a missing tag as a clean error without a stack trace', () => {
+test('release check는 빠진 태그를 스택 추적 없는 깔끔한 오류로 보고한다', () => {
   const result = runReleaseCheck([]);
   assert.equal(result.status, 1);
   assert.match(result.stderr, /^Error: A release tag is required/m);
-  assert.doesNotMatch(result.stderr, /\n\s+at /, 'must not print a Node stack trace');
+  assert.doesNotMatch(result.stderr, /\n\s+at /, 'Node 스택 추적을 출력하면 안 된다');
 });
 
-test('release check passes for the current package version tag', () => {
+test('release check는 현재 패키지 버전 태그에서 통과한다', () => {
   const { version } = JSON.parse(read('package.json'));
   const result = runReleaseCheck([`v${version}`]);
   assert.equal(result.status, 0, result.stderr);

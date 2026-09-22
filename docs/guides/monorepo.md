@@ -22,7 +22,7 @@
 ## 설정하기
 
 <!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: d76c6d163349c5b738d1c62ef0e6226edde71e555c33d8492a7566b9cb4d6ed9 -->
+<!-- agctx-doc-sources-sha256: 48c3a03d8df5667803cb759c45ec291c4cb00b4e1f48ec4b161eecd163bb35bd -->
 
 1. 저장소 루트에서 프로필을 적용한다. 하위 폴더에 이미 `AGENTS.md`가 있으면 연결 파일도 함께 만든다. TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**에서 저장소 루트를 고른다.
 
@@ -83,7 +83,7 @@ Dry-run: no files were changed.
 ## 확인하기
 
 <!-- agctx-doc-sources: src/explain.ts, src/i18n/messages-en.ts -->
-<!-- agctx-doc-sources-sha256: 49c1615f6969b17cb74c2f2e54ef51c084056c8dabe581723fda432ed16a820e -->
+<!-- agctx-doc-sources-sha256: 9f3fea4c280d753bcb3eb3ed759b88c802347d5dc3b5de36905cf6abdb9ed403 -->
 
 에이전트를 시작할 폴더마다 `agctx explain <폴더>`를 실행한다. 한 에이전트만 보려면 `--agent`를 붙인다. TUI에서는 첫 화면의 **Check a project** > **Instruction files each agent reads**에서 폴더와 에이전트를 고른다. 아래 출력은 위 예시 저장소에서 실제로 실행한 결과다.
 

@@ -8,12 +8,12 @@ import { writeTextAtomic } from '../shared/fs-utils.ts';
 import { PACKAGE_ROOT, packageVersion } from '../shared/runtime.ts';
 
 /**
- * `agctx install` copies the agent skills shipped in this package into the user-level skill folder of each agent
- * found on this machine, so the skills always match the installed CLI. Each copied skill folder carries a record of
- * the version and file hashes, and only a folder that still matches its record is replaced or removed.
+ * `agctx install`은 이 패키지에 든 에이전트 스킬을, 이 컴퓨터에서 찾은 에이전트마다 사용자 수준 스킬
+ * 폴더에 복사해서, 스킬이 항상 설치된 CLI와 맞게 한다. 복사한 스킬 폴더마다 버전과 파일 해시 기록을
+ * 두고, 그 기록과 아직 맞는 폴더만 바꾸거나 지운다.
  */
 
-/** The record agctx keeps in each skill folder it wrote. */
+/** agctx가 자기가 쓴 스킬 폴더마다 두는 기록. */
 export const INSTALL_RECORD = '.agctx-install.json';
 
 export type SkillTargetId = 'claude' | 'codex' | 'antigravity' | 'antigravity-cli';
@@ -22,9 +22,9 @@ export type SkillAgent = 'claude' | 'codex' | 'antigravity';
 export interface SkillTarget {
   id: SkillTargetId;
   agent: SkillAgent;
-  /** The user-level skill folder of that agent, from its official documentation. */
+  /** 그 에이전트의 사용자 수준 스킬 폴더. 공식 문서를 따른다. */
   dir: string;
-  /** The folder whose presence says the agent is installed. */
+  /** 있으면 그 에이전트가 설치됐다고 보는 폴더. */
   marker: string;
   found: boolean;
 }
@@ -34,18 +34,18 @@ export type SkillItemState = 'create' | 'update' | 'unchanged' | 'blocked' | 're
 export interface SkillItem {
   target: SkillTargetId;
   skill: string;
-  /** The skill folder in the target, for example `~/.claude/skills/agctx`. */
+  /** 대상 안의 스킬 폴더. 예: `~/.claude/skills/agctx`. */
   dir: string;
   state: SkillItemState;
-  /** Why a folder is blocked or kept: it has no record, or these files differ from it. */
+  /** 폴더가 막히거나 남는 이유: 기록이 없거나, 이 파일들이 기록과 다르다. */
   reason: string | null;
 }
 
 export interface SkillPlan {
   items: SkillItem[];
-  /** Targets left out because their agent was not found. */
+  /** 에이전트를 찾지 못해 빠진 대상. */
   skipped: SkillTarget[];
-  /** Whether a folder stops the install; nothing is written then. */
+  /** 폴더가 설치를 멈추게 하는지. 그러면 아무것도 쓰지 않는다. */
   blocked: boolean;
 }
 
@@ -65,7 +65,7 @@ function isDirectory(target: string): boolean {
   }
 }
 
-/** The four places skills go, with whether each agent is found. Reads HOME and CODEX_HOME when called. */
+/** 스킬이 들어갈 네 곳과 각 에이전트를 찾았는지. 부를 때 HOME과 CODEX_HOME을 읽는다. */
 export function skillTargets(): SkillTarget[] {
   const home = os.homedir();
   const target = (id: SkillTargetId, agent: SkillAgent, dir: string, marker: string): SkillTarget => ({
@@ -93,7 +93,7 @@ export function skillTargets(): SkillTarget[] {
   ];
 }
 
-/** Every file under `dir` as `/`-separated paths, leaving out the install record. */
+/** `dir` 아래의 모든 파일. `/`로 나눈 경로이고 설치 기록은 뺀다. */
 function filesIn(dir: string, rel = ''): string[] {
   const files: string[] = [];
   for (const entry of fs
@@ -112,7 +112,7 @@ function hashes(dir: string): Record<string, string> {
   return Object.fromEntries(filesIn(dir).map(rel => [rel, sha256(path.join(dir, ...rel.split('/')))]));
 }
 
-/** The skills this package ships, by folder name. */
+/** 이 패키지가 배포하는 스킬. 폴더 이름별. */
 export function packagedSkills(): string[] {
   const root = path.join(PACKAGE_ROOT, 'skills');
   return fs
@@ -139,7 +139,7 @@ function readRecord(dir: string): InstallRecord | null {
 const sameFiles = (a: Record<string, string>, b: Record<string, string>) =>
   Object.keys(a).length === Object.keys(b).length && Object.entries(a).every(([rel, hash]) => b[rel] === hash);
 
-/** Files that differ between what a folder holds and what its record says it held. */
+/** 폴더에 있는 것과 기록에 있던 것이 다른 파일. */
 function changedFiles(current: Record<string, string>, recorded: Record<string, string>): string[] {
   return [...new Set([...Object.keys(current), ...Object.keys(recorded)])]
     .filter(rel => current[rel] !== recorded[rel])
@@ -147,11 +147,11 @@ function changedFiles(current: Record<string, string>, recorded: Record<string, 
 }
 
 /**
- * Whether the skill folder `dest` is agctx's own copy as it wrote it. Null means it is: the record is there and
- * the files match it. Otherwise the reason it is not, which blocks replacing or removing it without --force.
+ * 스킬 폴더 `dest`가 agctx가 쓴 그대로의 사본인지. null이면 그렇다: 기록이 있고 파일이 기록과 맞는다.
+ * 아니면 그 이유를 돌려주고, 그 이유 때문에 --force 없이는 바꾸거나 지우지 않는다.
  */
 function notOurs(dest: string): string | null {
-  // lstat does not follow a symbolic link, so a link is never a directory here and is never ours.
+  // lstat은 심볼릭 링크를 따라가지 않으므로, 여기서 링크는 폴더가 아니고 따라서 우리 것이 아니다.
   if (!fs.lstatSync(dest).isDirectory()) return _('install.reason.not-agctx');
   const record = readRecord(dest);
   if (!record) return _('install.reason.not-agctx');
@@ -159,7 +159,7 @@ function notOurs(dest: string): string | null {
   return changed.length ? _('install.reason.changed', { files: changed.join(', ') }) : null;
 }
 
-/** The targets a command acts on: those named by --agent, or those whose agent is found. */
+/** 명령이 작용할 대상: --agent로 지정한 것, 또는 에이전트를 찾은 것. */
 function chosenTargets(
   agent: string | null | undefined,
   found: boolean
@@ -174,7 +174,7 @@ function chosenTargets(
     : { chosen: targets, skipped: [] };
 }
 
-/** What `agctx install` would do. Nothing is written. */
+/** `agctx install`이 할 일. 아무것도 쓰지 않는다. */
 export function planInstall(options: { agent?: string | null; force?: boolean }): SkillPlan {
   const { chosen, skipped } = chosenTargets(options.agent, true);
   if (!chosen.length) {
@@ -217,7 +217,7 @@ export function planInstall(options: { agent?: string | null; force?: boolean })
   return { items, skipped, blocked: items.some(item => item.state === 'blocked') };
 }
 
-/** Copy the package's skills for every item to create or update, each with its record. */
+/** 만들거나 갱신할 항목마다 패키지의 스킬을 기록과 함께 복사한다. */
 export function applyInstall(plan: SkillPlan): void {
   const version = packageVersion();
   for (const item of plan.items) {
@@ -235,7 +235,7 @@ export function applyInstall(plan: SkillPlan): void {
   }
 }
 
-/** What `agctx uninstall` would do: remove agctx's own copies, keep any other folder by those names. */
+/** `agctx uninstall`이 할 일: agctx가 쓴 사본을 지우고, 같은 이름의 다른 폴더는 남긴다. */
 export function planUninstall(options: { agent?: string | null }): SkillPlan {
   const { chosen } = chosenTargets(options.agent, false);
   const items: SkillItem[] = [];
@@ -258,7 +258,7 @@ export function applyUninstall(plan: SkillPlan): void {
   for (const item of plan.items) if (item.state === 'remove') fs.rmSync(item.dir, { recursive: true, force: true });
 }
 
-/** Skill folders agctx wrote whose record names another version than this CLI. */
+/** agctx가 쓴 스킬 폴더 가운데 기록의 버전이 이 CLI와 다른 것. */
 export function outdatedSkills(): { dir: string; version: string }[] {
   const version = packageVersion();
   const outdated: { dir: string; version: string }[] = [];
@@ -273,8 +273,8 @@ export function outdatedSkills(): { dir: string; version: string }[] {
 }
 
 /**
- * The one line every command prints when the installed skills are from another agctx version, or null when they
- * match or none is installed. An agent following an older skill may run a command this CLI no longer has.
+ * 설치된 스킬이 다른 agctx 버전의 것일 때 모든 명령이 출력하는 한 줄. 버전이 같거나 설치된 스킬이
+ * 없으면 null. 옛 스킬을 따르는 에이전트는 이 CLI에 더는 없는 명령을 실행할 수 있다.
  */
 export function skillNotice(): string | null {
   const [first, ...rest] = outdatedSkills();

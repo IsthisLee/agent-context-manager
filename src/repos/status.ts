@@ -3,7 +3,7 @@ import { checkProject, remoteHeadCommit, type CheckFinding } from '../check.ts';
 import { EXIT, toCliError } from '../shared/errors.ts';
 import { selectRepos } from './registry.ts';
 
-/** `agctx repos status`: run `check` on every listed repository. */
+/** `agctx repos status`: 목록의 모든 저장소에 `check`를 실행한다. */
 
 export type RepoState = 'ok' | 'behind' | 'conflict' | 'hidden-characters' | 'missing' | 'error';
 
@@ -16,7 +16,7 @@ export interface RepoStatus {
   commit: string | null;
   latestCommit: string | null;
   findings: CheckFinding[];
-  /** What check warned about, such as a profile that is a broken link on this machine. */
+  /** check가 경고한 것. 예를 들어 이 컴퓨터에서 끊긴 링크인 프로필. */
   warnings: string[];
   error: { code: string; message: string; hint: string | null } | null;
 }
@@ -29,7 +29,7 @@ const STATE_BY_CODE: Record<number, RepoState> = {
 };
 
 export function reposStatus(options: { profile?: string | null; refresh?: boolean } = {}): RepoStatus[] {
-  // Many repositories share one profile source; ask each remote branch once.
+  // 많은 저장소가 프로필 원본 하나를 나눠 쓰므로, 원격 브랜치마다 한 번만 묻는다.
   const heads = new Map<string, string | null>();
   const remoteHead = (url: string, branch: string) => {
     const key = `${url}\n${branch}`;

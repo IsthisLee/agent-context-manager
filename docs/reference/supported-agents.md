@@ -1,7 +1,7 @@
 # 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/project/links.ts, templates, src/explain.ts, src/verify -->
-<!-- agctx-doc-sources-sha256: adeefd5e1af04586a8408549311aae0645934c34283b2d89c0d921ba87c7dca9 -->
+<!-- agctx-doc-sources-sha256: 31cc1783c4c3dfa3de786e77fb904f41b15b525cef321ef866661978719f6037 -->
 
 agctx가 파일을 만들고 전달을 확인하는 에이전트는 Codex·Claude Code·Antigravity다. Cursor·GitHub Copilot 파일은 만들지 않는다([ADR 0011](../adr/0011-supported-agents.md)).
 

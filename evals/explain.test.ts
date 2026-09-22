@@ -25,9 +25,9 @@ interface ExplainDocument {
 }
 
 /**
- * A monorepo with a profile applied at the root, a payments folder with its own
- * AGENTS.md, an Antigravity rule scoped by glob, and an old Cursor rules file.
- * User-level agent folders point into the workspace so the machine's own files never leak in.
+ * 루트에 프로필을 적용하고, 자기 AGENTS.md가 있는 payments 폴더, glob으로 범위를 정한
+ * Antigravity 규칙, 오래된 Cursor 규칙 파일을 둔 모노레포. 사용자 수준 에이전트 폴더는 작업
+ * 공간 안을 가리켜서 이 컴퓨터의 실제 파일이 섞이지 않는다.
  */
 function monorepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-explain-');
@@ -58,13 +58,13 @@ function monorepo(t: TestContext) {
 const parse = (stdout: string): ExplainDocument => JSON.parse(stdout);
 const agentOf = (document: ExplainDocument, id: string) => {
   const agent = document.data.agents.find(entry => entry.agent === id);
-  assert.ok(agent, `${id} is explained`);
+  assert.ok(agent, `${id}를 설명한다`);
   return agent;
 };
 const statusOf = (agent: ExplainedAgent, file: string) =>
   agent.files.find(entry => entry.path.replaceAll('\\', '/') === file)?.status;
 
-test('explain shows what each agent reads for a folder and exits 4 when a file never reaches an agent', t => {
+test('explain은 폴더마다 각 에이전트가 읽는 것을 보여 주고, 에이전트에 닿지 않는 파일이 있으면 4로 끝난다', t => {
   const { payments, explain } = monorepo(t);
   const result = explain([payments, '--json']);
   assert.equal(result.status, 4, result.stderr);
@@ -80,7 +80,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.equal(
     statusOf(claude, 'AGENTS.md'),
     'conditional',
-    'the root CLAUDE.md imports AGENTS.md from outside the start folder, which Claude Code loads only after approval'
+    '루트 CLAUDE.md는 시작 폴더 밖에서 AGENTS.md를 import하고, Claude Code는 승인 뒤에만 그것을 불러온다'
   );
   assert.ok(
     claude.findings.some(
@@ -90,7 +90,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.equal(
     statusOf(claude, 'services/payments/AGENTS.md'),
     'shadowed',
-    'a CLAUDE.md above the start folder makes Claude Code read CLAUDE.md files instead of AGENTS.md'
+    '시작 폴더 위의 CLAUDE.md가 있으면 Claude Code는 AGENTS.md 대신 CLAUDE.md 파일들을 읽는다'
   );
   assert.ok(
     claude.findings.some(finding => finding.kind === 'missing' && finding.file === 'services/payments/AGENTS.md')
@@ -101,7 +101,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.equal(
     statusOf(antigravity, '.agents/rules/payments.md'),
     'not-read',
-    'a glob rule is not delivered at session start'
+    'glob 규칙은 세션 시작 때 전달되지 않는다'
   );
   assert.ok(
     antigravity.findings.some(finding => finding.kind === 'missing' && finding.file === '.agents/rules/payments.md')
@@ -114,7 +114,7 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
         finding.file === 'services/payments/AGENTS.md' &&
         /always_on/.test(finding.message)
     ),
-    'a subfolder AGENTS.md did not reach Antigravity at session start when measured'
+    '측정했을 때 하위 폴더의 AGENTS.md는 세션 시작 때 Antigravity에 닿지 않았다'
   );
 
   assert.deepEqual(
@@ -131,10 +131,10 @@ test('explain shows what each agent reads for a folder and exits 4 when a file n
   assert.match(human.stdout, /\.cursorrules/);
 });
 
-test('explain from the repository root warns that Codex skips AGENTS.md files in subfolders', t => {
+test('저장소 루트에서 실행한 explain은 Codex가 하위 폴더의 AGENTS.md를 건너뛴다고 경고한다', t => {
   const { repo, explain } = monorepo(t);
   const result = explain([repo, '--agent', 'codex', '--json']);
-  assert.equal(result.status, 0, 'a folder file skipped at the root is a warning, not a delivery failure');
+  assert.equal(result.status, 0, '루트에서 건너뛴 폴더 파일은 전달 실패가 아니라 경고다');
   const document = parse(result.stdout);
   assert.deepEqual(
     document.data.agents.map(agent => agent.agent),
@@ -153,7 +153,7 @@ test('explain from the repository root warns that Codex skips AGENTS.md files in
   );
 });
 
-test('explain passes once every instruction file has a path to every agent', t => {
+test('모든 지침 파일이 모든 에이전트에 닿는 경로가 있으면 explain은 통과한다', t => {
   const { repo, payments, explain } = monorepo(t);
   fs.writeFileSync(path.join(payments, 'CLAUDE.md'), '@AGENTS.md\n');
   fs.writeFileSync(
@@ -173,7 +173,7 @@ test('explain passes once every instruction file has a path to every agent', t =
   );
 });
 
-test('explain reports user-level files with their scope and an Antigravity rule without frontmatter as not read', t => {
+test('explain은 사용자 수준 파일을 범위와 함께, frontmatter 없는 Antigravity 규칙을 읽지 않는 것으로 보고한다', t => {
   const { repo, userHome, explain } = monorepo(t);
   fs.mkdirSync(path.join(userHome, '.codex'), { recursive: true });
   fs.writeFileSync(path.join(userHome, '.codex', 'AGENTS.md'), '- Personal Codex rule.\n');
@@ -190,7 +190,7 @@ test('explain reports user-level files with their scope and an Antigravity rule 
   assert.equal(
     claude.files.find(file => /\.codex[\\/]AGENTS\.md$/.test(file.path))?.status,
     'read',
-    'imports in the user CLAUDE.md load without approval'
+    '사용자 CLAUDE.md의 import는 승인 없이 불러온다'
   );
   assert.deepEqual(
     claude.findings.filter(finding => finding.kind === 'warning'),
@@ -199,7 +199,7 @@ test('explain reports user-level files with their scope and an Antigravity rule 
   assert.equal(statusOf(agentOf(document, 'antigravity'), '.agents/rules/notes.md'), 'not-read');
 });
 
-test('explain warns when the same rules reach an agent through two files', t => {
+test('같은 규칙이 두 파일을 거쳐 한 에이전트에 닿으면 explain이 경고한다', t => {
   const { repo, explain } = monorepo(t);
   const rules =
     '- Every API handler validates its input before touching the database.\n- Money is stored as integer minor units, never as floats.\n- Every refund writes an audit log entry with the operator id.\n';
@@ -218,7 +218,7 @@ test('explain warns when the same rules reach an agent through two files', t => 
   fs.rmSync(path.join(repo, '.claude', 'rules', 'team.md'));
   const without = agentOf(parse(explain([repo, '--json']).stdout), 'claude');
   assert.ok(clean.findings.length > without.findings.length);
-  // APM writes the copy as a path-scoped rule; it still reaches Claude Code once a matching file is read.
+  // APM은 사본을 경로 범위 규칙으로 쓴다. 맞는 파일을 읽으면 여전히 Claude Code에 닿는다.
   fs.writeFileSync(path.join(repo, '.claude', 'rules', 'team.md'), `---\npaths:\n  - "**"\n---\n\n${rules}`);
   const scoped = agentOf(parse(explain([repo, '--agent', 'claude', '--json']).stdout), 'claude');
   assert.ok(
@@ -232,14 +232,14 @@ test('explain warns when the same rules reach an agent through two files', t => 
     assert.deepEqual(
       agent.findings.filter(finding => /share \d+ lines/.test(finding.message)),
       [],
-      `${agent.agent}: files agctx generates do not repeat each other`
+      `${agent.agent}: agctx가 만드는 파일은 서로 되풀이하지 않는다`
     );
   }
 });
 
 /**
- * A repository that keeps its rules in AGENTS.md alone, the layout Claude Code reads
- * directly. User-level folders point into the workspace so the machine's own files never leak in.
+ * 규칙을 AGENTS.md에만 두는 저장소. Claude Code가 직접 읽는 배치다. 사용자 수준 폴더는
+ * 작업 공간 안을 가리켜서 이 컴퓨터의 실제 파일이 섞이지 않는다.
  */
 function agentsOnlyRepo(t: TestContext) {
   const { person, folder } = makeWorkspace(t, 'agctx-explain-agents-');
@@ -270,7 +270,7 @@ function agentsOnlyRepo(t: TestContext) {
   return { repo, run, claude, setInstructionFiles };
 }
 
-test('explain reads AGENTS.md directly when no CLAUDE.md in the start folder or above it hides it', t => {
+test('시작 폴더나 그 위에 AGENTS.md를 가리는 CLAUDE.md가 없으면 explain은 AGENTS.md를 직접 읽는다고 본다', t => {
   const { repo, run } = agentsOnlyRepo(t);
   fs.mkdirSync(path.join(repo, '.claude'), { recursive: true });
   fs.writeFileSync(path.join(repo, '.claude', 'AGENTS.md'), '- Claude reads this one at launch too.\n');
@@ -281,13 +281,9 @@ test('explain reads AGENTS.md directly when no CLAUDE.md in the start folder or 
   assert.equal(
     statusOf(claude, 'AGENTS.md'),
     'read',
-    'Claude Code v2.1.277 and later read AGENTS.md when no CLAUDE.md hides it'
+    'Claude Code v2.1.277 이상은 가리는 CLAUDE.md가 없으면 AGENTS.md를 읽는다'
   );
-  assert.equal(
-    statusOf(claude, '.claude/AGENTS.md'),
-    'read',
-    'a .claude/AGENTS.md above the start folder is read at session start as well'
-  );
+  assert.equal(statusOf(claude, '.claude/AGENTS.md'), 'read', '시작 폴더 위의 .claude/AGENTS.md도 세션 시작 때 읽는다');
   assert.deepEqual(
     claude.findings.filter(finding => finding.kind === 'missing'),
     []
@@ -296,16 +292,16 @@ test('explain reads AGENTS.md directly when no CLAUDE.md in the start folder or 
     claude.findings.some(
       finding => finding.kind === 'warning' && finding.file === null && /2\.1\.277/.test(finding.message)
     ),
-    `direct reading is not available in every session, and explain cannot tell: ${JSON.stringify(claude.findings)}`
+    `직접 읽기는 모든 세션에서 되지 않고 explain은 그것을 알 수 없다: ${JSON.stringify(claude.findings)}`
   );
 });
 
-test('explain reports AGENTS.md as shadowed when a CLAUDE.local.md sits in the start folder or above it', t => {
+test('시작 폴더나 그 위에 CLAUDE.local.md가 있으면 explain은 AGENTS.md가 가려졌다고 보고한다', t => {
   const { repo, run } = agentsOnlyRepo(t);
   fs.writeFileSync(path.join(repo, 'CLAUDE.local.md'), '- My own uncommitted note about this repository.\n');
 
   const result = run([repo]);
-  assert.equal(result.status, 0, 'a personal CLAUDE.local.md is a warning, not a repository defect');
+  assert.equal(result.status, 0, '개인 CLAUDE.local.md는 저장소 결함이 아니라 경고다');
   const claude = agentOf(parse(result.stdout), 'claude');
   assert.equal(statusOf(claude, 'AGENTS.md'), 'shadowed');
   assert.ok(
@@ -316,16 +312,16 @@ test('explain reports AGENTS.md as shadowed when a CLAUDE.local.md sits in the s
   );
   assert.ok(
     !claude.findings.some(finding => finding.file === null && /2\.1\.277/.test(finding.message)),
-    'nothing relies on direct reading here'
+    '여기서는 직접 읽기에 기대는 것이 없다'
   );
 });
 
-test('explain follows the user setting that decides which instruction files Claude Code loads', t => {
+test('explain은 Claude Code가 어떤 지침 파일을 불러올지 정하는 사용자 설정을 따른다', t => {
   const { repo, run, claude, setInstructionFiles } = agentsOnlyRepo(t);
   fs.writeFileSync(path.join(repo, 'CLAUDE.md'), '- A rule only Claude Code needs, and it is long enough to count.\n');
 
   const shadowed = claude([repo]);
-  assert.equal(statusOf(shadowed, 'AGENTS.md'), 'shadowed', 'by default a CLAUDE.md next to AGENTS.md is read instead');
+  assert.equal(statusOf(shadowed, 'AGENTS.md'), 'shadowed', '기본으로는 AGENTS.md 옆의 CLAUDE.md를 대신 읽는다');
 
   setInstructionFiles('claude-md-and-agents-md');
   const both = run([repo]);
@@ -340,7 +336,7 @@ test('explain follows the user setting that decides which instruction files Clau
 
   setInstructionFiles('claude-md');
   const only = run([repo]);
-  assert.equal(only.status, 4, 'with claude-md the AGENTS.md never reaches Claude Code');
+  assert.equal(only.status, 4, 'claude-md이면 AGENTS.md는 Claude Code에 닿지 않는다');
   const claudeMd = agentOf(parse(only.stdout), 'claude');
   assert.equal(statusOf(claudeMd, 'AGENTS.md'), 'not-read');
   assert.ok(

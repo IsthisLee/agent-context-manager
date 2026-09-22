@@ -30,18 +30,18 @@ import {
 } from './store.ts';
 
 /**
- * `profile link` makes a rules repository folder that already exists on this machine a profile. It writes
- * profile.json in that folder when there is none and keeps a pointer to the folder in the store, so the
- * folder is applied as it is. It never commits or pushes; sharing still goes through Git and `profile clone`.
+ * `profile link`는 이 컴퓨터에 이미 있는 규칙 저장소 폴더를 프로필로 만든다. 폴더에 profile.json이
+ * 없으면 쓰고, 보관함에는 그 폴더를 가리키는 포인터를 둬서 폴더를 있는 그대로 적용한다. 커밋이나
+ * push는 하지 않는다. 나누는 일은 여전히 Git과 `profile clone`으로 한다.
  */
 
-/** Folders that never hold the rules a profile applies: dependencies and build output. Hidden folders are skipped too. */
+/** 프로필이 적용할 규칙이 들어 있을 리 없는 폴더: 의존성과 빌드 결과. 숨은 폴더도 건너뛴다. */
 const SKIPPED = new Set(['node_modules', 'vendor', 'dist', 'build']);
 
-/** How many folders deep the search for AGENTS.md goes. */
+/** AGENTS.md를 찾을 때 내려가는 폴더 깊이. */
 const MAX_DEPTH = 4;
 
-/** How many folders the search for AGENTS.md reads before it stops, so a large folder is never read whole. */
+/** AGENTS.md를 찾다가 멈추기 전까지 읽는 폴더 수. 큰 폴더를 통째로 읽지 않게 한다. */
 export const MAX_FOLDERS = 1000;
 
 export interface LinkRequest {
@@ -55,18 +55,18 @@ export interface LinkPlan {
   name: string;
   scope: Scope;
   instructions: string;
-  /** profile.json to write, or null when the folder already has one. */
+  /** 쓸 profile.json. 폴더에 이미 있으면 null. */
   metadata: ProfileMetadata | null;
-  /** What happens to the pointer: a new link, or a link that already points here. */
+  /** 포인터에 일어날 일: 새 링크, 또는 이미 여기를 가리키는 링크. */
   link: 'create' | 'unchanged';
-  /** Whether running the plan changes anything. */
+  /** 계획을 실행하면 무언가 바뀌는지. */
   changes: boolean;
 }
 
 /**
- * Every AGENTS.md inside `dir` up to MAX_DEPTH folders down, as `/`-separated paths, and whether the search read
- * every folder it meant to. It stops after MAX_FOLDERS folders. Hidden, dependency, build, and linked folders are
- * skipped. An AGENTS.md that is a symbolic link is listed, so it can be reported as one rather than as missing.
+ * `dir` 안에서 MAX_DEPTH 단계까지 내려가며 찾은 모든 AGENTS.md(`/`로 나눈 경로)와, 찾으려던
+ * 폴더를 모두 읽었는지. MAX_FOLDERS개 폴더를 읽으면 멈춘다. 숨은 폴더, 의존성·빌드 폴더, 연결된
+ * 폴더는 건너뛴다. 심볼릭 링크인 AGENTS.md도 목록에 넣어서, 없는 것이 아니라 링크라고 알릴 수 있게 한다.
  */
 export function instructionCandidates(dir: string): { files: string[]; complete: boolean } {
   const files: string[] = [];
@@ -106,8 +106,8 @@ function readExistingMetadata(dir: string): ProfileMetadata | null {
 }
 
 /**
- * Whether the AGENTS.md at `rel` in `dir` is one agctx wrote when it applied a profile to this folder. It holds the
- * output of that other profile, not rules of this folder's own, so it is never taken without being named.
+ * `dir`의 `rel`에 있는 AGENTS.md가, agctx가 이 폴더에 프로필을 적용하며 쓴 것인지. 그 파일은 다른
+ * 프로필의 출력이지 이 폴더 자신의 규칙이 아니므로, 이름으로 지정하지 않으면 가져가지 않는다.
  */
 function writtenByAgctx(dir: string, rel: string): boolean {
   try {
@@ -118,9 +118,9 @@ function writtenByAgctx(dir: string, rel: string): boolean {
 }
 
 /**
- * The rules files `profile link` can take from `dir`: every AGENTS.md in it that agctx did not write, and the one
- * it takes without being told, which is the root AGENTS.md, or else the only AGENTS.md. With several and none at
- * the root it takes none, and after a search that stopped early it takes only the root one, since there may be more.
+ * `profile link`가 `dir`에서 가져갈 수 있는 규칙 파일: agctx가 쓰지 않은 모든 AGENTS.md와, 따로
+ * 말하지 않아도 가져가는 하나. 그 하나는 루트 AGENTS.md이고, 없으면 하나뿐인 AGENTS.md다. 여럿인데
+ * 루트에 없으면 하나도 가져가지 않고, 찾기가 일찍 멈췄으면 더 있을 수 있으므로 루트 것만 가져간다.
  */
 export function ruleFileChoices(dir: string): {
   detected: string | null;
@@ -141,7 +141,7 @@ export function ruleFileChoices(dir: string): {
 }
 
 function chooseInstructions(dir: string): string {
-  // A root AGENTS.md of the folder's own decides without searching; one that is a symbolic link is reported by planLink.
+  // 폴더 자신의 루트 AGENTS.md가 있으면 찾지 않고 정한다. 그것이 심볼릭 링크이면 planLink가 알린다.
   const root = path.join(dir, DEFAULT_INSTRUCTIONS);
   if (
     (regularFileInside(dir, DEFAULT_INSTRUCTIONS) && !writtenByAgctx(dir, DEFAULT_INSTRUCTIONS)) ||
@@ -173,11 +173,11 @@ function chooseInstructions(dir: string): string {
 }
 
 /**
- * The Git repository `dir` sits in below its root, as its root and the `/`-separated path from there, both read from
- * the folders on disk so a path through a link names the real repository. Null when `dir` is a repository root, is
- * not in Git, is a folder the repository's commits do not hold, or sits in a home folder kept as a dotfiles
- * repository. A repository without commits holds nothing yet, so its folders count as inside it. Without git
- * installed nothing counts as inside a repository, since a folder outside Git can be linked.
+ * `dir`이 루트 아래에 놓인 Git 저장소. 그 루트와 거기서부터의 `/` 경로로 나타내고, 둘 다 디스크의
+ * 폴더에서 읽어서 링크를 거친 경로도 실제 저장소를 가리킨다. `dir`이 저장소 루트이거나, Git 밖에
+ * 있거나, 저장소 커밋이 담지 않는 폴더이거나, dotfiles 저장소로 쓰는 홈 폴더 안에 있으면 null.
+ * 커밋이 없는 저장소는 아직 담은 것이 없으므로 그 폴더들을 안에 있다고 본다. git이 설치되지 않았으면
+ * 어떤 폴더도 저장소 안으로 보지 않는다. Git 밖의 폴더는 연결할 수 있기 때문이다.
  */
 function enclosingRepository(dir: string): { root: string; prefix: string } | null {
   try {
@@ -198,7 +198,7 @@ function enclosingRepository(dir: string): { root: string; prefix: string } | nu
   }
 }
 
-/** The profile name `profile link` offers for a folder: the folder name, or the closest name that fits the rules. */
+/** `profile link`가 폴더에 제안하는 프로필 이름: 폴더 이름, 또는 규칙에 맞는 가장 가까운 이름. */
 export function suggestedName(folder: string): string | null {
   if (isProfileName(folder)) return folder;
   const name = folder
@@ -211,8 +211,9 @@ export function suggestedName(folder: string): string | null {
 }
 
 /**
- * The hint for a rules file that is a symbolic link. Pinning and `profile clone` read the rules file from Git,
- * where a link is not the file it points at, so the hint names that file when it is a regular file in the folder.
+ * 심볼릭 링크인 규칙 파일에 대한 안내. 고정과 `profile clone`은 Git에서 규칙 파일을 읽는데, Git에서
+ * 링크는 가리키는 파일이 아니다. 그래서 링크가 가리키는 파일이 폴더 안의 일반 파일이면 그 파일을
+ * 안내한다.
  */
 function symbolicLinkHint(dir: string, file: string): string {
   let target: string | null = null;
@@ -230,15 +231,15 @@ function symbolicLinkHint(dir: string, file: string): string {
 }
 
 /**
- * The folder `profile link` would link, after the checks that need no search of it: it is a folder, not the home
- * folder, and not a folder inside a Git repository. The TUI runs this before it lists the rules files in a folder.
+ * 찾지 않고도 할 수 있는 검사를 거친 뒤 `profile link`가 연결할 폴더: 폴더이고, 홈 폴더가 아니고,
+ * Git 저장소 안의 폴더가 아니다. TUI는 폴더의 규칙 파일을 나열하기 전에 이것을 실행한다.
  */
 export function checkLinkFolder(dirInput: string, request: LinkRequest = {}): string {
   const dir = path.resolve(dirInput);
   if (!isDirectory(dir)) throw usageError('link.not-directory', _('error.link.not-directory', { dir }), null);
   if (sameFolder(dir, os.homedir()))
     throw usageError('link.home-folder', _('error.link.home-folder', { dir }), _('hint.link.home-folder'));
-  // Pinning, status, and clone work on a repository root, so a folder inside a repository is linked through its root.
+  // 고정, status, clone은 저장소 루트에서 동작하므로, 저장소 안의 폴더는 그 루트로 연결한다.
   const repository = enclosingRepository(dir);
   if (repository) {
     let existing: ProfileMetadata | null = null;
@@ -266,7 +267,7 @@ export function checkLinkFolder(dirInput: string, request: LinkRequest = {}): st
   return dir;
 }
 
-/** What `profile link` would do for `dir`. Nothing is written. */
+/** `profile link`가 `dir`에 할 일. 아무것도 쓰지 않는다. */
 export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan {
   const dir = checkLinkFolder(dirInput, request);
   const existing = readExistingMetadata(dir);
@@ -301,8 +302,8 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     validateProfileName(name);
   }
 
-  // One folder is one link. A working link's name is the one in the folder's profile.json, so only a broken link
-  // can hold this folder under another name; linking it again would split the profile in two.
+  // 폴더 하나에 링크 하나. 동작하는 링크의 이름은 폴더 profile.json의 이름이므로, 이 폴더를 다른
+  // 이름으로 붙잡을 수 있는 것은 끊긴 링크뿐이다. 다시 연결하면 프로필이 둘로 갈라진다.
   const linkedAs = readStore().brokenLinks.find(link => link.name !== name && sameFolder(link.path, dir));
   if (linkedAs)
     throw usageError(
@@ -311,8 +312,8 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
       brokenLinkHint(linkedAs.name)
     );
 
-  // A name already in the store is never pointed at another folder, broken or not: a folder of the same name
-  // elsewhere would otherwise take its place without a question. Bringing a broken link back is remove, then link.
+  // 보관함에 이미 있는 이름은, 끊겼든 아니든 다른 폴더를 가리키게 하지 않는다. 그러지 않으면 다른 곳에
+  // 있는 같은 이름의 폴더가 묻지도 않고 자리를 차지한다. 끊긴 링크를 되살리려면 remove 뒤에 link한다.
   const location = profileLocation(name);
   let linked = false;
   if (location) {
@@ -323,7 +324,7 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
         _('hint.link.exists-symlink', { name })
       );
     }
-    // The name comes from profile.json when the folder has one, so --name cannot get around the clash.
+    // 폴더에 profile.json이 있으면 이름은 거기서 오므로, --name으로 충돌을 피해 갈 수 없다.
     if (!location.link)
       throw usageError(
         'link.exists',
@@ -366,7 +367,7 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
     const file = path.join(dir, ...instructions.split('/'));
     if (isSymbolicLink(file))
       throw usageError('link.rules-symlink', _('error.link.rules-symlink', { file }), symbolicLinkHint(dir, file));
-    // A rules file named in profile.json is fixed there; --instructions would only disagree with it.
+    // profile.json에 적힌 규칙 파일은 거기서 정해진다. --instructions는 그것과 어긋나기만 할 것이다.
     throw usageError(
       'link.rules-missing',
       _('error.link.rules-missing', { dir, file: instructions }),
@@ -390,14 +391,14 @@ export function planLink(dirInput: string, request: LinkRequest = {}): LinkPlan 
   };
 }
 
-/** The confirmation question for a plan. */
+/** 계획에 대한 확인 질문. */
 export function linkQuestion(plan: LinkPlan): string {
   return _('confirm.link', { name: plan.name, path: plan.dir });
 }
 
 /**
- * Write profile.json when the plan has one, then the pointer. The pointer also records the scope and rules file, so
- * the hint for a link that lost its profile.json can name them in the command that brings it back.
+ * 계획에 profile.json이 있으면 쓰고, 그다음 포인터를 쓴다. 포인터는 범위와 규칙 파일도 기록해서,
+ * profile.json을 잃은 링크의 안내가 그것을 되살리는 명령에 이 값을 넣을 수 있다.
  */
 export function writeLink(plan: LinkPlan): void {
   if (plan.metadata)

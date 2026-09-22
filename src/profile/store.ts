@@ -13,39 +13,39 @@ export const SCOPES: readonly Scope[] = ['personal', 'company', 'team', 'workspa
 
 const PROFILE_NAME = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
-/** The rules file of a profile whose profile.json names none. */
+/** profile.json이 규칙 파일을 지정하지 않은 프로필의 규칙 파일. */
 export const DEFAULT_INSTRUCTIONS = 'AGENTS.md';
 
-/** The pointer a linked profile keeps in the store instead of its files. */
+/** 연결된 프로필이 자기 파일 대신 보관함에 두는 포인터. */
 export const LINK_FILE = 'link.json';
 
 export interface ProfileLink {
-  /** The folder the profile points at, as an absolute path. */
+  /** 프로필이 가리키는 폴더. 절대 경로. */
   path: string;
-  /** Whether that folder is gone, for example because it was moved or deleted. */
+  /** 그 폴더가 사라졌는지. 예를 들어 옮겼거나 지운 경우다. */
   broken: boolean;
-  /** The scope and rules file the folder had when it was last linked, so a lost profile.json can be written back as it was. */
+  /** 마지막으로 연결할 때 폴더가 가졌던 범위와 규칙 파일. 잃은 profile.json을 원래대로 다시 쓸 수 있게 한다. */
   scope: Scope | null;
   instructions: string | null;
 }
 
 /**
- * Why a linked profile cannot be used: the folder is gone, lost its profile.json, holds another profile's, or lost
- * the rules file its profile.json names; or the pointer itself cannot be read.
+ * 연결된 프로필을 쓸 수 없는 이유: 폴더가 사라졌거나, profile.json을 잃었거나, 다른 프로필의
+ * profile.json을 갖고 있거나, profile.json이 가리키는 규칙 파일을 잃었다. 또는 포인터 자체를 읽을 수 없다.
  */
 export type BrokenLinkReason =
   'missing-folder' | 'missing-metadata' | 'invalid-metadata' | 'missing-rules' | 'invalid-link';
 
 export interface BrokenLink {
   name: string;
-  /** The folder the link points at, or the pointer file itself when it cannot be read. */
+  /** 링크가 가리키는 폴더. 포인터를 읽을 수 없으면 포인터 파일 자체. */
   path: string;
   reason: BrokenLinkReason;
 }
 
 /**
- * Whether the store folder `dir` is a pointer rather than a profile: it has link.json and no profile.json.
- * A cloned repository may carry a link.json of its own next to its profile.json, and it stays a profile.
+ * 보관함 폴더 `dir`이 프로필이 아니라 포인터인지: link.json이 있고 profile.json이 없다. clone한
+ * 저장소가 profile.json 옆에 자기 link.json을 갖고 있을 수 있는데, 그것은 여전히 프로필이다.
  */
 export function isPointerFolder(dir: string): boolean {
   try {
@@ -63,7 +63,7 @@ export function isDirectory(target: string): boolean {
   }
 }
 
-/** Whether `a` and `b` name the same folder, as the file system sees it, letter case included. */
+/** 파일 시스템이 보기에 `a`와 `b`가 같은 폴더인지. 대소문자까지 따진다. */
 export function sameFolder(a: string, b: string): boolean {
   if (path.resolve(a) === path.resolve(b)) return true;
   try {
@@ -73,7 +73,7 @@ export function sameFolder(a: string, b: string): boolean {
   }
 }
 
-/** The parsed content of a profile.json, or null when it cannot be read as JSON. */
+/** profile.json을 해석한 내용. JSON으로 읽을 수 없으면 null. */
 export function readMetadataFile(file: string): unknown {
   try {
     return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -82,7 +82,7 @@ export function readMetadataFile(file: string): unknown {
   }
 }
 
-/** Whether `target` is a file, following links: the rules file in a person's own folder may be one. */
+/** 링크를 따라갔을 때 `target`이 파일인지. 사람의 폴더에서 규칙 파일이 링크일 수 있다. */
 function isFile(target: string): boolean {
   try {
     return fs.statSync(target).isFile();
@@ -92,9 +92,9 @@ function isFile(target: string): boolean {
 }
 
 /**
- * The folder a linked profile points at, or null when `name` keeps its files in the store. The store holds a
- * folder with only `link.json`, never an operating system link, so removing the profile cannot reach the folder
- * it points at, and a missing folder can be reported by the path it used to have.
+ * 연결된 프로필이 가리키는 폴더. `name`이 보관함에 파일을 두면 null. 보관함은 운영체제 링크가 아니라
+ * `link.json`만 든 폴더를 두므로, 프로필을 지워도 가리키는 폴더에 닿지 않고, 사라진 폴더도 원래
+ * 경로로 알릴 수 있다.
  */
 export function profileLink(name: string): ProfileLink | null {
   const dir = path.join(profileHome(), name);
@@ -124,24 +124,24 @@ export function profileLink(name: string): ProfileLink | null {
 }
 
 export interface ProfileLocation {
-  /** How the store holds the profile: its own files, a link.json pointer, or an operating system link to a folder. */
+  /** 보관함이 프로필을 두는 방식: 자기 파일, link.json 포인터, 또는 폴더를 가리키는 운영체제 링크. */
   kind: 'folder' | 'pointer' | 'symlink';
-  /** The folder that holds profile.json and the rules file. */
+  /** profile.json과 규칙 파일이 있는 폴더. */
   dir: string;
   /**
-   * For a pointer, the folder it points at, or the pointer file when that cannot be read; for an operating system
-   * link whose folder is gone, the folder it pointed at. Null for a profile read from the store.
+   * 포인터이면 가리키는 폴더, 읽을 수 없으면 포인터 파일. 폴더가 사라진 운영체제 링크이면 가리키던
+   * 폴더. 보관함에서 읽은 프로필이면 null.
    */
   link: string | null;
-  /** The pointer's record when it can be read, including the scope and rules file it was linked with. */
+  /** 읽을 수 있을 때의 포인터 기록. 연결할 때의 범위와 규칙 파일을 포함한다. */
   pointer: ProfileLink | null;
-  /** Why the profile cannot be used, or null. */
+  /** 프로필을 쓸 수 없는 이유. 없으면 null. */
   problem: BrokenLinkReason | null;
-  /** profile.json in `dir`, when it is valid for this name. */
+  /** `dir`의 profile.json. 이 이름에 맞을 때만. */
   metadata: ProfileMetadata | null;
 }
 
-/** Whether `dir` has a profile.json valid for `name` and the rules file that profile.json names. */
+/** `dir`에 `name`에 맞는 profile.json과 그것이 가리키는 규칙 파일이 있는지. */
 function inspectProfileFolder(dir: string, name: string): Pick<ProfileLocation, 'dir' | 'problem' | 'metadata'> {
   const metadataPath = path.join(dir, PROFILE_METADATA_FILE);
   if (!fs.existsSync(metadataPath)) return { dir, problem: 'missing-metadata', metadata: null };
@@ -154,16 +154,15 @@ function inspectProfileFolder(dir: string, name: string): Pick<ProfileLocation, 
 }
 
 /**
- * Where the profile `name` keeps its files and whether it can be used. Every caller that needs a profile's folder
- * or asks whether a link is broken goes through here, so the answer is the same everywhere. Null when the store has
- * no entry by that name.
+ * 프로필 `name`이 파일을 두는 곳과, 쓸 수 있는지. 프로필 폴더가 필요하거나 링크가 끊겼는지 묻는
+ * 모든 호출이 여기를 거치므로 어디서나 답이 같다. 보관함에 그 이름이 없으면 null.
  */
 export function profileLocation(name: string): ProfileLocation | null {
   const storeDir = path.join(profileHome(), name);
   const osLink = isSymbolicLink(storeDir);
   if (!osLink && !fs.existsSync(storeDir)) return null;
   if (osLink && !isDirectory(storeDir)) {
-    // An operating system link made by hand before profile link existed, whose folder has since moved.
+    // profile link가 생기기 전에 손으로 만든 운영체제 링크인데, 가리키던 폴더가 옮겨졌다.
     let target = storeDir;
     try {
       target = path.resolve(path.dirname(storeDir), fs.readlinkSync(storeDir));
@@ -199,13 +198,13 @@ export function profileLocation(name: string): ProfileLocation | null {
 
 export interface StoreContents {
   profiles: ListedProfile[];
-  /** Links that cannot be used, with the reason. They stay listed so they can be found, linked again, or removed. */
+  /** 쓸 수 없는 링크와 그 이유. 찾고, 다시 연결하고, 지울 수 있도록 목록에 남긴다. */
   brokenLinks: BrokenLink[];
-  /** Store folders that are neither a profile nor a link, such as one left without a valid profile.json. */
+  /** 프로필도 링크도 아닌 보관함 폴더. 예를 들어 올바른 profile.json 없이 남은 폴더. */
   unreadable: string[];
 }
 
-/** Every entry in the store, read once and sorted into profiles, broken links, and folders that are neither. */
+/** 보관함의 모든 항목을 한 번 읽어 프로필, 끊긴 링크, 둘 다 아닌 폴더로 나눈다. */
 export function readStore(): StoreContents {
   const home = profileHome();
   const contents: StoreContents = { profiles: [], brokenLinks: [], unreadable: [] };
@@ -221,7 +220,7 @@ export function readStore(): StoreContents {
       if (location.problem) contents.brokenLinks.push({ name, path: location.link, reason: location.problem });
       else if (location.metadata) contents.profiles.push({ ...location.metadata, link: location.link });
     } else if (location.metadata) {
-      // A copy whose rules file is missing stays listed, as before links existed; using it says what is missing.
+      // 규칙 파일이 없는 사본은 링크가 생기기 전처럼 목록에 남는다. 쓰려고 하면 무엇이 없는지 알려 준다.
       contents.profiles.push(location.metadata);
     } else if (isDirectory(location.dir)) {
       contents.unreadable.push(name);
@@ -232,8 +231,8 @@ export function readStore(): StoreContents {
 }
 
 /**
- * The command that links a folder as the profile `name` again, with the scope and rules file its pointer recorded,
- * so a link removed to be brought back returns as it was.
+ * 폴더를 다시 프로필 `name`으로 연결하는 명령. 포인터가 기록한 범위와 규칙 파일을 넣어서, 되살리려고
+ * 지운 링크가 원래대로 돌아오게 한다.
  */
 export function relinkCommand(name: string, pointer: ProfileLink | null, folder: string): string {
   return [
@@ -247,9 +246,9 @@ export function relinkCommand(name: string, pointer: ProfileLink | null, folder:
 }
 
 /**
- * Keep the pointer's record of scope and rules file in step with the folder's profile.json whenever the profile is
- * read, so the hint that brings back a lost profile.json names what the folder last had. A record that cannot be
- * written is left as it is; it only feeds that hint.
+ * 프로필을 읽을 때마다 포인터의 범위·규칙 파일 기록을 폴더의 profile.json과 맞춘다. 그래서 잃은
+ * profile.json을 되살리는 안내가 폴더에 마지막으로 있던 값을 가리킨다. 쓸 수 없는 기록은 그대로
+ * 둔다. 그 안내에만 쓰는 값이기 때문이다.
  */
 export function refreshPointerRecord(name: string, pointer: ProfileLink, metadata: ProfileMetadata): void {
   const instructions = instructionsFile(metadata);
@@ -260,7 +259,7 @@ export function refreshPointerRecord(name: string, pointer: ProfileLink, metadat
   } catch {}
 }
 
-/** What to run to bring back the broken link `name`, or null when it can be used. */
+/** 끊긴 링크 `name`을 되살리려면 실행할 명령. 쓸 수 있는 링크이면 null. */
 export function brokenLinkHint(name: string): string | null {
   try {
     readProfile(name);
@@ -270,7 +269,7 @@ export function brokenLinkHint(name: string): string | null {
   }
 }
 
-/** Refuse a command that would move Git history or settings in the folder a linked profile points at. */
+/** 연결된 프로필이 가리키는 폴더의 Git 이력이나 설정을 옮길 명령을 거부한다. */
 export function assertNotLinked(name: string): void {
   const link = profileLink(name);
   if (link)
@@ -285,7 +284,7 @@ export function isScope(value: unknown): value is Scope {
   return typeof value === 'string' && (SCOPES as readonly string[]).includes(value);
 }
 
-/** Whether `name` can name a profile: lowercase letters, digits, and hyphens, 1 to 64, starting with a letter or digit. */
+/** `name`을 프로필 이름으로 쓸 수 있는지: 소문자, 숫자, 하이픈으로 1~64자이고 문자나 숫자로 시작한다. */
 export function isProfileName(name: string): boolean {
   return PROFILE_NAME.test(name);
 }
@@ -306,8 +305,8 @@ export function isValidProfileMetadata(
 ): metadata is ProfileMetadata {
   if (!metadata || typeof metadata !== 'object') return false;
   const record = metadata as Record<string, unknown>;
-  // Version 2 is what an agctx that knows `instructions` requires of a profile.json naming one, so an
-  // older agctx refuses it instead of silently applying the root AGENTS.md.
+  // `instructions`를 아는 agctx는 규칙 파일을 지정하는 profile.json에 버전 2를 요구한다. 그래서 옛
+  // agctx는 루트 AGENTS.md를 조용히 적용하지 않고 거부한다.
   const version =
     record.schemaVersion === 1
       ? record.instructions === undefined
@@ -321,14 +320,14 @@ export function isValidProfileMetadata(
   );
 }
 
-/** The rules file profile.json names, relative to the profile folder. */
+/** profile.json이 가리키는 규칙 파일. 프로필 폴더 기준 경로. */
 export function instructionsFile(metadata: ProfileMetadata): string {
   return metadata.instructions ?? DEFAULT_INSTRUCTIONS;
 }
 
 /**
- * Whether an `instructions` value names a Markdown file inside the repository: it must be relative,
- * separate folders with `/`, have no empty, `.` or `..` part, and stay out of `.git`.
+ * `instructions` 값이 저장소 안의 Markdown 파일을 가리키는지: 상대 경로이고, 폴더를 `/`로 나누고,
+ * 빈 부분이나 `.`·`..`이 없고, `.git` 밖에 있어야 한다.
  */
 export function isInstructionsPath(file: string): boolean {
   const parts = file.split('/');
@@ -352,8 +351,8 @@ export function assertInstructionsPath(file: string, source: string): void {
 }
 
 /**
- * The file `file` names inside `dir`, or null when it is missing, is not a regular file, or is reached
- * through a symbolic link. Used on content that came from a remote, before it is registered.
+ * `dir` 안에서 `file`이 가리키는 파일. 없거나, 일반 파일이 아니거나, 심볼릭 링크를 거쳐 닿으면 null.
+ * 원격에서 온 내용을 등록하기 전에 쓴다.
  */
 export function regularFileInside(dir: string, file: string): string | null {
   const parts = file.split('/');
@@ -377,7 +376,7 @@ export function readProfile(name: string): Profile {
   if (!location) throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));
   const { dir: profileDir, link, problem, metadata } = location;
   const metadataPath = path.join(profileDir, PROFILE_METADATA_FILE);
-  // A pointer that cannot be read says so itself, with how to link it again or remove it.
+  // 읽을 수 없는 포인터는 그 사실과, 다시 연결하거나 지우는 방법을 스스로 알린다.
   if (problem === 'invalid-link') profileLink(name);
   if (problem === 'missing-folder') {
     throw usageError(
@@ -413,8 +412,8 @@ export function readProfile(name: string): Profile {
   }
   const instructions = instructionsFile(metadata);
   assertInstructionsPath(instructions, metadataPath);
-  // The store is the user's own folder, so a rules file linked in from elsewhere stays usable here;
-  // remote content is checked for links by clone and pull before it gets here.
+  // 보관함은 사용자 자신의 폴더이므로, 다른 곳에서 연결해 온 규칙 파일도 여기서는 쓸 수 있다. 원격
+  // 내용은 여기 오기 전에 clone과 pull이 링크를 검사한다.
   const instructionsPath = path.join(profileDir, ...instructions.split('/'));
   if (problem === 'missing-rules') {
     if (link)
@@ -464,8 +463,8 @@ export function getProfiles(): ListedProfile[] {
 
 export function removeProfile(name: string): void {
   validateProfileName(name);
-  // Only the store folder goes: for a link that is the pointer, never the folder it points at. A store folder
-  // that is not a valid profile is removable too, since link and clone tell people to clear the name this way.
+  // 보관함 폴더만 지운다. 링크라면 포인터만 지우고, 가리키는 폴더는 절대 지우지 않는다. 올바른
+  // 프로필이 아닌 보관함 폴더도 지울 수 있다. link와 clone이 이름을 비우라고 이렇게 안내하기 때문이다.
   const storeDir = path.join(profileHome(), name);
   if (!fs.existsSync(storeDir) && !isSymbolicLink(storeDir))
     throw usageError('profile.not-found', _('error.profile.not-found', { name }), _('hint.profile.list'));

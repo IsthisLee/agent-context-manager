@@ -11,9 +11,8 @@ import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-
 import type { ManagedKind } from './shared/types.ts';
 
 /**
- * `agctx check`: does this repository still match the profile version it
- * recorded? Works in CI without a profile store; add --refresh to compare the
- * recorded commit with the source repository.
+ * `agctx check`: 이 저장소가 기록해 둔 프로필 버전과 아직 맞는가? 보관함 없이도 CI에서 동작하고,
+ * --refresh를 주면 기록된 커밋을 원본 저장소와 비교한다.
  */
 
 export type FindingKind = 'hidden-characters' | 'conflict' | 'behind';
@@ -43,13 +42,13 @@ const CODE: Record<FindingKind, number> = {
 
 const COMMIT = /^[0-9a-f]{7,64}$/i;
 
-/** The newest commit of a remote branch, or null when the branch does not exist. */
+/** 원격 브랜치의 최신 커밋. 브랜치가 없으면 null. */
 export function remoteHeadCommit(url: string, branch: string): string | null {
   const line = git(['ls-remote', '--', url, `refs/heads/${branch}`]).stdout.trim();
   return line.split(/\s+/)[0] || null;
 }
 
-/** The profile store's commit when a pinned project recorded an older commit of the same history. */
+/** 고정한 프로젝트가 같은 이력의 더 오래된 커밋을 기록했을 때의 보관함 커밋. */
 function newerStoreCommit(profileDir: string, recorded: string | null): string | null {
   if (!recorded || !COMMIT.test(recorded) || !isGitRoot(profileDir)) return null;
   const head = git(['rev-parse', '--verify', '--quiet', 'HEAD'], { cwd: profileDir, allowFailure: true }).stdout.trim();
@@ -61,7 +60,7 @@ function newerStoreCommit(profileDir: string, recorded: string | null): string |
 
 export interface CheckOptions {
   refresh?: boolean;
-  /** How to read a remote branch's newest commit; `repos status` shares one lookup per source. */
+  /** 원격 브랜치의 최신 커밋을 읽는 방법. `repos status`는 원본마다 한 번만 조회해 나눠 쓴다. */
   remoteHead?: (url: string, branch: string) => string | null;
 }
 
@@ -80,15 +79,14 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   const warnings: string[] = [];
 
   const profile = config.profile ?? null;
-  // A linked profile lives in the folder its pointer names; a link that cannot be used counts as a profile this computer lacks.
+  // 연결된 프로필은 포인터가 가리키는 폴더에 있다. 쓸 수 없는 링크는 이 컴퓨터에 없는 프로필로 센다.
   const location = profile ? profileLocation(profile) : null;
   const brokenLink = Boolean(location?.link && location.problem);
   const inStore = Boolean(location) && !brokenLink;
   const profileDir = inStore && location ? location.dir : null;
-  // What a sync would write, when this computer holds the profile. A managed
-  // area that already holds it is not a conflict, so `check` and `sync` give
-  // the same answer. Without the profile only the recorded hash is available,
-  // and a differing hash stays a conflict.
+  // 이 컴퓨터에 프로필이 있을 때 sync가 쓸 내용. 관리 영역에 이미 그 내용이 있으면 충돌이 아니므로
+  // `check`와 `sync`가 같은 답을 낸다. 프로필이 없으면 기록된 해시밖에 없어서, 해시가 다르면
+  // 그대로 충돌이다.
   const plan = profile && inStore ? planFor(profile, targetDir, 'keep').plan : null;
   const settled = new Set((plan?.files ?? []).filter(file => file.conflict === null).map(file => file.rel));
 

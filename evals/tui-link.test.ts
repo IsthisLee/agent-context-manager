@@ -20,8 +20,8 @@ import {
 import { gitIn } from './support/git-workspace.ts';
 
 /**
- * What the TUI decides around `profile link`, checked the way `evals/tui-pin.test.ts` checks the pin
- * question: each decision is a function, so it can be run without drawing a terminal screen.
+ * `profile link` 주변에서 TUI가 내리는 판단을, `evals/tui-pin.test.ts`가 고정 질문을 검사하는
+ * 방식으로 검사한다. 판단마다 함수라서 터미널 화면을 그리지 않고 실행할 수 있다.
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -54,7 +54,7 @@ function workspace(t: TestContext) {
   return { root, agctx, folder };
 }
 
-test('the TUI offers the rules file link would take, the other AGENTS.md files, and a path of your own', t => {
+test('TUI는 link가 가져갈 규칙 파일, 다른 AGENTS.md 파일들, 직접 입력하는 경로를 제안한다', t => {
   const { folder } = workspace(t);
   const root = folder('root-rules', { 'AGENTS.md': '# Root\n', 'docs/AGENTS.md': '# Docs\n' });
   const nested = folder('nested-rules', { 'templates/AGENTS.md': '# Nested\n' });
@@ -67,22 +67,18 @@ test('the TUI offers the rules file link would take, the other AGENTS.md files, 
   assert.deepEqual(values(nested), ['templates/AGENTS.md', OTHER_RULES_FILE]);
   assert.equal(linkRuleOptions(nested).initial, 'templates/AGENTS.md');
   assert.deepEqual(values(many), ['backend/AGENTS.md', 'frontend/AGENTS.md', OTHER_RULES_FILE]);
-  assert.equal(linkRuleOptions(many).initial, undefined, 'several candidates leave the choice to the person');
-  assert.deepEqual(
-    values(none),
-    [OTHER_RULES_FILE],
-    'a folder without AGENTS.md still gets a way to name its rules file'
-  );
+  assert.equal(linkRuleOptions(many).initial, undefined, '후보가 여럿이면 선택을 그 사람에게 맡긴다');
+  assert.deepEqual(values(none), [OTHER_RULES_FILE], 'AGENTS.md가 없는 폴더도 규칙 파일을 지정할 방법을 받는다');
 });
 
-test('the TUI ends a link with what happened: linked, already linked, declined, or failed', () => {
+test('TUI는 연결을 일어난 일로 끝낸다: 연결됨, 이미 연결됨, 거절, 실패', () => {
   assert.equal(linkOutro({ exitCode: 0, data: { written: true, link: 'create', metadata: 'create' } }), 'done');
   assert.equal(linkOutro({ exitCode: 0, data: { written: false, link: 'unchanged', metadata: 'keep' } }), 'unchanged');
   assert.equal(linkOutro({ exitCode: 0, data: { written: false, link: 'create', metadata: 'create' } }), 'declined');
   assert.equal(linkOutro({ exitCode: 64 }), 'failed');
 });
 
-test('a broken link picked in the TUI list opens its own menu, and removal lists every broken link', t => {
+test('TUI 목록에서 고른 끊긴 링크는 자기 메뉴를 열고, 삭제 목록에는 모든 끊긴 링크가 나온다', t => {
   const { agctx, folder, root } = workspace(t);
   const healthy = folder('healthy-rules', { 'AGENTS.md': '# Healthy\n' });
   const moved = folder('moved-rules', { 'AGENTS.md': '# Moved\n' });
@@ -102,7 +98,7 @@ test('a broken link picked in the TUI list opens its own menu, and removal lists
   );
 });
 
-test('the TUI does not offer to fetch before showing the status of a linked profile', t => {
+test('TUI는 연결된 프로필의 상태를 보여 주기 전에 fetch를 제안하지 않는다', t => {
   const { agctx, folder } = workspace(t);
   agctx('profile', 'create', 'copied');
   agctx('profile', 'link', folder('linked-rules', { 'AGENTS.md': '# Linked\n' }), '--yes');
@@ -111,7 +107,7 @@ test('the TUI does not offer to fetch before showing the status of a linked prof
   assert.deepEqual(statusRefreshPrompt('copied'), { ask: true });
 });
 
-test('link never moves a link to another folder, working or broken, and names how to do it', t => {
+test('link는 동작하든 끊겼든 링크를 다른 폴더로 옮기지 않고, 그렇게 하는 방법을 알려 준다', t => {
   const { agctx, folder, root } = workspace(t);
   const first = folder('a/rules', { 'AGENTS.md': '# First\n' });
   const second = folder('b/rules', { 'AGENTS.md': '# Second\n' });
@@ -129,7 +125,7 @@ test('link never moves a link to another folder, working or broken, and names ho
   );
 });
 
-test('the TUI rules file list leaves out hidden, dependency, and build folders and very deep files', t => {
+test('TUI 규칙 파일 목록은 숨은 폴더, 의존성·빌드 폴더, 아주 깊은 파일을 뺀다', t => {
   const { folder } = workspace(t);
   const dir = folder('busy-rules', {
     'templates/AGENTS.md': '# Rules\n',
@@ -145,7 +141,7 @@ test('the TUI rules file list leaves out hidden, dependency, and build folders a
   );
 });
 
-test('a link whose pointer cannot be read is removed before its name is linked again', t => {
+test('포인터를 읽을 수 없는 링크는 그 이름을 다시 연결하기 전에 지운다', t => {
   const { agctx, folder, root } = workspace(t);
   const dir = folder('company-rules', { 'AGENTS.md': '# Company\n' });
   agctx('profile', 'link', dir, '--name', 'company', '--yes');
@@ -158,7 +154,7 @@ test('a link whose pointer cannot be read is removed before its name is linked a
   );
 });
 
-test('the TUI shows a broken link with the commands that bring it back', t => {
+test('TUI는 끊긴 링크를 되살리는 명령과 함께 보여 준다', t => {
   const { agctx, folder } = workspace(t);
   const dir = folder('company-rules', { 'AGENTS.md': '# Company\n' });
   agctx('profile', 'link', dir, '--name', 'company', '--scope', 'company', '--yes');
@@ -170,14 +166,14 @@ test('the TUI shows a broken link with the commands that bring it back', t => {
   assert.ok(text.includes(`agctx profile link ${dir} --name company --scope company`), text);
 });
 
-test('the TUI list decides which menu to open from the broken links it already read', t => {
+test('TUI 목록은 이미 읽은 끊긴 링크로 어떤 메뉴를 열지 정한다', t => {
   workspace(t);
 
   assert.equal(menuFor('ghost', [{ name: 'ghost', path: '/nowhere', reason: 'missing-folder' }]), 'broken-link');
   assert.equal(menuFor('ghost', []), 'profile');
 });
 
-test('the rules file search stops after a fixed number of folders and does not guess from a partial search', t => {
+test('규칙 파일 찾기는 정해진 폴더 수를 읽으면 멈추고 일부만 찾은 결과로 추측하지 않는다', t => {
   const { folder } = workspace(t);
   const files: Record<string, string> = { 'zzz/AGENTS.md': '# Rules\n' };
   for (let index = 0; index < MAX_FOLDERS; index++) files[`d${String(index).padStart(4, '0')}/.keep`] = '';
@@ -187,7 +183,7 @@ test('the rules file search stops after a fixed number of folders and does not g
   assert.throws(() => planLink(dir), { code: 'link.search-limit' });
 });
 
-test('the TUI can remove a store folder that is not a profile, and says what it is', t => {
+test('TUI는 프로필이 아닌 보관함 폴더를 지울 수 있고, 그것이 무엇인지 알려 준다', t => {
   const { root } = workspace(t);
   fs.mkdirSync(path.join(root, 'home', 'profiles', 'leftover'), { recursive: true });
   fs.writeFileSync(path.join(root, 'home', 'profiles', 'leftover', 'AGENTS.md'), '# Old\n');
@@ -196,22 +192,22 @@ test('the TUI can remove a store folder that is not a profile, and says what it 
   assert.match(removeNote('leftover'), /not a profile/);
 });
 
-test('the TUI offers a name that fits the naming rules when the folder name does not', () => {
+test('폴더 이름이 이름 규칙에 맞지 않으면 TUI는 맞는 이름을 제안한다', () => {
   assert.equal(linkNameDefault('/work/Team_Rules'), 'team-rules');
   assert.equal(linkNameDefault('/work/team-rules'), 'team-rules');
 });
 
-test('the TUI refuses a profile name that is not one before describing what removal deletes', t => {
+test('TUI는 삭제가 지우는 것을 설명하기 전에 프로필 이름이 아닌 이름을 거부한다', t => {
   workspace(t);
 
   assert.throws(() => removeNote('../..'), { code: 'profile.invalid-name' });
 });
 
-test('the TUI checks a folder before searching it for rules files', t => {
+test('TUI는 규칙 파일을 찾기 전에 폴더를 검사한다', t => {
   const { root, folder } = workspace(t);
   const home = path.join(root, 'user-home');
   fs.mkdirSync(home);
-  // os.homedir() reads HOME on POSIX and USERPROFILE on Windows.
+  // os.homedir()는 POSIX에서 HOME을, Windows에서 USERPROFILE을 읽는다.
   const previous = { HOME: process.env.HOME, USERPROFILE: process.env.USERPROFILE };
   process.env.HOME = home;
   process.env.USERPROFILE = home;
@@ -231,7 +227,7 @@ test('the TUI checks a folder before searching it for rules files', t => {
   checkLinkFolder(repo);
 });
 
-test('the TUI rules file list leaves out an AGENTS.md that agctx wrote when it applied a profile', t => {
+test('TUI 규칙 파일 목록은 agctx가 프로필을 적용하며 쓴 AGENTS.md를 뺀다', t => {
   const { folder } = workspace(t);
   const dir = folder('applied-rules', {
     'AGENTS.md': '# Project\n<!-- agctx:managed:end -->\n',

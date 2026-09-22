@@ -1,4 +1,4 @@
-/** English message catalog. */
+/** 영어 메시지 카탈로그. */
 export default {
   'create.intro': 'Create an agctx profile',
   'create.name.message': 'Enter a profile name.',

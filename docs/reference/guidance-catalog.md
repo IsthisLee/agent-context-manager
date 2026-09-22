@@ -30,7 +30,7 @@ flowchart TB
 ## 지침 항목 10개
 
 <!-- agctx-doc-sources: src/i18n/index.ts -->
-<!-- agctx-doc-sources-sha256: 3b411ecc9ccc018e24372b634e8592942ded6b6c32deda14646fd1f57374f2ad -->
+<!-- agctx-doc-sources-sha256: 80e07528ba33380a4c7b89e60a9b484ed2fdc0408ebb75ae6e68eeaee2df9831 -->
 
 아래는 현재 배포되는 10개 항목이다. 항목마다 값은 `on`과 `off` 둘이고 규칙 문구는 하나다([ADR 0028](../adr/0028-guidance-on-off.md)). `off`면 그 항목이 산출물에서 빠지고, 모든 항목이 `off`면 블록 안이 빈다.
 
@@ -117,7 +117,7 @@ flowchart TB
 ## 켜고 끄기 (on / off)
 
 <!-- agctx-doc-sources: src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 99aba5de12a8d8a4192d6f2e10144f7eb13157c2d6cc8a893d6e96f66fed32a0 -->
+<!-- agctx-doc-sources-sha256: d541bd7beafa7530046bddd08a98fa755d58fe018aee9d3a20658a6de919018f -->
 
 - `on`: 이 항목을 프로필 지침에 넣는다. 응답 언어를 뺀 나머지 항목의 기본값이다.
 - `off`: 넣지 않는다.

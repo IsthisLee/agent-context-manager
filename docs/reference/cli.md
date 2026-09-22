@@ -6,7 +6,7 @@
 ## 설치와 실행
 
 <!-- agctx-doc-sources: src/agctx.ts, src/shared -->
-<!-- agctx-doc-sources-sha256: 5639bb10d77b3ed648faff06ca9acf500fb94eb7271703ce504d0279bc44e549 -->
+<!-- agctx-doc-sources-sha256: 7ee2012ac15a13335c152ea42cc821cad4cf822cd3e06f7e3ac13ccf527c934d -->
 
 ```bash
 npm install --global agent-context-manager
@@ -22,7 +22,7 @@ agctx install
 ## 공통 규칙
 
 <!-- agctx-doc-sources: src/i18n -->
-<!-- agctx-doc-sources-sha256: dcf2f06f33e7727fbd95cc4336c1ca64da5dd5a73840ed6877954a9aee431fb3 -->
+<!-- agctx-doc-sources-sha256: cee5158752e84dd11241b2e15f0e7dcc670e94eb9b6f6fa7143fb547421e911a -->
 
 - `<값>`은 사용자가 입력하는 필수 위치 인자, `[값]`은 생략할 수 있는 선택 인자다. 사용법 줄은 옵션을 앞에 적지만 옵션과 위치 인자의 순서는 섞어도 된다.
 - 프로필 관리·적용·공유 명령은 `profile` 하위 명령, 저장소 검사는 `check`, 에이전트 전달 확인은 `explain`·`verify`, 여러 저장소를 한 번에 다루는 명령은 `repos` 하위 명령이다.
@@ -119,7 +119,7 @@ $ agctx check --refresh --json /work/orders-api
 ## 메인 TUI
 
 <!-- agctx-doc-sources: src/tui -->
-<!-- agctx-doc-sources-sha256: caca95410745c48794b40891fb89a4ec021bcac266fe6cc643803800a009db38 -->
+<!-- agctx-doc-sources-sha256: 9dcc2b394827075a84cc0fb7de223632b07cff945e7a5a5c7a292f60a50ae6c3 -->
 
 ```bash
 agctx
@@ -144,7 +144,7 @@ agctx --tui
 ## 명령어
 
 <!-- agctx-doc-sources: src/commands, src/profile, src/project, src/repos, src/verify, src/check.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 10fac2bb421e0fbc7c51ea96e911221e004226331d9aa15e5f1a4a8d3f3c5a03 -->
+<!-- agctx-doc-sources-sha256: 7ed05754fd683e5418c93b3f90742ef7564a5b0fd89a5038af18676c4b864cbd -->
 
 아래 표와 명령마다의 사용법·종료 코드 줄은 명령 등록부(`src/commands/registry.ts`)에서 `node tools/generate-reference.ts`가 만든다.
 

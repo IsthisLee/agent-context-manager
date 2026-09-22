@@ -8,14 +8,14 @@
 ## 품질 게이트
 
 <!-- agctx-doc-sources: tsconfig.json, tools/check-docs.ts, tools/package-smoke.ts -->
-<!-- agctx-doc-sources-sha256: 3b76ebec2860fa77e522b36c52b202f747c76aaa06c3b26ab6f7c26ad195459e -->
+<!-- agctx-doc-sources-sha256: 55f340dae37d33b943516c1acd76938c0dfdfbcc2e664fa3fd84cd942e4f5dd3 -->
 
 변경을 올리기 전의 검사 순서와 평가 작성 방법은 [테스트와 품질 게이트](testing.md)에, 문서 소스 해시 게이트와 근거 게이트는 [문서 게이트](doc-gate.md)에 있다.
 
 ## 릴리스
 
 <!-- agctx-doc-sources: package.json, .github/workflows, tools/build.ts -->
-<!-- agctx-doc-sources-sha256: 9515eab27e92bea1d09f050ccc9523974823ef61b51946aa677179aee65189e6 -->
+<!-- agctx-doc-sources-sha256: 34ef124742fdce988489b19607c1d7d68d14f6ba2d1a17b8d137abc6ec5af218 -->
 
 ### 릴리스 전 점검
 

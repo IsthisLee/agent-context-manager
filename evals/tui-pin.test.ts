@@ -10,7 +10,7 @@ import { pinPrompt } from '../src/tui/profile.ts';
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const cli = path.join(repoRoot, 'src', 'agctx.ts');
 
-/** A profile store with one profile, and an empty project folder. */
+/** 프로필 하나가 든 보관함과 빈 프로젝트 폴더. */
 function makeStore(t: TestContext) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'agctx-tui-pin-'));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
@@ -53,18 +53,18 @@ function makeStore(t: TestContext) {
   return { project, commitProfile };
 }
 
-test('the TUI does not ask about pinning a profile that is not a Git repository', t => {
+test('TUI는 Git 저장소가 아닌 프로필의 고정 여부를 묻지 않는다', t => {
   const { project } = makeStore(t);
   assert.deepEqual(pinPrompt('team-backend', project), { ask: false, initial: false });
 });
 
-test('the TUI asks about pinning a Git profile and defaults to not pinning a new project', t => {
+test('TUI는 Git 프로필의 고정 여부를 묻고, 새 프로젝트에서는 고정하지 않는 것을 기본으로 고른다', t => {
   const { project, commitProfile } = makeStore(t);
   commitProfile();
   assert.deepEqual(pinPrompt('team-backend', project), { ask: true, initial: false });
 });
 
-test('the TUI defaults to keeping the pin of a project that is already pinned', t => {
+test('TUI는 이미 고정한 프로젝트의 고정을 유지하는 것을 기본으로 고른다', t => {
   const { project, commitProfile } = makeStore(t);
   commitProfile();
   fs.writeFileSync(

@@ -19,8 +19,8 @@ import {
 } from './store.ts';
 
 /**
- * Share profiles through ordinary Git repositories. These commands change only
- * the profile store; repository files change only through apply, sync, or resolve.
+ * 평범한 Git 저장소로 프로필을 나눈다. 이 명령들은 보관함만 바꾸고, 저장소 파일은 apply·sync·resolve로만
+ * 바뀐다.
  */
 
 export interface ProfileGitState {
@@ -29,16 +29,16 @@ export interface ProfileGitState {
   connected: boolean;
   remote: string | null;
   branch: string | null;
-  /** The remote branch the current branch tracks and pushes to, from its merge setting; null when it tracks none. */
+  /** 현재 브랜치가 추적하고 push하는 원격 브랜치. merge 설정에서 읽는다. 추적하는 것이 없으면 null. */
   remoteBranch: string | null;
   commit: string | null;
-  /** Remote-tracking ref for the branch, when configured and fetched. */
+  /** 설정돼 있고 fetch된 경우의 브랜치 원격 추적 ref. */
   upstream: string | null;
   dirty: string[];
   ahead: number | null;
   behind: number | null;
   refreshed: boolean;
-  /** The folder a linked profile points at; its Git history belongs to that folder, not to agctx. */
+  /** 연결된 프로필이 가리키는 폴더. 그 Git 이력은 agctx가 아니라 그 폴더의 것이다. */
   link: string | null;
 }
 
@@ -49,7 +49,7 @@ function lines(text: string): string[] {
     .filter(Boolean);
 }
 
-/** Refuse profile content that hides characters, before anything is registered or updated. */
+/** 무엇이든 등록하거나 갱신하기 전에, 문자를 숨긴 프로필 내용을 거부한다. */
 export function assertNoHiddenCharacters(files: readonly { file: string; content: string }[]): void {
   const findings = files.flatMap(({ file, content }) => describeHiddenCharacters(file, findHiddenCharacters(content)));
   if (findings.length) {
@@ -91,7 +91,7 @@ export function profileGitState(name: string, options: { refresh?: boolean } = {
   const remote = remoteName || 'origin';
   const url = git(['remote', 'get-url', remote], { cwd: dir, allowFailure: true }).stdout.trim();
   state.remote = url ? sanitizeRemoteUrl(url) : null;
-  // A linked folder is the person's own checkout; fetching there is theirs to do, so status stays read-only.
+  // 연결된 폴더는 그 사람의 checkout이다. 거기서 fetch하는 것은 그 사람의 몫이므로 status는 읽기만 한다.
   if (options.refresh && url && !link) {
     git(['fetch', '--quiet', remote], { cwd: dir });
     state.refreshed = true;
@@ -192,16 +192,16 @@ export function cloneProfile(location: string, options: { branch?: string | null
 export interface CommittedProfile {
   metadataText: string;
   metadata: ProfileMetadata;
-  /** The rules file profile.json names at that commit. */
+  /** 그 커밋에서 profile.json이 가리키는 규칙 파일. */
   file: string;
-  /** Its content, or null when the commit has no regular file there. */
+  /** 그 내용. 커밋의 그 자리에 일반 파일이 없으면 null. */
   content: string | null;
 }
 
 /**
- * profile.json and the rules file it names, as commit `rev` holds them. Null when that commit has no
- * valid profile.json for `name`. The rules file path is read from the same commit, so a profile that
- * later moved its rules file still finds the file an older commit used.
+ * 커밋 `rev`에 있는 profile.json과 그것이 가리키는 규칙 파일. 그 커밋에 `name`에 맞는 profile.json이
+ * 없으면 null. 규칙 파일 경로도 같은 커밋에서 읽으므로, 나중에 규칙 파일을 옮긴 프로필도 옛 커밋이
+ * 쓰던 파일을 찾는다.
  */
 export function committedProfile(dir: string, rev: string, name: string): CommittedProfile | null {
   const metadataText = committedFile(dir, rev, PROFILE_METADATA_FILE);
@@ -270,7 +270,7 @@ export interface PushPlan {
   pushed: boolean;
 }
 
-/** Send commits that already exist. Never stages or commits; the caller confirms before `pushed` can become true. */
+/** 이미 있는 커밋을 보낸다. stage나 commit은 하지 않는다. `pushed`가 true가 되기 전에 호출한 쪽이 확인한다. */
 export function planPush(name: string): PushPlan {
   assertNotLinked(name);
   const state = profileGitState(name, { refresh: true });
@@ -296,7 +296,7 @@ export function pushProfile(plan: PushPlan): PushPlan {
   const branch = plan.state.branch as string;
   const remoteName =
     git(['config', `branch.${branch}.remote`], { cwd: plan.state.dir, allowFailure: true }).stdout.trim() || 'origin';
-  // Push to the branch the current branch tracks, which connect --branch may name differently from the local branch.
+  // 현재 브랜치가 추적하는 브랜치로 push한다. connect --branch가 로컬 브랜치와 다른 이름을 줬을 수 있다.
   git(['push', '--quiet', remoteName, `HEAD:refs/heads/${plan.state.remoteBranch ?? branch}`], { cwd: plan.state.dir });
   return { state: profileGitState(plan.state.name), commits: plan.commits, pushed: true };
 }
@@ -321,8 +321,8 @@ export function connectProfile(
     );
   }
   git(['ls-remote', '--heads', '--', url], { cwd: dir });
-  // push, pull, and status all read the current branch's tracking settings, so connect writes them there.
-  // --branch names the remote branch to track when it differs from the local branch name.
+  // push, pull, status는 모두 현재 브랜치의 추적 설정을 읽으므로 connect가 그 자리에 쓴다.
+  // --branch는 로컬 브랜치 이름과 다를 때 추적할 원격 브랜치를 가리킨다.
   const local = git(['symbolic-ref', '--quiet', '--short', 'HEAD'], { cwd: dir, allowFailure: true }).stdout.trim();
   if (!local) throw usageError('connect.no-branch', _('error.connect.no-branch', { name }), null);
   const branch = options.branch || local;

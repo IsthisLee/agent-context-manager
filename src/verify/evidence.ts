@@ -3,28 +3,27 @@ import os from 'node:os';
 import path from 'node:path';
 
 /**
- * Evidence that an agent received instruction files, read from the session logs
- * the agents keep on this machine. The log formats are not public contracts, so
- * each reader only relies on the fields evals/verify.test.ts pins down.
+ * 에이전트가 지침 파일을 받았다는 증거. 에이전트가 이 컴퓨터에 남기는 세션 기록에서 읽는다. 기록
+ * 형식은 공개 계약이 아니므로, 판독기마다 evals/verify.test.ts가 고정한 필드에만 기댄다.
  */
 
 export interface CodexEvidence {
   source: string;
-  /** When the session last loaded its instructions; files changed later cannot be judged. */
+  /** 세션이 마지막으로 지침을 불러온 때. 그 뒤에 바뀐 파일은 판단할 수 없다. */
   startedAt: number;
-  /** The instruction text Codex injected into the session. */
+  /** Codex가 세션에 주입한 지침 글. */
   text: string;
 }
 
 export interface ClaudeEvidence {
   source: string;
-  /** When the session last loaded its instructions (session start, or a reload after compaction). */
+  /** 세션이 마지막으로 지침을 불러온 때(세션 시작, 또는 압축 뒤 다시 불러온 때). */
   startedAt: number;
-  /** Real paths of instruction files Claude Code loaded. */
+  /** Claude Code가 불러온 지침 파일의 실제 경로. */
   loaded: Set<string>;
 }
 
-/** Only the newest logs are searched, so a machine with years of sessions stays fast. */
+/** 최신 기록만 찾아서, 몇 년 치 세션이 있는 컴퓨터에서도 빠르게 한다. */
 const MAX_LOGS = 300;
 
 type LogRecord = Record<string, unknown>;
@@ -86,7 +85,7 @@ function startedAt(file: string, stamps: (string | null)[]): number {
   return times.length ? Math.min(...times) : fs.statSync(file).mtimeMs;
 }
 
-/** The newest Codex session started in `startDir`, from `$CODEX_HOME/sessions/**\/rollout-*.jsonl`. */
+/** `startDir`에서 시작한 가장 최근 Codex 세션. `$CODEX_HOME/sessions/**\/rollout-*.jsonl`에서 찾는다. */
 export function codexSessionEvidence(startDir: string): CodexEvidence | null {
   const home = process.env.CODEX_HOME || path.join(os.homedir(), '.codex');
   for (const file of jsonlFiles(
@@ -99,7 +98,7 @@ export function codexSessionEvidence(startDir: string): CodexEvidence | null {
       .map(record => text(object(record.payload)?.cwd))
       .find((value): value is string => Boolean(value));
     if (!cwd || realOrResolved(cwd) !== startDir) continue;
-    // Judge against the latest instructions the session loaded.
+    // 세션이 불러온 가장 최근 지침을 기준으로 판단한다.
     let latest: { text: string; at: string | null } | null = null;
     for (const record of lines) {
       const payload = object(record.payload);
@@ -120,13 +119,13 @@ export function codexSessionEvidence(startDir: string): CodexEvidence | null {
   return null;
 }
 
-/** The newest Claude Code transcript whose records ran in `startDir`, from `$CLAUDE_CONFIG_DIR/projects`. */
+/** `startDir`에서 실행된 기록이 있는 가장 최근 Claude Code 대화 기록. `$CLAUDE_CONFIG_DIR/projects`에서 찾는다. */
 export function claudeSessionEvidence(startDir: string): ClaudeEvidence | null {
   const configDir = process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude');
   const projects = path.join(configDir, 'projects');
   let folders = [path.join(projects, startDir.replace(/[^A-Za-z0-9]/g, '-'))].filter(folder => fs.existsSync(folder));
   if (!folders.length) {
-    // The folder naming is not documented; fall back to folders that end with the same last path segment.
+    // 폴더 이름 규칙은 문서에 없다. 마지막 경로 조각이 같은 폴더로 대신 찾는다.
     const tail = path.basename(startDir).replace(/[^A-Za-z0-9]/g, '-');
     try {
       folders = fs
@@ -142,7 +141,7 @@ export function claudeSessionEvidence(startDir: string): ClaudeEvidence | null {
   for (const file of files) {
     const lines = records(file);
     if (!lines.some(record => typeof record.cwd === 'string' && realOrResolved(record.cwd) === startDir)) continue;
-    // Claude Code loads instructions at start and again after compaction; the latest load decides.
+    // Claude Code는 시작할 때와 압축 뒤에 지침을 불러온다. 가장 최근에 불러온 것이 판단 기준이다.
     let loaded = new Set<string>();
     let loadedAt: string | null = null;
     for (const record of lines) {
@@ -178,7 +177,7 @@ export function claudeSessionEvidence(startDir: string): ClaudeEvidence | null {
 
 const normalize = (value: string) => value.replace(/\s+/g, ' ').trim();
 
-/** Whether a file's content appears in the text Codex injected. Long files match by their start and end. */
+/** 파일 내용이 Codex가 주입한 글에 나오는지. 긴 파일은 앞부분과 끝부분으로 맞춰 본다. */
 export function codexReceived(content: string, injected: string): boolean {
   const body = normalize(content);
   if (!body) return true;

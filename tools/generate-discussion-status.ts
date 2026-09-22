@@ -5,28 +5,26 @@ import { markerPair } from './generate-reference.ts';
 import { readTopics, TOPICS_FILE, type DiscussionTopic, type DiscussionTopics } from './discussion-topics.ts';
 
 /**
- * Keep every place that shows a discussion topic's status in step with
- * docs/discussion/topics.json: the status line of each topic document, the
- * topic table of each area index, the stage diagram of the implementation plan
- * and the status lists of both READMEs. Everything outside the generated
- * blocks is written by people.
+ * 논의 주제의 상태를 보여 주는 모든 곳을 docs/discussion/topics.json과 맞춘다: 각 주제 문서의 상태
+ * 줄, 각 영역 색인의 주제 표, 구현 계획의 단계 도표, 두 README의 상태 목록. 생성 블록 밖은 모두
+ * 사람이 쓴다.
  *
- *   node tools/generate-discussion-status.ts          rewrite the generated blocks
- *   node tools/generate-discussion-status.ts --check  exit 1 when a block is out of date
+ *   node tools/generate-discussion-status.ts          생성 블록을 다시 쓴다
+ *   node tools/generate-discussion-status.ts --check  블록이 최신이 아니면 1로 끝난다
  */
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
-/** The README introduces the package, so its lists show only the implementation plan. */
+/** README는 패키지를 소개하므로 그 목록은 구현 계획만 보여 준다. */
 const README_AREA = 'architecture';
 
-/** Mermaid has no HTML comments, so the stage diagram marks its generated lines with `%%` comments. */
+/** Mermaid에는 HTML 주석이 없어서, 단계 도표는 생성한 줄을 `%%` 주석으로 표시한다. */
 const DIAGRAM_MARKERS: readonly [string, string] = [
   '%% agctx:generated:stage-classes:start',
   '%% agctx:generated:stage-classes:end'
 ];
 
-/** Node class of a stage in the diagram, in the order the class lines are written. */
+/** 도표에서 단계의 노드 클래스. class 줄을 쓰는 순서대로다. */
 const DIAGRAM_CLASSES: ReadonlyArray<[status: string, className: string]> = [
   ['Implemented', 'done'],
   ['Implementing', 'doing'],
@@ -66,7 +64,7 @@ const README_LISTS: readonly ReadmeList[] = [
   }
 ];
 
-/** Replace the lines between two marker lines, keeping the markers and their indentation. */
+/** 두 마커 줄 사이의 줄을 바꾼다. 마커와 그 들여쓰기는 유지한다. */
 function replaceBetween(content: string, [start, end]: readonly [string, string], body: string): string {
   const lines = content.split('\n');
   const from = lines.findIndex(line => line.trim() === start);
@@ -100,7 +98,7 @@ export function topicTable(topics: readonly DiscussionTopic[]): string {
   return [`| ${header.join(' | ')} |`, `| ${header.map(() => '---').join(' | ')} |`, ...topics.map(row)].join('\n');
 }
 
-/** Diagram nodes are named `S<stage>`; each status gets one `class` line, left out when no stage has it. */
+/** 도표 노드 이름은 `S<stage>`다. 상태마다 `class` 줄이 하나이고, 그 상태인 단계가 없으면 뺀다. */
 export function stageClasses(topics: readonly DiscussionTopic[]): string {
   return DIAGRAM_CLASSES.flatMap(([status, className]) => {
     const stages = topics

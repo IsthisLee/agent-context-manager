@@ -13,10 +13,9 @@ import { selectRepos } from './registry.ts';
 import { namedFiles } from './sync.ts';
 
 /**
- * `agctx repos pr`: for each repository whose profile moved, write the update
- * in a temporary worktree (or a temporary clone for `--targets` URLs), commit it
- * on a new branch, push it, and open a pull request with `gh`. The user's
- * working copy and local branches are never touched.
+ * `agctx repos pr`: 프로필이 바뀐 저장소마다 임시 worktree(`--targets` URL이면 임시 clone)에서
+ * 갱신을 쓰고, 새 브랜치에 커밋해 push하고, `gh`로 pull request를 연다. 사용자의 작업 사본과 로컬
+ * 브랜치는 건드리지 않는다.
  */
 
 export type PrState =
@@ -58,9 +57,9 @@ interface Target {
 }
 
 interface Workspace {
-  /** Top of the temporary working tree. */
+  /** 임시 작업 트리의 맨 위. */
   root: string;
-  /** The project folder inside it. */
+  /** 그 안의 프로젝트 폴더. */
   project: string;
   base: string;
   cleanup(): void;
@@ -102,7 +101,7 @@ function targetsFrom(options: PrOptions): Target[] {
     .map(line => line.trim())
     .filter(line => line && !line.startsWith('#'))
     .map(line => {
-      // A working copy is used in place; anything else (URL, bare repository) is cloned.
+      // 작업 사본이면 그 자리에서 쓰고, 그 밖(URL, bare 저장소)은 clone한다.
       const local = path.resolve(path.dirname(file), line);
       if (fs.existsSync(path.join(local, '.git'))) return { label: local, location: local, clone: false };
       return fs.existsSync(local)
@@ -128,13 +127,13 @@ function defaultBase(top: string): string {
   throw usageError('repos.no-base', _('error.repos.no-base', { project: top }), _('hint.repos.base'));
 }
 
-/** A detached worktree at the remote base branch, next to the user's working copy. */
+/** 사용자 작업 사본 옆, 원격 기준 브랜치에서 만든 detached worktree. */
 function worktreeFor(projectDir: string, requestedBase: string | null): Workspace {
   if (!fs.existsSync(projectDir)) throw usageError('repos.missing', _('repos.sync.missing'), null);
   const top = git(['rev-parse', '--show-toplevel', '--show-prefix'], { cwd: projectDir, allowFailure: true });
   if (top.status !== 0)
     throw usageError('repos.not-git', _('error.repos.not-git', { project: projectDir }), _('hint.repos.targets'));
-  // git reports the top and the folder's place under it, so a Windows short name or another letter case cannot misplace the project.
+  // git이 맨 위 폴더와 그 아래 폴더의 위치를 알려 주므로, Windows 짧은 이름이나 다른 대소문자 표기가 프로젝트 위치를 틀리게 만들지 않는다.
   const [topDir, prefix = ''] = top.stdout.split(/\r?\n/);
   const relative = prefix.replace(/\/$/, '');
   if (git(['remote', 'get-url', 'origin'], { cwd: topDir, allowFailure: true }).status !== 0) {
@@ -167,7 +166,7 @@ function worktreeFor(projectDir: string, requestedBase: string | null): Workspac
   };
 }
 
-/** A temporary clone for a target the bot does not keep locally. */
+/** 봇이 로컬에 두지 않는 대상을 위한 임시 clone. */
 function cloneFor(url: string, requestedBase: string | null): Workspace {
   if (requestedBase) assertBranchName(requestedBase);
   const holder = temporaryHolder();
@@ -197,7 +196,7 @@ interface GhResult {
   stderr: string;
 }
 
-/** Run gh without prompts. A missing gh is reported as a failed call, not an error. */
+/** 묻지 않고 gh를 실행한다. gh가 없으면 오류가 아니라 실패한 호출로 보고한다. */
 function gh(args: readonly string[], cwd: string): GhResult {
   const env = { ...process.env, GH_PROMPT_DISABLED: '1' };
   const result =
@@ -250,7 +249,7 @@ function planTarget(
       candidate: null
     };
   }
-  // A pinned repository is pinned again to the profile's current commit; others follow the store.
+  // 고정한 저장소는 프로필의 현재 커밋으로 다시 고정하고, 나머지는 보관함을 따른다.
   const plan = planFor(profile, workspace.project, config.pin === true ? true : 'keep');
   if (plan.plan.conflicts.length) {
     const files = plan.plan.conflicts.map(file => file.rel);
@@ -313,7 +312,7 @@ export interface PreparedPrs {
   cleanup(): void;
 }
 
-/** Plan every target. Workspaces of repositories that will get a pull request stay until `cleanup()`. */
+/** 모든 대상을 계획한다. pull request를 받을 저장소의 작업 공간은 `cleanup()`까지 남는다. */
 export function prepareReposPrs(options: PrOptions, dryRun: boolean): PreparedPrs {
   const kept: Workspace[] = [];
   const cleanup = () => kept.splice(0).forEach(workspace => workspace.cleanup());
@@ -366,7 +365,7 @@ export function prepareReposPrs(options: PrOptions, dryRun: boolean): PreparedPr
 
 function profileCommits(profile: string, from: string | null, to: string | null): string[] {
   if (!from || !to || from === to || !COMMIT.test(from) || !COMMIT.test(to)) return [];
-  // A linked profile's history is in the folder it points at, not in the store.
+  // 연결된 프로필의 이력은 보관함이 아니라 그것이 가리키는 폴더에 있다.
   const dir = profileLocation(profile)?.dir;
   if (!dir) return [];
   const log = git(['log', '--oneline', '--max-count=20', `${from}..${to}`], { cwd: dir, allowFailure: true });
@@ -389,7 +388,7 @@ function pullRequestBody(candidate: Candidate): string {
   return `${lines.join('\n')}\n`;
 }
 
-/** Commit, push, and open a pull request for each candidate. A failure stays with its repository. */
+/** 후보마다 커밋하고 push하고 pull request를 연다. 실패는 그 저장소에만 남는다. */
 export function openPullRequests(candidates: readonly Candidate[], options: PrOptions): PrItem[] {
   return candidates.map(candidate => {
     const { item, workspace, plan, title } = candidate;
@@ -436,7 +435,7 @@ export function openPullRequests(candidates: readonly Candidate[], options: PrOp
   });
 }
 
-/** Why gh could not run, for people: a missing GitHub CLI in words, any other spawn error as reported. */
+/** gh를 실행하지 못한 이유를 사람에게 알리는 말. GitHub CLI가 없으면 말로 풀고, 다른 실행 오류는 보고된 그대로. */
 export function ghFailureReason(error: Error): string {
   return (error as NodeJS.ErrnoException).code === 'ENOENT' ? _('repos.pr.gh-missing') : error.message;
 }

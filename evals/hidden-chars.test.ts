@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { describeHiddenCharacters, findHiddenCharacters } from '../src/shared/hidden-chars.ts';
 
-test('plain Korean and English text has no hidden characters', () => {
+test('평범한 한국어와 영어 글에는 숨은 문자가 없다', () => {
   assert.deepEqual(findHiddenCharacters('# 규칙\n- Use pnpm.\n- 테스트를 먼저 쓴다.\n'), []);
 });
 
-test('bidirectional controls, zero-width, tag, and variation selector characters are reported with position', () => {
+test('양방향 제어, 폭 없는 문자, 태그, 이체 선택자 문자를 위치와 함께 보고한다', () => {
   const text = 'line one\nsafe \u{202E}evil\u{202C} text\nzero\u{200B}width\ntag\u{E0041}\nvs\u{E0100}\n';
   const found = findHiddenCharacters(text);
   assert.deepEqual(
@@ -21,7 +21,7 @@ test('bidirectional controls, zero-width, tag, and variation selector characters
   );
 });
 
-test('a byte order mark is allowed only as the first character', () => {
+test('바이트 순서 표시는 첫 문자일 때만 허용한다', () => {
   assert.deepEqual(findHiddenCharacters('\u{FEFF}# Profile\n'), []);
   assert.deepEqual(
     findHiddenCharacters('# Profile\n\u{FEFF}').map(item => item.codePoint),
@@ -29,7 +29,7 @@ test('a byte order mark is allowed only as the first character', () => {
   );
 });
 
-test('findings are described as file:line:column lines', () => {
+test('찾은 것은 file:line:column 줄로 설명한다', () => {
   assert.deepEqual(describeHiddenCharacters('AGENTS.md', findHiddenCharacters('a\u{2066}b')), [
     'AGENTS.md:1:2 U+2066 bidi-control'
   ]);

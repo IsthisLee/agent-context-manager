@@ -49,7 +49,7 @@ const text = (parsed: ParsedArguments, name: string) =>
 const retryWithYes = (words: string, parsed: ParsedArguments) =>
   [`agctx ${words}`, ...parsed.raw.map(word => shellWord(word)), '--yes'].join(' ');
 
-/** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
+/** repos 명령을 위해 저장소를 기억한다. 목록이 깨져 있어도 이미 성공한 apply를 실패로 만들면 안 된다. */
 function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {
   try {
     recordRepo(targetDir, profile, pinned);
@@ -85,7 +85,7 @@ function requirePositional(parsed: ParsedArguments, index: number, usage: string
   return value;
 }
 
-/** Plan, show, confirm, and write for apply and sync. Conflicts stop with exit code 2 before anything is written. */
+/** apply와 sync의 계획·표시·확인·쓰기. 충돌이 있으면 아무것도 쓰기 전에 종료 코드 2로 멈춘다. */
 async function applyOrSync(
   parsed: ParsedArguments,
   name: string,
@@ -109,7 +109,7 @@ async function applyOrSync(
     ...plan.warnings
   ];
   if (!isJsonMode()) warnings.forEach(message => warn(message));
-  // Human output already printed the warnings; the JSON document carries them instead.
+  // 사람이 읽는 출력은 이미 경고를 찍었다. JSON 문서는 대신 경고를 담는다.
   const done = (written: boolean): CommandOutcome => ({
     exitCode: EXIT.ok,
     data: { ...data, written },
@@ -160,7 +160,7 @@ export const HANDLERS: Record<string, Handler> = {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
     const store = readStore();
     await listProfiles(scope, store);
-    // A broken link has no scope that can be read, so a scoped list leaves it out, as the text output does.
+    // 끊긴 링크는 읽을 수 있는 범위가 없으므로, 텍스트 출력과 마찬가지로 범위를 정한 목록에서 빠진다.
     return ok({
       profiles: store.profiles.filter(profile => !scope || profile.scope === scope),
       brokenLinks: scope ? [] : store.brokenLinks
@@ -263,7 +263,7 @@ export const HANDLERS: Record<string, Handler> = {
       written: false
     };
     if (!plan.changes) {
-      // Reading the profile brings the link record in step with the folder's profile.json.
+      // 프로필을 읽으면 링크 기록이 폴더의 profile.json과 맞춰진다.
       readProfile(plan.name);
       say(_('link.unchanged', { name: plan.name, path: plan.dir }));
       return ok(data);
@@ -283,7 +283,7 @@ export const HANDLERS: Record<string, Handler> = {
     const profiles = names.map(name => profileGitState(name, { refresh: flag(parsed, 'refresh') }));
     for (const state of profiles) {
       say(describeState(state));
-      // A linked folder is pulled and pushed with git there, so the next steps name git, not profile pull or push.
+      // 연결된 폴더는 그 폴더에서 git으로 pull·push하므로, 다음 단계는 profile pull·push가 아니라 git을 안내한다.
       if (state.link) {
         if (!state.connected) {
           say(_('status.link.local', { path: state.link }));
@@ -370,7 +370,7 @@ export const HANDLERS: Record<string, Handler> = {
     const agents = parseAgents(text(parsed, 'agent'));
     const probe = flag(parsed, 'probe');
     const names = agents.map(agentName).join(', ');
-    // A probe changes no files but spends agent usage, so the refusal names that cost instead of a dry run.
+    // probe는 파일을 바꾸지 않지만 에이전트 사용량을 쓰므로, 거절 메시지는 dry run 대신 그 비용을 말한다.
     if (probe && parsed.options.yes !== true && !canPrompt()) {
       throw usageError(
         'confirm.required',
@@ -447,12 +447,12 @@ export const HANDLERS: Record<string, Handler> = {
       );
       if (status.error) say(`  ${status.error.message}`);
       for (const warning of status.warnings) say(`  ${warning}`);
-      // A repository on a broken link is brought back by linking again; sync and pr would stop on the link.
+      // 끊긴 링크에 걸린 저장소는 다시 연결해서 되살린다. sync와 pr은 그 링크에서 멈출 것이다.
       const brokenHint = linkedFolder(status.profile) ? brokenLinkHint(status.profile) : null;
       if (brokenHint) hints.add(`${_('output.next')}: ${brokenHint}`);
       const linked = linkedFolder(status.profile);
       if (status.state === 'behind' && !brokenHint) {
-        // A linked folder's new commits reach teammates only once they are pushed there, so the hint says to push first.
+        // 연결된 폴더의 새 커밋은 그 폴더에서 push해야 동료에게 닿으므로, 안내가 먼저 push하라고 말한다.
         hints.add(
           status.pinned
             ? linked
@@ -475,7 +475,7 @@ export const HANDLERS: Record<string, Handler> = {
     const planned = planReposSync(text(parsed, 'profile'));
     if (!planned.length) say(_('repos.none'));
     printSyncItems(planned);
-    // Plan warnings, such as a CLAUDE.md that does not import its AGENTS.md, name the repository they belong to.
+    // AGENTS.md를 import하지 않는 CLAUDE.md 같은 계획 경고는 그것이 속한 저장소 이름을 붙인다.
     const planWarnings = planned.flatMap(item =>
       (item.plan?.plan.warnings ?? []).map(message => `${item.path}: ${message}`)
     );
@@ -585,7 +585,7 @@ function printLinkPlan(plan: LinkPlan): void {
   say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}`);
 }
 
-/** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */
+/** `name`이 연결된 폴더. 없으면 null. 링크가 거부하는 명령을 다음 단계로 안내하지 않으려고 쓴다. */
 function linkedFolder(name: string): string | null {
   try {
     return profileLocation(name)?.link ?? null;
@@ -594,7 +594,7 @@ function linkedFolder(name: string): string | null {
   }
 }
 
-/** One line per skill folder, then one per agent left out because it was not found. */
+/** 스킬 폴더마다 한 줄, 그다음 찾지 못해 빠진 에이전트마다 한 줄. */
 function printSkillPlan(plan: SkillPlan): void {
   for (const item of plan.items) say(`${item.state.padEnd(10)} ${item.dir}${item.reason ? `  ${item.reason}` : ''}`);
   for (const target of plan.skipped)

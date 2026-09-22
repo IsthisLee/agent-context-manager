@@ -8,17 +8,17 @@ import { PROJECT_MENU_COMMANDS, REPOS_MENU_COMMANDS, REPOSITORY_ACTIONS } from '
 
 const spec = (id: string) => {
   const command = COMMANDS.find(entry => entry.id === id);
-  assert.ok(command, `${id} is registered`);
+  assert.ok(command, `${id}가 등록돼 있다`);
   return command;
 };
 
-/** What the CLI would parse from the tokens a TUI answer stands for. */
+/** TUI 답변이 나타내는 토큰에서 CLI가 해석할 내용. */
 const parsedFrom = (id: string, positional: string[], options: Record<string, string | boolean | null>) => {
   const parsed = checkArguments(spec(id), commandTokens(id, positional, options));
   return { positional: parsed.positional, options: parsed.options };
 };
 
-test('every repository command is reachable from a TUI menu that runs it', () => {
+test('모든 저장소 명령은 그것을 실행하는 TUI 메뉴에서 닿을 수 있다', () => {
   const repositoryCommands = COMMANDS.filter(command => command.surface === 'repository').map(command => command.id);
   assert.deepEqual(
     [...PROJECT_MENU_COMMANDS, ...REPOS_MENU_COMMANDS].map(command => command.id).sort(),
@@ -35,7 +35,7 @@ test('every repository command is reachable from a TUI menu that runs it', () =>
   assert.deepEqual(Object.keys(REPOSITORY_ACTIONS).sort(), [...repositoryCommands].sort());
 });
 
-test('TUI answers for project checks become the same arguments as the CLI options', () => {
+test('프로젝트 확인의 TUI 답변은 CLI 옵션과 같은 인자가 된다', () => {
   assert.deepEqual(parsedFrom('check', ['/work/shop'], { refresh: true }), {
     positional: ['/work/shop'],
     options: { refresh: true }
@@ -55,7 +55,7 @@ test('TUI answers for project checks become the same arguments as the CLI option
   });
 });
 
-test('TUI answers for repositories become the same arguments as the CLI options', () => {
+test('저장소 메뉴의 TUI 답변은 CLI 옵션과 같은 인자가 된다', () => {
   assert.deepEqual(parsedFrom('repos.list', [], { profile: 'team-backend', prune: true }), {
     positional: [],
     options: { profile: 'team-backend', prune: true }
@@ -93,7 +93,7 @@ test('TUI answers for repositories become the same arguments as the CLI options'
   });
 });
 
-test('TUI answers for a Git branch become the same arguments as --branch', () => {
+test('Git 브랜치에 대한 TUI 답변은 --branch와 같은 인자가 된다', () => {
   assert.deepEqual(parsedFrom('profile.clone', ['git@example.com:acme/rules.git'], { branch: 'stable' }), {
     positional: ['git@example.com:acme/rules.git'],
     options: { branch: 'stable' }
@@ -108,7 +108,7 @@ test('TUI answers for a Git branch become the same arguments as --branch', () =>
   );
 });
 
-test('TUI answers for linking a folder become the same arguments as the CLI options', () => {
+test('폴더 연결의 TUI 답변은 CLI 옵션과 같은 인자가 된다', () => {
   assert.deepEqual(
     parsedFrom('profile.link', ['/work/team-rules'], {
       name: 'team-rules',
@@ -126,7 +126,7 @@ test('TUI answers for linking a folder become the same arguments as the CLI opti
   });
 });
 
-test('the TUI Git status answer becomes the same arguments as --refresh', () => {
+test('TUI의 Git 상태 답변은 --refresh와 같은 인자가 된다', () => {
   assert.deepEqual(parsedFrom('profile.status', ['team-backend'], { refresh: true }), {
     positional: ['team-backend'],
     options: { refresh: true }
@@ -138,11 +138,11 @@ test('the TUI Git status answer becomes the same arguments as --refresh', () => 
   assert.match(MENU_ACTIONS['profile.status'].toString(), /runFromTui\('profile\.status'/);
 });
 
-test('a TUI answer cannot name an option the command does not take', () => {
+test('TUI 답변은 명령이 받지 않는 옵션을 지정할 수 없다', () => {
   assert.throws(() => commandTokens('check', [], { agent: 'codex' }), /check has no --agent option/);
   assert.throws(() => commandTokens('explain', [], { agent: true }), /--agent needs a value/);
 });
 
-test('the help menu offers the overview and every registered command', () => {
+test('도움말 메뉴는 개요와 등록된 모든 명령을 제공한다', () => {
   assert.deepEqual(helpChoices(), [null, ...COMMANDS.map(command => command.id)]);
 });

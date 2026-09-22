@@ -7,8 +7,8 @@ function errorCode(error: unknown): string | undefined {
 }
 
 /**
- * Refuse to replace a symbolic link or a non-regular file, and, when a boundary
- * is given, a target whose parent path inside it is a symbolic link or a file.
+ * 심볼릭 링크나 일반 파일이 아닌 것을 바꾸려 하면 거부한다. 경계가 주어지면, 그 안의 부모 경로가
+ * 심볼릭 링크나 파일인 대상도 거부한다.
  */
 export function assertSafeTextTarget(target: string, boundary: string | null = null): void {
   try {
@@ -42,14 +42,14 @@ export function assertSafeTextTarget(target: string, boundary: string | null = n
 }
 
 /**
- * Text with CRLF line endings as LF, the form agctx compares and hashes guidance in.
- * Git for Windows checks files out with CRLF (core.autocrlf).
+ * CRLF 줄 끝을 LF로 바꾼 글. agctx가 지침을 비교하고 해시하는 형태다.
+ * Git for Windows는 파일을 CRLF로 checkout한다(core.autocrlf).
  */
 export function toLf(text: string): string {
   return text.replaceAll('\r\n', '\n');
 }
 
-/** Replace a UTF-8 text file through a same-directory temporary file, keeping its mode and CRLF line endings. */
+/** 같은 폴더의 임시 파일을 거쳐 UTF-8 텍스트 파일을 바꾼다. 파일 모드와 CRLF 줄 끝은 유지한다. */
 export function writeTextAtomic(target: string, content: string): void {
   assertSafeTextTarget(target);
   let mode = 0o666;
@@ -57,7 +57,7 @@ export function writeTextAtomic(target: string, content: string): void {
   try {
     const stat = fs.lstatSync(target);
     mode = stat.mode & 0o777;
-    // A file checked out with CRLF keeps them, so rewriting it does not turn every line into a diff.
+    // CRLF로 checkout한 파일은 CRLF를 유지해서, 다시 써도 모든 줄이 diff가 되지 않게 한다.
     crlf = fs.readFileSync(target, 'utf8').includes('\r\n');
   } catch (error) {
     if (errorCode(error) !== 'ENOENT') throw error;
@@ -73,7 +73,7 @@ export function writeTextAtomic(target: string, content: string): void {
   }
 }
 
-/** Whether `target` is itself a symbolic link, without following it. */
+/** `target` 자체가 심볼릭 링크인지. 링크를 따라가지 않는다. */
 export function isSymbolicLink(target: string): boolean {
   try {
     return fs.lstatSync(target).isSymbolicLink();

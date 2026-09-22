@@ -3,7 +3,7 @@ import { SCOPES } from '../profile/store.ts';
 import { say } from './output.ts';
 import { COMMANDS, usageLine, type CommandSpec } from './registry.ts';
 
-/** Every command with its usage line, read from the registry. */
+/** 등록부에서 읽은 모든 명령과 사용법 줄. */
 export function help(): void {
   say(
     [
@@ -19,7 +19,7 @@ export function help(): void {
   );
 }
 
-/** One command: usage, what it does, and the exit codes it can return. */
+/** 명령 하나: 사용법, 하는 일, 돌려줄 수 있는 종료 코드. */
 export function commandHelp(command: CommandSpec): void {
   say(
     [

@@ -17,6 +17,7 @@ disable-model-invocation: true
 - "이 저장소를 새 규칙으로 맞춰 줘." 프로필이 뒤처졌으면 `agctx profile pull <프로필>`을 먼저 실행하고, `agctx profile sync <프로젝트> --dry-run` 다음에 `--yes`를 붙인다.
 - "누가 관리 영역을 고쳤어." `agctx profile resolve <프로젝트> --dry-run`을 실행하고 어떻게 해소할지 사용자에게 묻는다. `--discard`는 백업한 뒤 수정을 버리고, `--edit`은 병합 화면을 연다.
 - "팀 프로필을 이 컴퓨터로 받아 줘." `agctx profile clone <git-url>`을 실행한다. 이미 있는 로컬 프로필을 원격에 연결하려면 `agctx profile connect <프로필> <git-url>`을 쓴다.
+- "이미 쓰던 규칙 저장소를 프로필로 써 줘." 그 저장소 폴더를 넘겨 `agctx profile link <폴더> --dry-run`으로 계획을 보여 준 뒤 `--yes`를 붙인다. AGENTS.md가 여러 개라 멈추면 어느 파일이 규칙인지 사용자에게 물어 `--instructions <경로>`로 넘긴다. 이 명령은 커밋하지 않으므로, 팀과 나누려면 사용자가 그 폴더에서 `profile.json`을 커밋해 올려야 한다고 알린다.
 - "내 프로필 변경을 배포해 줘." 아래 절차를 따라 `agctx profile push <프로필>`을 실행한다.
 - "모든 저장소에 반영해 줘." `agctx repos list`로 등록된 저장소를 보고, 고정하지 않은 저장소에는 `agctx repos sync --profile <프로필>`, 고정한 저장소에는 `agctx repos pr --profile <프로필>`을 쓴다.
 
@@ -47,6 +48,7 @@ disable-model-invocation: true
 - `agctx profile sync [--dry-run] [--yes] [<project>]`: 프로젝트가 쓰는 프로필을 다시 적용합니다. 고정한 프로젝트는 기록한 커밋에 머뭅니다.
 - `agctx profile resolve [--dry-run] [--discard] [--edit] [--yes] [<project>]`: 관리 영역 안에서 고친 내용을 밖으로 옮기고 관리 영역을 다시 만듭니다.
 - `agctx profile clone [--branch <branch>] <git-url>`: 파일과 숨은 문자를 검사한 뒤 Git 저장소에서 프로필을 가져옵니다.
+- `agctx profile link [--name <name>] [--scope <scope>] [--instructions <file>] [--dry-run] [--yes] [<path>]`: 이 컴퓨터에 있는 규칙 저장소 폴더를 프로필로 연결합니다. profile.json이 없으면 만들고, 커밋은 하지 않습니다.
 - `agctx profile status [--refresh] [<name>]`: 프로필의 원격·브랜치·커밋·로컬 수정과 원격 대비 위치를 보여 줍니다. --refresh를 붙이면 먼저 fetch합니다.
 - `agctx profile pull [--dry-run] <name>`: 프로필을 원격까지 fast-forward합니다. 저장소 파일은 바뀌지 않습니다.
 - `agctx profile push [--dry-run] [--yes] <name>`: 이미 만든 커밋을 프로필의 원격으로 보냅니다.

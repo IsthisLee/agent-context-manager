@@ -2,11 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { _ } from './i18n/index.ts';
 import { assertProjectDirectory, planFor, PROJECT_CONFIG_FILE, readProjectConfig } from './profile/apply.ts';
+import { profileLocation } from './profile/store.ts';
 import { managedRegion, regionHash } from './project/plan.ts';
 import { EXIT, usageError, worstExitCode } from './shared/errors.ts';
 import { toLf } from './shared/fs-utils.ts';
 import { git, isGitRoot } from './shared/git.ts';
-import { profileHome } from './shared/home.ts';
 import { describeHiddenCharacters, findHiddenCharacters } from './shared/hidden-chars.ts';
 import type { ManagedKind } from './shared/types.ts';
 
@@ -70,8 +70,11 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
   const warnings: string[] = [];
 
   const profile = config.profile ?? null;
-  const profileDir = profile ? path.join(profileHome(), profile) : null;
-  const inStore = Boolean(profileDir && fs.existsSync(profileDir));
+  // A linked profile lives in the folder its pointer names; a link that cannot be used counts as a profile this computer lacks.
+  const location = profile ? profileLocation(profile) : null;
+  const brokenLink = Boolean(location?.link && location.problem);
+  const inStore = Boolean(location) && !brokenLink;
+  const profileDir = inStore && location ? location.dir : null;
   // What a sync would write, when this computer holds the profile. A managed
   // area that already holds it is not a conflict, so `check` and `sync` give
   // the same answer. Without the profile only the recorded hash is available,
@@ -109,8 +112,9 @@ export function checkProject(targetDir: string, options: CheckOptions = {}): Che
       latestCommit = storeCommit;
       findings.push({ kind: 'behind', file: null, detail: _('check.profile-newer', { commit: storeCommit.slice(0, 7) }) });
     }
-  } else if (profile && !inStore && !options.refresh) {
-    warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
+  } else if (profile && !inStore) {
+    if (brokenLink && location?.link) warnings.push(_('check.warn.link-broken', { profile, path: location.link, reason: _(`list.broken.${location.problem}`) }));
+    if (!options.refresh) warnings.push(source?.git ? _('check.warn.refresh') : _('check.warn.no-profile', { profile }));
   }
 
   if (options.refresh && source?.git && source.branch) {

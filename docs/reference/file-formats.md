@@ -6,14 +6,14 @@
 <!-- agctx-doc-sources: src/shared/home.ts -->
 <!-- agctx-doc-sources-sha256: 4f44840c1ba3bb152200dbff3b5c94090a8d18f85bf22ee77d82b3e1572d19cf -->
 
-프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 규칙 파일로 저장된다. 규칙 파일은 기본으로 `AGENTS.md`이고, `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다([profile.json](#profilejson)). Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다. `verify`는 `CODEX_HOME`(기본 `~/.codex`)과 `CLAUDE_CONFIG_DIR`(기본 `~/.claude`) 아래의 세션 기록을 읽기만 한다.
+프로필은 `~/.agctx/profiles/<name>` 아래에 메타데이터 `profile.json`과 규칙 파일로 저장된다. 규칙 파일은 기본으로 `AGENTS.md`이고, `profile.json`의 `instructions`가 다른 파일을 가리킬 수 있다([profile.json](#profilejson)). `profile link`로 연결한 프로필은 그 폴더에 `link.json`만 두고 연결한 폴더를 읽는다([link.json](#linkjson)). Git 프로필이면 같은 폴더에 `.git`이 있고, 원격 주소와 추적 브랜치는 Git 설정에 둔다. 언어 설정은 `~/.agctx/config.json`, 적용한 저장소 목록은 `~/.agctx/repos.json`에 저장된다. `AGCTX_HOME` 환경변수를 설정하면 `~/.agctx` 대신 그 폴더를 쓴다. 이때 프로필은 `$AGCTX_HOME/profiles/<name>`, 언어 설정은 `$AGCTX_HOME/config.json`에 있다. `verify`는 `CODEX_HOME`(기본 `~/.codex`)과 `CLAUDE_CONFIG_DIR`(기본 `~/.claude`) 아래의 세션 기록을 읽기만 한다.
 
 프로젝트에는 `AGENTS.md`, `CLAUDE.md`, `.agents/rules/agctx.md`, `agctx.project.json`(적용한 프로필·프로젝트 이름·적용 버전·관리 영역 해시), `.agctx/`(마지막 적용본 `base/`, 충돌을 풀 때 만드는 백업 `backups/`)가 생긴다.
 
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: 7802d33cfaa9d340d579ddb8710df414914e0c7848db50be7e68133db714e0be -->
+<!-- agctx-doc-sources-sha256: 506e1e4ed474eebd1712a572086e4fe174538acf928f1ee8eadd527d6e915f75 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -49,7 +49,7 @@
 ## profile.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 8f249e2ea0a0cc9bc516001bbfd786bd0dc08aeaedc51969c8f400373ea0c9d2 -->
+<!-- agctx-doc-sources-sha256: c68158b1dab07394bc403da86530b33dd5a20c9e3889c9a25e22dc45aa2fb591 -->
 
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다. `setup`은 이미 있는 다른 필드를 그대로 둔다.
 
@@ -72,6 +72,29 @@
 `profile clone`과 `profile pull`은 원격에서 받는 규칙 파일이 일반 파일인지 확인하고, 그 파일이나 거쳐 가는 폴더가 심볼릭 링크면 거부한다. 보관함에 이미 있는 프로필은 사용자의 폴더이므로 규칙 파일이 링크여도 읽는다. 고정한 프로젝트를 다시 만들 때는 기록한 커밋의 `profile.json`이 가리키는 파일을 쓰므로, 원천이 나중에 규칙 파일을 옮겨도 기록한 커밋의 내용이 그대로 나온다.
 
 판정은 `src/profile/store.ts`의 `isValidProfileMetadata`<!--s:d0109c71d11e-->와 `isInstructionsPath`<!--s:77864c748c5b-->가 하고, 원격에서 받은 파일의 링크 검사는 `src/profile/store.ts`의 `regularFileInside`<!--s:3b89d29d5e13-->와 `src/shared/git.ts`의 `committedFile`<!--s:57e01f0132f4-->이 한다. 고정한 프로젝트가 기록한 커밋에서 규칙 파일을 찾는 일은 `src/profile/git-profile.ts`의 `committedProfile`<!--s:11ddd4e196f4-->이 한다.
+
+## link.json
+
+<!-- agctx-doc-sources: src/profile/store.ts, src/profile/link.ts -->
+<!-- agctx-doc-sources-sha256: 58c67d39d8e0f945cbba0a9a805be1b6541f581adcbe3c6df2983257e389ddaf -->
+
+`profile link`로 연결한 프로필이 보관함의 `profiles/<이름>/`에 두는 포인터다. `profile.json`과 규칙 파일은 가리키는 폴더에 있다.
+
+```json
+{
+  "schemaVersion": 1,
+  "path": "/work/team-rules",
+  "scope": "personal",
+  "instructions": "templates/AGENTS.md"
+}
+```
+
+- 읽으려면 `schemaVersion`(1)과 `path`가 있어야 한다. `scope`와 `instructions`는 그 폴더의 `profile.json`에서 마지막으로 읽은 용도와 규칙 파일이다. `profile link`를 다시 실행하거나 그 프로필을 쓰는 명령이 읽을 때마다 갱신한다. 끊긴 링크를 되살리는 안내 명령(`agctx profile link <경로> --name <name> --scope <scope> --instructions <file>`)에 이 값을 넣는다. 평소에는 연결한 폴더의 `profile.json`이 정본이고, 이 값은 읽지 않는다.
+- `link.json`이 있고 `profile.json`이 없는 보관함 폴더만 포인터로 본다. 받아 온 저장소가 루트에 자기 `link.json`을 가지고 있어도 사본 프로필이다. 판정은 `src/profile/store.ts`의 `isPointerFolder`<!--s:3cf97987e045-->가 한다.
+- `path`는 절대 경로다. 그 폴더가 없거나(`missing-folder`), 그 폴더의 `profile.json`이 없거나(`missing-metadata`) 이 프로필의 것이 아니거나(`invalid-metadata`), `profile.json`이 가리키는 규칙 파일이 없거나(`missing-rules`), `link.json`을 읽을 수 없으면(`invalid-link`) 끊긴 링크다. `invalid-link`의 `path`는 `link.json` 파일의 경로다. `profile link`가 생기기 전에 손으로 만든 운영체제 심볼릭 링크도 가리키던 폴더가 없어지면 `missing-folder`인 끊긴 링크다. `profile list`는 이유와 함께 따로 보여 주고(`--json`이면 `brokenLinks`의 `{ name, path, reason }`), 그 프로필을 쓰는 명령은 가리키던 경로를 알리며 멈춘다. 판정은 `src/profile/store.ts`의 `profileLocation`<!--s:ccfb210f16ab-->이 하고, 목록은 `src/profile/store.ts`의 `readStore`<!--s:f6dc2cbbbc40-->가 모은다.
+- 형식이 틀리면 읽을 수 없다고 멈춘다. `profile remove`로 지운 뒤 다시 연결한다.
+- `profile remove`는 이 파일이 든 보관함 폴더만 지우고, 가리키는 폴더는 건드리지 않는다.
+- `profile list --json`의 `profiles` 항목에는 연결한 프로필에만 `link`(가리키는 경로)가 붙는다.
 
 ## .agctx-install.json
 

@@ -5,10 +5,10 @@ import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { _ } from '../i18n/index.ts';
 import { planFor, PROJECT_CONFIG_FILE, readProjectConfig, type ApplyPlan } from '../profile/apply.ts';
+import { profileLocation } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { EXIT, toCliError, usageError } from '../shared/errors.ts';
 import { git, sanitizeRemoteUrl } from '../shared/git.ts';
-import { profileHome } from '../shared/home.ts';
 import { selectRepos } from './registry.ts';
 import { namedFiles } from './sync.ts';
 
@@ -268,7 +268,10 @@ export function prepareReposPrs(options: PrOptions, dryRun: boolean): PreparedPr
 
 function profileCommits(profile: string, from: string | null, to: string | null): string[] {
   if (!from || !to || from === to || !COMMIT.test(from) || !COMMIT.test(to)) return [];
-  const log = git(['log', '--oneline', '--max-count=20', `${from}..${to}`], { cwd: path.join(profileHome(), profile), allowFailure: true });
+  // A linked profile's history is in the folder it points at, not in the store.
+  const dir = profileLocation(profile)?.dir;
+  if (!dir) return [];
+  const log = git(['log', '--oneline', '--max-count=20', `${from}..${to}`], { cwd: dir, allowFailure: true });
   return log.status === 0 ? log.stdout.split('\n').filter(Boolean) : [];
 }
 

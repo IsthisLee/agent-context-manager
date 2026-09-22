@@ -7,6 +7,7 @@ import { toLf } from '../shared/fs-utils.ts';
 import { git, isGitRoot, sanitizeRemoteUrl } from '../shared/git.ts';
 import { PROFILE_METADATA_FILE } from '../shared/home.ts';
 import { PACKAGE_ROOT } from '../shared/runtime.ts';
+import { shellWord } from '../shared/shell.ts';
 import type { ConflictedFile, Profile, ProjectConfig, ProjectPlan, ProjectSource } from '../shared/types.ts';
 import { formatDiff, MANAGED_END } from '../project/conflicts.ts';
 import { planProject } from '../project/plan.ts';
@@ -91,7 +92,8 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
   const connected = isGitRoot(dir);
   const pinned = pin === true || (pin === 'keep' && projectConfig.pin === true);
   if (pinned && !connected) {
-    throw usageError('pin.not-git', _('error.pin.not-git', { name }), _('hint.profile.connect', { name }));
+    // A linked folder is connected with git in that folder, not with profile connect, which refuses links.
+    throw usageError('pin.not-git', _('error.pin.not-git', { name }), profile.link ? _('hint.pin.link-not-git', { path: profile.link }) : _('hint.profile.connect', { name }));
   }
   if (!connected) return { content: toLf(fs.readFileSync(profile.instructionsPath, 'utf8')), source: null, uncommitted: false, pin: false };
 
@@ -105,7 +107,7 @@ export function profileVersion(profile: Profile, projectConfig: ProjectConfig, p
     // The recorded commit's own profile.json names its rules file, which may have moved since.
     const shown = commit && /^[0-9a-f]{7,64}$/i.test(commit) ? committedProfile(dir, commit, name)?.content ?? null : null;
     if (!commit || shown === null) {
-      throw new CliError('pin.commit-missing', _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }), { exitCode: EXIT.unavailable, hint: _('hint.profile.pull', { name }) });
+      throw new CliError('pin.commit-missing', _('error.pin.commit-missing', { name, commit: (commit ?? '').slice(0, 7) }), { exitCode: EXIT.unavailable, hint: profile.link ? _('hint.pin.link-commit-missing', { path: shellWord(profile.link) }) : _('hint.profile.pull', { name }) });
     }
     return { content: shown, source: { ...projectConfig.source, git: remote ?? projectConfig.source?.git ?? null, branch: projectConfig.source?.branch ?? branch, commit }, uncommitted: false, pin: true };
   }

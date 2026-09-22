@@ -52,6 +52,6 @@ test('repository commands declare the exit codes they return and stay out of the
 test('the registry covers the complete command set', () => {
   assert.deepEqual(
     COMMANDS.map(command => command.id),
-    ['profile.create', 'profile.list', 'profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.clone', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect', 'check', 'explain', 'verify', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr', 'install', 'uninstall', 'config.lang', 'help']
+    ['profile.create', 'profile.list', 'profile.view', 'profile.setup', 'profile.apply', 'profile.sync', 'profile.resolve', 'profile.remove', 'profile.clone', 'profile.link', 'profile.status', 'profile.pull', 'profile.push', 'profile.connect', 'check', 'explain', 'verify', 'repos.list', 'repos.status', 'repos.sync', 'repos.pr', 'install', 'uninstall', 'config.lang', 'help']
   );
 });

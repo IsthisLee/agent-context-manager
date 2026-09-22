@@ -19,7 +19,7 @@
 ## 명령별 종료 코드
 
 <!-- agctx-doc-sources: src/shared/errors.ts, src/commands/registry.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: ff01ffcc8ca8e19c4c9d29238f74c04d344a94a406ba564070dba80992199044 -->
+<!-- agctx-doc-sources-sha256: 56ad1ae82ff44b7d9978a900793dd217d35b3d36fc8b7fb58fe19c43e5d64f87 -->
 
 아래 표는 명령 등록부에서 만든다. 명령 하나의 코드는 `agctx <명령> --help`의 마지막 줄에도 나온다.
 
@@ -35,6 +35,7 @@
 | `agctx profile resolve` | `0` · `2` · `64` · `69` · `70` |
 | `agctx profile remove` | `0` · `64` · `70` |
 | `agctx profile clone` | `0` · `3` · `64` · `69` · `70` |
+| `agctx profile link` | `0` · `64` · `70` |
 | `agctx profile status` | `0` · `64` · `69` · `70` |
 | `agctx profile pull` | `0` · `2` · `3` · `64` · `69` · `70` |
 | `agctx profile push` | `0` · `2` · `64` · `69` · `70` |

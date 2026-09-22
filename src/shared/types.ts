@@ -17,12 +17,17 @@ export interface ProfileMetadata {
   updatedAt?: string;
 }
 
+/** A profile as `profile list` reports it: its metadata, and the folder it points at when it is linked. */
+export type ListedProfile = ProfileMetadata & { link?: string };
+
 export interface Profile {
   profileDir: string;
   metadataPath: string;
   /** The rules file relative to the profile folder, as profile.json names it. */
   instructions: string;
   instructionsPath: string;
+  /** The folder a linked profile points at; null for a profile whose folder is in the store. */
+  link: string | null;
   metadata: ProfileMetadata;
 }
 

@@ -26,6 +26,7 @@
 | 13 | [적용할 에이전트와 대상 종류 고르기](topics/apply-selection.md) | High | 3·4 | 저장소마다 적용할 에이전트와 대상 종류를 골라 기록하고 sync·PR·CI가 같은 선택을 재현 | Proposed |
 | 14 | [기존 저장소에서 프로필 만들기](topics/profile-import.md) | Medium | 1·3·5 | 기존 컨텍스트 파일에서 고른 부분을 복사해 프로필을 만들고, 초안은 사용자의 에이전트가 agctx 스킬 안내로 만듦 | Proposed |
 | 15 | [기존 Git 저장소를 프로필 원천으로 쓰기](topics/existing-repository-source.md) | High | 1·11 | 규칙 파일을 옮기지 않고 `profile.json` 하나만 더해 기존 규칙 저장소를 `profile clone`으로 받고 `pull`로 따라감 | Implemented |
+| 16 | [기존 저장소 폴더를 프로필로 연결하기](topics/profile-link.md) | High | 1·11·15 | 규칙 저장소 폴더에서 `profile link` 한 번으로 `profile.json`을 만들고 폴더를 보관함에 연결해 커밋 없이 적용 | Implemented |
 | 17 | [에이전트 스킬을 agctx 명령으로 설치하기](topics/skill-install.md) | High | 5 | CLI 패키지에 든 스킬을 `agctx install`이 설치된 에이전트의 스킬 폴더에 복사하고, CLI와 버전이 어긋나면 모든 명령이 알림 | Implemented |
 | — | [구현 계약 및 문서 규칙](topics/implementation-contracts.md) | — | — | 단계별 구현·검증·문서 정합성 규칙 | Active process |
 <!-- agctx:generated:topics:end -->
@@ -66,12 +67,13 @@ flowchart LR
   S5 --> S14
   S1 --> S15["15 기존 Git 저장소를 원천으로"]
   S11 --> S15
+  S15 --> S16["16 저장소 폴더를 프로필로 연결"]
   S5 --> S17["17 스킬을 agctx 명령으로 설치"]
   classDef done fill:#d8f3dc,stroke:#2d6a4f,color:#1b4332
   classDef doing fill:#fff3bf,stroke:#b08900,color:#5c4800
   classDef todo fill:#e9ecef,stroke:#6c757d,color:#343a40
   %% agctx:generated:stage-classes:start
-  class S1,S2,S3,S4,S7,S8,S11,S15,S17 done
+  class S1,S2,S3,S4,S7,S8,S11,S15,S16,S17 done
   class S5,S6,S12 doing
   class S9,S10,S13,S14 todo
   %% agctx:generated:stage-classes:end

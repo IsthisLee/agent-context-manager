@@ -4,7 +4,7 @@ import { _, getLocale, setLocale, t } from '../i18n/index.ts';
 import type { Locale } from '../shared/types.ts';
 import { cancelled } from './cancel.ts';
 import { helpTui, runFromTui } from './commands.ts';
-import { cloneProfileTui, createProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
+import { cloneProfileTui, createProfileTui, linkProfileTui, listProfiles, runTuiStep, setupProfileTui } from './profile.ts';
 import { projectCheckTui, reposTui } from './repository.ts';
 import { skillNotice } from '../skills/install.ts';
 
@@ -18,6 +18,7 @@ export const MAIN_MENU_ENTRIES: readonly { value: string; label: string; hint?: 
   { value: 'repos', label: 'main.repos.label', hint: 'main.repos.hint' },
   { value: 'create', label: 'main.create.label', hint: 'main.create.hint' },
   { value: 'clone', label: 'main.clone.label', hint: 'main.clone.hint' },
+  { value: 'link', label: 'main.link.label', hint: 'main.link.hint' },
   { value: 'setup', label: 'main.setup.label', hint: 'main.setup.hint' },
   { value: 'install', label: 'main.install.label', hint: 'main.install.hint' },
   { value: 'uninstall', label: 'main.uninstall.label', hint: 'main.uninstall.hint' },
@@ -33,6 +34,7 @@ export const MAIN_ACTIONS: Record<string, () => Promise<void>> = {
   repos: () => runTuiStep(() => reposTui()),
   create: () => runTuiStep(() => createProfileTui()),
   clone: () => runTuiStep(() => cloneProfileTui()),
+  link: () => runTuiStep(() => linkProfileTui()),
   setup: () => runTuiStep(() => setupProfileTui()),
   install: () => runTuiStep(async () => { await runFromTui('install', [], {}); }),
   uninstall: () => runTuiStep(async () => { await runFromTui('uninstall', [], {}); }),

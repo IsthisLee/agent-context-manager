@@ -20,7 +20,7 @@
 ## CI에서 확인하기
 
 <!-- agctx-doc-sources: src/check.ts, src/commands/output.ts -->
-<!-- agctx-doc-sources-sha256: a9f2ee5b3eb2d990eadcfe79ab7defcfb88f837d92052f53838a616a2193d363 -->
+<!-- agctx-doc-sources-sha256: 1b188e6e92dc0d48fd8e24aa42435c1ec1ee03d0c541a5d2071caf60ac240473 -->
 
 `agctx check`는 프로필 보관함(프로필을 받아 두는 `~/.agctx/profiles` 폴더)이 없는 CI에서도 저장소 파일이 `agctx.project.json`에 기록한 프로필 버전과 맞는지 확인한다. 결과는 종료 코드로 알린다.
 

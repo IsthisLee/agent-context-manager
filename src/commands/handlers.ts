@@ -6,16 +6,18 @@ import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { verifyPath } from '../verify/index.ts';
 import { boundProfile, conflictError, planFor, printConflicts, printPlan } from '../profile/apply.ts';
 import { cloneProfile, connectProfile, planPush, profileGitState, pullProfile, pushProfile } from '../profile/git-profile.ts';
+import { linkQuestion, planLink, writeLink, type LinkPlan } from '../profile/link.ts';
 import { resolveProject } from '../profile/resolve.ts';
 import { setupProfile } from '../profile/setup.ts';
-import { createProfile, getProfiles, removeProfile, viewProfile } from '../profile/store.ts';
+import { brokenLinkHint, createProfile, getProfiles, profileLocation, readProfile, readStore, removeProfile, viewProfile } from '../profile/store.ts';
 import { writePlan } from '../project/plan.ts';
 import { openPullRequests, prepareReposPrs, type PrItem, type PrOptions } from '../repos/pr.ts';
 import { pruneRepos, recordRepo, selectRepos } from '../repos/registry.ts';
 import { reposStatus } from '../repos/status.ts';
 import { applyReposSync, planReposSync, type SyncItem } from '../repos/sync.ts';
 import { EXIT, usageError, worstExitCode } from '../shared/errors.ts';
-import { saveLocale } from '../shared/home.ts';
+import { PROFILE_METADATA_FILE, profileHome, saveLocale } from '../shared/home.ts';
+import { shellWord } from '../shared/shell.ts';
 import { createProfileTui, listProfiles, removeProfileTui, setupProfileTui } from '../tui/profile.ts';
 import { applyInstall, applyUninstall, planInstall, planUninstall, type SkillPlan } from '../skills/install.ts';
 import { canPrompt, confirmChange, type ParsedArguments } from './options.ts';
@@ -27,7 +29,7 @@ const ok = (data?: unknown, warnings?: string[]): CommandOutcome => ({ exitCode:
 const projectDir = (value: string | undefined) => path.resolve(process.cwd(), value || '.');
 const flag = (parsed: ParsedArguments, name: string) => parsed.options[name] === true;
 const text = (parsed: ParsedArguments, name: string) => (typeof parsed.options[name] === 'string' ? (parsed.options[name] as string) : null);
-const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw, '--yes'].join(' ');
+const retryWithYes = (words: string, parsed: ParsedArguments) => [`agctx ${words}`, ...parsed.raw.map(word => shellWord(word)), '--yes'].join(' ');
 
 /** Remember a repository for the repos commands. A broken list must not fail an apply that already succeeded. */
 function remember(targetDir: string, profile: string, pinned: boolean, warnings: string[]): void {
@@ -107,8 +109,10 @@ export const HANDLERS: Record<string, Handler> = {
   },
   'profile.list': async parsed => {
     const scope = typeof parsed.options.scope === 'string' ? parsed.options.scope : null;
-    await listProfiles(scope);
-    return ok({ profiles: getProfiles().filter(profile => !scope || profile.scope === scope) });
+    const store = readStore();
+    await listProfiles(scope, store);
+    // A broken link has no scope that can be read, so a scoped list leaves it out, as the text output does.
+    return ok({ profiles: store.profiles.filter(profile => !scope || profile.scope === scope), brokenLinks: scope ? [] : store.brokenLinks });
   },
   'profile.view': async parsed => {
     const name = requirePositional(parsed, 0, 'agctx profile view <name>');
@@ -159,11 +163,41 @@ export const HANDLERS: Record<string, Handler> = {
     say(_('clone.next', { name: state.name }));
     return ok(state);
   },
+  'profile.link': async parsed => {
+    const plan = planLink(projectDir(parsed.positional[0]), { name: text(parsed, 'name'), scope: text(parsed, 'scope'), instructions: text(parsed, 'instructions') });
+    printLinkPlan(plan);
+    const data = { profile: plan.name, path: plan.dir, scope: plan.scope, instructions: plan.instructions, metadata: plan.metadata ? 'create' : 'keep', link: plan.link, written: false };
+    if (!plan.changes) {
+      // Reading the profile brings the link record in step with the folder's profile.json.
+      readProfile(plan.name);
+      say(_('link.unchanged', { name: plan.name, path: plan.dir }));
+      return ok(data);
+    }
+    if (flag(parsed, 'dry-run')) return ok(data);
+    if (!(await confirmChange(parsed, linkQuestion(plan), retryWithYes('profile link', parsed)))) {
+      say(_('confirm.declined'));
+      return ok(data);
+    }
+    writeLink(plan);
+    say(_('link.done', { name: plan.name, path: plan.dir }));
+    say(_('link.next', { name: plan.name }));
+    return ok({ ...data, written: true });
+  },
   'profile.status': async parsed => {
     const names = parsed.positional[0] ? [parsed.positional[0]] : getProfiles().map(profile => profile.name);
     const profiles = names.map(name => profileGitState(name, { refresh: flag(parsed, 'refresh') }));
     for (const state of profiles) {
       say(describeState(state));
+      // A linked folder is pulled and pushed with git there, so the next steps name git, not profile pull or push.
+      if (state.link) {
+        if (!state.connected) {
+          say(_('status.link.local', { path: state.link }));
+          continue;
+        }
+        say(_('status.link', { path: state.link }));
+        if (flag(parsed, 'refresh')) say(_('status.link.no-refresh', { path: shellWord(state.link) }));
+        continue;
+      }
       if (state.behind) say(_('status.next.pull', { name: state.name }));
       if (state.ahead) say(_('status.next.push', { name: state.name }));
     }
@@ -285,7 +319,15 @@ export const HANDLERS: Record<string, Handler> = {
         : '-';
       say(`${status.state.padEnd(17)} ${status.profile.padEnd(16)} ${(status.pinned ? 'pinned' : '-').padEnd(6)} ${version.padEnd(15)} ${status.path}`);
       if (status.error) say(`  ${status.error.message}`);
-      if (status.state === 'behind') hints.add(status.pinned ? _('repos.next.pr', { profile: status.profile }) : _('repos.next.sync', { profile: status.profile }));
+      for (const warning of status.warnings) say(`  ${warning}`);
+      // A repository on a broken link is brought back by linking again; sync and pr would stop on the link.
+      const brokenHint = linkedFolder(status.profile) ? brokenLinkHint(status.profile) : null;
+      if (brokenHint) hints.add(`${_('output.next')}: ${brokenHint}`);
+      const linked = linkedFolder(status.profile);
+      if (status.state === 'behind' && !brokenHint) {
+        // A linked folder's new commits reach teammates only once they are pushed there, so the hint says to push first.
+        hints.add(status.pinned ? (linked ? _('repos.next.pr.linked', { profile: status.profile, path: shellWord(linked) }) : _('repos.next.pr', { profile: status.profile })) : _('repos.next.sync', { profile: status.profile }));
+      }
       if (status.state === 'conflict') hints.add(_('repos.next.resolve', { project: status.path }));
       if (status.state === 'missing') hints.add(_('repos.hint.prune'));
       if (status.error?.hint) hints.add(`${_('output.next')}: ${status.error.hint}`);
@@ -372,6 +414,18 @@ export const HANDLERS: Record<string, Handler> = {
   },
   help: async () => ok()
 };
+
+function printLinkPlan(plan: LinkPlan): void {
+  say(_('link.plan.title'));
+  say(`  ${(plan.metadata ? 'create' : 'keep').padEnd(9)} ${path.join(plan.dir, PROFILE_METADATA_FILE)}  ${_('link.plan.metadata', { name: plan.name, scope: plan.scope, instructions: plan.instructions })}`);
+  const action = plan.link === 'create' ? 'link' : plan.link;
+  say(`  ${action.padEnd(9)} ${path.join(profileHome(), plan.name)} -> ${plan.dir}`);
+}
+
+/** The folder `name` is linked to, or null, for next steps that must not name commands a link refuses. */
+function linkedFolder(name: string): string | null {
+  try { return profileLocation(name)?.link ?? null; } catch { return null; }
+}
 
 /** One line per skill folder, then one per agent left out because it was not found. */
 function printSkillPlan(plan: SkillPlan): void {

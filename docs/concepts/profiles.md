@@ -13,9 +13,17 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 프로필 보관함
 
 <!-- agctx-doc-sources: src/shared/home.ts, src/profile/store.ts -->
-<!-- agctx-doc-sources-sha256: 9d599dc52888b4256578ed530bb5beab7fa1a82310e1ce45e29ffeb619facacb -->
+<!-- agctx-doc-sources-sha256: aeeca1fffacbf74532d6f46bef7bbbff3217c17acaafc10c99d1b92ec1d93836 -->
 
 프로필은 `~/.agctx/profiles/<이름>` 폴더다(`AGCTX_HOME`을 설정하면 `$AGCTX_HOME/profiles/<이름>`). 폴더에는 메타데이터 `profile.json`과 규칙 파일이 있고, 팀과 공유하는 프로필이면 `.git`도 있다. 규칙 파일은 기본으로 폴더 루트의 `AGENTS.md`이고, `profile.json`의 `instructions`가 폴더 안의 다른 `.md` 파일을 가리킬 수도 있다. 이미 있는 규칙 저장소를 파일을 옮기지 않고 받을 때 쓴다. 필드는 [파일 형식](../reference/file-formats.md#profilejson)에 있다.
+
+이미 컴퓨터에 받아 둔 규칙 저장소 폴더는 `profile link`로 연결할 수 있다. 그러면 보관함의 `profiles/<이름>` 폴더에는 그 폴더의 경로를 적은 `link.json`만 남고, agctx는 연결한 폴더의 `profile.json`과 규칙 파일을 직접 읽는다. 그래서 커밋하기 전의 수정도 바로 적용된다. 연결한 프로필은 그 폴더에서 git으로 받고 올리며, 지우면 포인터만 없어진다([기존 저장소를 프로필로 쓰기](../guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
+
+```text
+~/.agctx/profiles/
+├── team-backend/          ← clone이나 create로 만든 프로필: profile.json과 규칙 파일이 여기 있다
+└── team-rules/link.json   ← link로 연결한 프로필: /work/team-rules 를 가리킨다
+```
 
 ## 지침 항목 켜고 끄기
 
@@ -36,7 +44,7 @@ agctx는 개발 지침을 **프로필**로 모아 두고, 그 프로필을 여�
 ## 적용과 동기화
 
 <!-- agctx-doc-sources: src/profile/apply.ts, templates/CLAUDE.md, templates/antigravity-rules -->
-<!-- agctx-doc-sources-sha256: 03913879226add91cc6f4004833f204bed1b9e1bd5298ec6059c8d45548ce458 -->
+<!-- agctx-doc-sources-sha256: 9aac7032975ba23fe99dc927ba9dbf124c5cae3b7ce40e5101ee6d3a396899cf -->
 
 - `profile apply <이름> <프로젝트>`는 프로젝트가 쓸 프로필을 정하거나 다른 프로필로 바꾼다.
 - `profile sync <프로젝트>`는 `agctx.project.json`에 기록된 프로필을 다시 적용한다. 다른 프로필로 바꾸지는 않는다.

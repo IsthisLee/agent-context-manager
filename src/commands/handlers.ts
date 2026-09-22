@@ -4,7 +4,15 @@ import { _, SUPPORTED_LOCALES } from '../i18n/index.ts';
 import { checkProject } from '../check.ts';
 import { explainPath, parseAgents, type AgentId } from '../explain.ts';
 import { agentsToVerify, verifyPath } from '../verify/index.ts';
-import { boundProfile, conflictError, planFor, printConflicts, printPlan, unmanagedError } from '../profile/apply.ts';
+import {
+  boundProfile,
+  conflictError,
+  planFor,
+  printArtifacts,
+  printConflicts,
+  printPlan,
+  unmanagedError
+} from '../profile/apply.ts';
 import {
   cloneProfile,
   connectProfile,
@@ -114,6 +122,9 @@ async function applyOrSync(
     agents,
     include,
     mcpServers: [...writing].sort(),
+    skills: plan.artifacts.skills,
+    subagents: plan.artifacts.subagents,
+    hooks: plan.artifacts.hooks,
     source: version.source,
     pin: version.pin,
     uncommitted: version.uncommitted,
@@ -142,6 +153,7 @@ async function applyOrSync(
       })
     );
   if (removed.length) say(_('plan.mcp.removed', { servers: removed.join(', ') }));
+  printArtifacts(plan.artifacts);
   const changed = plan.changes.filter(change => change.status !== 'unchanged');
   if (plan.conflicts.length) {
     if (dryRun) printConflicts(plan.conflicts);

@@ -70,7 +70,7 @@ export interface ProjectConfig {
   managedHashes?: Record<string, string>;
   /** JSON 설정 파일마다 agctx가 소유한 키(MCP 서버 이름). 검사는 `src/project/mcp-plan.ts`가 한다. */
   managedKeys?: unknown;
-  /** 이 저장소가 받는 대상 종류(`rules`·`mcp`). 없으면 hooks를 뺀 전부다. */
+  /** 이 저장소가 받는 대상 종류(`rules`·`mcp`·`skills`·`subagents`·`hooks`). 없으면 hooks를 뺀 전부다. */
   include?: unknown;
   /** 이 저장소가 고른 에이전트. 없으면 지원하는 에이전트 전부다. 검사는 `recordedAgents`가 한다. */
   agents?: unknown;
@@ -79,9 +79,10 @@ export interface ProjectConfig {
 
 /**
  * `agents`는 프로젝트 AGENTS.md이고, `pointer`는 관리 블록이 있는 에이전트 파일이다. `mcp-json`·`mcp-toml`은
- * MCP 서버 설정 파일이다.
+ * MCP 서버 설정 파일이다. `file`은 agctx가 파일째 소유하는 skills·subagents 파일이고, `hooks-json`은 사람과
+ * 나눠 쓰는 hooks 설정 파일이다.
  */
-export type ManagedKind = 'agents' | 'pointer' | 'mcp-json' | 'mcp-toml';
+export type ManagedKind = 'agents' | 'pointer' | 'mcp-json' | 'mcp-toml' | 'file' | 'hooks-json';
 
 export interface Conflict {
   kind: 'missing' | 'edited';
@@ -102,6 +103,8 @@ export interface PlannedFile {
   remove: boolean;
   /** agctx가 쓴 적도 없고 agctx 표지도 없는 기존 파일이라, `--adopt` 없이는 쓰지 않는다. */
   unmanaged: boolean;
+  /** 파일째 소유하는 파일(`file`)의 실행 권한. 다른 종류는 파일의 권한을 건드리지 않는다. */
+  executable?: boolean;
 }
 
 export type ConflictedFile = PlannedFile & { conflict: Conflict };
@@ -113,6 +116,8 @@ export interface PlannedChange {
   relativePath: string;
   content: string;
   status: ChangeStatus;
+  /** 정해져 있으면 쓴 뒤 실행 권한을 이 값에 맞춘다. */
+  executable?: boolean;
 }
 
 export interface ProjectPlan {
@@ -123,4 +128,11 @@ export interface ProjectPlan {
   unmanaged: PlannedFile[];
   /** 계획이 바꾸지는 않지만 사용자가 알아야 할 것. 예를 들어 AGENTS.md를 import하지 않는 CLAUDE.md. */
   warnings: string[];
+  /** 이번에 쓰는 skills·subagents·hooks의 이름과, hooks가 실행할 명령. */
+  artifacts: {
+    skills: string[];
+    subagents: string[];
+    hooks: string[];
+    hookCommands: { hook: string; agent: string; event: string; matcher: string | null; command: string }[];
+  };
 }

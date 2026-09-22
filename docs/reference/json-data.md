@@ -1,7 +1,7 @@
 # `--json` 결과의 `data` 형식
 
 <!-- agctx-doc-sources: src/commands/handlers.ts, src/commands/output.ts -->
-<!-- agctx-doc-sources-sha256: 885d84d7b9c539c4cf0a53144a95a8c4a0bb1cdf567429e66965414e9b89cb0e -->
+<!-- agctx-doc-sources-sha256: f3ab9b08eefb172c698bbbacd7e31b27b9160d3ee43ac0ae2b9c4a7e089d0cf2 -->
 
 `--json`을 주면 stdout에 결과 문서 하나가 나온다. 문서의 공통 필드(`schemaVersion`·`command`·`exitCode`·`ok`·`data`·`warnings`·`errors`)는 [CLI Reference](cli.md#--json-출력)에 있고, 이 문서는 명령마다 다른 `data`의 필드를 적는다. `errors`가 비어 있지 않으면 `data`는 `null`이다. 종료 코드가 0이 아니어도 결과를 보고한 것이면 `data`가 있다(예: 충돌을 찾은 `check`는 2와 함께 `findings`를 준다). 결과를 읽는 스크립트와 에이전트는 이 표에 있는 필드만 기대한다.
 
@@ -56,6 +56,9 @@
 | `scope` | 문자열 | 용도 |
 | `instructions` | 문자열 | 규칙 파일의 내용 |
 | `mcpServers` | 목록 또는 `null` | 프로필 `mcp.json`의 서버 이름. `mcp.json`이 없으면 `null` |
+| `skills` | 목록 | 프로필 `skills/`의 skill 이름. 없거나 프로필의 정의가 틀렸으면 빈 목록 |
+| `subagents` | 목록 | 프로필 `subagents/`의 subagent 이름. 없거나 프로필의 정의가 틀렸으면 빈 목록 |
+| `hooks` | 목록 또는 `null` | 프로필 `hooks.json`의 hook 이름. `hooks.json`이 없거나 정의가 틀렸으면 `null` |
 
 ### `profile setup`
 
@@ -137,8 +140,11 @@
 | `profile` | 문자열 | 적용한 프로필 |
 | `project` | 문자열 | 프로젝트 폴더 |
 | `agents` | 목록 | 연결 파일을 쓴 에이전트(`codex`·`claude`·`antigravity`) |
-| `include` | 목록 | 받은 대상 종류(`rules`·`mcp`) |
+| `include` | 목록 | 받은 대상 종류(`rules`·`mcp`·`skills`·`subagents`·`hooks`) |
 | `mcpServers` | 목록 | 이번 계획에서 `.mcp.json`이나 `.codex/config.toml`에 쓰는 MCP 서버 이름. MCP를 받지 않거나, 받을 에이전트가 없거나, 프로필에 없으면 빈 목록 |
+| `skills` | 목록 | 이번 계획에서 쓰는 skill 이름. skills를 받지 않거나, 받을 에이전트가 없거나, 프로필에 없으면 빈 목록 |
+| `subagents` | 목록 | 이번 계획에서 쓰는 subagent 이름. 같은 조건에서 빈 목록 |
+| `hooks` | 목록 | 이번 계획에서 명령을 쓰는 hook 이름. `include`에 `hooks`가 없거나, 받을 에이전트가 없거나, 프로필에 없으면 빈 목록 |
 | `source` | 객체 또는 `null` | Git 프로필이면 `{ git, branch, commit }`. 로컬 프로필이면 `null` |
 | `pin` | 참거짓 | 프로필 커밋에 고정했는지 |
 | `uncommitted` | 참거짓 | 커밋하지 않은 프로필 수정이 들어갔는지 |
@@ -249,7 +255,7 @@
 | `repos` | 목록 | 저장소마다 한 항목 |
 | `repos[].path` | 문자열 | 저장소 폴더 |
 | `repos[].profile` | 문자열 | 적용한 프로필 |
-| `repos[].state` | 문자열 | `update`(바꿀 것)·`updated`(바꿈)·`up-to-date`·`pinned`·`dirty`·`conflict`·`missing`·`error` |
+| `repos[].state` | 문자열 | `update`(바꿀 것)·`updated`(바꿈)·`up-to-date`·`pinned`·`dirty`·`conflict`·`review`(hooks가 바뀌어 `profile sync`로 확인해야 함)·`missing`·`error` |
 | `repos[].exitCode` | 수 | 이 저장소의 종료 코드 |
 | `repos[].files` | 목록 | 바꿀(바꾼) 파일이나 멈추게 한 파일. 프로젝트 기준 |
 | `repos[].detail` | 문자열 | 사람이 읽을 설명 |

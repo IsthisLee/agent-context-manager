@@ -19,7 +19,7 @@
 ## 명령별 종료 코드
 
 <!-- agctx-doc-sources: src/shared/errors.ts, src/commands/registry.ts, src/explain.ts -->
-<!-- agctx-doc-sources-sha256: 3539fd1091974e88347c2bc30e9e815442f11144d8a0f6e9e18bf7f3bf719b43 -->
+<!-- agctx-doc-sources-sha256: 1a1f528ea56d0054357b167baa7ab9dc466864d1d5fa2caf437c09c123a7fdf6 -->
 
 아래 표는 명령 등록부에서 만든다. 명령 하나의 코드는 `agctx <명령> --help`의 마지막 줄에도 나온다.
 

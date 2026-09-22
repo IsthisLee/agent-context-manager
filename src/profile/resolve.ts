@@ -1,13 +1,23 @@
 import path from 'node:path';
 import { _ } from '../i18n/index.ts';
-import { say } from '../commands/output.ts';
+import { say, warn } from '../commands/output.ts';
 import { CliError, EXIT, usageError } from '../shared/errors.ts';
-import type { ConflictedFile, PlannedChange } from '../shared/types.ts';
-import { assertProjectDirectory, boundProfile, planFor, printConflicts, unmanagedError } from './apply.ts';
+import type { ConflictedFile, ManagedKind, PlannedChange } from '../shared/types.ts';
+import {
+  assertProjectDirectory,
+  boundProfile,
+  planFor,
+  printArtifacts,
+  printConflicts,
+  unmanagedError
+} from './apply.ts';
 import { shellWord } from '../shared/shell.ts';
 import { BACKUP_DIR, collectUserEdits, formatDiff, relocateUserEdits } from '../project/conflicts.ts';
 import { mergeFileName, mergeInVsCode } from '../project/merge-editor.ts';
 import { managedRegion, regionHash, writePlan } from '../project/plan.ts';
+
+/** 고친 내용을 관리 영역 밖으로 옮길 자리가 없어, 백업한 뒤 다시 만드는 것(`--discard`)만 하는 종류. */
+const DISCARD_ONLY: readonly ManagedKind[] = ['mcp-json', 'mcp-toml', 'file', 'hooks-json'];
 
 /** 자동 resolve가 쓰는 파일: 관리 영역 안에 더한 줄을 영역 밖으로 옮긴다. */
 function automaticResolution(file: ConflictedFile, base: string) {
@@ -110,8 +120,8 @@ export async function resolveProject(
     if (file.conflict.kind === 'missing') {
       overrides.set(file.rel, null);
       files.push({ file: file.rel, action: 'recreate' });
-    } else if (base === null || file.kind === 'mcp-json' || file.kind === 'mcp-toml') {
-      // MCP 설정 파일은 고친 줄을 관리 영역 밖으로 옮길 자리가 없다. 백업한 뒤 다시 만드는 것만 한다.
+    } else if (base === null || DISCARD_ONLY.includes(file.kind)) {
+      // MCP·hooks 설정과 skills·subagents 파일은 고친 줄을 관리 영역 밖으로 옮길 자리가 없다. 백업한 뒤 다시 만드는 것만 한다.
       if (!options.discard) {
         unresolved.push(file);
         continue;
@@ -123,7 +133,10 @@ export async function resolveProject(
         content: file.existing ?? '',
         status: 'create'
       });
-      overrides.set(file.rel, file.regenerated);
+      // hooks 파일은 묶음을 배열 끝에 더하므로, 이미 더한 결과를 넘기면 계획이 한 번 더 더한다. 지금 파일을 넘긴다.
+      overrides.set(file.rel, file.kind === 'hooks-json' ? (file.existing ?? '') : file.regenerated);
+      // 고친 hook 묶음은 해시가 달라 agctx가 그 묶음을 사람의 것으로 본다. 다시 만든 뒤에도 남으므로 알린다.
+      if (file.kind === 'hooks-json') warn(_('resolve.warn.hooks-edited', { file: file.rel }));
       files.push({ file: file.rel, action: 'discard', backup });
     } else if (options.edit && !options.dryRun && file.currentRegion && !file.remove) {
       edits.push(file);
@@ -149,6 +162,15 @@ export async function resolveProject(
       { exitCode: EXIT.conflict, hint: _('hint.resolve.mcp-discard', { project: targetDir, backups: BACKUP_DIR }) }
     );
   }
+  const artifactUnresolved = unresolved.filter(file => file.kind === 'file' || file.kind === 'hooks-json');
+  if (artifactUnresolved.length) {
+    printConflicts(unresolved);
+    throw new CliError(
+      'resolve.artifact-discard',
+      _('error.resolve.artifact-discard', { files: artifactUnresolved.map(file => file.rel).join(', ') }),
+      { exitCode: EXIT.conflict, hint: _('hint.resolve.artifact-discard', { project: targetDir, backups: BACKUP_DIR }) }
+    );
+  }
   if (unresolved.length) {
     printConflicts(unresolved);
     throw new CliError(
@@ -166,6 +188,9 @@ export async function resolveProject(
         backup: file.backup ?? ''
       })
     );
+  // hooks를 다시 쓰면 쓰기 전에 실행될 명령을 보여 준다(ADR 0022).
+  if (plan.conflicts.some(file => file.kind === 'hooks-json'))
+    printArtifacts(planFor(name, targetDir, 'keep', overrides, { adopt }).plan.artifacts, { names: false });
   if (options.dryRun) {
     say(_('plan.dry-run.done'));
     return { conflicts: plan.conflicts.length, written: false, files };

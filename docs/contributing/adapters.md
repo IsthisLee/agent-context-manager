@@ -1,7 +1,7 @@
 # 새 에이전트 지원하기
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/project/links.ts, src/explain.ts, src/shared/agents.ts, src/verify, templates -->
-<!-- agctx-doc-sources-sha256: 07630b5b1369b726ecd7fb2c96d0d2f84bcdcbcc867af144c414e7909b9ec1c2 -->
+<!-- agctx-doc-sources-sha256: 5dd0105364c78cf67f89c60f701440620b97eee09759058f20012b494e385554 -->
 
 지원 에이전트를 더하거나 빼는 일은 사용자 파일과 평가 범위를 바꾸므로 ADR로 결정한다. 지금 목록은 [ADR 0011](../adr/0011-supported-agents.md)이다. 결정한 뒤에는 아래 순서로 채운다.
 
@@ -14,6 +14,7 @@
 | 5 | 판정과 판독을 fixture로 고정하고, 가짜 CLI로 probe를 평가한다 | `evals/explain.test.ts`, `evals/verify.test.ts`, `evals/support/git-workspace.ts`의 `fakeCommands`<!--s:34cf80e6bad6--> |
 | 6 | 사용자 문서를 고친다 | `docs/reference/supported-agents.md`, `docs/concepts/agent-loading.md`, `CHANGELOG.md` |
 
+- 에이전트가 저장소에서 MCP 서버·skills·subagents·hooks를 읽는 위치를 확인했으면 `src/mcp/targets.ts`의 `MCP_TARGETS`<!--s:d4abeedbfc4f-->와 `src/artifacts/targets.ts`의 `SKILL_ROOTS`<!--s:a17f7ad11104-->·`SUBAGENT_TARGETS`<!--s:76263bc9767f-->·`HOOK_TARGETS`<!--s:73db9d115065-->에 더하고, hook 이벤트는 `src/artifacts/definitions.ts`의 `HOOK_EVENTS`<!--s:eb138d3b276e-->에 적는다. 확인하지 못한 에이전트는 `UNVERIFIED_AGENTS`에 두어 쓰지 않고 알린다([ADR 0046](../adr/0046-skills-subagents-hooks-in-profiles.md)).
 - probe는 실제 저장소를 바꾸지 않고 임시 사본에서만 실행한다. 에이전트 CLI에 읽기 전용 샌드박스나 도구 끄기 옵션이 있으면 반드시 쓴다.
 - npm으로 설치하는 CLI는 Windows에서 `.cmd` 파일이므로, 실행은 `src/verify/probe.ts`의 `run`<!--s:e4ea41d7ec27-->처럼 셸을 거친다.
 - 세션 기록 형식은 에이전트의 공개 계약이 아닌 경우가 많다. 판독기는 fixture가 고정한 필드만 읽고, 판독하지 못하면 오류가 아니라 `no-evidence`로 둔다.

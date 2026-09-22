@@ -13,7 +13,7 @@
 ## agctx.project.json
 
 <!-- agctx-doc-sources: src/project/plan.ts, src/shared/types.ts -->
-<!-- agctx-doc-sources-sha256: 868663cb6784c4bb249c162282df70eaacb1287329ae302051166e220db0b1fd -->
+<!-- agctx-doc-sources-sha256: 83785e6b2858772e3d84ef7025ffd0c2544ae3ab14d97c330d29cae559e270b9 -->
 
 `profile apply`·`sync`가 프로젝트 루트에 쓰는 적용 기록이다. 다시 쓸 때 아래 표에 없는 키(사람이나 다른 도구가 넣은 값)도 지우지 않고 그대로 남긴다.
 
@@ -24,11 +24,11 @@
 | `projectName` | `AGENTS.md`에 쓴 프로젝트 이름. 팀원이 저장소를 다른 이름의 폴더로 clone해도 이 이름을 쓰므로, `sync` 결과가 폴더 이름에 따라 달라지지 않는다 |
 | `source` | Git 프로필이면 `{ git, branch, commit }`. URL의 사용자 정보와 토큰은 지운다 |
 | `pin` | `--pin`으로 고정했으면 `true` |
-| `uncommitted` | 프로필의 규칙 파일이나 `profile.json`에 커밋하지 않은 수정이 있는 상태로 적용했으면 `true`. 그 수정은 원격에 없어 다른 사람이 같은 내용을 받을 수 없으므로 `check`가 뒤처짐(1)으로 알린다 |
+| `uncommitted` | 프로필의 규칙 파일, `profile.json`, `mcp.json`, `skills/`, `subagents/`, `hooks.json`에 커밋하지 않은 수정이 있는 상태로 적용했으면 `true`. 그 수정은 원격에 없어 다른 사람이 같은 내용을 받을 수 없으므로 `check`가 뒤처짐(1)으로 알린다 |
 | `agents` | `profile apply --agent`로 고른 에이전트(`codex`·`claude`·`antigravity`)를 등록 순서로 담은 목록. 키가 없으면 지원 에이전트 전부다. `sync`·`repos sync`·`repos pr`·`check`가 이 선택을 따른다. 목록이 아니거나, 비었거나, 모르는 이름이 있으면 명령이 종료 코드 64로 멈춘다 |
-| `include` | `profile apply --include`로 고른 대상 종류(`rules`·`mcp`). 키가 없으면 hooks를 뺀 전부다. `rules`는 늘 들어 있어야 하고, 아니면 명령이 종료 코드 64로 멈춘다 |
-| `managedKeys` | JSON 설정 파일마다 agctx가 쓴 항목의 이름. 지금은 `.mcp.json`의 MCP 서버 이름뿐이다. 이 이름의 항목만 agctx가 바꾸고 지운다. 맵이 아니거나 값이 이름 목록이 아니면 명령이 종료 코드 64로 멈춘다 |
-| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일도 들어간다. 경로는 프로젝트 루트 기준 상대 경로여야 하며, 절대 경로나 `..`가 든 경로가 있으면 `apply`·`sync`·`check`가 아무것도 바꾸지 않고 종료 코드 64로 멈춘다 |
+| `include` | `profile apply --include`로 고른 대상 종류(`rules`·`mcp`·`skills`·`subagents`·`hooks`). 키가 없으면 hooks를 뺀 전부다. `rules`는 늘 들어 있어야 하고, 아니면 명령이 종료 코드 64로 멈춘다 |
+| `managedKeys` | JSON 설정 파일마다 agctx가 쓴 항목. `.mcp.json`은 MCP 서버 이름이고, `.claude/settings.json`과 `.codex/hooks.json`은 agctx가 넣은 hook 묶음마다 `<이벤트>:<묶음 해시 16자리>`다. 이 항목만 agctx가 바꾸고 지운다. 맵이 아니거나 값이 글 목록이 아니면 명령이 종료 코드 64로 멈춘다 |
+| `managedHashes` | 관리 파일 경로(`/` 구분)마다 관리 영역의 sha256. 줄 끝을 LF로 맞춘 내용으로 계산하므로 CRLF로 체크아웃한 파일도 같은 값이 된다. 하위 폴더 연결 파일과, agctx가 쓴 skills·subagents 파일(파일 내용 전체가 관리 영역)도 들어간다. 경로는 프로젝트 루트 기준 상대 경로여야 하며, 절대 경로나 `..`가 든 경로가 있으면 `apply`·`sync`·`check`가 아무것도 바꾸지 않고 종료 코드 64로 멈춘다 |
 
 ```json
 {
@@ -52,7 +52,7 @@
 ## profile.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: 0ed42e4067fdaff17c9deb7f2889cc8730aa00e78c53719a338552f53323e8cb -->
+<!-- agctx-doc-sources-sha256: 0c177cba3fa6d9dec39c3ac31058b64ecddfe655d497fd8e321df18d3a2ffa10 -->
 
 프로필 폴더의 메타데이터다. `profile create`가 `schemaVersion`(1)·`name`·`scope`·`createdAt`을 쓰고, `profile setup`이 고른 수준을 `settings`에, 고친 시각을 `updatedAt`에 더한다. `setup`은 이미 있는 다른 필드를 그대로 둔다.
 
@@ -79,7 +79,7 @@
 ## mcp.json
 
 <!-- agctx-doc-sources: src/mcp/servers.ts, src/mcp/targets.ts, src/mcp/toml.ts, src/mcp/json-merge.ts, src/project/mcp-plan.ts -->
-<!-- agctx-doc-sources-sha256: 780e463b2aba5835892a404f710401d523589fc86fe4c8bce1a244c4e425f4c8 -->
+<!-- agctx-doc-sources-sha256: 7284d25d663034e3d2044c7ebd137abb5d9db694ce135dee775d6cafb5c8e605 -->
 
 프로필 폴더 루트에 두는 MCP 서버 목록이다. 프로필에 없으면 MCP 파일을 쓰지 않는다. 쓰는 법은 [팀 MCP 서버 나눠 쓰기](../guides/mcp-servers.md)에 있다.
 
@@ -114,10 +114,36 @@
 - **소유 영역의 기록:** 소유 영역의 sha256을 `managedHashes`에, 원문을 `.agctx/base/.mcp.json.base`·`.agctx/base/.codex/config.toml.base`에 둔다. JSON 원문은 키를 정렬하고 두 칸 들여쓴 형태다.
 - **판정:** 사람이 같은 이름의 서버를 두었으면 멈추고, 사람이 만든 설정 파일에 처음 쓰는 것은 `--adopt`로만 한다. 관리 블록 밖에서 같은 서버를 정의했는지는 표 머리, 점 표기 키, 인라인 표를 모두 보는 `src/mcp/toml.ts`의 `definedServers`<!--s:35ff1886d569-->가 찾는다. 계획은 `src/project/mcp-plan.ts`의 `planMcpFiles`<!--s:e7c6f27be8bb-->가 세운다.
 
+## skills·subagents·hooks
+
+<!-- agctx-doc-sources: src/artifacts/definitions.ts, src/artifacts/profile-files.ts, src/artifacts/targets.ts, src/artifacts/hooks-merge.ts, src/project/artifact-plan.ts -->
+<!-- agctx-doc-sources-sha256: 0d34ed5395cf47a599b63a162a12433e62c424f4157263f063683b80c248899e -->
+
+프로필 폴더 루트에 두는 skill·subagent·hook 정의다. 쓰는 법은 [팀 skills·subagents·hooks 나눠 쓰기](../guides/skills-subagents-hooks.md)에 있다. 판정은 `src/artifacts/definitions.ts`의 `parseProfileArtifacts`<!--s:32c68e98acb5-->가 하고, 틀리면 종료 코드 64로 멈춘다.
+
+| 파일 | 규칙 |
+| --- | --- |
+| `skills/<이름>/SKILL.md` | 머리말에 폴더 이름과 같은 `name`, 한 줄 `description`. 이름은 소문자·숫자·하이픈 64자까지. 같은 폴더의 다른 파일도 함께 복사한다 |
+| `subagents/<이름>.md` | 머리말에 파일 이름과 같은 `name`, 한 줄 `description`. 머리말 뒤의 본문이 지시다. 하위 폴더는 거부한다 |
+| `hooks.json` | `{ "hooks": { "<hook 이름>": { "<에이전트>": { "<이벤트>": [ … ] } } } }`. 에이전트는 `claude`·`codex`·`antigravity`, 이벤트는 그 에이전트 문서의 목록(`src/artifacts/definitions.ts`의 `HOOK_EVENTS`<!--s:eb138d3b276e-->) 안에서만 받는다. 항목은 `{ "matcher": "…", "hooks": [ { "type": "command", "command": "…" } ] }`이고 처리기의 다른 키(`timeout` 등)는 그대로 옮긴다 |
+
+- 텍스트가 아닌 파일, 심볼릭 링크, 숨은 문자가 든 파일은 거부한다. Git 프로필은 추적 중이거나 `.gitignore`가 가리지 않은 파일만 읽고, Git이 아닌 프로필은 `__pycache__`·`node_modules` 같은 부산물 폴더를 건너뛴다(`src/artifacts/profile-files.ts`의 `workingArtifactFiles`<!--s:3e6e9f9bf1e4-->). 고정한 저장소는 기록한 커밋의 파일을 읽는다.
+- 쓰는 곳은 `src/artifacts/targets.ts`의 `SKILL_ROOTS`<!--s:a17f7ad11104-->·`SUBAGENT_TARGETS`<!--s:76263bc9767f-->·`HOOK_TARGETS`<!--s:73db9d115065-->에 있다.
+
+| 종류 | Claude Code | Codex | agctx가 소유하는 영역 |
+| --- | --- | --- | --- |
+| skills | `.claude/skills/<이름>/` | `.agents/skills/<이름>/`(Antigravity도 이 폴더를 읽는다) | 쓴 파일 하나하나의 내용 전체 |
+| subagents | `.claude/agents/<이름>.md`(그대로) | `.codex/agents/<이름>.toml`(`name`·`description`·`developer_instructions`) | 쓴 파일의 내용 전체 |
+| hooks | `.claude/settings.json`의 `hooks` | `.codex/hooks.json`의 `hooks` | `managedKeys`의 `<이벤트>:<해시>`와 같은 matcher 묶음(`src/artifacts/hooks-merge.ts`의 `groupKey`<!--s:caa2c8d7d7b9-->) |
+
+- **skills·subagents의 판정:** 같은 skill 폴더나 subagent 파일에 agctx가 쓰지 않은 다른 내용의 파일이 있으면 `project.artifact-taken`(2)으로 멈추고 `--adopt`로도 덮어쓰지 않는다. 내용이 프로필과 같은 파일은 맡는다. agctx가 이미 쓰고 있는 skill 폴더에 사람이 더한 다른 파일은 그대로 둔다.
+- **hooks의 판정:** 사람이 만든 설정 파일에 처음 쓰는 것은 `--adopt`로만 한다. `hooks`가 객체가 아니거나 값이 배열이 아니면 `project.invalid-hooks-file`(64)로 멈춘다. agctx의 묶음은 이벤트 배열 끝에 넣고, 빼면 agctx 것만 남았던 `.codex/hooks.json`은 지운다.
+- **기록:** 소유 영역의 sha256을 `managedHashes`에, 원문을 `.agctx/base/<경로>.base`에 둔다. hooks의 원문은 이벤트별 묶음을 키를 정렬해 두 칸 들여쓴 JSON이다. 계획은 `src/project/artifact-plan.ts`의 `planArtifactFiles`<!--s:c403f51e0f8f-->가 세운다.
+
 ## link.json
 
 <!-- agctx-doc-sources: src/profile/store.ts, src/profile/link.ts -->
-<!-- agctx-doc-sources-sha256: 012fca6259b99422e396b10819af397bec14be1803b8b47b7a829793ca0264a5 -->
+<!-- agctx-doc-sources-sha256: 003a720ac7b39955cb4f01f6e177ef293593bb457c574b8d4ad134ab8f26ec9a -->
 
 `profile link`로 연결한 프로필이 보관함의 `profiles/<이름>/`에 두는 포인터다. `profile.json`과 규칙 파일은 가리키는 폴더에 있다.
 

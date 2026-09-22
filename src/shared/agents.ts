@@ -37,14 +37,19 @@ export function parseAgents(value: string | null): AgentId[] {
 }
 
 /** 저장소가 받을 대상 종류. 규칙은 모든 에이전트가 읽는 정본이라 늘 받는다. */
-export type IncludeKind = 'rules' | 'mcp';
-export const INCLUDE_KINDS: readonly IncludeKind[] = ['rules', 'mcp'];
+export type IncludeKind = 'rules' | 'mcp' | 'skills' | 'subagents' | 'hooks';
+export const INCLUDE_KINDS: readonly IncludeKind[] = ['rules', 'mcp', 'skills', 'subagents', 'hooks'];
+/** 기록이 없을 때 받는 대상 종류: hooks를 뺀 전부(ADR 0042). hooks는 저장소가 골라야 받는다(ADR 0046). */
+export const DEFAULT_INCLUDE: readonly IncludeKind[] = ['rules', 'mcp', 'skills', 'subagents'];
 
 function isIncludeKind(value: unknown): value is IncludeKind {
   return typeof value === 'string' && (INCLUDE_KINDS as readonly string[]).includes(value);
 }
 
-/** `--include` 값: 쉼표로 여러 개, 또는 `all`. `rules`는 뺄 수 없다. */
+/**
+ * `--include` 값: 쉼표로 여러 개, 또는 `all`. `rules`는 뺄 수 없다. `all`은 기록을 지워 기본값(hooks를 뺀
+ * 전부)을 뜻한다. hooks는 실행될 명령이라 목록에 `hooks`를 적어야만 받는다(ADR 0046).
+ */
 export function parseInclude(value: string): IncludeKind[] | null {
   if (value.trim() === 'all') return null;
   const kinds = value

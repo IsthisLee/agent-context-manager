@@ -48,7 +48,7 @@ agctx profile apply company ~/work/api-server
 ## 여러 저장소를 한 번에 맞추기
 
 <!-- agctx-doc-sources: src/repos -->
-<!-- agctx-doc-sources-sha256: 6fc8aef409e9609136576bc472ba57c21d360533ae7c11209d21fc7c67cd3fa5 -->
+<!-- agctx-doc-sources-sha256: 4e0752ddd92fb3c39798cd45837285c0824c537b862b8d8008785a60c25de447 -->
 
 프로필 하나를 여러 저장소가 쓰면, 프로필이 바뀔 때마다 저장소를 하나씩 열지 않고 `repos` 명령으로 한 번에 맞춘다. `profile apply`·`profile sync`를 실행한 저장소는 이 컴퓨터의 목록(`~/.agctx/repos.json`)에 자동으로 기록된다. 결정과 안전 계약은 [ADR 0018](../adr/0018-multi-repository-sync.md)에 있다.
 
@@ -82,7 +82,7 @@ agctx repos sync --profile personal --dry-run
 agctx repos sync --profile personal
 ```
 
-`--dry-run`은 파일을 쓰지 않고 계획만 보여 준다. `repos sync`는 모든 저장소의 계획을 보여 준 뒤 한 번만 묻는다. 고정한 저장소(`pinned`), 관리 파일에 커밋하지 않은 변경이 있는 저장소(`dirty`), 관리 영역을 밖에서 고친 저장소(`conflict`)는 건너뛰고 나머지를 계속한다. 바뀐 파일을 커밋하는 일은 저장소마다 사람이 한다.
+`--dry-run`은 파일을 쓰지 않고 계획만 보여 준다. `repos sync`는 모든 저장소의 계획을 보여 준 뒤 한 번만 묻는다. 고정한 저장소(`pinned`), 관리 파일에 커밋하지 않은 변경이 있는 저장소(`dirty`), 관리 영역을 밖에서 고친 저장소(`conflict`), hooks가 바뀌는 저장소(`review`, 그 저장소에서 `profile sync`로 명령을 확인한 뒤 쓴다)는 건너뛰고 나머지를 계속한다. 바뀐 파일을 커밋하는 일은 저장소마다 사람이 한다.
 
 ### 동기화 결과 확인하기
 
@@ -101,7 +101,7 @@ Next: agctx profile pull team-backend, then agctx repos pr --profile team-backen
 ## 다른 컴퓨터에서 같은 프로필 쓰기
 
 <!-- agctx-doc-sources: src/profile/git-profile.ts -->
-<!-- agctx-doc-sources-sha256: e53f3b2e71e7896af3c85dcef8d584b7a072f1aef660d9696c886dafe2dd2952 -->
+<!-- agctx-doc-sources-sha256: 2d7ff577df34f12e64b00748cd1f704d9559c75dadd1699724ddf592ec0f20dc -->
 
 프로필 보관함은 어떤 저장소에도 커밋되지 않는다. 컴퓨터를 옮겨도 같은 개인 프로필을 쓰려면 프로필 자체를 내 Git 저장소에 올린다.
 

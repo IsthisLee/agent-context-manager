@@ -388,6 +388,19 @@ function pullRequestBody(candidate: Candidate): string {
   const removed = new Set(
     plan.plan.changes.filter(change => change.status === 'remove').map(change => change.relativePath)
   );
+  // hooks는 리뷰어의 컴퓨터에서도 실행될 명령이라, diff를 열기 전에 명령을 그대로 보여 준다(ADR 0022).
+  const hooksChanged = plan.plan.files.some(
+    file => file.kind === 'hooks-json' && file.currentRegion !== file.nextRegion
+  );
+  if (hooksChanged && plan.plan.artifacts.hookCommands.length)
+    lines.push(
+      '',
+      _('repos.pr.body.hooks'),
+      ...plan.plan.artifacts.hookCommands.map(
+        command =>
+          `- ${command.hook}: ${_(`explain.agent.${command.agent}`)} ${command.event}${command.matcher ? ` ${command.matcher}` : ''}: \`${command.command}\``
+      )
+    );
   lines.push(
     '',
     _('repos.pr.body.files'),

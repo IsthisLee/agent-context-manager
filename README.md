@@ -1,7 +1,7 @@
 # Agent Context Manager (agctx)
 
 <!-- agctx-doc-sources: README.en.md -->
-<!-- agctx-doc-sources-sha256: 12d8f665aa6c89f6410231fe4526b6baede02ffd2a5bc64578fe48db871e2459 -->
+<!-- agctx-doc-sources-sha256: 2a31bbb4b09eb1d7270ab763766b82106cf88cf655d3bd602017f1d5982d283e -->
 
 [![CI](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/ci.yml?branch=main&label=CI&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/ci.yml)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/IsthisLee/agent-context-manager/codeql.yml?branch=main&label=CodeQL&logo=github)](https://github.com/IsthisLee/agent-context-manager/actions/workflows/codeql.yml)
@@ -29,14 +29,14 @@
 agctx는 그 기준을 프로필로 관리합니다. 프로필을 프로젝트에 적용하면 Codex·Claude Code·Antigravity가 읽는 지침 파일을 한 번에 만듭니다. 프로필에서 기준을 바꾼 뒤 동기화하면 프로젝트마다 파일을 다시 고치지 않아도 되고, 각 프로젝트만의 도메인 규칙은 그대로 남습니다. `profile create` → `profile setup` → `profile apply`·`profile sync`로 이어지는 한 흐름입니다.
 
 - 👥 개인·팀·회사별로 프로필 나누기
-- 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 모으기 (지금은 규칙과 MCP 서버, 나머지는 구현 예정)
+- 🧩 규칙·스킬·MCP·subagents·hooks를 한 프로필에 모으기 (Antigravity의 MCP·subagents·hooks는 구현 예정)
 - 📋 TDD·검증·보안 같은 권장 지침 고르기
 - 🎯 저장소마다 적용할 프로필과 에이전트 고르기 (에이전트 선택은 구현 예정)
 - 🔄 프로필이 바뀌면 한 번에 동기화하기
 - 🛡️ 프로젝트마다 따로 쓴 지침은 그대로 두기
 - 🌿 Git으로 공유하고, CI로 검사하고, 여러 저장소에 PR 열기
 
-> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`)과 MCP 서버 설정(Claude Code `.mcp.json`·Codex `.codex/config.toml`)입니다. 팀이 함께 쓰는 스킬·subagent 정의·hooks에서도 같은 문제가 생깁니다. 그래서 이것들까지 한 프로필로 관리하도록 범위를 넓혀 가는 중입니다.
+> ⚙️ 지금 프로필이 관리하는 컨텍스트는 규칙(`AGENTS.md`·`CLAUDE.md`·`.agents/rules`), MCP 서버 설정(Claude Code `.mcp.json`·Codex `.codex/config.toml`), 스킬(`.claude/skills`·`.agents/skills`), subagent 정의(`.claude/agents`·`.codex/agents`), hooks(`.claude/settings.json`·`.codex/hooks.json`)입니다. hooks는 다른 사람의 컴퓨터에서 실행될 명령이라 저장소가 직접 골라야 받습니다([팀 skills·subagents·hooks 나눠 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/skills-subagents-hooks.md)). Antigravity에는 아직 규칙과 스킬만 씁니다.
 
 ## 핵심 목표
 
@@ -127,10 +127,10 @@ Applied profile company to /path/to/project
 ## 핵심 기능
 
 <!-- agctx-doc-sources: src/commands/registry.ts, src/profile/setup.ts -->
-<!-- agctx-doc-sources-sha256: b20fccd4550d2c8560a30081f54395c20fe4a654275a709961ca659edd5db9ed -->
+<!-- agctx-doc-sources-sha256: 7ad7ed0d70ec5c110a5ecf145335f0490af4f962a60b3c4b13cf02aaf523edfd -->
 
 - **프로필 만들기와 설정** — `profile create`·`list`·`setup`·`remove`. scope(프로필의 용도)는 `personal`·`company`·`team`·`workspace`이고, `setup`은 작업 흐름·맥락 관리·TDD·변경 검토·검증·지침 파일·문서화·보안·믿을 수 없는 입력·응답 언어 열 개 항목을 켜고 끕니다(`on`·`off`). 항목마다 실제로 들어가는 문장과 그 근거는 [지침 카탈로그](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/guidance-catalog.md)에 있습니다.
-- **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다.
+- **적용과 동기화** — `profile apply`·`sync`·`resolve`. 적용하면 프로필 버전을 기록하고, `--pin`은 그 커밋에 고정합니다. `--agent`로 파일을 받을 에이전트를, `--include`로 받을 종류(규칙·MCP·skills·subagents·hooks)를 저장소마다 고릅니다. 관리 영역 안을 고쳐 충돌이 나면 `resolve`가 그 편집을 관리 영역 밖으로 옮깁니다. 사람이 쓴 파일은 `--adopt`로 허락해야 관리 영역을 더합니다.
 - **Git으로 공유** — `profile clone`·`status`·`pull`·`push`·`connect`. 표준 Git 원격을 쓰고 프로젝트 파일은 건드리지 않으며, 받아 온 프로필 내용에 숨은 문자가 있으면 멈춥니다. 이미 쓰던 규칙 저장소는 그 폴더에서 `profile link`로 커밋 없이 바로 연결하고, 팀과는 그때 생긴 `profile.json`을 커밋해 나눕니다([기존 저장소를 프로필로 쓰기](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/guides/team-sharing.md#기존-저장소를-프로필로-쓰기)).
 - **저장소 검사** — `check`는 파일을 바꾸지 않고, 관리 영역을 밖에서 고쳤는지·숨은 문자가 있는지·기록한 프로필 버전보다 뒤처졌는지를 종료 코드로 알립니다. `--refresh`는 원격의 최신 커밋과도 비교합니다.
 - **여러 저장소** — `repos list`·`status`·`sync`·`pr`로 프로필을 적용한 저장소를 한 번에 다루고, 고정한 저장소는 PR로 갱신합니다. 예약 봇은 `repos pr --targets <file> --yes`로 실행합니다.
@@ -148,7 +148,7 @@ Applied profile company to /path/to/project
 ## 지원 에이전트
 
 <!-- agctx-doc-sources: src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: 0b5051f94e47b69a89082f9b58f17759e41128947cf78ba11bef9c558bfa0b46 -->
+<!-- agctx-doc-sources-sha256: 6104f0900efa5ab3617f87afcfbccdb07cb93ddb4e7250024861cc32fd3b30aa -->
 
 프로필을 프로젝트에 적용하면 아래 에이전트별 지침 파일을 만들고 동기화합니다. `AGENTS.md`는 여러 에이전트가 함께 읽는 공통 표준입니다.
 
@@ -157,6 +157,8 @@ Applied profile company to /path/to/project
 | Codex 등 (AGENTS.md 표준) | `AGENTS.md`              |
 | Claude Code               | `CLAUDE.md`              |
 | Antigravity               | `.agents/rules/agctx.md` |
+
+프로필에 MCP 서버·skills·subagents·hooks가 있으면 에이전트마다 그 설정 파일(`.mcp.json`, `.claude/skills/`, `.codex/agents/` 등)도 씁니다. 에이전트별 위치는 [지원 에이전트](https://github.com/IsthisLee/agent-context-manager/blob/main/docs/reference/supported-agents.md)에 있습니다.
 
 적용할 때 agctx가 마지막으로 쓴 관리 영역 원문을 `.agctx/base/`에도 남깁니다. 이 원문은 관리 영역에서 충돌이 났을 때 기준이 되므로 git에 커밋하세요.
 

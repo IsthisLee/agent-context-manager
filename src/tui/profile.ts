@@ -35,11 +35,16 @@ import { PROJECT_CONFIG_FILE, readProjectConfig } from '../profile/apply.ts';
 import {
   AGENT_IDS,
   canonicalAgents,
+  DEFAULT_INCLUDE,
+  INCLUDE_KINDS,
   recordedAgents,
   recordedInclude,
   type AgentId,
   type IncludeKind
 } from '../shared/agents.ts';
+import { parseProfileArtifacts, type ProfileArtifacts } from '../artifacts/definitions.ts';
+import { workingArtifactFiles } from '../artifacts/profile-files.ts';
+import { HOOK_TARGETS, SKILL_ROOTS, SUBAGENT_TARGETS } from '../artifacts/targets.ts';
 import { parseMcpServers, PROFILE_MCP_FILE } from '../mcp/servers.ts';
 import { MCP_TARGETS } from '../mcp/targets.ts';
 
@@ -444,6 +449,61 @@ export function includePrompt(
   return { ask: true, initial: recorded === null || recorded.includes('mcp'), servers, files };
 }
 
+/** 받을지 고를 수 있는 skills·subagents·hooks와 그 개수. 프로필에 있고 받을 에이전트를 고른 종류만 담는다. */
+export function artifactPrompt(
+  name: string,
+  agents: readonly AgentId[] = AGENT_IDS
+): { kind: 'skills' | 'subagents' | 'hooks'; count: number }[] {
+  const profile = readProfile(name);
+  let artifacts: ProfileArtifacts;
+  try {
+    artifacts = parseProfileArtifacts(workingArtifactFiles(profile.profileDir));
+  } catch {
+    // 틀린 정의는 적용이 오류로 알린다. 묻는 단계에서 멈추지 않는다.
+    return [];
+  }
+  const hooks = (artifacts.hooks ?? []).filter(hook =>
+    HOOK_TARGETS.some(target => agents.includes(target.agent) && hook.agents[target.agent])
+  );
+  return [
+    {
+      kind: 'skills' as const,
+      count: SKILL_ROOTS.some(root => root.agents.some(agent => agents.includes(agent))) ? artifacts.skills.length : 0
+    },
+    {
+      kind: 'subagents' as const,
+      count: SUBAGENT_TARGETS.some(target => agents.includes(target.agent)) ? artifacts.subagents.length : 0
+    },
+    { kind: 'hooks' as const, count: hooks.length }
+  ].filter(entry => entry.count > 0);
+}
+
+/**
+ * TUI에서 고른 종류를 `--include` 값으로. 묻지 않은 종류는 기록을, 기록이 없으면 기본값을 따른다. 기본값과
+ * 같으면 `all`이라 기록이 지워진다.
+ */
+export function includeAnswer(
+  offered: readonly IncludeKind[],
+  selected: readonly IncludeKind[],
+  recorded: readonly IncludeKind[] | null
+): string {
+  const base = recorded ?? DEFAULT_INCLUDE;
+  const chosen = INCLUDE_KINDS.filter(
+    kind => kind === 'rules' || (offered.includes(kind) ? selected.includes(kind) : base.includes(kind))
+  );
+  const isDefault = chosen.length === DEFAULT_INCLUDE.length && DEFAULT_INCLUDE.every(kind => chosen.includes(kind));
+  return isDefault ? 'all' : chosen.join(',');
+}
+
+function recordedIncludeOf(targetDir: string): IncludeKind[] | null {
+  const configPath = path.join(targetDir, PROJECT_CONFIG_FILE);
+  try {
+    return recordedInclude(readProjectConfig(configPath).include, configPath);
+  } catch {
+    return null;
+  }
+}
+
 /** 프로필 메뉴 항목마다 하는 일. 키는 등록부의 명령 id다. */
 export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
   'profile.setup': name => setupProfileTui(name),
@@ -457,15 +517,31 @@ export const MENU_ACTIONS: Record<string, (name: string) => Promise<void>> = {
     if (!target) return cancel(_('actions.project.cancel'));
     const agent = await agentChoiceTui(target);
     if (agent === null) return cancel(_('actions.project.cancel'));
-    const mcp = includePrompt(name, target, agent === 'all' ? AGENT_IDS : (agent.split(',') as AgentId[]));
+    const chosenAgents = agent === 'all' ? AGENT_IDS : (agent.split(',') as AgentId[]);
+    const mcp = includePrompt(name, target, chosenAgents);
+    const recorded = recordedIncludeOf(target);
+    const options = [
+      ...(mcp.ask ? [{ kind: 'mcp' as const, count: mcp.servers }] : []),
+      ...artifactPrompt(name, chosenAgents)
+    ];
     let include: string | null = null;
-    if (mcp.ask) {
-      const answer = await confirm({
-        message: _('actions.apply.mcp', { count: mcp.servers, files: mcp.files }),
-        initialValue: mcp.initial
+    if (options.length) {
+      // hooks는 모든 사람의 컴퓨터에서 실행될 명령이라, 기록이 없으면 고르지 않은 채로 보여 준다.
+      const selected = await multiselect<IncludeKind>({
+        message: _('actions.apply.include'),
+        required: false,
+        initialValues: options.map(option => option.kind).filter(kind => (recorded ?? DEFAULT_INCLUDE).includes(kind)),
+        options: options.map(option => ({
+          value: option.kind,
+          label: _(`actions.apply.include.${option.kind}`, { count: option.count })
+        }))
       });
-      if (cancelled(answer)) return cancel(_('actions.project.cancel'));
-      include = answer ? 'all' : 'rules';
+      if (cancelled(selected)) return cancel(_('actions.project.cancel'));
+      include = includeAnswer(
+        options.map(option => option.kind),
+        selected,
+        recorded
+      );
     }
     const choice = pinPrompt(name, target);
     let pin = false;

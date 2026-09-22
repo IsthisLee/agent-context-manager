@@ -121,7 +121,8 @@ export function codexTables(servers: McpServers): { names: string[]; text: strin
 }
 
 /** 터미널을 조작할 수 있는 제어 문자를 `\u001b`처럼 드러낸 글. 검토할 줄을 가리거나 꾸미지 못하게 한다. */
-function visible(text: string): string {
+/** 터미널 제어 문자를 `\\uXXXX`로 드러낸 글. 계획에 보여 주는 명령이 화면을 속이지 못하게 한다. */
+export function visible(text: string): string {
   return [...text]
     .map(char => {
       const code = char.charCodeAt(0);

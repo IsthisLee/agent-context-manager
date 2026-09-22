@@ -22,7 +22,7 @@
 ## 설정하기
 
 <!-- agctx-doc-sources: src/project/links.ts, src/project/plan.ts -->
-<!-- agctx-doc-sources-sha256: e9d4eec42fab4bc1bb8d2e96acf2bda3502cd87e44e71bdba2020a75ebb1824b -->
+<!-- agctx-doc-sources-sha256: edb07ebf53b89f89015fba11243527725f6fa22ceb5fefe7e59d014700b7e6d6 -->
 
 1. 저장소 루트에서 프로필을 적용한다. 하위 폴더에 이미 `AGENTS.md`가 있으면 연결 파일도 함께 만든다. TUI에서는 **Manage profiles** > 프로필 > **Apply to a project**에서 저장소 루트를 고른다.
 
@@ -124,7 +124,7 @@ $ echo $?
 
 - **나중에 만든 하위 `AGENTS.md`:** 적용한 뒤에 만든 하위 `AGENTS.md`는 다음 `agctx profile sync`에서 연결 파일이 생긴다.
 - **하위 `AGENTS.md`를 지웠을 때:** 연결 파일은 지우지 않고 남겨 둔다. `agctx.project.json`의 관리 기록에서만 빼고 그 사실을 알려 준다.
-- **살펴보지 않는 폴더:** Git 저장소라면 `.gitignore`가 무시하는 폴더는 보지 않는다. `node_modules`·`dist`·`build`·`vendor` 같은 폴더와 그 안에 있는 다른 Git 저장소도 건너뛴다.
+- **살펴보지 않는 폴더:** Git 저장소라면 `.gitignore`가 무시하는 폴더는 보지 않는다. `node_modules`·`dist`·`build`·`vendor` 같은 폴더와 그 안에 있는 다른 Git 저장소도 건너뛴다. 프로필의 skill을 쓰는 `.claude/skills/`·`.agents/skills/`와 subagent를 쓰는 `.claude/agents/`·`.codex/agents/` 안의 `AGENTS.md`·`CLAUDE.md`는 폴더의 지침이 아니라 skill의 파일이므로 연결 파일을 만들지 않는다.
 - **연결 파일을 고칠 때:** 연결 파일의 내용은 관리 블록(`<!-- agctx:managed:start -->`와 `<!-- agctx:managed:end -->` 사이, agctx가 다시 만드는 부분)이다. 블록 안을 고치면 다른 관리 파일처럼 `sync`가 충돌로 멈추므로, 그 폴더만의 Claude Code 지침은 블록 밖에 쓴다([관리 영역과 확장 영역](../concepts/managed-and-extension-areas.md)).
 - **에이전트마다 다른 조건:** 하위 `AGENTS.md`를 받는 조건은 에이전트마다 다르다.
   - Codex는 그 하위 폴더에서 시작할 때 받는다.

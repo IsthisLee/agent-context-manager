@@ -55,7 +55,8 @@ Antigravity · started in services/payments
   conditional  services/payments/AGENTS.md  AGENTS.md in a subfolder; …
   missing      Antigravity does not load .agents/rules/payments.md at session start. Use trigger: always_on for rules every task needs.
   warning      Antigravity did not receive services/payments/AGENTS.md at session start when measured. …
-…
+$ echo $?
+4
 ```
 
 - **Codex**는 프로젝트 루트부터 시작 폴더까지 폴더마다 `AGENTS.md`를 하나씩 읽으므로 두 파일을 모두 받는다. 저장소 루트에서 시작하면 `services/payments/AGENTS.md`는 읽지 않으며, `agctx explain --agent codex .`이 이를 경고한다.
@@ -81,7 +82,8 @@ Antigravity · started in services/payments
   read         .agents/rules/payments.md  trigger: always_on
   conditional  services/payments/AGENTS.md  AGENTS.md in a subfolder; …
   warning      Antigravity did not receive services/payments/AGENTS.md at session start when measured. …
-…
+$ echo $?
+0
 ```
 
 에이전트를 시작하는 폴더가 여러 곳이면 폴더마다 `explain`을 실행한다. `missing`이 있을 때만 4로 끝나므로 CI 단계로 둘 수 있지만, 이 저장소의 CI에서 실행해 본 설정은 아니다.

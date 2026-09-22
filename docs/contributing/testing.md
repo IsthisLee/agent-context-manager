@@ -20,7 +20,7 @@ pnpm run audit
 ## 평가 작성
 
 <!-- agctx-doc-sources: evals/support, tools/generate-skills.ts, tools/generate-reference.ts, tools/generate-discussion-status.ts, evals/doc-examples.test.ts, evals/doc-scenarios.test.ts -->
-<!-- agctx-doc-sources-sha256: b0a5fb582b7dfd945bc1f64d3420964a3baa6745868d6e22a7f466f20956998c -->
+<!-- agctx-doc-sources-sha256: cd49e17e20b374a1b9e392b6aff1fded26ec90b63029c908ded78edf4f3384ea -->
 
 - 평가는 `evals/*.test.ts`이며 Node.js 내장 `node:test`로 실행한다. 코드를 바꾸기 전에 실패하는 평가를 먼저 쓰고(Red), 통과시킨 뒤(Green) 정리한다.
 - CLI는 `spawnSync`로 `src/agctx.ts`를 실행해 검사한다. 실행 결과가 파이프로 나가므로 확인이 필요한 명령은 `--yes` 없이 64로 멈추는지도 함께 확인한다.

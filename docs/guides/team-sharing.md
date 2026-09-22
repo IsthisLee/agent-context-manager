@@ -169,6 +169,7 @@ team-backend	git@github.com:acme/team-backend-profile.git main@e0caeb1	clean	ahe
 
 3. **팀과 나눈다.** 그 폴더에서 `profile.json`을 커밋해 저장소의 평소 방식대로 올린다. 적용 담당은 [1. 프로필 받기](#1-프로필-받기)처럼 받는다.
 
+   <!-- agctx-example: link-rules -->
    ```bash
    $ agctx profile clone git@github.com:acme/team-rules.git
    Cloned profile team-rules at commit 1df750b.

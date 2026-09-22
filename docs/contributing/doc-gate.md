@@ -1,7 +1,7 @@
 # 문서 게이트
 
 <!-- agctx-doc-sources: tools/check-docs.ts, tools/doc-evidence.ts, tools/doc-source-path.ts, tools/discussion-record.ts, tools/generate-reference.ts, evals/reference-docs.test.ts, tools/doc-sources.ts, evals/doc-examples.test.ts, tools/discussion-topics.ts, tools/generate-discussion-status.ts, evals/discussion-status.test.ts, tools/doc-citations.ts, evals/doc-citations.test.ts, tools/symbol-source.ts, evals/symbol-source.test.ts, evals/doc-scenarios.test.ts -->
-<!-- agctx-doc-sources-sha256: 5b990df8a0dff258c7afd928241d18e1cd9786b652fafbd6f77f4b6cb7d6d599 -->
+<!-- agctx-doc-sources-sha256: 9584bb9407df8a5b138ba0821ed6a837aca28f2ff670ad0cd3e5424c326af411 -->
 
 `pnpm run check`의 `check:docs`는 문서가 코드와 근거에서 멀어지지 않게 한다. 문서를 어디에 둘지와 작성 규칙은 루트 [`AGENTS.md`](../../AGENTS.md)의 문서 규칙을 따른다.
 
@@ -55,8 +55,8 @@ flowchart TD
 - 소스는 모듈 단위로 핀한다. `src` 폴더 전체를 핀하면 파일 하나만 바꿔도 모든 문서가 한꺼번에 실패해 다시 읽지 않고 stamp하게 되므로, `check:docs`가 이를 오류로 막는다. `src/commands`처럼 모듈 폴더나 파일을 나열한다.
 - `src` 아래의 모든 파일은 어느 문서든 **핀하거나 인용해야** 한다. 인용은 같은 지문을 같은 방식으로 지키므로 핀을 따로 두지 않아도 된다. 둘 다 없는 파일은 `check:docs`가 알린다. 규칙은 `tools/doc-sources.ts`의 `unpinnedSources`<!--s:0ecdd96038b4-->에 있다.
 - 빠른 시작의 명령 예시는 `evals/doc-examples.test.ts`가 격리한 폴더에서 다시 실행해 줄마다 대조한다. 해시 게이트는 다시 읽으라고 알릴 뿐이지만, 이 검사는 예시가 실제 출력과 달라진 순간을 잡는다. 예시에 쓸 수 있는 명령은 `agctx`와 `mkdir`이다.
-- 가이드와 개념 문서의 명령 예시는 코드 블록 바로 앞에 `<!-- agctx-example: <고정물 이름> -->`를 둔다. `evals/doc-scenarios.test.ts`가 그 이름의 고정물로 문서가 설명하는 상태(프로필, 저장소, 사람이 둔 파일)를 임시 폴더에 만들고, 블록의 `$` 명령을 실행해 출력과 비교한다. 임시 경로는 문서의 경로로 바꾸고, 7자리 커밋 해시는 같은 것으로 보고, `…`만 있는 줄은 여러 줄을, 줄 끝의 `…`는 그 뒤를 건너뛴다. 실행할 수 있는 명령은 `agctx`, `cd <경로>`(`cd <경로> && agctx …` 포함), `printf '<글>' > <파일>`, `echo $?`이다. 예시 사이에 문서가 글로 설명한 단계(규칙 파일을 고치는 일 등)는 고정물이 대신한다.
-- 이렇게 실행과 대조하는 절은 출력 문구 때문에 메시지 카탈로그(`src/i18n/messages-*.ts`)를 핀하지 않는다. 문구가 바뀌면 이 평가가 실패하므로, 해시 게이트로 카탈로그 전체를 지키면 관련 없는 문구가 바뀔 때마다 헛걸린다. 카탈로그를 핀하는 것은 TUI 화면과 오류 문구를 여럿 인용하는 [TUI로 쓰기](../guides/tui.md)와 [문제 해결](../reference/troubleshooting.md)뿐이다. 결정은 [ADR 0045](../adr/0045-run-doc-examples-instead-of-pinning-messages.md)다.
+- 가이드와 개념 문서의 명령 예시는 코드 블록 바로 앞에 `<!-- agctx-example: <고정물 이름> -->`를 둔다. `evals/doc-scenarios.test.ts`가 그 이름의 고정물로 문서가 설명하는 상태(프로필, 저장소, 사람이 둔 파일)를 임시 폴더에 만들고, 블록의 `$` 명령을 실행해 출력과 비교한다. 임시 경로는 문서의 경로로 바꾼다. 문서에서 숫자와 a~f가 함께 든 7자리 16진수는 커밋 해시로 보고 실제 줄의 어떤 7자리 16진수와도 맞추되, 한 명령 안에서 같은 문서 해시는 같은 실제 해시에, 다른 문서 해시는 다른 실제 해시에 대응해야 한다. `…`만 있는 줄은 여러 줄을 건너뛰고, 줄 끝의 `…`는 그 앞까지만 비교하되 실제 줄에서 그 뒤가 공백이나 줄 끝이어야 한다. 주석 바로 뒤에 bash 블록이 없으면 평가가 실패한다. 실행할 수 있는 명령은 `agctx`, `cd <경로>`(`cd <경로> && agctx …` 포함), `printf '<글>' > <파일>`, `echo $?`이다. 예시 사이에 문서가 글로 설명한 단계(규칙 파일을 고치는 일 등)는 고정물이 대신한다.
+- 이렇게 실행과 대조하는 절은 출력 문구 때문에 메시지 카탈로그(`src/i18n/messages-*.ts`)를 핀하지 않는다. 문구가 바뀌면 이 평가가 실패하므로, 해시 게이트로 카탈로그 전체를 지키면 관련 없는 문구가 바뀔 때마다 헛걸린다. 카탈로그 파일을 직접 핀하는 것은 TUI 화면과 오류 문구를 여럿 인용하는 [TUI로 쓰기](../guides/tui.md)와 [문제 해결](../reference/troubleshooting.md)이고, [CLI Reference](../reference/cli.md)와 [현재 구조](architecture.md)는 `src/i18n` 폴더를 핀해 함께 덮는다. 결정은 [ADR 0045](../adr/0045-run-doc-examples-instead-of-pinning-messages.md)다.
 
 ## 문서 근거 게이트
 

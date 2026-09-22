@@ -35,6 +35,7 @@ interface Example {
 function examples(markdown: string): Example[] {
   const found: Example[] = [];
   const counts = new Map<string, number>();
+  const annotations = [...markdown.matchAll(/<!-- agctx-example: ([\w-]+) -->/g)].length;
   for (const match of markdown.matchAll(/<!-- agctx-example: ([\w-]+) -->\n(\s*)```bash\n([\s\S]*?)\n\s*```/g)) {
     const [, fixture, indent, body] = match;
     const block = counts.get(fixture) ?? 0;
@@ -48,6 +49,8 @@ function examples(markdown: string): Example[] {
     for (const step of steps) while (step.expected.at(-1)?.trim() === '') step.expected.pop();
     found.push({ fixture, block, steps });
   }
+  // 주석 뒤에 bash 블록이 오지 않으면 그 예시는 조용히 빠진다. 빠뜨리지 않게 수를 맞춘다.
+  assert.equal(found.length, annotations, '모든 agctx-example 주석 바로 뒤에 bash 블록이 있다');
   return found;
 }
 
@@ -66,26 +69,55 @@ function toDoc(output: string, paths: Scenario['paths']): string {
       (_m, rest: string) => `${doc}${rest.replaceAll('\\', '/')}`
     );
   }
-  return text.replace(/\b[0-9a-f]{7}\b/g, '<commit>');
+  return text;
 }
 
-/** 문서의 줄과 실제 줄을 `…` 규칙으로 맞춘다. */
-function matches(expected: readonly string[], actual: readonly string[]): boolean {
-  const normalized = (line: string) => line.replace(/\b[0-9a-f]{7}\b/g, '<commit>').trimEnd();
-  const go = (e: number, a: number): boolean => {
+/** 문서 쪽의 커밋 짧은 해시: 숫자와 a~f가 함께 든 7자리 16진수. 낱말(`defaced`)이나 숫자(`1000000`)는 아니다. */
+const DOC_HASH = /\b(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{7}\b/g;
+
+const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * 문서의 한 줄을 실제 줄에 맞추는 정규식과, 그 줄에 든 문서 해시. 문서 해시 자리에는 실제 줄의 어떤 7자리
+ * 16진수든 올 수 있다(실제 해시는 숫자로만 이루어질 수도 있다). 줄 끝의 `…`는 그 앞까지만 비교하되, 실제
+ * 줄에서 그 뒤가 낱말 경계(공백이나 줄 끝)여야 한다.
+ */
+function lineMatcher(want: string): { pattern: RegExp; hashes: string[] } {
+  const elided = want.endsWith('…');
+  const text = elided ? want.slice(0, -1).trimEnd() : want;
+  const hashes = [...text.matchAll(DOC_HASH)].map(match => match[0]);
+  const body = text.split(DOC_HASH).map(escape).join('([0-9a-f]{7})');
+  return { pattern: new RegExp(elided ? `^${body}(?=\\s|$)` : `^${body}$`), hashes };
+}
+
+/**
+ * 문서의 줄과 실제 줄을 맞춘다. `…`만 있는 줄은 여러 줄을 건너뛰고, 같은 문서 해시는 한 단계 안에서 늘 같은
+ * 실제 해시에, 다른 문서 해시는 다른 실제 해시에 대응해야 한다(예: `ab35396→c61bea6`의 양쪽이 다른 커밋인지).
+ */
+function matches(expectedLines: readonly string[], actualLines: readonly string[]): boolean {
+  const expected = expectedLines.map(line => line.trimEnd());
+  const actual = actualLines.map(line => line.trimEnd());
+  const go = (e: number, a: number, pairs: ReadonlyMap<string, string>): boolean => {
     if (e === expected.length) return a === actual.length;
-    const want = normalized(expected[e]);
-    if (want.trim() === '…') {
-      for (let skip = a; skip <= actual.length; skip++) if (go(e + 1, skip)) return true;
+    if (expected[e].trim() === '…') {
+      for (let skip = a; skip <= actual.length; skip++) if (go(e + 1, skip, pairs)) return true;
       return false;
     }
     if (a === actual.length) return false;
-    const have = normalized(actual[a]);
-    const cut = want.indexOf('…');
-    const same = cut >= 0 ? have.startsWith(want.slice(0, cut).trimEnd()) : have === want;
-    return same && go(e + 1, a + 1);
+    const { pattern, hashes } = lineMatcher(expected[e]);
+    const found = actual[a].match(pattern);
+    if (!found) return false;
+    const next = new Map(pairs);
+    for (const [index, hash] of hashes.entries()) {
+      const value = found[index + 1];
+      const known = next.get(hash);
+      if (known !== undefined && known !== value) return false;
+      if (known === undefined && [...next.values()].includes(value)) return false;
+      next.set(hash, value);
+    }
+    return go(e + 1, a + 1, next);
   };
-  return go(0, 0);
+  return go(0, 0, new Map());
 }
 
 function runExamples(t: TestContext, doc: string, fixtures: Record<string, Fixture>): void {
@@ -109,11 +141,13 @@ function runExamples(t: TestContext, doc: string, fixtures: Record<string, Fixtu
       if (cd) {
         scenario.cwd = path.resolve(scenario.cwd, cd[1]);
         command = cd[2] ?? '';
+        status = 0;
       }
       const [program, ...args] = words(command);
       if (!program) return;
       if (program === 'echo' && args[0] === '$?') output = `${status}\n`;
       else if (program === 'printf') {
+        status = 0;
         const target = path.resolve(scenario.cwd, args[2]);
         assert.equal(args[1], '>', `${doc}: printf는 파일로 보내는 예시만 다룬다`);
         fs.writeFileSync(target, args[0].replaceAll('\\n', '\n'));
@@ -280,10 +314,10 @@ const FIXTURES: Record<string, Fixture> = {
         [published, 'git@github.com:acme/team-rules.git']
       ],
       before: (block, command) => {
-        // 첫 예시의 clone은 다른 컴퓨터의 팀원이 한다.
-        if (block === 0 && command === 2) scenario.env.AGCTX_HOME = teammate;
-        // 둘째 예시는 profile.json이 없는 저장소를 받는다.
-        if (block === 1 && command === 0) scenario.paths[2] = [bare, 'git@github.com:acme/team-rules.git'];
+        // 둘째 예시의 clone은 profile.json을 커밋해 올린 뒤 다른 컴퓨터의 팀원이 한다.
+        if (block === 1 && command === 0) scenario.env.AGCTX_HOME = teammate;
+        // 셋째 예시는 profile.json이 없는 저장소를 받는다.
+        if (block === 2 && command === 0) scenario.paths[2] = [bare, 'git@github.com:acme/team-rules.git'];
       }
     };
     return scenario;
@@ -302,8 +336,9 @@ function pinnedPair(t: TestContext, docRoot: string, synced = true): Scenario {
   const web = me.repo(path.join(work, 'web-app'));
   me.agctx(['profile', 'apply', 'team-backend', orders, '--pin', '--yes']);
   me.agctx(['profile', 'apply', 'team-backend', web, '--yes']);
-  fs.appendFileSync(path.join(profile, 'AGENTS.md'), '\n- Review changes strictly.\n');
-  gitIn(profile, 'commit', '--quiet', '-am', 'Review strictly');
+  // 문서의 「관리자가 변경 검토 지침을 켜서 올린 커밋을 profile pull로 받은」 상태: 보관함에 새 커밋이 있다.
+  fs.appendFileSync(path.join(profile, 'AGENTS.md'), '\n- Review changes before merging.\n');
+  gitIn(profile, 'commit', '--quiet', '-am', 'Turn on change review');
   if (synced) me.agctx(['repos', 'sync', '--yes']);
   return { cwd: work, env: me.env, paths: [[work, docRoot]] };
 }
@@ -338,5 +373,10 @@ test('예시 비교는 …를 생략으로만 인정한다', () => {
   assert.ok(matches(['warning  x …'], ['warning  x and more']));
   assert.ok(!matches(['a', 'b'], ['a', 'c']));
   assert.ok(!matches(['a'], ['a', 'extra']), '생략 표시 없이 남은 줄이 있으면 다르다');
-  assert.ok(matches(['commit 1df750b.'], ['commit abcdef0.']), '커밋 해시는 맞춰 비교한다');
+  assert.ok(matches(['commit 1df750b.'], ['commit abcd3f0.']), '커밋 해시는 맞춰 비교한다');
+  assert.ok(matches(['commit 1df750b.'], ['commit 8120752.']), '숫자로만 된 실제 해시도 해시로 본다');
+  assert.ok(!matches(['ab35396→c61bea6'], ['c61bea6→c61bea6']), '화살표 양쪽이 다른 커밋인지는 비교한다');
+  assert.ok(!matches(['word defaced'], ['word effaced']), '해시가 아닌 낱말은 그대로 비교한다');
+  assert.ok(!matches(['warning  share 3 …'], ['warning  share 30 lines']), '줄 끝 … 앞은 낱말 경계까지 맞아야 한다');
+  assert.ok(!matches(['a … b'], ['a x b']), '줄 중간의 …는 생략이 아니다');
 });
